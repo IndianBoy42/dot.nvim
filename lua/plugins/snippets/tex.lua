@@ -1,7 +1,7 @@
 local M = {}
 -- local F = require "F"
 -- local L = require("pl.utils").string_lambda
-local templates = require "lv-luasnips.templates"
+local templates = require "plugins.snippets.texplates"
 
 -- some shorthands...
 local ls = require "luasnip"

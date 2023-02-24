@@ -37,6 +37,16 @@ return {
       config = true,
     },
   },
+  -- {
+  --   "dense-analysis/neural",
+  --   dependencies = {
+  --     { "ElPiloto/significant.nvim" },
+  --     { "MunifTanjim/nui.nvim" },
+  --   },
+  --   config = function()
+  --     require("neural").setup {}
+  --   end,
+  -- },
 }
 -- return {
 --   "zbirenbaum/copilot-cmp",

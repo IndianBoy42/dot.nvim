@@ -163,6 +163,13 @@ return {
   require "plugins.ui.bufferline",
   require "plugins.ui.statusline",
   {
+    "stevearc/aerial.nvim",
+    cmd = { "AerialToggle", "AerialOpen" },
+    keys = {
+      { "<leader>os", "<cmd>AerialToggle!<cr>", "Aerial Outline" },
+    },
+  },
+  { --
     "simrat39/symbols-outline.nvim",
     opts = {
       highlight_hovered_item = true,
@@ -180,6 +187,9 @@ return {
       lsp_blacklist = {},
     },
     cmd = "SymbolsOutline",
+    keys = {
+      { "<leader>oS", "<cmd>SymbolsOutline<cr>", "Symbols Outline" },
+    },
   },
   {
     "folke/trouble.nvim",
@@ -293,10 +303,11 @@ return {
       require("lsp_lines").setup()
 
       vim.diagnostic.config {
-        virtual_text = true,
-        virtual_lines = false,
+        virtual_text = false,
+        virtual_lines = true,
       }
     end,
+    event = { "BufReadPost", "BufNewFile" },
     keys = {
       {
         "<leader>ll",
@@ -404,7 +415,6 @@ return {
       }
     end,
   },
-
   {
     "kevinhwang91/nvim-ufo",
     config = function()
@@ -420,6 +430,7 @@ return {
       }
     end,
     dependencies = "kevinhwang91/promise-async",
-    events = { "BufWritePost", "BufNewFile" },
+    event = { "BufReadPost", "BufNewFile" },
   },
+  { "ElPiloto/significant.nvim" },
 }

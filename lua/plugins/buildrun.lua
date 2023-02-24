@@ -95,4 +95,5 @@ return {
   --   },
   --   disable = not O.plugin.kittyrunner,
   -- }
+  -- https://github.com/lpoto/telescope-tasks.nvim
 }

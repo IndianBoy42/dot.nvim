@@ -1,3 +1,14 @@
+local default_sources = {
+  { name = "luasnip" },
+  { name = "nvim_lsp" },
+  { name = "copilot" },
+  -- { name = "buffer" },
+  { name = "path" },
+  -- { name = "latex_symbols" },
+  { name = "calc" },
+  -- { name = "cmp_tabnine" },
+}
+
 local M = {
   "hrsh7th/nvim-cmp",
   event = { "InsertEnter", "CmdLineEnter" },
@@ -42,6 +53,27 @@ M.config = function(_, opts)
     }),
   })
 end
+function M.supertab(when_cmp_visible)
+  local cmp = require "cmp"
+  return function()
+    if cmp.visible() then
+      when_cmp_visible()
+    elseif luasnip.expand_or_jumpable() then
+      feedkeys(t "<Plug>luasnip-expand-or-jump", "", false)
+    else
+      local ok, neogen = pcall(require, "neogen")
+      if ok and neogen.jumpable() then
+        feedkeys(t "<cmd>lua require'neogen'.jump_next()<cr>", "", false)
+      elseif check_back_space() then
+        feedkeys(t "<tab>", "n", false)
+      else
+        feedkeys(t "<Plug>(Tabout)", "", false)
+        -- fallback()
+      end
+    end
+  end
+end
+
 M.opts = function()
   local cmp = require "cmp"
   local luasnip = require "luasnip"
@@ -54,27 +86,6 @@ M.opts = function()
   local function check_back_space()
     local col = vim.fn.col "." - 1
     return col == 0 or vim.fn.getline("."):sub(col, col):match "%s" ~= nil
-  end
-
-  -- Concatenate strings in the list
-  function M.supertab(when_cmp_visible)
-    return function()
-      if cmp.visible() then
-        when_cmp_visible()
-      elseif luasnip.expand_or_jumpable() then
-        feedkeys(t "<Plug>luasnip-expand-or-jump", "", false)
-      else
-        local ok, neogen = pcall(require, "neogen")
-        if ok and neogen.jumpable() then
-          feedkeys(t "<cmd>lua require'neogen'.jump_next()<cr>", "", false)
-        elseif check_back_space() then
-          feedkeys(t "<tab>", "n", false)
-        else
-          feedkeys(t "<Plug>(Tabout)", "", false)
-          -- fallback()
-        end
-      end
-    end
   end
 
   local confirmopts = {
@@ -106,17 +117,6 @@ M.opts = function()
   local function complete_or(mapping)
     return double_mapping(autocomplete, mapping)
   end
-
-  local default_sources = {
-    { name = "luasnip" },
-    { name = "nvim_lsp" },
-    { name = "copilot" },
-    -- { name = "buffer" },
-    { name = "path" },
-    -- { name = "latex_symbols" },
-    { name = "calc" },
-    -- { name = "cmp_tabnine" },
-  }
 
   return {
     snippet = {
@@ -198,6 +198,19 @@ M.opts = function()
     -- You should specify your *installed* sources.
     sources = cmp.config.sources(default_sources),
   }
+end
+
+function M.autocomplete(enable)
+  require("cmp").setup.buffer { completion = { autocomplete = enable } }
+end
+
+function M.sources(list)
+  local cmp = require "cmp"
+  cmp.setup.buffer { sources = cmp.config.sources(unpack(list)) }
+end
+
+function M.add_sources(highprio, lowprio)
+  M.sources(vim.list_extend(vim.list_extend({ highprio }, default_sources), { lowprio }))
 end
 
 return M

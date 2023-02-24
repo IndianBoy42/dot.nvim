@@ -18,7 +18,7 @@ require "settings" ()
 
 require("lazy").setup("plugins", {
   defaults = { lazy = true, config = true },
-  install = { colorscheme = { "nebulous" } },
+  install = { colorscheme = { "nebulous", "torte" } },
   checker = { enabled = true },
   change_detection = {
     notify = false,
@@ -68,7 +68,7 @@ vim.api.nvim_create_autocmd("User", {
       -- opts.completion
       -- opts.highlight
 
-      require("lv-ui.input").inline_text_input {
+      require("plugins.ui.input").inline_text_input {
         prompt = opts.prompt,
         border = O.input_border,
         enter = on_confirm,

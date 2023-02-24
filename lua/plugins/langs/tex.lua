@@ -417,15 +417,38 @@ return {
   },
   {
     "jbyuki/nabla.nvim",
-    keys = {
-      {
-        "<leader>vn",
-        function()
-          require("nabla").enable_virt()
-          require("nabla").popup()
-        end,
-      },
-    },
+    keys = function()
+      local enabled = false
+      return {
+        {
+          "<leader>vn",
+          function()
+            require("nabla").popup()
+          end,
+          desc = "Nabla Popup",
+        },
+        {
+          "<leader>vN",
+          function()
+            if enabled then
+              require("nabla").disable_virt()
+            else
+              require("nabla").enable_virt()
+              local id = vim.api.nvim_create_augroup("nabla_live_popup", { clear = true })
+              vim.api.nvim_create_autocmd("CursorHold", {
+                callback = function()
+                  require("nabla").popup()
+                end,
+                buffer = 0,
+                group = id,
+              })
+            end
+            enabled = not enabled
+          end,
+          desc = "Nabla Virtual",
+        },
+      }
+    end,
   },
   {
     "williamboman/mason.nvim",
@@ -462,7 +485,7 @@ return {
     map("i", "<C-b>", "<cmd>normal ysiwmb<cr>", { silent = true })
     map("i", "<C-t>", "<cmd>normal ysiwmi<cr>", { silent = true })
 
-    require("lv-lightspeed").au_unconceal(conf.conceal)
+    require("plugins.navedit.utils").au_unconceal(conf.conceal)
     -- vim.opt_local.background = "light"
     if conf.theme then
       vim.cmd(conf.theme)
@@ -477,13 +500,6 @@ return {
       utils.set_guifont(conf.fontsize)
     end
 
-    require("lsp.config").lspconfig "texlab" {
-      filetypes = conf.filetypes,
-      settings = {
-        texlab = conf.texlab,
-      },
-    }
-
     -- require("lv-utils").define_augroups {
     --   _general_lsp = {
     --     { "CursorHold,CursorHoldI", "<buffer>", "lua vim.lsp.buf.formatting()" },
@@ -491,8 +507,8 @@ return {
     --   },
     -- }
 
-    require("lv-cmp").autocomplete(false)
-    require("lv-cmp").sources {
+    require("plugins.langs.cmp").autocomplete(false)
+    require("plugins.langs.cmp").sources {
       {
         { name = "luasnip" },
         { name = "nvim_lsp" },
@@ -513,7 +529,7 @@ return {
           end,
         }, -- clear mapping
         ["<TAB>"] = cmp.mapping {
-          i = require("lv-cmp").supertab(cmp.confirm),
+          i = require("plugins.langs.cmp").supertab(cmp.confirm),
         },
       },
     }
@@ -521,12 +537,12 @@ return {
     require("luasnip").add_snippets("tex", require("plugins.snippets.tex").snippets)
     require("luasnip").add_snippets("tex", require("plugins.snippets.tex").autosnippets, { type = "autosnippets" })
 
-    require("lv-pairs.sandwich").add_local_recipes(sandwich_recipes)
+    require("plugins.pairs.sandwich").add_local_recipes(sandwich_recipes)
     vim.b.sandwich_tex_marks_recipes = vim.fn.deepcopy(sandwich_marks_recipes) -- TODO: idk what this does
     sandwhich_mark_recipe_fn()
 
     -- Localleader
-    local cmd = require("lv-utils").cmd
+    local cmd = utils.cmd
     mappings.localleader {
       f = { cmd "call vimtex#fzf#run()", "Fzf Find" },
       i = { cmd "VimtexInfo", "Project Information" },
@@ -548,7 +564,7 @@ return {
       a = { cmd "AirLatex", "Air Latex" },
     }
 
-    -- require("lv-utils").define_augroups { _vimtex_event = {
+    -- utils.define_augroups { _vimtex_event = {
     --   { "InsertLeave", "*.tex", "VimtexCompile" },
     -- } }
   end,

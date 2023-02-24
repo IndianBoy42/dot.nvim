@@ -207,4 +207,12 @@ return {
   -- "liangxianzhe/nap.nvim"
   -- { "zdcthomas/yop.nvim" }
   { "seandewar/nvimesweeper", cmd = "Nvimesweeper" },
+  {
+    "EtiamNullam/deferred-clipboard.nvim",
+    event = { "BufReadPost", "BufNewFile" },
+    opt = { lazy = true, fallback = O.clipboard },
+  },
+  { "EricDriussi/remember-me.nvim", opts = {
+    project_roots = { ".git", ".svn", ".venv" },
+  } },
 }
