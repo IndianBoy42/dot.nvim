@@ -136,7 +136,6 @@ return {
   require "plugins.navedit.selectease",
   {
     "mfussenegger/nvim-ts-hint-textobject",
-    event = { "BufReadPost", "BufNewFile" },
     config = function()
       local labels = {}
       O.hint_labels:gsub(".", function(c)
@@ -145,6 +144,11 @@ return {
       require("tsht").config.hint_keys =
           labels -- Requires https://github.com/mfussenegger/nvim-ts-hint-textobject/pull/2
     end,
+    -- event = { "BufReadPost", "BufNewFile" },
+    keys = {
+      { "m", [[:<C-U>lua require('tsht').nodes()<CR>]], mode = "o" },
+      { "m", [[:lua require('tsht').nodes()<CR>]],      mode = "x" },
+    },
     -- module = "tsht",
   },
   { -- sibling-swap.nvim

@@ -12,7 +12,7 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 _G.utils = require "utils"
-_G.O = require "config" -- TODO: Phase this out, intercept accesses and log it
+_G.O = utils.setproxy(require "config") -- TODO: Phase this out, intercept accesses and log it
 _G.mappings = require "keymappings"
 require "settings" ()
 
@@ -21,19 +21,11 @@ require("lazy").setup("plugins", {
   install = { colorscheme = { "nebulous", "torte" } },
   checker = { enabled = true },
   change_detection = {
-    notify = false,
+    enabled = false,
   },
   performance = {
     rtp = {
       disabled_plugins = {
-        -- "gzip",
-        -- "matchit",
-        -- "matchparen",
-        -- "netrwPlugin",
-        -- "tarPlugin",
-        -- "tohtml",
-        -- "tutor",
-        -- "zipPlugin",
         "netrw",
         "netrwPlugin",
         "netrwSettings",

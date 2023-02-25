@@ -37,7 +37,7 @@ return {
       hidden = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "call", "lua", "^:", "^ " }, -- hide mapping boilerplate
       show_help = true, -- show help message on the command line when the popup is visible
     },
-    config = function()
+    config = function(_, opts)
       require("which-key").setup(opts)
     end,
   },
@@ -64,7 +64,7 @@ return {
     },
     init = function()
       -- when noice is not enabled, install notify on VeryLazy
-      if require("lazy.core.config").plugins["noice.nvim"] == nil then
+      if utils.have_plugin "noice.nvim" then
         utils.on_very_lazy(function()
           vim.notify = require "notify"
         end)
@@ -194,6 +194,16 @@ return {
   {
     "folke/trouble.nvim",
     cmd = "TroubleToggle",
+    keys = {
+      { "<leader>d<space>", "<cmd>TroubleToggle<cr>",                       desc = "Trouble Toggle" },
+      { "<leader>dd",       "<cmd>TroubleToggle document_diagnostics<cr>",  desc = "Document" },
+      { "<leader>dD",       "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "Workspace" },
+      { "<leader>dr",       "<cmd>TroubleToggle lsp_references<cr>",        desc = "References" },
+      { "<leader>ds",       "<cmd>TroubleToggle lsp_definitions<cr>",       desc = "Definitions" },
+      { "<leader>dq",       "<cmd>TroubleToggle quickfix<cr>",              desc = "Quick Fixes" },
+      { "<leader>dL",       "<cmd>TroubleToggle loclist<cr>",               desc = "Location List" },
+      { "<leader>do",       "<cmd>TroubleToggle todo<cr>",                  desc = "TODOs" },
+    },
     config = function()
       vim.api.nvim_create_autocmd(
         { "CursorMoved", "InsertLeave", "BufEnter", "BufWinEnter", "TabEnter", "BufWritePost" },
@@ -236,7 +246,7 @@ return {
     },
     cmd = "SidebarNvimToggle",
   },
-  require "plugins.ui.spectre",
+  require "plugins.ui.findreplace",
   -- TODO: try https://github.com/goolord/alpha-nvim (new dashboard plugin)
   -- TODO: noice.nvim
   require "plugins.ui.noice",

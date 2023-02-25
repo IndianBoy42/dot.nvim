@@ -53,8 +53,21 @@ M.config = function(_, opts)
     }),
   })
 end
+
 function M.supertab(when_cmp_visible)
   local cmp = require "cmp"
+  local luasnip = require "luasnip"
+
+  local function t(str)
+    return vim.api.nvim_replace_termcodes(str, true, true, true)
+  end
+
+  local feedkeys = vim.api.nvim_feedkeys
+  local function check_back_space()
+    local col = vim.fn.col "." - 1
+    return col == 0 or vim.fn.getline("."):sub(col, col):match "%s" ~= nil
+  end
+
   return function()
     if cmp.visible() then
       when_cmp_visible()
@@ -76,17 +89,6 @@ end
 
 M.opts = function()
   local cmp = require "cmp"
-  local luasnip = require "luasnip"
-
-  local function t(str)
-    return vim.api.nvim_replace_termcodes(str, true, true, true)
-  end
-
-  local feedkeys = vim.api.nvim_feedkeys
-  local function check_back_space()
-    local col = vim.fn.col "." - 1
-    return col == 0 or vim.fn.getline("."):sub(col, col):match "%s" ~= nil
-  end
 
   local confirmopts = {
     select = false,

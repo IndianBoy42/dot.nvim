@@ -262,12 +262,6 @@ function M.setup()
   map("x", "<", "<gv", nore)
   map("x", ">", ">gv", nore)
 
-  -- I hate escape
-  if not O.plugin.better_escape then
-    map("i", "jk", "<ESC>", sile)
-    map("i", "kj", "<ESC>", sile)
-  end
-
   -- for _, v in pairs { "h", "j", "k", "l" } do
   --   for _, m in pairs { "x", "n" } do
   --     map(m, v .. v, "<Nop>", sile)
@@ -1021,8 +1015,6 @@ function M.setup()
       [")"] = { cmd "ISwapWith", "I. With" },
     },
   }
-  M.sile("o", O.plugin.ts_hintobjects.key, [[:<C-U>lua require('tsht').nodes()<CR>]])
-  M.sile("x", O.plugin.ts_hintobjects.key, [[:lua require('tsht').nodes()<CR>]])
 
   local vLeaderMappings = {
     -- ["/"] = { cmd "CommentToggle", "Comment" },
@@ -1045,76 +1037,6 @@ function M.setup()
   }
 
   -- TODO: move these to different modules?
-  if O.plugin.symbol_outline then
-    leaderMappings["o"]["S"] = { cmd "SymbolsOutline", "Symbols Sidebar" }
-  end
-  if O.plugin.todo_comments then
-    leaderMappings["o"]["T"] = { cmd "TodoTrouble", "Todos Sidebar" }
-  end
-  if O.plugin.trouble then
-    -- TODO: make sure this is symmetric with <leader>s (telescope search)
-    leaderMappings["d<space>"] = { cmd "TroubleToggle", "Trouble Toggle" }
-    leaderMappings["dd"] = { cmd "TroubleToggle document_diagnostics", "Document" }
-    leaderMappings["dD"] = { cmd "TroubleToggle workspace_diagnostics", "Workspace" }
-    leaderMappings["dr"] = { cmd "TroubleToggle lsp_references", "References" }
-    leaderMappings["ds"] = { cmd "TroubleToggle lsp_definitions", "Definitions" }
-    leaderMappings["dq"] = { cmd "TroubleToggle quickfix", "Quick Fixes" }
-    leaderMappings["dL"] = { cmd "TroubleToggle loclist", "Location List" }
-    leaderMappings["do"] = { cmd "TroubleToggle todo", "TODOs" }
-  end
-  if O.plugin.gitlinker then
-    leaderMappings["gy"] = "Gitlink"
-  end
-  leaderMappings["z"] = { name = "Zen" }
-  if O.plugin.zen then
-    leaderMappings["zz"] = { cmd "TZAtaraxis", "Ataraxis" }
-    leaderMappings["zm"] = { cmd "TZMinimalist", "Minimalist" }
-  end
-  if O.plugin.twilight then
-    leaderMappings["zt"] = { cmd "Twilight", "Twilight" }
-  end
-  if O.plugin.telescope_project then
-    leaderMappings["PP"] = { telescope_fn.projects, "Projects" }
-  end
-  if O.plugin.project_nvim then
-    leaderMappings["PR"] = { cmd "ProjectRoot", "Rooter" }
-  end
-  if O.plugin.spectre then
-    leaderMappings["rf"] = {
-      function()
-        require("spectre").open_file_search()
-      end,
-      "Current File",
-    }
-    leaderMappings["/"][1] = function()
-      require("spectre").open()
-    end
-    -- leaderMappings["?"][1] = function () require'spectre'.open_no_ignore() end
-    leaderMappings["rp"] = {
-      function()
-        require("spectre").open()
-      end,
-      "Project",
-    }
-    vLeaderMappings["rf"] = {
-      function()
-        require("spectre").open_visual { path = vim.fn.expand "%" }
-      end,
-      "Current File",
-    }
-    vLeaderMappings["rp"] = {
-      function()
-        require("spectre").open_visual()
-      end,
-      "Project",
-    }
-    -- TODO: other spectre maps like '<leader>r'
-  end
-  if O.plugin.lazygit then
-    leaderMappings["gg"] = { cmd "LazyGit", "LazyGit" }
-  end
-  -- require("lv-terms").keymaps(leaderMappings, vLeaderMappings)
-
   wk.register(leaderMappings, leaderOpts)
   wk.register(vLeaderMappings, vLeaderOpts)
 

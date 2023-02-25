@@ -508,5 +508,30 @@ M.on_very_lazy = function(cb)
     end,
   })
 end
+M.have_plugin = function(name)
+  return require("lazy.core.config").plugins[name] ~= nil
+end
+
+local mt = {}
+function mt.__index(self, key)
+  print("accessing key " .. key)
+  local value = self.proxy[key]
+  if type(value) == "table" then
+    return setmetatable({ proxy = value }, mt)
+  else
+    return value
+  end
+end
+
+function mt.__newindex(self, key, value)
+  print("setting key " .. key .. " to value " .. tostring(value))
+  self.proxy[key] = value
+end
+
+function M.setproxy(of)
+  local new = { proxy = of }
+  setmetatable(new, mt)
+  return new
+end
 
 return M

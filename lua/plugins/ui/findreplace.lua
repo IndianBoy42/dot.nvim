@@ -1,6 +1,43 @@
 local prefix = "<localleader>"
 return {
   "windwp/nvim-spectre",
+  keys = {
+    {
+      "<leader>rf",
+      function()
+        require("spectre").open_file_search()
+      end,
+      desc = "Current File",
+    },
+    {
+      "<leader>rp",
+      function()
+        require("spectre").open()
+      end,
+      desc = "Current Project",
+    },
+    {
+      "<leader>/",
+      function()
+        require("spectre").open()
+      end,
+      desc = "Current Project",
+    },
+    {
+      "<leader>rf",
+      function()
+        require("spectre").open_visual { path = vim.fn.expand "%" }
+      end,
+      desc = "Current File",
+    },
+    {
+      "<leader>rp",
+      function()
+        require("spectre").open_visual()
+      end,
+      desc = "Project",
+    },
+  },
   opts = {
     find_engine = {
       -- rg is map with finder_cmd

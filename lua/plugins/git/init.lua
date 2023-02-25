@@ -8,8 +8,8 @@ return {
   },
   {
     "ruifm/gitlinker.nvim",
-    keys = { "<leader>gy" },
-    requires = "nvim-lua/plenary.nvim",
+    keys = { "<leader>gy", "<cmd>Gitlink<cr>", desc = "Share on Git" },
+    cmd = "Gitlink",
     opts = {
       opts = {
         -- Manual mode doesn't automatically change your root directory, so you have

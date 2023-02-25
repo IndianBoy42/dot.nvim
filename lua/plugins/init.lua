@@ -176,6 +176,10 @@ return {
       require("telescope").load_extension "projects"
     end,
     cmd = "ProjectRoot",
+    keys = {
+      { "<leader>pR", "<cmd>ProjectRoot<cr>",        desc = "Rooter" },
+      { "<leader>pP", "<cmd>Telescope projects<cr>", desc = "T Projects" },
+    },
   },
   { "jghauser/mkdir.nvim",  event = "BufWritePre" },
   { "lambdalisue/suda.vim", cmd = { "SudaWrite", "SudaRead" } },

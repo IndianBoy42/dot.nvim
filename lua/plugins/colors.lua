@@ -380,7 +380,12 @@ return {
   {
     "folke/todo-comments.nvim",
     cmd = { "TodoTrouble", "TodoTelescope" },
-    event = { "BufReadPost", "BufNewFile" },
+    keys = {
+      "<leader>oT",
+      "<cmd>TodoTrouble<cr>",
+      desc = "Todos Sidebar",
+    },
+    -- event = { "BufReadPost", "BufNewFile" },
   },
   {
     "giusgad/pets.nvim",
