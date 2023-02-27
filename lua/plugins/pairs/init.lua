@@ -28,45 +28,7 @@ local M = {
   --     require("mini.pairs").setup(opts)
   --   end,
   -- },
-  -- {
-  --   "echasnovski/mini.surround",
-  --   keys = function(_, keys)
-  --     -- Populate the keys based on the user's options
-  --     local plugin = require("lazy.core.config").spec.plugins["mini.surround"]
-  --     local opts = require("lazy.core.plugin").values(plugin, "opts", false)
-  --     local mappings = {
-  --       { opts.mappings.add, desc = "Add surrounding", mode = { "n", "v" } },
-  --       { opts.mappings.delete, desc = "Delete surrounding" },
-  --       { opts.mappings.find, desc = "Find right surrounding" },
-  --       { opts.mappings.find_left, desc = "Find left surrounding" },
-  --       { opts.mappings.highlight, desc = "Highlight surrounding" },
-  --       { opts.mappings.replace, desc = "Replace surrounding" },
-  --       { opts.mappings.update_n_lines, desc = "Update `MiniSurround.config.n_lines`" },
-  --     }
-  --     mappings = vim.tbl_filter(function(m)
-  --       return m[1] and #m[1] > 0
-  --     end, mappings)
-  --     return vim.list_extend(mappings, keys)
-  --   end,
-  --   opts = {
-  --     mappings = {
-  --       add = "gza", -- Add surrounding in Normal and Visual modes
-  --       delete = "gzd", -- Delete surrounding
-  --       find = "gzf", -- Find surrounding (to the right)
-  --       find_left = "gzF", -- Find surrounding (to the left)
-  --       highlight = "gzh", -- Highlight surrounding
-  --       replace = "gzr", -- Replace surrounding
-  --       update_n_lines = "gzn", -- Update `n_lines`
-  --     },
-  --   },
-  --   config = function(_, opts)
-  --     -- use gz mappings instead of s to prevent conflict with leap
-  --     require("mini.surround").setup(opts)
-  --   end,
-  -- },
-
   {
-
     "windwp/nvim-autopairs",
     event = "InsertEnter",
     config = function()
@@ -156,68 +118,54 @@ local M = {
     end,
   },
   {
-    "machakann/vim-sandwich",
-    setup = function()
-      vim.g.sandwich_no_default_key_mappings = 1
-      vim.g.operator_sandwich_no_default_key_mappings = 1
-      vim.g.textobj_sandwich_no_default_key_mappings = 1
+    "echasnovski/mini.surround",
+    keys = function(_, keys)
+      -- Populate the keys based on the user's options
+      local plugin = require("lazy.core.config").spec.plugins["mini.surround"]
+      local opts = require("lazy.core.plugin").values(plugin, "opts", false)
+      local mappings = {
+        { opts.mappings.add, desc = "Add surrounding" },
+        { opts.mappings.vadd, desc = "Add surrounding", mode = { "v" } },
+        { opts.mappings.delete, desc = "Delete surrounding" },
+        { opts.mappings.find, desc = "Find right surrounding" },
+        { opts.mappings.find_left, desc = "Find left surrounding" },
+        { opts.mappings.highlight, desc = "Highlight surrounding" },
+        { opts.mappings.replace, desc = "Replace surrounding" },
+        { opts.mappings.update_n_lines, desc = "Update `MiniSurround.config.n_lines`" },
+      }
+      mappings = vim.tbl_filter(function(m)
+        return m[1] and #m[1] > 0
+      end, mappings)
+      return vim.list_extend(mappings, keys)
     end,
-    keys = {
-      "ys",
-      "ds",
-      "cs",
-      "yss",
-      "dss",
-      "css",
-    },
-    config = function()
-      vim.cmd [[
-  nmap ys <Plug>(operator-sandwich-add)
-  onoremap <Plug>(sandwich-line-helper) :normal! ^vg_<CR>
-  nmap <silent> yss <Plug>(operator-sandwich-add)<Plug>(sandwich-line-helper)
-  nmap yS ysg_
+    opts = function()
+      return {
+        custom_surroundings = require("plugins.navedit.ai").custom_surroundings(),
+        mappings = {
+          add = "ys", -- Add surrounding in Normal and Visual modes
+          vadd = "gz", -- Add surrounding in Normal and Visual modes
+          delete = "ds", -- Delete surrounding
+          -- TODO: make repeatable?
+          find = "]s", -- Find surrounding (to the right)
+          find_left = "[s", -- Find surrounding (to the left)
+          highlight = "gzh", -- Highlight surrounding
+          replace = "cs", -- Replace surrounding
+          update_n_lines = "gzn", -- Update `n_lines`
+        },
+        n_lines = 9999,
+      }
+    end,
+    config = function(_, opts)
+      require("mini.surround").setup(opts)
+      -- Remap adding surrounding to Visual mode selection
+      vim.api.nvim_del_keymap("x", opts.mappings.add)
+      vim.api.nvim_set_keymap("x", opts.mappings.vadd, [[:<C-u>lua MiniSurround.add('visual')<CR>]], { noremap = true })
 
-  nmap ds <Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)
-  nmap dss <Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-auto-a)
-  nmap cs <Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)
-  nmap css <Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-auto-a)
-
-  xmap S <Plug>(operator-sandwich-add)
-
-  runtime autoload/repeat.vim
-  if hasmapto('<Plug>(RepeatDot)')
-    nmap . <Plug>(operator-sandwich-predot)<Plug>(RepeatDot)
-  else
-    nmap . <Plug>(operator-sandwich-dot)
-  endif
-  ]]
-
-      -- recipes = vim.g["sandwich#recipes"]
-
-      local add_recipes = require("plugins.pairs.sandwich").add_recipes
-      local add_recipe = require("plugins.pairs.sandwich").add_recipe
-      -- TODO: use inline_text_input for sandwich function
-      --   M.add_recipe {
-      --     buns = { "lua require('plugins.pairs.sandwich').fname()", '")"' },
-      --     expr = true,
-      --     kind = { "add", "replace" },
-      --     action = { "add" },
-      --     input = { "f" },
-      --   }
-      add_recipes(require("lua.plugins.pairs.sandwich").default_recipes)
-
-      local map = mappings.sile
-      map("x", "is", "<Plug>(textobj-sandwich-query-i)")
-      map("x", "as", "<Plug>(textobj-sandwich-query-a)")
-      map("o", "is", "<Plug>(textobj-sandwich-query-i)")
-      map("o", "as", "<Plug>(textobj-sandwich-query-a)")
-      map("x", "iq", "isq")
-      map("x", "aq", "asq")
-      map("o", "iq", "isq")
-      map("o", "aq", "asq")
-      map("x", "s", "<Plug>(operator-sandwich-add)")
+      -- Make special mapping for "add surrounding for line"
+      vim.api.nvim_set_keymap("n", "yss", "ys_", { noremap = false })
     end,
   },
+  -- require("plugins.pairs.sandwich").spec,
 }
 
 return M

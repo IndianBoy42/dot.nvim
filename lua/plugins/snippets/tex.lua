@@ -1,3 +1,4 @@
+-- TODO: use fmt(https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#fmt)
 local M = {}
 -- local F = require "F"
 -- local L = require("pl.utils").string_lambda

@@ -1,14 +1,60 @@
+local surroundings = function(ms)
+  local ui = ms.user_input
+  return {
+    -- ["?"] = {
+    --   input = function()
+    --     local env = ui "environment"
+    --     if env == nil or env == "" then
+    --       return
+    --     end
+    --     return { "\\begin{" .. vim.pesc(env) .. "%*?}().-()\\end{" .. vim.pesc(env) .. "%*?}" }
+    --   end,
+    --   output = function()
+    --     local env = ui "Left surrounding"
+    --     if env == nil then
+    --       return
+    --     end
+    --     return { left = env, right = env }
+    --   end,
+    -- },
+    ["e"] = {
+      input = function()
+        -- local env = ui "environment"
+        -- if env == nil or env == "" then
+        --   return
+        -- end
+        -- return { "\\begin{" .. vim.pesc(env) .. "%*?}().-()\\end{" .. vim.pesc(env) .. "%*?}" }
+        return { "\\begin{.+}().-()\\end{.*}" }
+      end,
+      output = function()
+        local env = ui "environment"
+        if env == nil then
+          return
+        end
+        return { left = env, right = env }
+      end,
+    },
+    p = {
+      input = function()
+        return { "\\left().-()\\right" }
+      end,
+      output = function()
+        return { left = nil, right = nil }
+      end,
+    },
+  }
+end
 local sandwich_recipes = {
-  { __filetype__ = "tex", buns = { "“", "”" },  nesting = 1, input = { 'u"' } },
-  { __filetype__ = "tex", buns = { "„", "“" },  nesting = 1, input = { 'U"', "ug", "u," } },
-  { __filetype__ = "tex", buns = { "«", "»" },    nesting = 1, input = { "u<", "uf" } },
-  { __filetype__ = "tex", buns = { "`", "'" },      nesting = 1, input = { "l'", "l`" } },
-  { __filetype__ = "tex", buns = { "``", "''" },    nesting = 1, input = { 'l"' } },
+  { __filetype__ = "tex", buns = { "“", "”" }, nesting = 1, input = { 'u"' } },
+  { __filetype__ = "tex", buns = { "„", "“" }, nesting = 1, input = { 'U"', "ug", "u," } },
+  { __filetype__ = "tex", buns = { "«", "»" }, nesting = 1, input = { "u<", "uf" } },
+  { __filetype__ = "tex", buns = { "`", "'" }, nesting = 1, input = { "l'", "l`" } },
+  { __filetype__ = "tex", buns = { "``", "''" }, nesting = 1, input = { 'l"' } },
   { __filetype__ = "tex", buns = { '"`', "\\\"'" }, nesting = 1, input = { 'L"' } },
-  { __filetype__ = "tex", buns = { ",,", "``" },    nesting = 1, input = { "l," } },
-  { __filetype__ = "tex", buns = { "<<", ">>" },    nesting = 1, input = { "l<" } },
-  { __filetype__ = "tex", buns = { "&", "\\\\" },   nesting = 1, input = { "&" } },
-  { __filetype__ = "tex", buns = { "$", "$" },      nesting = 0 },
+  { __filetype__ = "tex", buns = { ",,", "``" }, nesting = 1, input = { "l," } },
+  { __filetype__ = "tex", buns = { "<<", ">>" }, nesting = 1, input = { "l<" } },
+  { __filetype__ = "tex", buns = { "&", "\\\\" }, nesting = 1, input = { "&" } },
+  { __filetype__ = "tex", buns = { "$", "$" }, nesting = 0 },
   {
     __filetype__ = "tex",
     buns = { "\\(", "\\)" },
@@ -512,6 +558,7 @@ return {
       {
         { name = "luasnip" },
         { name = "nvim_lsp" },
+        { name = "copilot" },
       },
       {
         { name = "buffer" },
@@ -537,9 +584,18 @@ return {
     require("luasnip").add_snippets("tex", require("plugins.snippets.tex").snippets)
     require("luasnip").add_snippets("tex", require("plugins.snippets.tex").autosnippets, { type = "autosnippets" })
 
-    require("plugins.pairs.sandwich").add_local_recipes(sandwich_recipes)
-    vim.b.sandwich_tex_marks_recipes = vim.fn.deepcopy(sandwich_marks_recipes) -- TODO: idk what this does
-    sandwhich_mark_recipe_fn()
+    -- TODO: mini.surround
+    -- require("plugins.pairs.sandwich").add_local_recipes(sandwich_recipes)
+    -- vim.b.sandwich_tex_marks_recipes = vim.fn.deepcopy(sandwich_marks_recipes) -- TODO: idk what this does
+    -- sandwhich_mark_recipe_fn()
+    vim.b.minisurround_config = {
+      custom_surroundings = surroundings(require "mini.surround"),
+    }
+    -- vim.b.miniai_config = {
+    --   custom_textobjects
+    -- }
+    vim.keymap.set("n", "<leader>lr", "<F8>", { remap = true, desc = "Add \\left\\right" })
+    -- vim.keymap.set("n", "<leader>es", "<F8>", { remap = true, desc = "Toggle \\left\\right" })
 
     -- Localleader
     local cmd = utils.cmd

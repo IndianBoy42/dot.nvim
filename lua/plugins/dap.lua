@@ -1,4 +1,5 @@
 return {
+    -- https://github.com/anuvyklack/hydra.nvim/issues/3#issuecomment-1162988750
   {
     "mfussenegger/nvim-dap",
     dependencies = {

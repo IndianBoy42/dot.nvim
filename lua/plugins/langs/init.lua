@@ -9,13 +9,17 @@ return {
   { import = "plugins.langs.tex" },
   { import = "plugins.langs.rust" },
   { import = "plugins.langs.markdown" },
-  { "NoahTheDuke/vim-just",           ft = "just" },
+  { "NoahTheDuke/vim-just", ft = "just" },
   {
     "IndianBoy42/tree-sitter-just",
     opts = { ["local"] = true },
   },
-  { "kmonad/kmonad-vim",        ft = "kmonad" },
+  { "kmonad/kmonad-vim", ft = "kmonad" },
   { "gennaro-tedesco/nvim-jqx", ft = "json" },
+  {
+    "Kasama/nvim-custom-diagnostic-highlight",
+    opts = {},
+  },
 
   -- EXTRAS
 }

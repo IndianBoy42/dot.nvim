@@ -159,7 +159,6 @@ return {
       }
     end,
   },
-  { "kyazdani42/nvim-web-devicons" },
   require "plugins.ui.bufferline",
   require "plugins.ui.statusline",
   {
@@ -195,14 +194,14 @@ return {
     "folke/trouble.nvim",
     cmd = "TroubleToggle",
     keys = {
-      { "<leader>d<space>", "<cmd>TroubleToggle<cr>",                       desc = "Trouble Toggle" },
-      { "<leader>dd",       "<cmd>TroubleToggle document_diagnostics<cr>",  desc = "Document" },
-      { "<leader>dD",       "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "Workspace" },
-      { "<leader>dr",       "<cmd>TroubleToggle lsp_references<cr>",        desc = "References" },
-      { "<leader>ds",       "<cmd>TroubleToggle lsp_definitions<cr>",       desc = "Definitions" },
-      { "<leader>dq",       "<cmd>TroubleToggle quickfix<cr>",              desc = "Quick Fixes" },
-      { "<leader>dL",       "<cmd>TroubleToggle loclist<cr>",               desc = "Location List" },
-      { "<leader>do",       "<cmd>TroubleToggle todo<cr>",                  desc = "TODOs" },
+      { "<leader>d<space>", "<cmd>TroubleToggle<cr>", desc = "Trouble Toggle" },
+      { "<leader>dd", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "Document" },
+      { "<leader>dD", "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "Workspace" },
+      { "<leader>dr", "<cmd>TroubleToggle lsp_references<cr>", desc = "References" },
+      { "<leader>ds", "<cmd>TroubleToggle lsp_definitions<cr>", desc = "Definitions" },
+      { "<leader>dq", "<cmd>TroubleToggle quickfix<cr>", desc = "Quick Fixes" },
+      -- { "<leader>dL", "<cmd>TroubleToggle loclist<cr>", desc = "Location List" },
+      { "<leader>do", "<cmd>TroubleToggle todo<cr>", desc = "TODOs" },
     },
     config = function()
       vim.api.nvim_create_autocmd(
@@ -232,7 +231,7 @@ return {
   },
   -- "ldelossa/litee-calltree.nvim"
   -- "stevearc/aerial.nvim/"
-  { "liuchengxu/vista.vim",        cmd = "Vista" },
+  { "liuchengxu/vista.vim", cmd = "Vista" },
   {
     "GustavoKatel/sidebar.nvim",
     opts = {
@@ -249,9 +248,9 @@ return {
   require "plugins.ui.findreplace",
   -- TODO: try https://github.com/goolord/alpha-nvim (new dashboard plugin)
   -- TODO: noice.nvim
-  require "plugins.ui.noice",
+  require "plugins.ui.noice_gui",
   -- TODO: dressing.nvim
-  { "j-hui/fidget.nvim",              opts = {},                              event = "VeryLazy" },
+  { "j-hui/fidget.nvim", opts = {}, event = "VeryLazy" },
   {
     "smjonas/inc-rename.nvim",
     cmd = "IncRename",
@@ -318,15 +317,22 @@ return {
       }
     end,
     event = { "BufReadPost", "BufNewFile" },
-    keys = {
-      {
-        "<leader>ll",
-        function()
-          require("lsp_lines").toggle()
-        end,
-        desc = "Toggle lsp_lines",
-      },
-    },
+    keys = function()
+      local enabled = true
+      return {
+        {
+          "<leader>dL",
+          function()
+            enabled = not enabled
+            vim.diagnostic.config {
+              virtual_text = not enabled,
+              virtual_lines = enabled,
+            }
+          end,
+          desc = "Toggle lsp_lines",
+        },
+      }
+    end,
   },
   {
     "echasnovski/mini.animate",
@@ -349,16 +355,17 @@ return {
           timing = animate.gen_timing.linear { duration = 50, unit = "total" },
         },
         resize = {
-          timing = animate.gen_timing.linear { duration = 50, unit = "total" },
+          enable = false,
+          -- timing = animate.gen_timing.linear { duration = 5, unit = "total" },
         },
         close = {
           timing = animate.gen_timing.linear { duration = 50, unit = "total" },
         },
-        opn = {
+        open = {
           timing = animate.gen_timing.linear { duration = 50, unit = "total" },
         },
         scroll = {
-          timing = animate.gen_timing.linear { duration = 75, unit = "total" },
+          timing = animate.gen_timing.linear { duration = 50, unit = "total" },
           subscroll = animate.gen_subscroll.equal {
             predicate = function(total_scroll)
               if mouse_scrolled then
@@ -393,38 +400,7 @@ return {
     cmd = { "UndotreeToggle", "UndotreeShow" },
   },
   { "romgrk/nvim-treesitter-context", event = { "BufReadPost", "BufNewFile" } },
-  { "haringsrob/nvim_context_vt",     event = { "BufReadPost", "BufNewFile" } },
-  {
-    "beauwilliams/focus.nvim",
-    config = function()
-      local focus = require "focus"
-      local conf = O.plugin.splitfocus
-      focus.setup {
-        winhighlight = conf.winhighlight,
-        hybridnumber = conf.hybridnumber,
-        relativenumber = conf.relative_number == nil and O.relative_number or conf.relative_number,
-        number = conf.number == nil and O.number or conf.number,
-        cursorline = conf.cursorline == nil and O.cursorline or conf.cursorline,
-        signcolumn = conf.signcolumn,
-      }
-    end,
-    keys = function()
-      local cmd = require("utils").cmd
-      local luareq = cmd.require
-      local focus_fn = luareq "focus"
-
-      -- stylua: ignore
-      return {
-        { "<C-h>",  function() require 'focus'.split_command('h') end, mode = { "n", "t" }, desc = "Move/Split" },
-        { "<C-j>",  function() require 'focus'.split_command('j') end, mode = { "n", "t" }, desc = "Move/Split" },
-        { "<C-k>",  function() require 'focus'.split_command('k') end, mode = { "n", "t" }, desc = "Move/Split" },
-        { "<C-l>",  function() require 'focus'.split_command('l') end, mode = { "n", "t" }, desc = "Move/Split" },
-        { "<C-w>v", function() require 'focus'.split_command('l') end, mode = "n", },
-        { "<C-w>s", function() require 'focus'.split_nicely() end,     mode = "n",          desc = "Split Nicely" },
-        { "<C-w>e", function() require 'focus'.focus_equalise() end,   mode = "n",          desc = "Focus Eqlize" },
-      }
-    end,
-  },
+  { "haringsrob/nvim_context_vt", event = { "BufReadPost", "BufNewFile" } },
   {
     "kevinhwang91/nvim-ufo",
     config = function()
@@ -443,4 +419,6 @@ return {
     event = { "BufReadPost", "BufNewFile" },
   },
   { "ElPiloto/significant.nvim" },
+  require "plugins.ui.files",
+  require "plugins.ui.windowman",
 }

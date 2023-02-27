@@ -144,4 +144,5 @@ return {
     cmd = { "DiffviewOpen", "DiffviewFileHistory" },
   },
   require "plugins.git.fugitive",
+  -- https://github.com/anuvyklack/hydra.nvim/wiki/Git
 }

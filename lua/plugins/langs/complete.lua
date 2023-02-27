@@ -29,7 +29,6 @@ local M = {
 }
 M.config = function(_, opts)
   local cmp = require "cmp"
-
   cmp.setup(opts)
 
   -- `/` cmdline setup.
@@ -146,7 +145,7 @@ M.opts = function()
     },
     -- TODO: better mapping setup for enter, nextitem and close window
     mapping = {
-      ["<C-d>"] = cmp.mapping(cmp.mapping.scroll_docs( -4), { "i", "c" }),
+      ["<C-d>"] = cmp.mapping(cmp.mapping.scroll_docs(-4), { "i", "c" }),
       ["<C-u>"] = cmp.mapping(cmp.mapping.scroll_docs(4), { "i", "c" }),
       -- ["<C-p>"] = cmp.mapping.select_prev_item(),
       -- ["<C-n>"] = cmp.mapping.select_next_item(),

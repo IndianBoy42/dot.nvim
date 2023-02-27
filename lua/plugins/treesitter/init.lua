@@ -31,129 +31,6 @@ local M = {
         maintainers = { "@IndianBoy42" },
       }
 
-      local make_nN_pair = mappings.make_nN_pair
-      -- local element_nN = make_nN_pair {
-      --   require("ts-textobjects/actions").goto_next_element,
-      --   require("ts-textobjects/actions").goto_prev_element,
-      -- }
-      -- local scope_nN = make_nN_pair {
-      --   require("ts-textobjects/actions").goto_next_scope,
-      --   require("ts-textobjects/actions").goto_prev_scope,
-      -- }
-      -- local outer_scope_nN = make_nN_pair {
-      --   require("ts-textobjects/actions").incremental_outer_scope,
-      --   "<cmd>normal! <C-o><cr>",
-      -- }
-
-      -- Custom text objects
-      -- TODO: Should move the keymappings to keymappings.lua for cleanliness??
-      -- TODO: Optimize this
-      local textobj_prefixes = tsconfig.textobj_prefixes
-      local textobj_suffixes = tsconfig.textobj_suffixes
-      local other_suffixes = tsconfig.other_suffixes
-      local textobj_sel_keymaps = {}
-      local textobj_swap_keymaps = {
-        next = { [textobj_prefixes.swap_next .. other_suffixes.element[1]] = "TS Element" },
-        previous = { [textobj_prefixes.swap_prev .. other_suffixes.element[1]] = "TS Element" },
-      }
-      local textobj_move_keymaps = {
-        enable = not not plugconf.ts_textobjects,
-        set_jumps = true, -- whether to set jumps in the jumplist
-        goto_next_start = {
-          -- [textobj_prefixes.goto_next .. other_suffixes.scope[2]] = { outer_scope_nN[1], "Outer Scope" },
-          -- [textobj_prefixes.goto_next .. other_suffixes.scope[1]] = { scope_nN[1], "Scope" },
-          -- [textobj_prefixes.goto_next .. other_suffixes.element[1]] = { element_nN[1], "TS Element" },
-        },
-        goto_next_end = {},
-        goto_previous_start = {
-          -- [textobj_prefixes.goto_next .. other_suffixes.scope[1]] = { scope_nN[2], "Scope" },
-          -- [textobj_prefixes.goto_next .. other_suffixes.element[1]] = { element_nN[2], "TS Element" },
-        },
-        goto_previous_end = {},
-      }
-      local textobj_move_wrap = true
-      for obj, suffix in pairs(textobj_suffixes) do
-        local inner = "@" .. obj .. ".inner"
-        local outer = "@" .. obj .. ".outer"
-        local inners = make_nN_pair {
-          function()
-            require("nvim-treesitter.textobjects.move").goto_next_start(inner)
-          end,
-          function()
-            require("nvim-treesitter.textobjects.move").goto_previous_start(inner)
-          end,
-        }
-        local outers = make_nN_pair {
-          function()
-            require("nvim-treesitter.textobjects.move").goto_next_start(outer)
-          end,
-          function()
-            require("nvim-treesitter.textobjects.move").goto_previous_start(outer)
-          end,
-        }
-        local inner_next = { inners[1], "@" .. obj .. ".inner" }
-        local inner_prev = { inners[2], "@" .. obj .. ".inner" }
-        local outer_next = { outers[1], "@" .. obj .. ".outer" }
-        local outer_prev = { outers[2], "@" .. obj .. ".outer" }
-
-        if textobj_prefixes.goto_next ~= nil then
-          textobj_move_keymaps.goto_next_start[textobj_prefixes.goto_next .. suffix[1]] = inner_next
-          textobj_move_keymaps.goto_next_start[textobj_prefixes.goto_next .. suffix[2]] = outer_next
-        end
-        if textobj_prefixes.goto_previous ~= nil then
-          textobj_move_keymaps.goto_previous_start[textobj_prefixes.goto_previous .. suffix[1]] = inner_prev
-          textobj_move_keymaps.goto_previous_start[textobj_prefixes.goto_previous .. suffix[2]] = outer_prev
-        end
-
-        if textobj_prefixes.inner ~= nil then
-          textobj_sel_keymaps[textobj_prefixes.inner .. suffix[1]] = "@" .. obj .. ".inner"
-        end
-        if textobj_prefixes.outer ~= nil then
-          textobj_sel_keymaps[textobj_prefixes.outer .. suffix[1]] = "@" .. obj .. ".outer"
-        end
-
-        if textobj_prefixes.swap_next ~= nil then
-          textobj_swap_keymaps.next[textobj_prefixes.swap_next .. suffix[1]] = "@" .. obj .. ".inner"
-        end
-        if textobj_prefixes.swap_prev ~= nil then
-          textobj_swap_keymaps.previous[textobj_prefixes.swap_prev .. suffix[1]] = "@" .. obj .. ".inner"
-        end
-      end
-
-      -- Add which key menu entries
-      local status, wk = pcall(require, "which-key")
-      if status then
-        local normal = { mode = "n" } -- Normal mode
-        local operators = { mode = "o" } -- Operator mode
-        local register = wk.register
-        register(textobj_sel_keymaps, operators)
-        register({
-          [plugconf.ts_hintobjects.key] = "Hint Objects",
-          ["a" .. other_suffixes.scope[1]] = "Outer Scope",
-          ["i" .. other_suffixes.element[1]] = "TS Element",
-          ["a" .. other_suffixes.element[1]] = "TS Element",
-          ["i" .. other_suffixes.subject[1]] = "Textsubject",
-          ["a" .. other_suffixes.subject[1]] = "Textsubject-big",
-        }, operators)
-        register(textobj_swap_keymaps.next, normal)
-        register(textobj_swap_keymaps.previous, normal)
-        register({
-          -- [textobj_prefixes.swap_next] = "Swap next",
-          -- [textobj_prefixes.goto_next] = "Jump [",
-          -- [textobj_prefixes.goto_previous] = "Jump ]"
-        }, normal)
-        register(textobj_move_keymaps.goto_next_start, normal)
-        register(textobj_move_keymaps.goto_next_end, normal)
-        register(textobj_move_keymaps.goto_previous_start, normal)
-        register(textobj_move_keymaps.goto_previous_end, normal)
-        if textobj_move_wrap then
-          textobj_move_keymaps.goto_next_start = nil
-          textobj_move_keymaps.goto_next_end = nil
-          textobj_move_keymaps.goto_previous_start = nil
-          textobj_move_keymaps.goto_previous_end = nil
-        end
-      end
-
       require("nvim-treesitter.configs").setup {
         ensure_installed = tsconfig.ensure_installed, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
         ignore_install = tsconfig.ignore_install,
@@ -189,23 +66,13 @@ local M = {
         -- TODO seems to be broken
         indent = { enable = { "javascriptreact" } },
         autotag = { enable = not not plugconf.ts_autotag },
-        textobjects = {
-          swap = {
-            enable = not not plugconf.ts_textobjects,
-            swap_next = textobj_swap_keymaps.next,
-            swap_previous = textobj_swap_keymaps.previous,
-          },
-          move = textobj_move_keymaps,
-          select = {
-            enable = not not plugconf.ts_textobjects,
-            keymaps = textobj_sel_keymaps,
-          },
-        },
+        textobjects = {},
         textsubjects = {
           enable = not not plugconf.ts_textsubjects,
           keymaps = {
-            ["i" .. other_suffixes.subject[1]] = "textsubjects-smart",
-            ["a" .. other_suffixes.subject[1]] = "textsubjects-container-outer",
+            ["<Up>"] = "textsubjects-smart",
+            ["."] = "textsubjects-container-outer",
+            ["<Down>"] = "textsubjects-container-inner",
           },
         },
         playground = {
@@ -260,23 +127,23 @@ local M = {
             scope_incremental = "grc",
           },
         },
-        element_textobject = {
-          enable = not not plugconf.ts_textobjects,
-          keymaps = {
-            [textobj_prefixes.swap_next .. other_suffixes.element[1]] = "swap_next_element",
-            [textobj_prefixes.swap_prev .. other_suffixes.element[1]] = "swap_prev_element",
-            ["i" .. other_suffixes.element[1]] = "inner_element",
-            ["a" .. other_suffixes.element[1]] = "an_element", -- around
-          },
-          set_jumps = true,
-        },
-        scope_textobject = {
-          enable = not not plugconf.ts_textobjects,
-          keymaps = {
-            ["a" .. other_suffixes.scope[1]] = "a_scope",
-          },
-          set_jumps = true,
-        },
+        -- element_textobject = {
+        --   enable = not not plugconf.ts_textobjects,
+        --   keymaps = {
+        --     [textobj_prefixes.swap_next .. other_suffixes.element[1]] = "swap_next_element",
+        --     [textobj_prefixes.swap_prev .. other_suffixes.element[1]] = "swap_prev_element",
+        --     ["i" .. other_suffixes.element[1]] = "inner_element",
+        --     ["a" .. other_suffixes.element[1]] = "an_element", -- around
+        --   },
+        --   set_jumps = true,
+        -- },
+        -- scope_textobject = {
+        --   enable = not not plugconf.ts_textobjects,
+        --   keymaps = {
+        --     ["a" .. other_suffixes.scope[1]] = "a_scope",
+        --   },
+        --   set_jumps = true,
+        -- },
       }
 
       vim.opt.foldmethod = "expr"

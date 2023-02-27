@@ -58,30 +58,6 @@ M.config = function()
     symbols = { added = "+", modified = "~", removed = "-" }, -- changes diff symbols
   }
 
-  local lsp_status_config = require "plugins.ui.lsp_status"
-  lsp_status_config._init(nil, {
-    kind_labels = {},
-    current_function = false, -- by treesitter?
-    show_filename = true,
-    diagnostics = false,
-    indicator_separator = " ",
-    component_separator = " ",
-    indicator_errors = "",
-    indicator_warnings = "",
-    indicator_info = "🛈",
-    indicator_hint = "❗",
-    indicator_ok = "",
-    spinner_frames = { "⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷" },
-    status_symbol = " 🇻",
-    select_symbol = nil,
-    update_interval = 100,
-  })
-  local function lsp_statusline()
-    if #vim.lsp.buf_get_clients() > 0 then
-      return lsp_status_config.status()
-    end
-  end
-
   local gps_statusline = { gps.get_location, cond = gps.is_available }
   local ts_statusline = require("nvim-treesitter").statusline
 

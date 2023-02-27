@@ -1,24 +1,22 @@
 return {
   "ziontee113/selectease",
-  config = function()
-    local se = require "SelectEase"
-    -- For more language support check the `Queries` section
-    local lua_query = [[
+  opts = {
+    queries = {
+      lua = [[
             ;; query
             ((identifier) @cap)
             ("string_content" @cap)
             ((true) @cap)
             ((false) @cap)
-        ]]
-    local python_query = [[
+        ]],
+      python = [[
             ;; query
             ((identifier) @cap)
             ((string) @cap)
-        ]]
-
-    local rust_query = [[
+        ]],
+      rust = [[
     ;; query
-    ((boolean_literal) @cap)
+
     ((string_literal) @cap)
 
     ; Identifiers
@@ -36,20 +34,19 @@ return {
 
     ; Calls
     ((call_expression) @cap)
-  ]]
-
-    local queries = {
-      lua = lua_query,
-      python = python_query,
-      rust = rust_query,
-    }
+  ]],
+    },
+  },
+  config = function(_, opts)
+    local se = require "SelectEase"
+    local queries = opts.queries
 
     vim.keymap.set({ "n", "s", "i" }, "<C-A-k>", function()
       se.select_node {
         queries = queries,
         direction = "previous",
         vertical_drill_jump = true,
-        -- visual_mode = true, -- if you want Visual Mode instead of Select Mode
+        visual_mode = true, -- if you want Visual Mode instead of Select Mode
         fallback = function()
           -- if there's no target, this function will be called
           se.select_node { queries = queries, direction = "previous" }
@@ -58,10 +55,10 @@ return {
     end, {})
     vim.keymap.set({ "n", "s", "i" }, "<C-A-j>", function()
       se.select_node {
-        queries = queries,
+        queries = opts.queries,
         direction = "next",
         vertical_drill_jump = true,
-        -- visual_mode = true, -- if you want Visual Mode instead of Select Mode
+        visual_mode = true, -- if you want Visual Mode instead of Select Mode
         fallback = function()
           -- if there's no target, this function will be called
           se.select_node { queries = queries, direction = "next" }
@@ -74,7 +71,7 @@ return {
         queries = queries,
         direction = "previous",
         current_line_only = true,
-        -- visual_mode = true, -- if you want Visual Mode instead of Select Mode
+        visual_mode = true, -- if you want Visual Mode instead of Select Mode
       }
     end, {})
     vim.keymap.set({ "n", "s", "i" }, "<C-A-l>", function()
@@ -82,7 +79,7 @@ return {
         queries = queries,
         direction = "next",
         current_line_only = true,
-        -- visual_mode = true, -- if you want Visual Mode instead of Select Mode
+        visual_mode = true, -- if you want Visual Mode instead of Select Mode
       }
     end, {})
 

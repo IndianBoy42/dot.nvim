@@ -93,9 +93,9 @@ return {
     local lspwith = vim.lsp.with
     vim.diagnostic.config(opts.diagnostics)
     handlers["textDocument/codeLens"] = lspwith(vim.lsp.codelens.on_codelens, opts.codeLens)
-    handlers["textDocument/hover"] = lspwith(handlers.hover, {
-      border = opts.border,
-    })
+    -- handlers["textDocument/hover"] = lspwith(handlers.hover, {
+    --   border = opts.border,
+    -- })
     -- handlers["textDocument/signatureHelp"] = lspwith(handlers.signature_help, {
     --   border = opts.border,
     --   focusable = false,

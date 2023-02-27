@@ -5,7 +5,9 @@ return {
       {
         "Saecki/crates.nvim",
         event = { "BufRead Cargo.toml" },
-        config = true,
+        opts = {
+          null_ls = { enabled = true, name = "crates.nvim" },
+        },
       },
     },
     ---@param opts cmp.ConfigSchema
@@ -31,6 +33,7 @@ return {
         rust_analyzer = function(_, opts)
           require("lsp.functions").cb_on_attach(function(client, buffer)
             if client.name ~= "rust_analyzer" then
+              print(client.name)
               return
             end
             mappings.localleader {
@@ -46,7 +49,7 @@ return {
             map("n", "gj", "<cmd>RustJoinLines<CR>", { desc = "Join Lines" })
             -- map("n", "K", "<cmd>RustCodeAction<CR>")
             map("n", "K", vim.lsp.buf.code_action, { desc = "Code Actions" })
-            map("x", "K", ":lua vim.lsp.buf.range_code_action()<cr>", { desc = "Code Actions" })
+            map("x", "gK", ":lua vim.lsp.buf.range_code_action()<cr>", { desc = "Code Actions" })
             mappings.ftleader {
               pR = { "<CMD>RustRunnables<CR>", "Rust Run" },
               pd = { "<CMD>RustDebuggables<CR>", "Rust Debug" },
@@ -59,7 +62,7 @@ return {
           local extension_path = codelldb:get_install_path() .. "/extension/"
           local codelldb_path = extension_path .. "adapter/codelldb"
           local liblldb_path = vim.fn.has "mac" == 1 and extension_path .. "lldb/lib/liblldb.dylib"
-              or extension_path .. "lldb/lib/liblldb.so"
+            or extension_path .. "lldb/lib/liblldb.so"
 
           local function postfix_wrap_call(trig, call, requires)
             return {
@@ -118,7 +121,7 @@ return {
             tools = {
               hover_actions = {
                 auto_focus = false,
-                border = "none",
+                border = "single",
               },
               inlay_hints = {
                 auto = false,
@@ -165,8 +168,12 @@ return {
             },
           })
           require("rust-tools").setup(rust_tools_opts)
+          return true
         end,
         taplo = function(_, opts)
+          local function is_cargo()
+            return vim.fn.expand "%:t" == "Cargo.toml"
+          end
           local function show_documentation()
             if vim.fn.expand "%:t" == "Cargo.toml" and require("crates").popup_available() then
               require("crates").show_popup()
@@ -176,9 +183,24 @@ return {
           end
 
           require("lsp.functions").cb_on_attach(function(client, buffer)
-            -- stylua: ignore
             if client.name == "taplo" then
-              vim.keymap.set("n", "K", show_documentation, { buffer = buffer })
+              vim.keymap.set("n", "gh", show_documentation, { buffer = buffer })
+              if is_cargo() then
+                local crates = require "crates"
+                mappings.localleader {
+                  t = { crates.toggle, "Toggle" },
+                  r = { crates.reload, "Reload" },
+                  u = { crates.update_crate, "Update Crate" },
+                  a = { crates.update_all_crates, "Update All" },
+                  U = { crates.upgrade_crate, "Upgrade Crate" },
+                  A = { crates.upgrade_all_crates, "Upgrade All" },
+                  ["<localleader>"] = { crates.show_versions_popup, "Versions" },
+                }
+                mappings.vlocalleader {
+                  u = { crates.update_crates, "Update" },
+                  U = { crates.upgrade_crates, "Upgrade" },
+                }
+              end
             end
           end)
           return false -- make sure the base implementation calls taplo.setup

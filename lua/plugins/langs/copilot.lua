@@ -11,7 +11,6 @@ return {
             },
           }
         end,
-        config = true,
       },
     },
     opts = function(_, opts)
@@ -26,15 +25,16 @@ return {
     dependencies = {
       "zbirenbaum/copilot.lua",
       opts = {
-        panel = {
-          auto_refresh = false,
-          layout = {
-            position = "right", -- | top | left | right
-            ratio = 0.4,
-          },
-        },
+        -- panel = {
+        --   auto_refresh = false,
+        --   layout = {
+        --     position = "right", -- | top | left | right
+        --     ratio = 0.4,
+        --   },
+        -- },
+        suggestion = { enabled = false },
+        panel = { enabled = false },
       },
-      config = true,
     },
   },
   -- {

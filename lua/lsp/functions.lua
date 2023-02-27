@@ -248,12 +248,12 @@ function M.view_location_split(name, split_cmd)
 end
 
 function M.toggle_diagnostics()
-  vim.b.lsp_diagnostics_hide = not vim.b.lsp_diagnostics_hide
   if vim.b.lsp_diagnostics_hide then
     diags.enable()
   else
     diags.disable()
   end
+  vim.b.lsp_diagnostics_hide = not vim.b.lsp_diagnostics_hide
 end
 
 -- TODO: Implement codeLens handlers
@@ -363,117 +363,134 @@ end
 
 -- Helper for better renaming interface
 M.rename = (function()
-      local function handler(...)
-        local result
-        local method
-        local err = select(1, ...)
-        local is_new = not select(4, ...) or type(select(4, ...)) ~= "number"
-        if is_new then
-          method = select(3, ...).method
-          result = select(2, ...)
-        else
-          method = select(2, ...)
-          result = select(3, ...)
-        end
+  local function handler(...)
+    local result
+    local method
+    local err = select(1, ...)
+    local is_new = not select(4, ...) or type(select(4, ...)) ~= "number"
+    if is_new then
+      method = select(3, ...).method
+      result = select(2, ...)
+    else
+      method = select(2, ...)
+      result = select(3, ...)
+    end
 
-        if O.lsp.rename_notification then
-          if err then
-            vim.notify(("Error running LSP query '%s': %s"):format(method, err), vim.log.levels.ERROR)
-            return
-          end
-
-          -- echo the resulting changes
-          local new_word = ""
-          if result and result.changes then
-            local msg = {}
-            for f, c in pairs(result.changes) do
-              new_word = c[1].newText
-              table.insert(msg, ("%d changes -> %s"):format(#c, utils.get_relative_path(f)))
-            end
-            local currName = vim.fn.expand "<cword>"
-            vim.notify(msg, vim.log.levels.INFO, { title = ("Rename: %s -> %s"):format(currName, new_word) })
-          end
-        end
-
-        vim.lsp.handlers[method](...)
+    if O.lsp.rename_notification then
+      if err then
+        vim.notify(("Error running LSP query '%s': %s"):format(method, err), vim.log.levels.ERROR)
+        return
       end
 
-      local function do_rename()
-        local new_name = vim.trim(vim.fn.getline("."):sub(5, -1))
-        vim.cmd [[q!]]
-        local params = lsp.util.make_position_params()
-        local curr_name = vim.fn.expand "<cword>"
-        if not (new_name and #new_name > 0) or new_name == curr_name then
-          return
+      -- echo the resulting changes
+      local new_word = ""
+      if result and result.changes then
+        local msg = {}
+        for f, c in pairs(result.changes) do
+          new_word = c[1].newText
+          table.insert(msg, ("%d changes -> %s"):format(#c, utils.get_relative_path(f)))
         end
-        params.newName = new_name
-        lsp.buf_request(0, "textDocument/rename", params, handler)
+        local currName = vim.fn.expand "<cword>"
+        vim.notify(msg, vim.log.levels.INFO, { title = ("Rename: %s -> %s"):format(currName, new_word) })
       end
+    end
 
-      return function()
-        require("plugins.ui.input").inline_text_input {
-          border = O.lsp.rename_border,
-          -- enter = do_rename,
-          enter = vim.lsp.buf.rename,
-          startup = function()
-            feedkeys(t "viw<C-G>", "n", false)
-          end,
-          init_cword = true,
-          at_begin = true, -- FIXME: What happened to this?
-          minwidth = true,
-        }
-      end
-    end)()
+    vim.lsp.handlers[method](...)
+  end
+
+  local function do_rename()
+    local new_name = vim.trim(vim.fn.getline("."):sub(5, -1))
+    vim.cmd [[q!]]
+    local params = lsp.util.make_position_params()
+    local curr_name = vim.fn.expand "<cword>"
+    if not (new_name and #new_name > 0) or new_name == curr_name then
+      return
+    end
+    params.newName = new_name
+    lsp.buf_request(0, "textDocument/rename", params, handler)
+  end
+
+  return function()
+    require("plugins.ui.input").inline_text_input {
+      border = O.lsp.rename_border,
+      -- enter = do_rename,
+      enter = vim.lsp.buf.rename,
+      startup = function()
+        feedkeys(t "viw<C-G>", "n", false)
+      end,
+      init_cword = true,
+      at_begin = true, -- FIXME: What happened to this?
+      minwidth = true,
+    }
+  end
+end)()
 
 -- Use select mode for renaming
 M.renamer = (function()
-      local function del_keymaps()
-        vim.keymap.del("i", "<CR>")
-        vim.keymap.del("i", "<ESC><ESC>")
-      end
+  local function del_keymaps()
+    vim.keymap.del("i", "<CR>")
+    vim.keymap.del("i", "<ESC><ESC>")
+  end
 
-      local function enter_cb(old, oldpos)
-        -- local cword = vim.fn.expand "<cword>"
-        -- utils.dump(cword)
-        vim.cmd "stopinsert"
-        vim.defer_fn(function()
-          -- vim.api.nvim_win_set_cursor(0, oldpos)
-          local cword = vim.fn.expand "<cword>"
-          utils.dump(cword)
-          feedkeys(t("ciw" .. old .. "<ESC>"), "n", false)
+  local function enter_cb(old, oldpos)
+    -- local cword = vim.fn.expand "<cword>"
+    -- utils.dump(cword)
+    vim.cmd "stopinsert"
+    vim.defer_fn(function()
+      -- vim.api.nvim_win_set_cursor(0, oldpos)
+      local cword = vim.fn.expand "<cword>"
+      -- utils.dump(cword)
+      feedkeys(t("ciw" .. old .. "<ESC>"), "n", false)
 
-          del_keymaps()
+      del_keymaps()
 
-          vim.lsp.buf.rename(cword)
-        end, 1)
-      end
+      vim.lsp.buf.rename(cword)
+    end, 1)
+  end
 
-      local function cancel_cb(old)
-        vim.cmd "stopinsert"
-        -- feedkeys(t "u", "n", false)
-        feedkeys(t("ciw" .. old .. "<ESC>"), "n", false)
-        del_keymaps()
-      end
+  local function cancel_cb(old)
+    vim.cmd "stopinsert"
+    -- feedkeys(t "u", "n", false)
+    feedkeys(t("ciw" .. old .. "<ESC>"), "n", false)
+    del_keymaps()
+  end
 
-      local function mk_keymaps(old)
-        local enter = function()
-          enter_cb(old, vim.api.nvim_win_get_cursor(0))
-        end
-        local cancel = function()
-          cancel_cb(old)
-        end
-        vim.keymap.setl("i", "<CR>", enter, { silent = true })
-        vim.keymap.setl("i", "<M-CR>", enter, { silent = true })
-        vim.keymap.setl("i", "<ESC><ESC>", cancel, { silent = true })
-      end
+  local function mk_keymaps(old)
+    local enter = function()
+      enter_cb(old, vim.api.nvim_win_get_cursor(0))
+    end
+    local cancel = function()
+      cancel_cb(old)
+    end
+    vim.keymap.setl("i", "<CR>", enter, { silent = true })
+    vim.keymap.setl("i", "<M-CR>", enter, { silent = true })
+    vim.keymap.setl("i", "<ESC><ESC>", cancel, { silent = true })
+  end
 
-      return function()
-        local old = vim.fn.expand "<cword>"
-        feedkeys(t "viw<C-G>", "n", false) -- Go select mode
-        mk_keymaps(old)
-      end
-    end)()
+  return function()
+    local old = vim.fn.expand "<cword>"
+    feedkeys(t "viw<C-G>", "n", false) -- Go select mode
+    mk_keymaps(old)
+  end
+end)()
 -- M.rename = M.renamer.keymap
+
+function M.format(opts)
+  opts = opts or {}
+  local buf = vim.api.nvim_get_current_buf()
+  local ft = vim.bo[buf].filetype
+  local have_nls = #require("null-ls.sources").get_available(ft, "NULL_LS_FORMATTING") > 0
+
+  vim.lsp.buf.format(vim.tbl_extend("force", {
+    bufnr = buf,
+    filter = function(client)
+      if have_nls then
+        return client.name == "null-ls"
+      end
+      return client.name ~= "null-ls"
+    end,
+  }, opts))
+end
 
 M.format_on_save = function(disable)
   if disable then
@@ -482,8 +499,9 @@ M.format_on_save = function(disable)
   local id = vim.api.nvim_create_augroup("format_on_save", { clear = true })
   vim.api.nvim_create_autocmd("BufWritePre", {
     callback = function()
-      vim.lsp.buf.format { timeout_ms = O.format_on_save_timeout }
+      M.format { timeout_ms = O.format_on_save_timeout }
     end,
+    group = id,
   })
 end
 

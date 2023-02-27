@@ -1,5 +1,6 @@
 -- TODO: replace all keymaps with functions or something
 -- TODO: <[cC][mM][dD]>lua
+-- https://github.com/ziontee113/yt-tutorials/tree/nvim_key_combos_in_alacritty_and_kitty
 local M = {}
 local map = vim.keymap.set
 
@@ -80,31 +81,6 @@ end
 
 M.make_nN_pair = make_nN_pair
 
-vim.g.libmodalTimeouts = "1"
-function M.libmodal_setup()
-  local libmodal = require "libmodal"
-
-  -- TODO fix this
-  -- resize with arrows
-  local resize_mode
-  resize_mode = libmodal.Layer.new {
-    n = {
-      ["<Up>"] = { rhs = cmd "resize -2" },
-      ["<Down>"] = { rhs = cmd "resize +2" },
-      ["<Left>"] = { rhs = cmd "vertical resize -2" },
-      ["<Right>"] = { rhs = cmd "vertical resize +2" },
-      ["<ESC>"] = {
-        rhs = function()
-          resize_mode:exit()
-        end,
-      },
-    },
-  }
-  map("n", "<C-w><CR>", function()
-    resize_mode:enter()
-  end)
-end
-
 vim.keymap.setl = function(mode, lhs, rhs, opts)
   vim.keymap.set(mode, lhs, rhs, vim.tbl_extend("keep", opts or {}, { buffer = 0 }))
 end
@@ -179,9 +155,9 @@ function M.setup()
   map("n", "?", srchrpt "?", nore)
   map("n", "*", srchrpt("viw*", "m"), nore) -- Swap g* and *
   map("n", "#", srchrpt("viw#", "m"), nore)
-  map("n", "g*", srchrpt "*", nore)
-  map("n", "g#", srchrpt "#", nore)
-  map("n", "g.", [[/\V<C-r>"<CR>]] .. "cgn<C-a><ESC>") -- Repeat the recent edit with cgn
+  map("n", "g*", srchrpt "*", { desc = "Search cword whole" })
+  map("n", "g#", srchrpt "#", { desc = "Search cword whole" })
+  map("n", "g.", [[/\V<C-r>"<CR>]] .. "cgn<C-a><ESC>", { desc = "Repeat change" }) -- Repeat the recent edit with cgn
 
   -- Command mode typos of wq
   --   vim.cmd [[
@@ -229,15 +205,15 @@ function M.setup()
   map("x", "-", "g<C-x>", sile)
 
   map("t", "<Esc>", [[<C-\><C-n>]], nore)
-  map("n", "<C-w><C-q>", function()
-    for _, win in ipairs(vim.api.nvim_list_wins()) do
-      local config = vim.api.nvim_win_get_config(win)
-      if config.relative ~= "" then
-        vim.api.nvim_win_close(win, false)
-        print("Closing window", win)
-      end
-    end
-  end)
+  -- map("n", "<C-w><C-q>", function()
+  --   for _, win in ipairs(vim.api.nvim_list_wins()) do
+  --     local config = vim.api.nvim_win_get_config(win)
+  --     if config.relative ~= "" then
+  --       vim.api.nvim_win_close(win, false)
+  --       print("Closing window", win)
+  --     end
+  --   end
+  -- end)
 
   local resize_prefix = "<C-"
   if vim.fn.has "mac" == 1 then
@@ -253,10 +229,20 @@ function M.setup()
   map("x", "gJ", "J", nore)
 
   -- better indenting
-  utils.augroup("_better_indent").FileType = function()
-    mapl("n", ">", ">>", { nowait = true })
-    mapl("n", "<", "<<", { nowait = true })
-  end
+  -- FIXME: broken with autosession??
+  vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufReadPost", "BufNewFile" }, {
+    pattern = "*",
+    callback = function()
+      -- print "Setting up better indenting"
+      mapl("n", ">", ">>", { nowait = true })
+      mapl("n", "<", "<<", { nowait = true })
+    end,
+    -- group = vim.api.nvim_create_augroup("_better_indent", {}),
+  })
+  -- utils.augroup("_better_indent").FileType = function()
+  --   mapl("n", ">", ">>", { nowait = true })
+  --   mapl("n", "<", "<<", { nowait = true })
+  -- end
   map("n", "g<", "<", nore)
   map("n", "g>", ">", nore)
   map("x", "<", "<gv", nore)
@@ -314,32 +300,6 @@ function M.setup()
   map("x", "Y", "myY`y", nore) -- copy linewise
   map("x", "<M-y>", "y", nore)
 
-  -- Paste over textobject
-  local substitute = function(fn, opts)
-    return function()
-      local substitute = require "substitute"
-      substitute[fn](opts)
-    end
-  end
-  map("n", "r", substitute "operator")
-  map("n", "rr", substitute "line")
-  map("n", "R", substitute "eol")
-  map("x", "r", substitute "visual")
-  local substitute_range = function(fn, opts)
-    return function()
-      local range = require "substitute.range"
-      range[fn](opts)
-    end
-  end
-  map("n", "<leader>c", substitute_range "operator")
-  map("x", "<leader>c", substitute_range "visual")
-  map("n", "<leader>cc", substitute_range "word")
-  map("n", "<leader>C", substitute_range("operator", { motion2 = "iG" }))
-  -- map("n", "r", operatorfunc_keys("paste_over", "p"), sile)
-  -- -- map("n", "R", "r$", sile)
-  -- map("n", "R", "r", nore)
-  -- -- map("n", "rr", "vvr", sile)
-
   map("n", "<M-p>", [[<cmd>call setreg('p', getreg('+'), 'c')<cr>"pp]], nore) -- charwise paste
   -- map("n", "<M-S-C-P>", [[<cmd>call setreg('p', getreg('+'), 'c')<cr>"pP]], nore) -- charwise paste
   -- map("n", "<M-S-p>", [[<cmd>call setreg('p', getreg('+'), 'l')<cr>"pp]], nore) -- linewise paste
@@ -370,8 +330,8 @@ function M.setup()
   map("n", pre_goto_next .. "d", diag_nN[1], nore)
   map("n", pre_goto_prev .. "d", diag_nN[2], nore)
   local error_nN = make_nN_pair { lsputil.error_next, lsputil.error_prev }
-  map("n", pre_goto_next .. "D", error_nN[1], nore)
-  map("n", pre_goto_prev .. "D", error_nN[2], nore)
+  map("n", pre_goto_next .. "e", error_nN[1], nore)
+  map("n", pre_goto_prev .. "e", error_nN[2], nore)
 
   local usage_nN = make_nN_pair {
     require("nvim-treesitter-refactor.navigation").goto_next_usage,
@@ -380,16 +340,46 @@ function M.setup()
   map("n", pre_goto_next .. "u", usage_nN[1], nore)
   map("n", pre_goto_prev .. "u", usage_nN[2], nore)
 
+  local para_nN = make_nN_pair { "}", "{" }
+  map("n", pre_goto_next .. "p", para_nN[1], nore)
+  map("n", pre_goto_prev .. "p", para_nN[2], nore)
+
   local jumps = {
     d = "Diagnostics",
     q = "QuickFix",
     g = "Git Hunk",
     u = "Usage",
+    p = "Paragraph",
   }
   wk.register({
     ["]"] = jumps,
     ["["] = jumps,
   }, M.wkopts)
+
+  local function undotree(body)
+    require "hydra" {
+      name = "undotree",
+      body = body,
+      on_enter = function()
+        vim.cmd.UndotreeShow()
+      end,
+      on_exit = function()
+        vim.cmd.UndotreeHide()
+      end,
+      config = { invoke_on_body = true },
+      heads = {
+        { "u", "u", { desc = false } },
+        { "<C-r>", "<C-r>", { desc = false } },
+        { "+", "g+", { desc = false } },
+        { "-", "g-", { desc = false } },
+        { "q", nil, { exit = true } },
+      },
+    }
+  end
+  undotree "g+"
+  undotree "g-"
+
+  require("keymappings.nav").setup()
 
   -- Close window
   map("n", "gq", "<C-w>q", nore)
@@ -409,10 +399,9 @@ function M.setup()
   sel_map("+", "`[o`]")
 
   -- Search for last edited text
-  map("n", 'g"', [[/\V<C-r>"<CR>]])
+  map("n", 'g"', [[/\V<C-r>"<CR>]], { desc = "Search for last cdy" })
   -- map("x", 'g"', [[:keepjumps normal! /\V<C-r>"<CR>gn]])
-  map("x", 'g"', '<ESC>g"gn', { remap = true })
-  map("o", 'g"', '<cmd>normal vg"<cr>', { remap = true })
+  map("x", 'g"', '<ESC>g"gn', { remap = true, desc = "Search for last cdy" })
 
   -- Start search and replace from search
   map("c", "<M-r>", [[<cr>:%s/<C-R>///g<Left><Left>]], {})
@@ -443,8 +432,8 @@ function M.setup()
   -- Go Back
   map("n", "gb", "<c-o>", nore)
   map("n", "GB", "<c-i>", nore)
-  map("n", "<c-o>", "<c-o>", nore)
-  map("n", "<c-i>", "<c-i>", nore)
+  -- map("n", "<c-o>", "<c-o>", nore)
+  -- map("n", "<c-i>", "<c-i>", nore)
 
   -- -- Commenting helpers
   -- map("n", "gcO", "O-<esc>gccA<BS>", sile)
@@ -502,29 +491,29 @@ function M.setup()
   map("i", ";;", "<esc>A;", nore)
 
   -- lsp keys
-  map("n", "gd", vim.lsp.buf.definition, sile)
-  map("n", "gD", vim.lsp.buf.declaration, sile)
-  map("n", "gi", vim.lsp.buf.implementation, sile)
+  map("n", "gd", lspbuf.definition, sile)
+  map("n", "gD", lspbuf.declaration, sile)
+  map("n", "gi", lspbuf.implementation, sile)
   map("n", "gr", telescope_fn.lsp_references, sile)
   map("n", "gK", vim.lsp.codelens.run, sile)
-  -- map("n", "gr", vim.lsp.buf.references, sile)
+  -- map("n", "gr", lspbuf.references, sile)
   -- Preview variants
-  map("n", "gpd", require("lsp.functions").view_location_split("definition", "FocusSplitNicely"), sile)
-  map("n", "gpD", require("lsp.functions").view_location_split("declaration", "FocusSplitNicely"), sile)
-  map("n", "gpr", require("lsp.functions").view_location_split("references", "FocusSplitNicely"), sile)
-  map("n", "gpi", require("lsp.functions").view_location_split("implementation", "FocusSplitNicely"), sile)
+  map("n", "gpd", lsputil.view_location_split("definition", "FocusSplitNicely"), sile)
+  map("n", "gpD", lsputil.view_location_split("declaration", "FocusSplitNicely"), sile)
+  map("n", "gpr", lsputil.view_location_split("references", "FocusSplitNicely"), sile)
+  map("n", "gpi", lsputil.view_location_split("implementation", "FocusSplitNicely"), sile)
   -- Hover
-  -- map("n", "K", vim.lsp.buf.hover, sile)
-  map("n", "gh", vim.lsp.buf.hover, sile)
+  -- map("n", "K", lspbuf.hover, sile)
+  map("n", "gh", lspbuf.hover, sile)
   local do_code_action = cmd "CodeActionMenu"
   map("n", "K", do_code_action, {})
-  map("x", "K", ":lua vim.lsp.buf.range_code_action()<cr>", {})
+  map("x", "gK", ":lua vim.lsp.buf.range_code_action()<cr>", {})
 
   -- Formatting keymaps
-  map("n", "gq", require("lsp.functions").format_range_operator, sile)
-  map("x", "gq", vim.lsp.buf.format, sile)
+  map("n", "gq", lsputil.format_range_operator, sile)
+  map("x", "gq", lsputil.format, sile)
   map("n", "gf", function()
-    vim.lsp.buf.format { async = true }
+    lsputil.format { async = true }
   end, sile)
 
   -- TODO: Use more standard regex syntax
@@ -581,8 +570,8 @@ function M.setup()
   map("n", "U", "<C-R>", nore)
 
   -- Go to multi insert from Visual mode
-  map("x", "I", "<M-a>i", { remap = true })
-  map("x", "A", "<M-a>a", { remap = true })
+  map("x", "I", "<Plug>(VM-Visual-Add)i", { remap = true })
+  map("x", "A", "<Plug>(VM-Visual-Add)a", { remap = true })
 
   -- Select all matching regex search
   -- map("n", "<M-S-/>", "<M-/><M-a>", {remap=true})
@@ -645,6 +634,14 @@ function M.setup()
 
   -- Make change line (cc) preserve indentation
   map("n", "cc", "^cg_", sile)
+
+  map("n", "dd", function()
+    if vim.api.nvim_get_current_line():match "^%s*$" then
+      return '"_dd'
+    else
+      return "dd"
+    end
+  end, { noremap = true, expr = true })
 
   -- add j and k with count to jumplist
   M.countjk()
@@ -711,19 +708,18 @@ function M.setup()
     [ldr_goto_prev] = "Jump prev ([)",
     [ldr_swap_next] = "Swap next ())",
     [ldr_swap_prev] = "Swap prev (()",
-    x = "Execute/Send",
     w = { cmd "w", "Write" }, -- w = { cmd "up", "Write" },
     W = { cmd "noau w", "Write (noau)" }, -- w = { cmd "noau up", "Write" },
     q = { "<C-W>q", "Quit" },
     Q = { "<C-W>q", "Quit" },
     o = {
-      name = "Toggle window",
+      name = "Open window",
       -- s = { focus_fn.split_nicely, "Nice split" },
       o = { cmd "SidebarNvimToggle", "Sidebar.nvim" },
       e = { focus_fn.focus_max_or_equal, "Max/Equal splits" },
       f = { cmd "NvimTreeToggle", "File Sidebar" },
       u = { cmd "UndotreeToggle", "Undo tree" },
-      r = { cmd "Ranger", "Ranger" },
+      r = { cmd "Oil", "File Browser" },
       q = { utils.quickfix_toggle, "Quick fixes" },
       E = { cmd "!open '%:p:h'", "Open File Explorer" },
       F = { telescope_fn.file_browser, "Telescope browser" },
@@ -732,6 +728,7 @@ function M.setup()
       M = { vim.g.goneovim and cmd "GonvimMiniMap" or cmd "MinimapToggle", "Minimap" },
     },
     t = { name = "Terminals" },
+    x = { name = "Run" },
     p = { name = "Project (Tasks)" },
     T = {
       name = "Toggle Opts",
@@ -750,10 +747,10 @@ function M.setup()
       name = "Buffers",
       j = { telescope_fn.buffers, "Jump to " },
       w = { cmd "w", "Write" },
-      a = { cmd "wa", "Write All" },
+      W = { cmd "wa", "Write All" },
       c = { cmd "Bdelete!", "Close" },
       d = { cmd "bdelete!", "Close+Win" },
-      f = { vim.lsp.buf.format, "Format" },
+      f = { lsputil.format, "Format" },
       -- n = { cmd "tabnew", "New" },
       n = { cmd "enew", "New" },
       -- W = {cmd "BufferWipeout", "wipeout buffer"},
@@ -906,7 +903,7 @@ function M.setup()
       a = { do_code_action, "Code Action (K)" },
       k = { vim.lsp.codelens.run, "Run Code Lens (gK)" },
       t = { lspbuf.type_definition, "Type Definition" },
-      f = { lspbuf.format, "Format" },
+      f = { lsputil.format, "Format" },
       c = {
         name = "Calls",
         i = { lspbuf.incoming_calls, "Incoming" },
@@ -914,19 +911,19 @@ function M.setup()
       },
       s = {
         d = {
-          require("lsp.functions").view_location_split("definition", "FocusSplitNicely"),
+          lsputil.view_location_split("definition", "FocusSplitNicely"),
           "Split Definition",
         },
         D = {
-          require("lsp.functions").view_location_split("declaration", "FocusSplitNicely"),
+          lsputil.view_location_split("declaration", "FocusSplitNicely"),
           "Split Declaration",
         },
         r = {
-          require("lsp.functions").view_location_split("references", "FocusSplitNicely"),
+          lsputil.view_location_split("references", "FocusSplitNicely"),
           "Split References",
         },
         s = {
-          require("lsp.functions").view_location_split("implementation", "FocusSplitNicely"),
+          lsputil.view_location_split("implementation", "FocusSplitNicely"),
           "Split Implementation",
         },
       },
@@ -983,12 +980,12 @@ function M.setup()
     },
     d = {
       name = "Diagnostics",
-      i = { lsputil.toggle_diagnostics, "Toggle Inline" },
+      T = { lsputil.toggle_diagnostics, "Toggle Diags" },
       l = { lsputil.diag_line, "Line Diagnostics" },
       c = { lsputil.diag_cursor, "Cursor Diagnostics" },
       v = {
         -- TODO: make this not move the cursor
-        operatorfunc_scaffold("show_diagnostics", require("lsp.functions").range_diagnostics),
+        operatorfunc_scaffold("show_diagnostics", lsputil.range_diagnostics),
         "Range Diagnostics",
       },
     },
@@ -1043,11 +1040,11 @@ function M.setup()
   -- TODO: move to plugin config files?
   if O.plugin.surround then
     local ops = { mode = "o" }
-    wk.register({ ["s"] = "Surround",["S"] = "Surround Rest",["ss"] = "Line" }, ops)
+    wk.register({ ["s"] = "Surround", ["S"] = "Surround Rest", ["ss"] = "Line" }, ops)
   end
   if O.plugin.lightspeed then
     local ops = { mode = "o" }
-    wk.register({ ["z"] = "Light speed",["Z"] = "Light speed bwd" }, ops)
+    wk.register({ ["z"] = "Light speed", ["Z"] = "Light speed bwd" }, ops)
   end
 
   local ops = { mode = "n" }

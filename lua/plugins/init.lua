@@ -51,12 +51,6 @@ return {
       },
     },
     config = function(_, opts)
-      -- -- Toggle comments
-      -- -- map("x", "gt", ":normal gcc<CR>", nore)
-      -- -- map("x", "gt", ":normal :lua require'Comment'.toggle()<C-v><CR><CR>", nore)
-      -- map("x", "gt", ":g/./lua require('Comment.api').toggle_current_linewise(cfg)<CR><cmd>nohls<CR>", nore)
-      -- map("n", "gt", operatorfunc_keys("toggle_comment", "gt"), sile)
-
       require("mini.comment").setup(opts)
     end,
   },
@@ -99,50 +93,22 @@ return {
           augend.date.alias["%d-%m-%Y"],
         },
       }
+
+      local m = require "dial.map"
+      vim.keymap.set("n", "<C-a>", m.inc_normal(), { desc = "inc" })
+      vim.keymap.set("n", "<C-x>", m.dec_normal(), { desc = "dec" })
+      vim.keymap.set("v", "<C-a>", m.inc_visual(), { desc = "inc" })
+      vim.keymap.set("v", "<C-x>", m.dec_visual(), { desc = "dec" })
+      vim.keymap.set("v", "g<C-a>", m.inc_gvisual(), { desc = "inc" })
+      vim.keymap.set("v", "g<C-x>", m.dec_gvisual(), { desc = "dec" })
     end,
     keys = {
-      {
-        "<C-a>",
-        function()
-          require("dial.map").inc_normal()
-        end,
-        mode = { "n" },
-      },
-      {
-        "<C-x>",
-        function()
-          require("dial.map").dec_normal()
-        end,
-        mode = { "n" },
-      },
-      {
-        "<C-a>",
-        function()
-          require("dial.map").inc_visual()
-        end,
-        mode = { "v" },
-      },
-      {
-        "<C-x>",
-        function()
-          require("dial.map").dec_visual()
-        end,
-        mode = { "v" },
-      },
-      {
-        "g<C-a>",
-        function()
-          require("dial.map").inc_gvisual()
-        end,
-        mode = { "v" },
-      },
-      {
-        "g<C-x>",
-        function()
-          require("dial.map").dec_gvisual()
-        end,
-        mode = { "v" },
-      },
+      "<C-a>",
+      "<C-x>",
+      "<C-a>",
+      "<C-x>",
+      "g<C-a>",
+      "g<C-x>",
     },
   },
   -- TODO: "is0n/fm-nvim",
@@ -167,21 +133,40 @@ return {
       show_cursorline = true, -- Enable 'cursorline' for the window while peeking
     },
   },
-  { "rmagatti/auto-session", event = "VeryLazy" },
+  { "rmagatti/auto-session", lazy = false },
   {
     "ahmedkhalf/project.nvim",
-    config = function()
-      require("project_nvim").setup(O.plugin.project_nvim)
+    opts = {
+      -- Manual mode doesn't automatically change your root directory, so you have
+      -- the option to manually do so using `:ProjectRoot` command.
+      manual_mode = true,
+      -- When set to false, you will get a message when project.nvim changes your
+      -- directory.
+      silent_chdir = false,
+      -- Methods of detecting the root directory. **"lsp"** uses the native neovim
+      -- lsp, while **"pattern"** uses vim-rooter like glob pattern matching. Here
+      -- order matters: if one is not detected, the other is used as fallback. You
+      -- can also delete or rearangne the detection methods.
+      -- detection_methods = { "lsp", "pattern" },
+      -- All the patterns used to detect root dir, when **"pattern"** is in
+      -- detection_methods
+      -- patterns = { ".git", "_darcs", ".hg", ".bzr", ".svn", "Makefile", "package.json" },
+      -- Table of lsp clients to ignore by name
+      -- eg: { "efm", ... }
+      -- ignore_lsp = true,
+    },
+    config = function(_, opts)
+      require("project_nvim").setup(opts)
 
       require("telescope").load_extension "projects"
     end,
     cmd = "ProjectRoot",
     keys = {
-      { "<leader>pR", "<cmd>ProjectRoot<cr>",        desc = "Rooter" },
+      { "<leader>pR", "<cmd>ProjectRoot<cr>", desc = "Rooter" },
       { "<leader>pP", "<cmd>Telescope projects<cr>", desc = "T Projects" },
     },
   },
-  { "jghauser/mkdir.nvim",  event = "BufWritePre" },
+  { "jghauser/mkdir.nvim", event = "BufWritePre" },
   { "lambdalisue/suda.vim", cmd = { "SudaWrite", "SudaRead" } },
   {
     "tpope/vim-eunuch",
@@ -200,16 +185,6 @@ return {
       "SudoEdit",
     },
   },
-  {
-    "max397574/better-escape.nvim",
-    opts = {
-      mapping = { "jk", "kj" },
-      keys = "<Esc>",
-    },
-    event = "InsertEnter",
-  },
-  -- "liangxianzhe/nap.nvim"
-  -- { "zdcthomas/yop.nvim" }
   { "seandewar/nvimesweeper", cmd = "Nvimesweeper" },
   {
     "EtiamNullam/deferred-clipboard.nvim",
@@ -219,4 +194,5 @@ return {
   { "EricDriussi/remember-me.nvim", opts = {
     project_roots = { ".git", ".svn", ".venv" },
   } },
+  { "johmsalas/text-case.nvim", opts = {} },
 }

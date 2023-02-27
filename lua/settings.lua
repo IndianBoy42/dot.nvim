@@ -61,6 +61,7 @@ return function()
   opt.smartindent = true -- make indenting smarter again
   opt.splitbelow = true -- force all horizontal splits to go below current window
   opt.splitright = true -- force all vertical splits to go to the right of current window
+  opt.splitkeep = "screen" -- keeps the same screen lines when splitting
   opt.swapfile = false -- creates a swapfile
   opt.termguicolors = true -- set term gui colors (most terminals support this)
   opt.timeoutlen = O.timeoutlen -- time to wait for a mapped sequence to complete (in milliseconds)
@@ -75,9 +76,9 @@ return function()
   opt.tabstop = O.tab_stop -- insert 4 spaces for a tab
   opt.cursorline = O.cursorline -- highlight the current line
   opt.number = O.number -- set numbered lines
-  opt.relativenumber = O.relative_number -- set relative numbered lines
-  opt.numberwidth = O.number_width -- set number column width to 2 {default 4}
-  opt.signcolumn = (O.signcolumn == "number" and not (O.number or O.relative_number)) and "yes" or O.signcolumn --
+  opt.relativenumber = false
+  opt.numberwidth = 2
+  opt.signcolumn = "no"
   opt.wrap = O.wrap_lines -- display lines as one long line
   opt.linebreak = true -- dont linebreak in the middle of words
   opt.spell = O.spell

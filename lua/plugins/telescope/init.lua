@@ -4,7 +4,11 @@ local telescope = {
     {
       "danielfalk/smart-open.nvim",
       config = function()
-        require("plugins.telescope.functions").find_files = require("telescope").extensions.smart_open.smart_open
+        require("plugins.telescope.functions").find_files = function()
+          require("telescope").extensions.smart_open.smart_open {
+            cwd_only = true,
+          }
+        end
       end,
       dependencies = { "kkharji/sqlite.lua" },
     },
@@ -21,6 +25,7 @@ local telescope = {
         return vim.fn.executable "make" == 1
       end,
     },
+    "LukasPietzschmann/telescope-tabs",
   },
   cmd = "Telescope",
   config = function()

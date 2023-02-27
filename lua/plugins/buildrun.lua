@@ -1,4 +1,59 @@
 return {
+  {
+    dir = _G.CONFIG_PATH .. "/kitty.lua",
+    config = function()
+      local K = require "kitty"
+      K.setup()
+      vim.api.nvim_create_user_command("Kitty", function(args)
+        local program = args.args
+        if program == "" then
+          program = O.termshell
+        end
+        K.open(program)
+        vim.keymap.set("n", "<localleader>c", K.send_current_line, { desc = "Kitty Cell" })
+        vim.keymap.set("n", "<localleader>k", function()
+          vim.ui.input({
+            prompt = "Kitty: K",
+            default = K.last_cmd()[2],
+          }, function(input)
+            K.send(input)
+          end)
+        end, { desc = "Kitty Cmd" })
+        -- vim.keymap.set("n", "", require("kitty").send_cell, { buffer = 0 })
+      end, {})
+    end,
+    cmd = "Kitty",
+    keys = {
+      {
+        "<leader>ok",
+        "<cmd>Kitty<cr>",
+        desc = "Kitty Open",
+      },
+    },
+  },
+  -- https://github.com/Olical/conjure
+  {
+    "michaelb/sniprun",
+    build = "bash ./install.sh 1",
+    opts = {
+      selected_interpreters = { "Python3_fifo" },
+      repl_enable = { "Python3_fifo" },
+
+      display = { "Terminal", "VirtualTextOk", "LongTempFloatingWindowErr", "NvimNotifyErr" },
+      live_mode_toggle = "enable",
+    },
+    cmd = "SnipRun",
+    keys = {
+      { "<leader>xx", "<Plug>SnipRun", desc = "SnipRun Line" },
+      { "<leader>x", "<Plug>SnipRunOperator", desc = "SnipRun" },
+      { "<leader>x", "<Plug>SnipRun", desc = "SnipRun", mode = "x" },
+      { "<leader>tQ", "<Plug>SnipReset", desc = "SnipRun Reset" },
+      { "<leader>tq", "<Plug>SnipReplMemoryClean", desc = "SnipRun Clean" },
+      { "<leader>ti", "<Plug>SnipInfo", desc = "SnipRun Info" },
+      { "<leader>tl", "<Plug>SnipLive", desc = "SnipRun Live" },
+      { "<leader>tc", "<Plug>SnipClose", desc = "SnipRun Close" },
+    },
+  },
   -- TODO: Figure all this bullshit out
   -- {
   --   "numToStr/FTerm.nvim",
