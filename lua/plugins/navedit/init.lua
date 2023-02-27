@@ -104,7 +104,8 @@ return {
 
       require("which-key").register({ [vim.g.VM_leader] = "which_key_ignore" }, { mode = "n" })
 
-      vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufNewFile" }, { command = "VMTheme " .. theme })
+      -- vim.cmd.VMTheme(theme)
+      -- vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufNewFile" }, { command = "VMTheme " .. theme })
     end,
     event = { "BufReadPost", "BufNewFile" },
   },
