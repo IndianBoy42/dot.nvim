@@ -416,7 +416,7 @@ function M.setup()
   -- Double Escape key clears search and spelling highlights
   map("n", "<ESC>", function()
     vim.cmd "nohls"
-    vim.bo.spell = false
+    vim.o.spell = false
     require("notify").dismiss { silent = true }
   end, sile)
 
@@ -496,13 +496,13 @@ function M.setup()
   map("n", "gD", lspbuf.declaration, sile)
   map("n", "gi", lspbuf.implementation, sile)
   map("n", "gr", telescope_fn.lsp_references, sile)
-  map("n", "gK", vim.lsp.codelens.run, sile)
+  map("n", "gK", vim.lsp.codelens.run, { desc = "Codelens" })
   -- map("n", "gr", lspbuf.references, sile)
   -- Preview variants
-  map("n", "gpd", lsputil.view_location_split("definition", "FocusSplitNicely"), sile)
-  map("n", "gpD", lsputil.view_location_split("declaration", "FocusSplitNicely"), sile)
-  map("n", "gpr", lsputil.view_location_split("references", "FocusSplitNicely"), sile)
-  map("n", "gpi", lsputil.view_location_split("implementation", "FocusSplitNicely"), sile)
+  map("n", "gpd", lsputil.preview_location_at "definition", sile)
+  map("n", "gpD", lsputil.preview_location_at "declaration", sile)
+  map("n", "gpr", lsputil.preview_location_at "references", sile)
+  map("n", "gpi", lsputil.preview_location_at "implementation", sile)
   -- Hover
   -- map("n", "K", lspbuf.hover, sile)
   map("n", "gh", lspbuf.hover, sile)
@@ -802,6 +802,7 @@ function M.setup()
         o = { lspbuf.outgoing_calls, "Outgoing" },
       },
       s = {
+        name = "View in Split",
         d = {
           lsputil.view_location_split("definition", "FocusSplitNicely"),
           "Split Definition",
@@ -850,6 +851,7 @@ function M.setup()
       i = "for (object)",
       p = { cmd "SearchSession", "Sessions" },
       m = { telescope_fn.marks, "Marks" },
+      ["<CR>"] = { ":Telescope ", "Telescope ..." },
     },
     r = {
       name = "Replace/Refactor",
@@ -895,13 +897,17 @@ function M.setup()
   M.whichkey {
     [O.treesitter.textobj_prefixes.swap_prev] = {
       name = "Swap Prev",
-      ["("] = { cmd "ISwap", "Interactive" },
-      [")"] = { cmd "ISwapWith", "I. With" },
+      [O.treesitter.textobj_prefixes.swap_prev] = { cmd "ISwap", "Interactive" },
+      [ldr_swap_prev] = { cmd "ISwap", "Interactive" },
+      [O.treesitter.textobj_prefixes.swap_next] = { cmd "ISwapWith", "I. With" },
     },
     [O.treesitter.textobj_prefixes.swap_next] = {
       name = "Swap Next",
-      ["("] = { cmd "ISwap", "Interactive" },
-      [")"] = { cmd "ISwapWith", "I. With" },
+      [O.treesitter.textobj_prefixes.swap_next] = { cmd "ISwap", "Interactive" },
+      [O.treesitter.textobj_prefixes.swap_prev] = { cmd "ISwapWith", "I. With" },
+      [ldr_swap_next] = { cmd "ISwapWith", "I. With" },
+      [ldr_swap_prev] = { cmd "ISwap", "I. With" },
+      n = { cmd "ISwapNodeWith", "I. With" },
     },
   }
 

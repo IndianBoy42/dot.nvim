@@ -203,14 +203,15 @@ local function preview_location_callback(_, result)
 end
 
 function M.preview_location_at(name)
-  local params = lsp.util.make_position_params()
-  return lsp.buf_request(0, "textDocument/" .. name, params, preview_location_callback)
+  return function()
+    local params = lsp.util.make_position_params()
+    return lsp.buf_request(0, "textDocument/" .. name, params, preview_location_callback)
+  end
 end
 
 function M.view_location_split_callback(split_cmd)
   local util = vim.lsp.util
   local log = require "vim.lsp.log"
-  local api = vim.api
 
   -- note, this handler style is for neovim 0.5.1/0.6, if on 0.5, call with function(_, method, result)
   local function handler(_, result, ctx)
@@ -269,10 +270,10 @@ function M.show_codelens()
   --   false
   -- )
 
-  local clients = lsp.buf_get_clients(0)
+  local clients = vim.lsp.get_active_clients { bufnr = 0 }
   local codelens = lsp.codelens
   for k, v in pairs(clients) do
-    codelens.display(codelens.get(0, k), 0, k, O.lsp.codeLens)
+    codelens.display(nil, 0, k)
     -- lsp.codelens.display(nil, 0, k, O.lsp.codeLens)
   end
 end
@@ -284,15 +285,15 @@ local popup_diagnostics_opts = {
   border = O.lsp.border,
 }
 function M.diag_line()
-  diags.open_float(0, vim.tbl_deep_extend("keep", { scope = "line" }, popup_diagnostics_opts))
+  diags.open_float(vim.tbl_deep_extend("keep", { scope = "line" }, popup_diagnostics_opts))
 end
 
 function M.diag_cursor()
-  diags.open_float(0, vim.tbl_deep_extend("keep", { scope = "cursor" }, popup_diagnostics_opts))
+  diags.open_float(vim.tbl_deep_extend("keep", { scope = "cursor" }, popup_diagnostics_opts))
 end
 
 function M.diag_buffer()
-  diags.open_float(0, vim.tbl_deep_extend("keep", { scope = "buffer" }, popup_diagnostics_opts))
+  diags.open_float(vim.tbl_deep_extend("keep", { scope = "buffer" }, popup_diagnostics_opts))
 end
 
 function M.diag_next(opts)
@@ -311,54 +312,12 @@ function M.error_prev()
   M.diag_prev { severity = vim.diagnostic.severity.ERROR }
 end
 
-function M.common_on_attach(client, bufnr)
-  local lsp_status = require "lsp-status"
-  lsp_status.on_attach(client)
-
-  -- Handle document highlighting
-  if O.lsp.document_highlight then
-    -- Set autocommands conditional on server_capabilities
-    if client.resolved_capabilities.document_highlight then
-      cmd(
-        [[
-        augroup lsp_document_highlight
-          autocmd! * <buffer>
-          autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
-          autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
-        augroup END
-        ]],
-        false
-      )
-    end
-  end
-
-  if O.lsp.live_codelens then
-    if client.resolved_capabilities.code_lens then
-      cmd(
-        [[
-        augroup lsp_codelens_refresh
-          autocmd! * <buffer>
-          autocmd InsertLeave,BufWritePost <buffer> lua vim.lsp.codelens.refresh()
-          autocmd CursorHold <buffer> lua vim.lsp.codelens.refresh()
-        augroup END
-        ]],
-        false
-      )
-    end
-  end
-
-  if O.lsp.autoecho_line_diagnostics then
-    -- if client.resolved_capabilities.document_highlight then
-    -- autocmd CursorHoldI <buffer> lua vim.lsp.buf.signature_help()
-    cmd(
-      [[ augroup lsp_au
-        autocmd! * <buffer>
-        autocmd CursorHold <buffer> lua require("lsp.functions").echo_diagnostic()
-      augroup END ]],
-      false
-    )
-    -- end
-  end
+function M.live_codelens()
+  local id = vim.api.nvim_create_augroup("lsp_codelens_refresh", { clear = false })
+  vim.api.nvim_create_autocmd(
+    { "CursorHold", "InsertLeave", "BufWritePost" },
+    { buffer = 0, callback = vim.lsp.codelens.refresh, group = id }
+  )
 end
 
 -- Helper for better renaming interface

@@ -8,8 +8,9 @@
 --         "@" .. k,
 --       }
 -- end
-local exts = function(n)
+local hops = function(n)
   return function()
+    -- Proxies into require'hop' for you
     require("hop-extensions")[n]()
   end
 end
@@ -24,11 +25,11 @@ return {
     end,
     "Last Search",
   },
-  { "w", exts "hint_words", "Words" },
-  { "L", exts "hint_lines_skip_whitespace", "Lines" },
-  { "l", exts "hint_vertical", "Lines Column" },
+  -- { "w", exts "hint_words", "Words" },
+  { "L", hops "hint_lines_skip_whitespace", "Lines" },
+  { "l", hops "hint_vertical", "Lines Column" },
   {
-    "*",
+    "w",
     -- exts "hint_cword",
     function()
       -- TODO: escape?
@@ -44,9 +45,9 @@ return {
     end,
     "cWORD",
   },
-  { "h", exts "hint_locals", "Locals" },
-  { "d", exts "hint_definitions", "Definitions" },
-  { "r", exts "hint_references", "References" },
+  { "h", hops "hint_locals", "Locals" },
+  { "d", hops "hint_definitions", "Definitions" },
+  { "r", hops "hint_references", "References" },
   {
     "u",
     function()
@@ -54,8 +55,8 @@ return {
     end,
     "Usages",
   },
-  { "s", exts "hint_scopes", "Scopes" },
-  { "t", exts "hint_textobjects", "Textobjects" },
+  { "s", hops "hint_scopes", "Scopes" },
+  { "t", hops "hint_textobjects", "Textobjects" },
   {
     "b",
     function()

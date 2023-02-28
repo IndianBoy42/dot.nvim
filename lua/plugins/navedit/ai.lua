@@ -25,19 +25,19 @@ return {
   jumps = function(map)
     local prev_pre = "["
     local next_pre = "]"
-    local function mapall(id, n, N)
+    local function mapall(id, n, N, desc)
       n = n or id
       N = N or n:upper()
-      map({ prev_pre, next_pre }, id, "left", "a" .. n, "a")
-      map({ prev_pre, next_pre }, id, "right", "a" .. N, "a")
-      map({ prev_pre, prev_pre }, id, "left", { n, N }, "i")
-      map({ next_pre, next_pre }, id, "right", { n, N }, "i")
+      map({ prev_pre, next_pre }, id, "left", "a" .. n, "a", desc .. "(a)")
+      map({ prev_pre, next_pre }, id, "right", "a" .. N, "a", desc .. "(a)")
+      map({ prev_pre, prev_pre }, id, "left", { n, N }, "i", desc)
+      map({ next_pre, next_pre }, id, "right", { n, N }, "i", desc)
     end
-    mapall "f"
-    mapall "o"
-    mapall "a"
-    mapall "c"
-    mapall "t"
+    mapall("f", nil, nil, "Function")
+    mapall("o", nil, nil, "Block")
+    mapall("a", nil, nil, "Arg")
+    mapall("c", nil, nil, "Call")
+    mapall("t", nil, nil, "Tag")
   end,
   custom_surroundings = function()
     local ts_input = require("mini.surround").gen_spec.input.treesitter

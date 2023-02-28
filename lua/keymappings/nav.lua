@@ -182,7 +182,7 @@ last: %{last} dir: %{dir}
     heads = heads,
     name = "Navigate/Select",
     hint = hint,
-    body = "<leader>H", -- <leader>j, <leader>h
+    body = "<leader>j", -- <leader>j, <leader>k
     config = {
       color = "pink",
       invoke_on_body = true,

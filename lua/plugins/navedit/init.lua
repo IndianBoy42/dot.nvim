@@ -35,7 +35,7 @@ return {
       end)
     end,
   },
-  { "ggandor/leap-spooky.nvim", event = "VeryLazy" },
+  { "ggandor/leap-spooky.nvim", opts = {}, event = "VeryLazy" },
   {
     "ggandor/leap-ast.nvim",
     keys = {
@@ -130,7 +130,7 @@ return {
     opts = {
       autoswap = true,
     },
-    cmd = { "ISwap", "ISwapWith" },
+    cmd = { "ISwap", "ISwapWith", "ISwapNode", "ISwapNodeWith" },
   },
   {
     "gbprod/substitute.nvim",
@@ -230,7 +230,7 @@ return {
       local ai = require "mini.ai"
       ai.setup(opts)
       local make_nN_pair = mappings.make_nN_pair
-      local map = function(prefix, textobj_id, side, name, ia)
+      local map = function(prefix, textobj_id, side, name, ia, desc)
         local lp, rp = prefix, prefix
         if type(prefix) == "table" then
           lp, rp = unpack(prefix)
@@ -250,8 +250,8 @@ return {
             ai.move_cursor(side, ia, textobj_id, { search_method = "cover_or_next" })
           end
           local nf, pf = unpack(make_nN_pair { rf, lf })
-          vim.keymap.set(mode, lp .. ln, pf)
-          vim.keymap.set(mode, rp .. rn, nf)
+          vim.keymap.set(mode, lp .. ln, pf, { desc = desc })
+          vim.keymap.set(mode, rp .. rn, nf, { desc = desc })
         end
       end
 

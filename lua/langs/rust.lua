@@ -35,6 +35,8 @@ return {
             if client.name ~= "rust_analyzer" then
               return
             end
+            require("lsp.functions").live_codelens()
+
             mappings.localleader {
               m = { "<Cmd>RustExpandMacro<CR>", "Expand Macro" },
               H = { "<Cmd>RustToggleInlayHints<CR>", "Toggle Inlay Hints" },
