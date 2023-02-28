@@ -2,23 +2,23 @@ return {
   {
     dir = _G.CONFIG_PATH .. "/kitty.lua",
     config = function()
-      local K = require "kitty"
-      K.setup()
+      local K = require("kitty").setup {
+        build_system = {
+          function(T)
+            T.targets.default = { desc = "Hello world", cmd = "echo hello world" }
+          end,
+        },
+      }
       vim.api.nvim_create_user_command("Kitty", function(args)
         local program = args.args
         if program == "" then
           program = O.termshell
         end
+
         K.open(program)
-        vim.keymap.set("n", "<localleader>c", K.send_current_line, { desc = "Kitty Cell" })
-        vim.keymap.set("n", "<localleader>k", function()
-          vim.ui.input({
-            prompt = "Kitty: K",
-            default = K.last_cmd()[2],
-          }, function(input)
-            K.send(input)
-          end)
-        end, { desc = "Kitty Cmd" })
+        K.setup_make()
+        vim.keymap.set("n", "<leader>tk", K.run, { desc = "Kitty Cmd" })
+        vim.keymap.set("n", "<leader>tt", K.make, { desc = "Kitty Cmd" })
         -- vim.keymap.set("n", "", require("kitty").send_cell, { buffer = 0 })
       end, {})
     end,
@@ -125,30 +125,5 @@ return {
   -- --   "EthanJWright/vs-tasks.nvim",
   -- --   config = function() end,
   -- -- }
-  -- use {
-  --   "michaelb/sniprun",
-  --   run = "bash install.sh",
-  --   config = function()
-  --     require("lv-terms").sniprun()
-  --   end,
-  --   cmd = { "SnipRun", "SnipInfo" },
-  --   disable = not O.plugin.sniprun,
-  -- }
-  -- use {
-  --   "IndianBoy42/kitty-runner.nvim",
-  --   config = function()
-  --     require("lv-terms").kitty()
-  --   end,
-  --   cmd = {
-  --     "KittyOpen",
-  --     "KittyOpenLocal",
-  --     "KittyReRunCommand",
-  --     "KittySendLines",
-  --     "KittyRunCommand",
-  --     "KittyClearRunner",
-  --     "KittyKillRunner",
-  --   },
-  --   disable = not O.plugin.kittyrunner,
-  -- }
   -- https://github.com/lpoto/telescope-tasks.nvim
 }

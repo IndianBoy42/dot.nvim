@@ -553,8 +553,8 @@ return {
     --   },
     -- }
 
-    -- require("plugins.langs.complete").autocomplete(false)
-    require("plugins.langs.complete").sources {
+    -- require("langs.complete").autocomplete(false)
+    require("langs.complete").sources {
       {
         { name = "luasnip" },
         { name = "nvim_lsp" },
@@ -576,7 +576,7 @@ return {
           end,
         }, -- clear mapping
         ["<TAB>"] = cmp.mapping {
-          i = require("plugins.langs.complete").supertab(cmp.confirm),
+          i = require("langs.complete").supertab(cmp.confirm),
         },
       },
     }

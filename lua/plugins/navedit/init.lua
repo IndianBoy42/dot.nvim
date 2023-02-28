@@ -14,8 +14,8 @@ return {
       }
       local hops = require "plugins.navedit.hops"
       local keys = { hop_pattern }
-      for _, rhs in ipairs(hops) do
-        local lhs, rhs, desc = unpack(rhs)
+      for _, rhs_ in ipairs(hops) do
+        local lhs, rhs, desc = unpack(rhs_)
         table.insert(keys, { "<leader>h" .. lhs, rhs, desc = desc })
       end
       return keys
@@ -24,12 +24,10 @@ return {
   {
     "ggandor/leap.nvim",
     keys = {
-      { "s", mode = { "n", "x", "o" }, desc = "Leap forward to" },
-      { "S", mode = { "n", "x", "o" }, desc = "Leap backward to" },
-      { "gs", mode = { "n", "x", "o" }, desc = "Leap from windows" },
+      { "s", mode = "n", desc = "Leap" },
     },
     config = function()
-      require("leap").set_default_keymaps()
+      -- require("leap").set_default_keymaps()
       -- Bidirectional leap
       vim.keymap.set("n", "s", function()
         local current_window = vim.fn.win_getid()
@@ -42,10 +40,11 @@ return {
     "ggandor/leap-ast.nvim",
     keys = {
       {
-        "<M-s>",
+        "S",
         function()
           require("leap-ast").leap()
         end,
+        mode = { "n", "x", "o" },
       },
     },
   },

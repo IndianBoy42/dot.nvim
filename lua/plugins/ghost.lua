@@ -17,7 +17,25 @@ return {
     --   au User www.reddit.com,www.github.com set filetype=markdown
     --   au User *github.com set filetype=markdown
     -- augroup END
-    vim.api.nvim_create_user_command("Ghost", function() end, {})
+    vim.api.nvim_create_user_command("Ghost", function()
+      local id = vim.api.nvim_create_augroup("Ghost_autocmds", {})
+      local function au(sites, ft, cb)
+        vim.api.nvim_create_autocmd("User", {
+          pattern = sites,
+          callback = function(args)
+            if ft then
+              vim.bo.filetype = ft
+            end
+            if cb then
+              cb(args, sites, ft)
+            end
+          end,
+          group = id,
+        })
+      end
+
+      au({ "*reddit.com", "*github.com", "*stackoverflow.com" }, "markdown")
+    end, {})
   end,
   cmd = "Ghost",
 }

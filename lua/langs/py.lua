@@ -16,7 +16,7 @@ return {
       vim.api.nvim_create_autocmd("Filetype", {
         pattern = "python",
         callback = function()
-          require("plugins.langs.complete").add_sources { { name = "jupyter" } }
+          require("langs.complete").add_sources { { name = "jupyter" } }
           vim.keymap.set("n", "gh", "<cmd>JupyterInspect<cr>", { buffer = 0 })
         end,
         group = vim.api.nvim_create_augroup("jupyter_kernel_setup", {}),

@@ -6,7 +6,6 @@ local Kitty = {
   default_launch = "tab",
   is_tab = false,
 }
-local history = {}
 -- this is a dev tool which helps reloading
 -- the pluggin files
 function Kitty:user_command(name, cb, opts)
@@ -17,7 +16,7 @@ function Kitty:user_command(name, cb, opts)
   if self.buflocal_cmds then
     create = vim.api.nvim_buf_create_user_command
   end
-  create(self.cmd_prefix .. name, cb, vim.tbl_extend("keep", opts, { nargs = "*", range = "%" }))
+  create(self.cmd_prefix .. name, cb, vim.tbl_extend("keep", opts or {}, { nargs = "*", range = "%" }))
 end
 
 function Kitty:repl()
@@ -86,52 +85,17 @@ function Kitty:create_send_cmds(cmds)
   end
 end
 
-function Kitty:setup()
-  -- Warn about Duplicate window titles
-  for _, v in ipairs(titles) do
-    if self.title == v then
-      vim.notify("Kitty Window title already used: " .. self.title, vim.log.WARN, {})
-    end
-  end
-  titles[#titles + 1] = self.title
-
-  -- Warn about Duplicate window titles
-  for _, v in ipairs(cmd_prefixs) do
-    if self.cmd_prefix == v then
-      vim.notify("Kitty Window title already used: " .. self.cmd_prefix, vim.log.ERR, {})
-      self.cmd_prefix = nil
-    end
-  end
-  cmd_prefixs[#cmd_prefixs + 1] = self.cmd_prefix
-
-  if self.cmd_prefix ~= nil then
-    if self.open_cmds ~= nil then
-      self:create_open_cmds(self.open_cmds)
-    end
-    if self.send_cmds ~= nil then
-      self:create_send_cmds(self.send_cmds)
-    end
-  end
-
-  --TODO: VimLeave kill
-  vim.api.nvim_create_autocmd("VimLeave", {
-    callback = function()
-      self:close_window()
-    end,
-  })
-end
-
 function Kitty:close(args_)
   local args = { "close-window" }
   self:append_match_args(args)
-  vim.list_extend(args, args_)
+  vim.list_extend(args, args_ or {})
   self:send_raw(args)
 end
 
 function Kitty:launch(type, o, args_)
   type = type or self.default_launch
 
-  local Sub = self:new(o)
+  local Sub = Kitty.new(o)
   if type == "tab" then
     Sub.is_tab = true
     Sub.match_arg = "tab_title:" .. Sub.title
@@ -141,7 +105,7 @@ function Kitty:launch(type, o, args_)
 
   local args = { "launch", "--window-title", Sub.title, "--tab-title", Sub.title, "--type", type }
   self:append_match_args(args)
-  vim.list_extend(args, args_)
+  vim.list_extend(args, args_ or {})
   local handle, pid = self:send_raw(args)
 
   -- TODO: get the window/tab id
@@ -191,8 +155,8 @@ function Kitty:open(program)
     return
   end
   local args = {
-    "-o",
-    "allow_remote_control=yes",
+    -- "-o",
+    -- "allow_remote_control=yes",
     "--listen-on",
     self.kitty_listen_on,
     "--title",
@@ -270,23 +234,17 @@ function Kitty:send_current_word()
   self:send(vim.fn.getreg '@"' .. "\n")
 end
 
-function Kitty:send_file(_, dontsave)
+function Kitty:send_file()
   local filename = vim.fn.expand "%:p"
   local payload = ""
   local lines = vim.fn.readfile(filename)
   for _, line in ipairs(lines) do
     payload = payload .. line .. "\n"
   end
-  if not dontsave then
-    history[#history + 1] = { self.send_file, "file: " .. filename }
-  end
   self:send(payload)
 end
 
-function Kitty:send(text, dontsave)
-  if not dontsave then
-    history[#history + 1] = { self.send, text }
-  end
+function Kitty:send(text)
   local args = { "send-text" }
   self:append_match_args(args)
   vim.list_extend(args, { "--", text })
@@ -299,12 +257,6 @@ local function t(k)
 end
 function Kitty:send_key(text)
   vim.notify("Unimplemented", vim.log.levels.ERROR, {})
-end
-
-function Kitty:resend(i)
-  i = i or #history
-  local fn, text = unpack(history[i])
-  fn(text, true)
 end
 
 function Kitty:send_raw(args, on_exit)
@@ -338,16 +290,47 @@ function Kitty:append_match_args(args)
   return args
 end
 
-function Kitty:last_cmd(i)
-  i = i or 0
-  return history[#history - i] or { function() end, "" }
-end
-
 function Kitty:new(o)
   o = o or {}
   setmetatable(o, self)
   self.__index = self
   return o
 end
+function Kitty:setup()
+  -- Warn about Duplicate window titles
+  for _, v in ipairs(titles) do
+    if self.title == v then
+      vim.notify("Kitty Window title already used: " .. self.title, vim.log.WARN, {})
+    end
+  end
+  titles[#titles + 1] = self.title
+
+  -- Warn about Duplicate window titles
+  for _, v in ipairs(cmd_prefixs) do
+    if self.cmd_prefix == v then
+      vim.notify("Kitty Window title already used: " .. self.cmd_prefix, vim.log.ERR, {})
+      self.cmd_prefix = nil
+    end
+  end
+  cmd_prefixs[#cmd_prefixs + 1] = self.cmd_prefix
+
+  if self.cmd_prefix ~= nil then
+    if self.open_cmds ~= nil then
+      self:create_open_cmds(self.open_cmds)
+    end
+    if self.send_cmds ~= nil then
+      self:create_send_cmds(self.send_cmds)
+    end
+  end
+
+  --TODO: VimLeave kill
+  vim.api.nvim_create_autocmd("VimLeave", {
+    callback = function()
+      self:close_window()
+    end,
+  })
+end
+
+Kitty.setup_make = require("kitty.make").setup
 
 return Kitty

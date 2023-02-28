@@ -143,7 +143,7 @@ local M = {
         custom_surroundings = require("plugins.navedit.ai").custom_surroundings(),
         mappings = {
           add = "ys", -- Add surrounding in Normal and Visual modes
-          vadd = "gz", -- Add surrounding in Normal and Visual modes
+          vadd = "s", -- Add surrounding in Normal and Visual modes
           delete = "ds", -- Delete surrounding
           -- TODO: make repeatable?
           find = "]s", -- Find surrounding (to the right)

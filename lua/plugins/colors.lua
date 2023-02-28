@@ -328,7 +328,6 @@ return {
       vim.cmd "ColorizerReloadAllBuffers"
     end,
   },
-  "folke/lsp-colors.nvim",
   { "mrjones2014/nvim-ts-rainbow", event = { "BufReadPost", "BufNewFile" } },
   {
     "lukas-reineke/indent-blankline.nvim",

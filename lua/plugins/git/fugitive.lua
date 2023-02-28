@@ -1,10 +1,9 @@
 return {
   "tpope/vim-fugitive",
-  config = function()
-  end,
+  config = function() end,
   in_fugitive_menu = function()
-    mappings.buf(0, "n", "p", "<cmd>Git push<CR>", { noremap = true })
-    mappings.localleader {
+    -- TODO: hydra.nvim submode?
+    local maps = {
       s = { "s", "Stage" },
       u = { "u", "Unstage" },
       ["-"] = { "-", "Toggle Stage" },
@@ -80,17 +79,12 @@ return {
       rd = { "rd", "commit: drop" },
       ["r<Space>"] = { "r<Space>", ":Git rebase ... " },
       q = { "gq", "Close status" },
+      kc = { "[c", "Prev hunk" },
+      jc = { "]c", "Next hunk" },
+      kf = { "[m", "Prev file" },
+      jf = { "]m", "Next file" },
     }
-    mappings.whichkey({
-      ["[g"] = { "[c", "Prev hunk" },
-      ["]g"] = { "]c", "Next hunk" },
-      ["[m"] = { "[m", "Prev file" },
-      ["]m"] = { "]m", "Next file" },
-      gq = { "gq", "Close status" },
-      ["<ESC>"] = { "gq", "Close status" },
-    }, {
-      buffer = 0,
-    })
+    mappings.localleader(maps)
 
     --   vim.cmd [[
     -- augroup _fugitive

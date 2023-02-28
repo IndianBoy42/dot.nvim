@@ -1,10 +1,9 @@
 return {
-
-  -- add c/c++ to treesitter
+  -- correctly setup mason lsp / dap extensions
   {
-    "nvim-treesitter/nvim-treesitter",
+    "williamboman/mason.nvim",
     opts = function(_, opts)
-      vim.list_extend(opts.ensure_installed, { "c", "cpp" })
+      vim.list_extend(opts.ensure_installed, { "clangd" })
     end,
   },
 
@@ -13,9 +12,6 @@ return {
     "neovim/nvim-lspconfig",
     dependencies = {
       "p00f/clangd_extensions.nvim",
-      dependencies = {
-        "hrsh7th/cmp-nvim-lsp",
-      },
     },
     opts = {
       -- make sure mason installs the server

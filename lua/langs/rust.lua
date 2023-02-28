@@ -33,7 +33,6 @@ return {
         rust_analyzer = function(_, opts)
           require("lsp.functions").cb_on_attach(function(client, buffer)
             if client.name ~= "rust_analyzer" then
-              print(client.name)
               return
             end
             mappings.localleader {

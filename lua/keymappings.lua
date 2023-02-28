@@ -414,10 +414,11 @@ function M.setup()
   map("x", "gN", "<esc>NNgN", nore) -- current/prev
 
   -- Double Escape key clears search and spelling highlights
-  -- map("n", "<Plug>ClearHighLights", ":nohls | :setlocal nospell | call minimap#vim#ClearColorSearch()<ESC>", nore)
-  -- map("n", "<Plug>ClearHighLights", cmd "nohls" .. cmd "setlocal nospell", nore)
-  map("n", "<Plug>ClearHighLights", cmd "nohls", nore)
-  map("n", "<ESC>", "<Plug>ClearHighLights", sile)
+  map("n", "<ESC>", function()
+    vim.cmd "nohls"
+    vim.bo.spell = false
+    require("notify").dismiss { silent = true }
+  end, sile)
 
   -- Map `cp` to `xp` (transpose two adjacent chars)
   -- as a **repeatable action** with `.`
@@ -726,6 +727,9 @@ function M.setup()
       v = { cmd "Vista nvim_lsp", "Vista" },
       -- ["v"] = {cmd "Vista", "Vista"},
       M = { vim.g.goneovim and cmd "GonvimMiniMap" or cmd "MinimapToggle", "Minimap" },
+      d = { cmd "DiffviewOpen", "Diffview" },
+      h = { cmd "DiffviewFileHistory", "File History" },
+      m = { cmd "!smerge '%:p:h'", "Sublime Merge" },
     },
     t = { name = "Terminals" },
     x = { name = "Run" },
@@ -763,113 +767,8 @@ function M.setup()
       D = { cmd "BufferLineSortByDirectory", "sort BufferLines automatically by directory" },
       L = { cmd "BufferLineSortByExtension", "sort BufferLines automatically by language" },
     },
-    D = {
-      -- " Available Debug Adapters:
-      -- "   https://microsoft.github.io/debug-adapter-protocol/implementors/adapters/
-      -- "
-      -- " Adapter configuration and installation instructions:
-      -- "   https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation
-      -- "
-      -- " Debug Adapter protocol:
-      -- "   https://microsoft.github.io/debug-adapter-protocol/
-      -- TODO: can use localleader for this??
-      name = "Debug",
-      U = {
-        function()
-          require("dapui").toggle()
-        end,
-        "Toggle DAP-UI",
-      },
-      v = {
-        function()
-          require("dapui").eval()
-        end,
-        "Eval",
-      },
-      t = {
-        function()
-          require("dap").toggle_breakpoint()
-        end,
-        "Toggle Breakpoint",
-      },
-      b = {
-        function()
-          require("dap").step_back()
-        end,
-        "Step Back",
-      },
-      c = {
-        function()
-          require("dap").continue()
-        end,
-        "Continue",
-      },
-      C = {
-        function()
-          require("dap").run_to_cursor()
-        end,
-        "Run To Cursor",
-      },
-      d = {
-        function()
-          require("dap").disconnect()
-        end,
-        "Disconnect",
-      },
-      g = {
-        function()
-          require("dap").session()
-        end,
-        "Get Session",
-      },
-      i = {
-        function()
-          require("dap").step_into()
-        end,
-        "Step Into",
-      },
-      o = {
-        function()
-          require("dap").step_over()
-        end,
-        "Step Over",
-      },
-      u = {
-        function()
-          require("dap").step_out()
-        end,
-        "Step Out",
-      },
-      p = {
-        function()
-          require("dap").pause.toggle()
-        end,
-        "Pause",
-      },
-      r = {
-        function()
-          require("dap").repl.toggle()
-        end,
-        "Toggle Repl",
-      },
-      s = {
-        function()
-          require("dap").continue()
-        end,
-        "Start",
-      },
-      q = {
-        function()
-          require("dap").stop()
-        end,
-        "Quit",
-      },
-    },
     g = {
       name = "Git",
-      -- g = { require("lv-terms").ftopen "gitui", "Gitui" },
-      -- v = { require("lv-terms").ftopen "verco", "Verco" },
-      m = { cmd "!smerge '%:p:h'", "Sublime Merge" },
       L = { cmd "GitBlameToggle", "Blame Toggle" },
       l = { gitsigns_fn.blame_line, "Blame" },
       p = { gitsigns_fn.preview_hunk, "Preview Hunk" },
@@ -881,13 +780,6 @@ function M.setup()
       b = { telescope_fn.git_branches, "Checkout branch" },
       c = { telescope_fn.git_commits, "Checkout commit" },
       C = { telescope_fn.git_bcommits, "Checkout commit(for current file)" },
-      d = {
-        name = "Diffview",
-        o = { cmd "DiffviewOpen", "Open" },
-        h = { cmd "DiffviewFileHistory", "History" },
-        O = { ":DiffviewOpen ", "Open ..." },
-        H = { ":DiffviewFileHistory ", "History ..." },
-      },
       ["<CR>"] = { cmd "Git", "Fugitive Status" },
       [" "] = { ":Git ", "Fugitive ..." },
     },

@@ -165,7 +165,7 @@ return {
     "stevearc/aerial.nvim",
     cmd = { "AerialToggle", "AerialOpen" },
     keys = {
-      { "<leader>os", "<cmd>AerialToggle!<cr>", "Aerial Outline" },
+      { "<leader>os", "<cmd>AerialToggle!<cr>", desc = "Aerial Outline" },
     },
   },
   { --
@@ -187,7 +187,7 @@ return {
     },
     cmd = "SymbolsOutline",
     keys = {
-      { "<leader>oS", "<cmd>SymbolsOutline<cr>", "Symbols Outline" },
+      { "<leader>oS", "<cmd>SymbolsOutline<cr>", desc = "Symbols Outline" },
     },
   },
   {

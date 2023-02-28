@@ -6,3 +6,8 @@ vim.b.minisurround_config = {
     },
   },
 }
+
+local sa = require "sniprun.api"
+local map = vim.keymap.setl
+
+

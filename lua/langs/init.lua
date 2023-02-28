@@ -1,14 +1,14 @@
 return {
-  require "plugins.langs.lspconfig",
-  require "plugins.langs.complete",
-  { import = "plugins.langs.copilot" },
-  require "plugins.langs.null_ls",
+  require "langs.lspconfig",
+  require "langs.complete",
+  { import = "langs.copilot" },
+  require "langs.null_ls",
 
   -- Languages
-  { import = "plugins.langs.lua" },
-  { import = "plugins.langs.tex" },
-  { import = "plugins.langs.rust" },
-  { import = "plugins.langs.markdown" },
+  { import = "langs.lua" },
+  { import = "langs.tex" },
+  { import = "langs.rust" },
+  { import = "langs.markdown" },
   { "NoahTheDuke/vim-just", ft = "just" },
   {
     "IndianBoy42/tree-sitter-just",

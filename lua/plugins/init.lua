@@ -7,6 +7,7 @@ local function p(obj)
   return obj
 end
 return {
+  { import = "langs" },
   {
     "dstein64/vim-startuptime",
     cmd = "StartupTime",

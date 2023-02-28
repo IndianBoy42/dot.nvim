@@ -1,6 +1,7 @@
 local K = {}
 local defaults = {
   title = "Kitty.nvim",
+  cmd_prefix = "Kitty",
   open_cmds = {
     [""] = "",
     IPy = "ipython",
@@ -28,11 +29,23 @@ local defaults = {
   },
 }
 K.setup = function(cfg)
-  vim.tbl_extend("keep", cfg, defaults)
-  vim.tbl_extend("force", cfg.open_cmds, cfg.user_open_cmds)
-  vim.tbl_extend("force", cfg.send_cmds, cfg.user_send_cmds)
-  K = require("kitty.term").new(cfg)
+  cfg = vim.tbl_extend("keep", cfg or {}, defaults)
+  cfg.open_cmds = vim.tbl_extend("force", cfg.open_cmds or {}, cfg.user_open_cmds or {})
+  cfg.send_cmds = vim.tbl_extend("force", cfg.send_cmds or {}, cfg.user_send_cmds or {})
+  K = require("kitty.term"):new(cfg)
   K:setup()
-  return K
+  return setmetatable({}, {
+    __index = function(m, k)
+      local ret = K[k]
+      if type(ret) == "function" then
+        m[k] = function(...)
+          return ret(K, ...)
+        end
+        return m[k]
+      else
+        return k
+      end
+    end,
+  })
 end
 return K
