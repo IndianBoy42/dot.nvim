@@ -1,145 +1,149 @@
 -- https://sw.kovidgoyal.net/kitty/remote-control/
 local titles = {}
-local cmd_prefixs = {}
 local Kitty = {
   listen_on = "unix:/tmp/kitty.nvim",
-  default_launch = "tab",
+  default_launch_location = "tab",
   is_tab = false,
   launch_counter = 0,
+  from_id = 1,
 }
--- this is a dev tool which helps reloading
--- the pluggin files
-function Kitty:user_command(name, cb, opts)
-  if self.cmd_prefix == nil then
-    return
-  end
-  local create = vim.api.nvim_create_user_command
-  if self.buflocal_cmds then
-    create = vim.api.nvim_buf_create_user_command
-  end
-  create(self.cmd_prefix .. name, cb, vim.tbl_extend("keep", opts or {}, { nargs = "*", range = "%" }))
+-- Use this to control the window that neovim is inside
+function Kitty.current_win_listen_on()
+  return vim.env.KITTY_LISTEN_ON
+end
+function Kitty.current_win_id()
+  return vim.env.KITTY_WINDOW_ID
+end
+local unique_listen_on_counter = 0
+function Kitty.port_from_pid(prefix)
+  unique_listen_on_counter = unique_listen_on_counter + 1
+  return (prefix or "unix:/tmp/kitty.nvim-") .. vim.fn.getpid() .. unique_listen_on_counter
 end
 
-function Kitty:repl()
-  local _ft = self.ftype
-  if _ft == nil then
-    _ft = vim.bo.filetype
-  end
-  return self[_ft] or {}
+function Kitty:close_on_leave(evt)
+  -- FIXME: this doesn't work
+  vim.api.nvim_create_autocmd(evt or "VimLeavePre", {
+    callback = function()
+      self:close_window(nil, nil, true)
+    end,
+  })
 end
-
--- FIXME: i dont think this should exist, or use launch
-function Kitty:create_open_cmds(cmds)
-  for k, v in pairs(cmds) do
-    if v == nil or (type(v) == table and v.cmd == nil) then
-      goto continue
-    end
-
-    local desc = v
-    if type(v) ~= "string" then
-      if type(v.cmd) == "string" then
-        desc = v.desc or v.cmd
-      else
-        desc = v.desc or k
-      end
-    end
-    self:user_command(k, function()
-      if type(v) == "string" then
-        self:open(v)
-      else
-        self.ftype = v.ftype
-        if type(v.cmd) == "string" then
-          self:open(v.cmd)
-        else
-          self:open(v.cmd())
-        end
-      end
-    end, { desc = "Open " .. desc .. " in " .. self.title })
-    ::continue::
+function Kitty:close(args_, on_exit, block)
+  if block then
+    return self:api_command_block("close-window", args_)
+  else
+    return self:api_command("close-window", args_, on_exit)
   end
 end
 
-function Kitty:create_send_cmds(cmds)
-  for k, v in pairs(cmds) do
-    if v == nil or (type(v) == table and v.fun == nil) then
-      goto continue
+local function custom_open(fn)
+  return function(self, args, on_exit)
+    if self.is_opened then
+      return
     end
-    if type(v) ~= "table" then
-      v = {
-        fun = v,
-      }
-    end
-    local cmd_fn
-    if type(v.fun) == "string" then
-      cmd_fn = function(args)
-        self[v.fun](self, args)
-      end
-    elseif type(v.fun) == "function" then
-      cmd_fn = function(args)
-        v.fun(self, args)
-      end
-    end
-    if v.desc == nil then
-      v.desc = k
-    end
-    self:user_command(k, cmd_fn, { desc = "Send " .. v.desc .. " to " .. self.title })
-    ::continue::
+
+    fn(self, args, on_exit)
+
+    self.is_opened = true
   end
 end
 
-function Kitty:close(args_)
-  local args = { "close-window" }
-  self:append_match_args(args)
-  vim.list_extend(args, args_ or {})
-  self:send_raw(args)
-end
+Kitty.open = custom_open(function(self, args_, on_exit)
+  local args = {
+    -- "-o",
+    -- "allow_remote_control=yes",
+    "--listen-on",
+    self.listen_on,
+    "--title",
+    self.title,
+    unpack(args_ or {}),
+  }
 
-function Kitty:launch(o, type, args_)
-  type = type or self.default_launch
+  vim.loop.spawn("kitty", {
+    args = args,
+  }, function(...)
+    -- self.is_opened = false
+    if on_exit then
+      on_exit(...)
+    end
+  end)
+end)
+
+function Kitty:sub_window(o, where)
+  if where == true then
+    where = self.default_launch_location
+  end
+  where = where or self.default_launch_location
 
   o = o or {}
   if o.title == nil or o.title == self.title then
     o.title = self.title .. "-" .. self.launch_counter
     self.launch_counter = self.launch_counter + 1
   end
+  o.attach_to_current_win = false
+  o.from_id = nil
+  o.is_opened = false
 
   local Sub = self:new(o)
-  if type == "tab" then
-    Sub.is_tab = true
-  end
   Sub.match_arg = "title:" .. Sub.title
-  utils.dump(Sub.match_arg)
 
-  local args = { "launch", "--window-title", Sub.title, "--tab-title", Sub.title, "--type", type }
-  self:append_match_args(args)
-  vim.list_extend(args, args_ or {})
-  self:send_raw(args)
+  Sub.launch_args = { "--window-title", Sub.title, "--tab-title", Sub.title, "--type", where }
 
-  -- TODO: get the window/tab id
-  -- vim.notify("Unimplemented", vim.log.levels.ERROR, {})
+  Sub.open = custom_open(function(sub, args_, on_exit)
+    sub.launch_args = vim.list_extend(sub.launch_args, args_ or {})
+
+    -- TODO: get the window/tab id
+    -- vim.notify("Unimplemented", vim.log.levels.ERROR, {})
+    self:api_command("launch", sub.launch_args, on_exit)
+  end)
+
   return Sub
 end
-function Kitty:launch_tab(o, args_)
-  self:launch("tab", o, args_)
-end
-function Kitty:launch_win(o, args_)
-  self:launch("win", o, args_)
+function Kitty:launch(o, where, args_, on_exit)
+  local Sub = self:sub_window(o, where)
+  Sub:open(args_, on_exit)
+  return Sub
 end
 
-function Kitty:focus(dont_wait)
-  local args = { "focus-window" }
-  if self.is_tab then
-    args = { "focus-tab" }
-  end
-  self:append_match_args(args)
+--https://sw.kovidgoyal.net/kitty/remote-control/#cmdoption-kitty-launch-type
+function Kitty:new_tab(o, args)
+  return self:launch(o, "tab", args)
+end
+function Kitty:new_window(o, args)
+  return self:launch(o, "window", args)
+end
+function Kitty:new_hsplit(o, args)
+  args = args or {}
+  args[#args + 1] = "--location=hsplit"
+  return self:launch(o, "window", args)
+end
+function Kitty:new_vsplit(o, args)
+  self:goto_layout "splits"
+  args = args or {}
+  args[#args + 1] = "--location=vsplit"
+  return self:launch(o, "window", args)
+end
+function Kitty:new_os_window(o, args)
+  return self:launch(o, "os-window", args)
+end
+
+function Kitty:goto_layout(name, on_exit)
+  return self:api_command("goto_layout", { name })
+end
+function Kitty:api_kitten(args, on_exit)
+  return self:api_command("kitten", args, on_exit)
+end
+
+function Kitty:focus(dont_wait, on_exit)
+  local args = {}
   if dont_wait then
-    args[#args + 1] = "--no-response"
+    args[1] = "--no-response"
   end
-  self:send_raw(args)
+  return self:api_command(self.is_tab and "focus-tab" or "focus-window", args, on_exit)
 end
 
-function Kitty:detach(target, dont_wait)
-  local args = { "detach-window" }
+function Kitty:detach(target, dont_wait, on_exit)
+  local args = {}
   if self.is_tab then
     args = { "detach-tab" }
     if target ~= nil and target ~= "new" then
@@ -151,112 +155,30 @@ function Kitty:detach(target, dont_wait)
       vim.list_extend(args, { "--target-tab", target }) -- target should be SomeTab.match_arg
     end
   end
-  self:append_match_args(args)
   if dont_wait then
     args[#args + 1] = "--no-response"
   end
-  self:send_raw(args)
+  return self:api_command("detach-window", args, on_exit)
 end
 
-function Kitty:open(program)
-  if self.is_opened then
-    return
-  end
-  local args = {
-    -- "-o",
-    -- "allow_remote_control=yes",
-    "--listen-on",
-    self.listen_on,
-    "--title",
-    self.title,
-  }
-  if program ~= nil and program ~= "" then
-    vim.list_extend(args, { "bash", "-c", program })
-  end
-
-  vim.loop.spawn("kitty", {
-    args = args,
-  }, function()
-    -- self.is_opened = false
-  end)
-  self.is_opened = true
-end
-
-function Kitty:cell_delimiter()
-  return self:repl().comment_character .. " %%"
-end
--- function Kitty:highlight_cell_delimiter(color)
---   vim.cmd([[highlight KittyCellDelimiterColor guifg=]] .. color .. [[ guibg=]] .. color)
---   vim.cmd [[sign define KittyCellDelimiters linehl=KittyCellDelimiterColor text=> ]]
---   vim.cmd("sign unplace * group=KittyCellDelimiters buffer=" .. vim.fn.bufnr())
---   local lines = vim.fn.getline(0, "$")
---   for line_number, line in pairs(lines) do
---     if line:find(self:cell_delimiter()) then
---       vim.cmd(
---         "sign place 1 line="
---           .. line_number
---           .. " group=KittyCellDelimiters name=KittyCellDelimiters buffer="
---           .. vim.fn.bufnr()
---       )
---     end
+-- function Kitty:send_file()
+--   local filename = vim.fn.expand "%:p"
+--   local payload = ""
+--   local lines = vim.fn.readfile(filename)
+--   for _, line in ipairs(lines) do
+--     payload = payload .. line .. "\n"
 --   end
+--   self:send(payload)
 -- end
-function Kitty:send_cell()
-  local opts = {}
-  opts.line1 = vim.fn.search(self:cell_delimiter(), "bcnW")
-  opts.line2 = vim.fn.search(self:cell_delimiter(), "nW")
-  -- line after delimiter or top of file
-  opts.line1 = opts.line1 and opts.line1 + 1 or 1
-  -- line before delimiter or bottom of file
-  opts.line2 = opts.line2 and opts.line2 - 1 or vim.fn.line "$"
-  if opts.line1 <= opts.line2 then
-    self:send_range(opts)
-  else
-    self:send_file()
-  end
-end
 
-function Kitty:send_range(opts)
-  local startline = opts.line1
-  local endline = opts.line2
-  -- save registers for restore
-  local rv = vim.fn.getreg '"'
-  local rt = vim.fn.getregtype '"'
-  -- yank range silently
-  vim.cmd("silent! " .. startline .. "," .. endline .. "yank")
-  local payload = vim.fn.getreg '"'
-  -- restore
-  self:send(payload)
-  vim.fn.setreg('"', rv, rt)
+function Kitty:send(text, on_exit)
+  return self:api_command("send-text", { "--", text }, on_exit)
 end
-
-function Kitty:send_current_line()
-  local payload = vim.api.nvim_get_current_line()
-  local prefix = self:repl().line_delimiter_start
-  local suffix = self:repl().line_delimiter_end
-  self:send(prefix .. payload .. suffix .. "\n")
-end
-
-function Kitty:send_current_word()
-  vim.cmd "normal! yiw"
-  self:send(vim.fn.getreg '@"' .. "\n")
-end
-
-function Kitty:send_file()
-  local filename = vim.fn.expand "%:p"
-  local payload = ""
-  local lines = vim.fn.readfile(filename)
-  for _, line in ipairs(lines) do
-    payload = payload .. line .. "\n"
-  end
-  self:send(payload)
-end
-
-function Kitty:send(text)
-  local args = { "send-text" }
-  self:append_match_args(args)
-  vim.list_extend(args, { "--", text })
-  self:send_raw(args)
+function Kitty:send_file(from_file, on_exit)
+  return self:api_command("send-text", {
+    "--from-file",
+    (from_file or vim.api.nvim_buf_get_name(0)),
+  }, on_exit)
 end
 
 local termcodes = vim.api.nvim_replace_termcodes
@@ -264,15 +186,25 @@ local function t(k)
   return termcodes(k, true, true, true)
 end
 function Kitty:send_key(text)
+  print(text)
   vim.notify("Unimplemented", vim.log.levels.ERROR, {})
 end
 
-function Kitty:send_raw(args, on_exit)
-  local args_ = { "@", "--to=" .. self.listen_on, unpack(args) }
-  utils.dump(args_)
+function Kitty:build_api_command(cmd, args_)
+  local args = { "@", "--to", self.listen_on, cmd }
+  self:append_match_args(args)
+  args = vim.list_extend(args, args_ or {})
+  return args
+end
+function Kitty:api_command(cmd, args_, on_exit)
   return vim.loop.spawn("kitty", {
-    args = args_,
+    args = self:build_api_command(cmd, args_),
   }, on_exit)
+end
+function Kitty:api_command_block(cmd, args_)
+  local cmdline = self:build_api_command(cmd, args_)
+  cmdline = { "kitty", unpack(cmdline) }
+  vim.fn.system(cmdline)
 end
 
 function Kitty:get_selection()
@@ -303,50 +235,42 @@ function Kitty:universal()
   return self:new { match_arg = "" }
 end
 function Kitty:current_tab()
-  return self:new { match_arg = "" }
+  return self:new { match_arg = "", is_tab = self.is_tab }
+end
+
+function Kitty:set_match_arg_from_id(id)
+  self.match_arg = "id:" .. id
 end
 
 function Kitty:new(o)
   o = o or {}
   setmetatable(o, self)
   self.__index = self
-  return o
-end
-function Kitty:setup()
+
+  -- Setup stuff
+  if o.listen_on == "unique_port" then
+    o.listen_on = Kitty.port_from_pid()
+  end
+  if o.attach_to_current_win then
+    o.listen_on = Kitty.current_win_listen_on()
+    o.from_id = Kitty.current_win_id()
+    o.open = function(...) end
+  end
+  if o.from_id then
+    o:set_match_arg_from_id(o.from_id)
+  end
   -- Warn about Duplicate window titles
   for _, v in ipairs(titles) do
-    if self.title == v then
-      vim.notify("Kitty Window title already used: " .. self.title, vim.log.WARN, {})
+    if o.title == v then
+      vim.notify("Kitty Window title already used: " .. o.title, vim.log.WARN, {})
     end
   end
-  titles[#titles + 1] = self.title
+  titles[#titles + 1] = o.title
 
-  -- Warn about Duplicate window titles
-  for _, v in ipairs(cmd_prefixs) do
-    if self.cmd_prefix == v then
-      vim.notify("Kitty Window title already used: " .. self.cmd_prefix, vim.log.ERR, {})
-      self.cmd_prefix = nil
-    end
-  end
-  cmd_prefixs[#cmd_prefixs + 1] = self.cmd_prefix
-
-  if self.cmd_prefix ~= nil then
-    if self.open_cmds ~= nil then
-      self:create_open_cmds(self.open_cmds)
-    end
-    if self.send_cmds ~= nil then
-      self:create_send_cmds(self.send_cmds)
-    end
-  end
-
-  --TODO: VimLeave kill
-  vim.api.nvim_create_autocmd("VimLeave", {
-    callback = function()
-      self:close_window()
-    end,
-  })
+  return o
 end
 
 Kitty.setup_make = require("kitty.make").setup
+Kitty.setup_repl = require("kitty.repl").setup
 
 return Kitty

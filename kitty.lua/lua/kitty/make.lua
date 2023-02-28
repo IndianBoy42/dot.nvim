@@ -12,40 +12,40 @@ end
 -- Append commands to T.targets
 -- name = { cmd = '', desc = ''}
 Make.builtin_target_providers = {
-  ["make"] = function(T, _)
-    T.make = {
+  ["make"] = function(targets, _)
+    targets.make = {
       cmd = "make",
       desc = "Run Makefile",
       priority = 100,
     }
-    T.default = T.make
+    targets.default = targets.make
   end,
-  ["just"] = function(T, _)
-    T.just_default = {
+  ["just"] = function(targets, _)
+    targets.just_default = {
       cmd = "just",
       desc = "Run Justfile",
       priority = 100,
     }
-    T.default = T.just
+    targets.default = targets.just
   end,
-  ["cargo"] = function(T)
-    T.check = {
+  ["cargo"] = function(targets)
+    targets.check = {
       cmd = "cargo check",
       desc = "Check Cargo Project",
       priority = 100,
     }
-    T.build = {
+    targets.build = {
       cmd = "cargo build",
       desc = "Build Cargo Project",
       priority = 99,
     }
-    T.test = {
+    targets.test = {
       cmd = "cargo test",
       desc = "Test Cargo Project",
       priority = 98,
     }
-    T.run = { cmd = "cargo run", desc = "Run Cargo Project", priority = 97 }
-    T.default = T.check
+    targets.run = { cmd = "cargo run", desc = "Run Cargo Project", priority = 97 }
+    targets.default = targets.check
   end,
 }
 
@@ -54,23 +54,30 @@ function Make.setup(T)
   T.cmd_history = {}
   T.targets = {
     -- default = T.user_default,
-    default = { desc = "Default", cmd = "echo Hello World" },
-    last_manual = { desc = "Last Run Command", cmd = "" },
-    last = { desc = "Last Run Task", cmd = "" },
+    default = { desc = "Default" },
+    last_manual = { desc = "Last Run Command" },
+    last = { desc = "Last Run Task" },
   }
+  T.focus_me = T.focus_me or false
   T.select = T.select or vim.ui.select
   T.input = T.input or vim.ui.input
+  T.shell = T.shell or vim.o.shell
+  T.default_run_opts = T.default_run_opts or {}
   T.task_choose_format = T.task_choose_format
     or function(i, _)
       local name, target = unpack(i)
-      return name .. ": " .. target.desc
+      local desc = name .. ": " .. target.desc
+      if target.cmd == nil or target.cmd == "" then
+        desc = desc .. " (no command)"
+      end
+      return desc
     end
 
   -- Functions
   function T:target_list()
     -- TODO: this is kinda inefficient... luajit go brrrrr
     local M = {}
-    for k, v in pairs(T.targets) do
+    for k, v in pairs(self.targets) do
       M[#M + 1] = { k, v }
     end
     table.sort(M, function(a, b)
@@ -89,42 +96,46 @@ function Make.setup(T)
     return M
   end
   function T:call_or_input(arg, fun, input_opts, from_input)
+    if type(fun) == "string" then
+      fun = self[fun]
+    end
+
     if arg == nil then
       local opts = input_opts
       if type(input_opts) == "function" then
-        opts = input_opts(T)
-      end
-
-      if type(fun) == "string" then
-        fun = T[fun]
+        opts = input_opts(self)
       end
 
       from_input = from_input or nop
-      T.input(opts, function(i)
-        fun(T, from_input(i))
+      self.input(opts, function(i)
+        fun(self, from_input(i))
       end)
     else
-      fun(arg)
+      fun(self, arg)
     end
   end
   function T:call_or_select(arg, fun, choices, from_input)
+    if type(fun) == "string" then
+      fun = self[fun]
+    end
+
     if arg == nil then
       local opts = choices
       if type(choices) == "function" then
-        opts = choices(T)
+        opts = choices(self)
       end
 
-      T.select(opts[1], opts[2], function(i)
+      self.select(opts[1], opts[2], function(i)
         from_input = from_input or nop
-        T[fun](T, from_input(i))
+        fun(self, from_input(i))
       end)
     else
-      fun(arg)
+      fun(self, arg)
     end
   end
   function T:_add_target_provider(provider)
     local f = type(provider) == "function" and provider or Make.builtin_target_providers[provider]
-    f(T.targets, T)
+    f(self.targets, self)
   end
   function T:add_target_provider(provider, force)
     local providers = vim.tbl_keys(Make.builtin_target_providers)
@@ -132,127 +143,130 @@ function Make.setup(T)
     if force then
       print "unimplemented"
     end
-    T:call_or_select(provider, "_add_target_provider", { providers, { prompt = "Add from Builtin Providers" } })
+    self:call_or_select(provider, "_add_target_provider", { providers, { prompt = "Add from Builtin Providers" } })
   end
   function T:last_cmd()
-    return T.cmd_history[#T.cmd_history]
+    return self.cmd_history[#self.cmd_history]
   end
-  function T:_run(cmd)
-    T.cmd_history[#T.cmd_history + 1] = cmd
-    T.targets.last_manual.cmd = cmd
-    if type(cmd) == "string" then
-      T:send(cmd .. "\r")
-    elseif type(cmd) == "function" then
-      T:send(cmd(T) .. "\r")
+  function T:_run(cmd, opts)
+    opts = opts or self.default_run_opts
+
+    if type(cmd) == "function" then
+      cmd = cmd(self)
+    end
+
+    cmd = cmd .. "\r"
+    if opts.launch_new then
+      self:launch({}, opts.launch_new, { self.shell, "-c", cmd })
+    else
+      self:send(cmd)
     end
     -- TODO: can notify on finish?
   end
-  function T:run(cmd, opts)
-    T:call_or_input(
+  function T:run_cmd(cmd, input_opts, run_opts, remember_cmd)
+    self:call_or_input(
       cmd,
       "_run",
-      vim.tbl_extend("keep", opts or {}, {
-        prompt = "Run in " .. T.title,
-        default = T:last_cmd(),
-      })
+      vim.tbl_extend("force", {
+        prompt = "Run in " .. self.title,
+        default = self:last_cmd(),
+      }, input_opts or {}),
+      function(i)
+        if remember_cmd then
+          remember_cmd(i)
+        end
+        return i, run_opts
+      end
     )
-    -- if cmd == nil then
-    --   vim.ui.input(
-    --     vim.tbl_extend("keep", opts or {}, {
-    --       prompt = "Run in " .. T.title,
-    --       default = T:last_cmd(),
-    --     }),
-    --     function(i)
-    --       T:_run(i)
-    --     end
-    --   )
-    -- else
-    --   T:_run(cmd)
-    -- end
   end
-  function T:rerun()
-    T:_run(T:last_cmd())
+  function T:run(cmd, input_opts, run_opts, remember_cmd)
+    self:run_cmd(cmd, input_opts, run_opts, function(i)
+      if remember_cmd then
+        remember_cmd(i)
+      end
+      self.cmd_history[#self.cmd_history + 1] = cmd
+      self.targets.last_manual.cmd = cmd
+    end)
+  end
+  function T:rerun(run_opts)
+    self:run_cmd(self:last_cmd(), nil, run_opts)
   end
   function T:kill_ongoing()
     -- 0x03 is ^C
-    T:send_raw "\x03"
+    self:send "\x03"
   end
   function T:_choose_default(target_name)
-    T.targets.default = T.targets[target_name]
+    self.targets.default = self.targets[target_name]
   end
   function T:choose_default(target_name)
-    T:call_or_select(target_name, "_choose_default", {
-      T:target_list(),
+    self:call_or_select(target_name, "_choose_default", {
+      self:target_list(),
 
       {
-        prompt = "Choose default for " .. T.title,
-        format_item = T.task_choose_format,
+        prompt = "Choose default for " .. self.title,
+        format_item = self.task_choose_format,
       },
     })
-    -- if target_name == nil then
-    --   vim.ui.select(T.targets, {
-    --     prompt = "Choose default for " .. T.title,
-    --     format_item = function(i, _)
-    --       return i.name
-    --     end,
-    --   }, function(i)
-    --     T:_choose_default(i)
-    --   end)
-    -- else
-    --   T:_choose_default(target_name)
-    -- end
   end
-  function T:_make(target)
+  function T:_make(target, run_opts)
     if type(target) == "string" then
-      target = T.targets[target]
+      target = self.targets[target]
     end
     local cmd = target.cmd or target[2].cmd
-    T.targets.last.cmd = cmd
-    T:_run(cmd)
+    self.targets.last.cmd = cmd
+    self:run_cmd(cmd, { prompt = "Chosen Task has no Cmd" }, run_opts or target.run_opts, run_opts)
   end
-  function T:make(target)
-    T:call_or_select(target, "_make", {
-      T:target_list(),
-
+  function T:make(target, run_opts)
+    self:call_or_select(target, "_make", {
+      self:target_list(),
       {
-        prompt = "Run target in " .. T.title,
-        format_item = T.task_choose_format,
+        prompt = "Run target in " .. self.title,
+        format_item = self.task_choose_format,
       },
     }, function(i)
-      return i or "default"
+      return (i or "default"), run_opts
     end)
   end
-  function T:make_default()
-    T:make "default"
+  function T:make_default(run_opts)
+    self:make("default", run_opts)
   end
-  function T:make_last()
-    T:make "last"
+  function T:make_last(run_opts)
+    self:make("last", run_opts)
   end
-  function T:_add_target(name, target)
-    T.targets[name] = type(target) == "table" and target or { cmd = target, desc = name }
+  function T:_add_target(name, target, run_opts)
+    self.targets[name] = type(target) == "table" and target
+      or {
+        cmd = target,
+        desc = name,
+        run_opts = run_opts,
+      }
   end
-  function T:add_target(name, target)
-    function T:_add_target2(target_)
-      T:call_or_input(name, "_add_target", { prompt = "Name: ", default = "default" }, function(name)
-        return name, target_
+  function T:add_target(name, target, run_opts)
+    function self:_add_target2(target_)
+      self:call_or_input(name, "_add_target", {
+        prompt = "Name: ",
+        default = "default",
+      }, function(name_)
+        return name_, target_, run_opts
       end)
     end
-    T:call_or_input(target, "_add_target", {
+    self:call_or_input(target, "_add_target", {
       prompt = "Cmd: ",
     })
-    -- T.targets[name] = type(target) == "table" and target or { cmd = target, desc = name }
+    -- self.targets[name] = type(target) == "table" and target or { cmd = target, desc = name }
   end
   function T:_target_from_last_run(name)
-    T.targets[name] = {
+    self.targets[name] = {
       name = name,
       desc = name,
-      cmd = T.targets.last_manual.cmd,
+      cmd = self.targets.last_manual.cmd,
     }
   end
-  function T:target_from_last_run(name)
-    T:call_or_input(name, "_add_target", { prompt = "Name" })
+  function T:target_from_last_manual(name, run_opts)
+    self:call_or_input(name, "_add_target", { prompt = "Name" }, function(i)
+      return i, vim.deepcopy(self.targets.last_manual), run_opts
+    end)
   end
-
 
   if T.target_providers ~= nil then
     if type(T.target_providers) ~= "table" then
