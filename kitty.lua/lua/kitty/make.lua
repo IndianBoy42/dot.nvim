@@ -11,9 +11,42 @@ end
 
 -- Append commands to T.targets
 -- name = { cmd = '', desc = ''}
-Make.build_systems = {
-  ["make"] = function(T) end,
-  ["just"] = function(T) end,
+Make.builtin_target_providers = {
+  ["make"] = function(T, _)
+    T.make = {
+      cmd = "make",
+      desc = "Run Makefile",
+      priority = 100,
+    }
+    T.default = T.make
+  end,
+  ["just"] = function(T, _)
+    T.just_default = {
+      cmd = "just",
+      desc = "Run Justfile",
+      priority = 100,
+    }
+    T.default = T.just
+  end,
+  ["cargo"] = function(T)
+    T.check = {
+      cmd = "cargo check",
+      desc = "Check Cargo Project",
+      priority = 100,
+    }
+    T.build = {
+      cmd = "cargo build",
+      desc = "Build Cargo Project",
+      priority = 99,
+    }
+    T.test = {
+      cmd = "cargo test",
+      desc = "Test Cargo Project",
+      priority = 98,
+    }
+    T.run = { cmd = "cargo run", desc = "Run Cargo Project", priority = 97 }
+    T.default = T.check
+  end,
 }
 
 function Make.setup(T)
@@ -29,23 +62,9 @@ function Make.setup(T)
   T.input = T.input or vim.ui.input
   T.task_choose_format = T.task_choose_format
     or function(i, _)
-      utils.dump(i)
       local name, target = unpack(i)
       return name .. ": " .. target.desc
     end
-
-  if T.build_system ~= nil then
-    if type(T.build_system) ~= "table" then
-      T.build_system = { T.build_system }
-    end
-    for _, v in ipairs(T.build_system) do
-      local f = v
-      if type(v) == "string" then
-        f = Make.build_systems[v]
-      end
-      f(T)
-    end
-  end
 
   -- Functions
   function T:target_list()
@@ -57,11 +76,14 @@ function Make.setup(T)
     table.sort(M, function(a, b)
       if a[1] == "default" then
         return true
+      elseif b[1] == "default" then
+        return false
       end
 
       if a[2].priority or b[2].priority then
-        return (a[2].priority or 0) > (b[2].priority or 0)
+        return (a[2].priority or 0) >= (b[2].priority or 0)
       end
+
       return a[1] < b[1]
     end)
     return M
@@ -91,7 +113,6 @@ function Make.setup(T)
       if type(choices) == "function" then
         opts = choices(T)
       end
-      utils.dump(opts)
 
       T.select(opts[1], opts[2], function(i)
         from_input = from_input or nop
@@ -100,6 +121,18 @@ function Make.setup(T)
     else
       fun(arg)
     end
+  end
+  function T:_add_target_provider(provider)
+    local f = type(provider) == "function" and provider or Make.builtin_target_providers[provider]
+    f(T.targets, T)
+  end
+  function T:add_target_provider(provider, force)
+    local providers = vim.tbl_keys(Make.builtin_target_providers)
+    -- TODO: filter by really available providers?
+    if force then
+      print "unimplemented"
+    end
+    T:call_or_select(provider, "_add_target_provider", { providers, { prompt = "Add from Builtin Providers" } })
   end
   function T:last_cmd()
     return T.cmd_history[#T.cmd_history]
@@ -218,6 +251,16 @@ function Make.setup(T)
   end
   function T:target_from_last_run(name)
     T:call_or_input(name, "_add_target", { prompt = "Name" })
+  end
+
+
+  if T.target_providers ~= nil then
+    if type(T.target_providers) ~= "table" then
+      T.target_providers = { T.target_providers }
+    end
+    for _, v in ipairs(T.target_providers) do
+      T:_add_target_provider(v)
+    end
   end
 end
 

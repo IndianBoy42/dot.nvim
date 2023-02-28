@@ -2,9 +2,10 @@
 local titles = {}
 local cmd_prefixs = {}
 local Kitty = {
-  kitty_listen_on = "unix:/tmp/kitty.nvim",
+  listen_on = "unix:/tmp/kitty.nvim",
   default_launch = "tab",
   is_tab = false,
+  launch_counter = 0,
 }
 -- this is a dev tool which helps reloading
 -- the pluggin files
@@ -27,6 +28,7 @@ function Kitty:repl()
   return self[_ft] or {}
 end
 
+-- FIXME: i dont think this should exist, or use launch
 function Kitty:create_open_cmds(cmds)
   for k, v in pairs(cmds) do
     if v == nil or (type(v) == table and v.cmd == nil) then
@@ -92,24 +94,30 @@ function Kitty:close(args_)
   self:send_raw(args)
 end
 
-function Kitty:launch(type, o, args_)
+function Kitty:launch(o, type, args_)
   type = type or self.default_launch
 
-  local Sub = Kitty.new(o)
+  o = o or {}
+  if o.title == nil or o.title == self.title then
+    o.title = self.title .. "-" .. self.launch_counter
+    self.launch_counter = self.launch_counter + 1
+  end
+
+  local Sub = self:new(o)
   if type == "tab" then
     Sub.is_tab = true
-    Sub.match_arg = "tab_title:" .. Sub.title
-  else
-    Sub.match_arg = "window_title:" .. Sub.title
   end
+  Sub.match_arg = "title:" .. Sub.title
+  utils.dump(Sub.match_arg)
 
   local args = { "launch", "--window-title", Sub.title, "--tab-title", Sub.title, "--type", type }
   self:append_match_args(args)
   vim.list_extend(args, args_ or {})
-  local handle, pid = self:send_raw(args)
+  self:send_raw(args)
 
   -- TODO: get the window/tab id
-  vim.notify("Unimplemented", vim.log.levels.ERROR, {})
+  -- vim.notify("Unimplemented", vim.log.levels.ERROR, {})
+  return Sub
 end
 function Kitty:launch_tab(o, args_)
   self:launch("tab", o, args_)
@@ -158,7 +166,7 @@ function Kitty:open(program)
     -- "-o",
     -- "allow_remote_control=yes",
     "--listen-on",
-    self.kitty_listen_on,
+    self.listen_on,
     "--title",
     self.title,
   }
@@ -260,7 +268,8 @@ function Kitty:send_key(text)
 end
 
 function Kitty:send_raw(args, on_exit)
-  local args_ = { "@", "--to=" .. self.kitty_listen_on, unpack(args) }
+  local args_ = { "@", "--to=" .. self.listen_on, unpack(args) }
+  utils.dump(args_)
   return vim.loop.spawn("kitty", {
     args = args_,
   }, on_exit)
@@ -284,10 +293,17 @@ function Kitty:send_selection()
 end
 
 function Kitty:append_match_args(args)
-  if self.match_arg then
+  if self.match_arg and self.match_arg ~= "" then
     vim.list_extend(args, { "--match", self.match_arg })
   end
   return args
+end
+
+function Kitty:universal()
+  return self:new { match_arg = "" }
+end
+function Kitty:current_tab()
+  return self:new { match_arg = "" }
 end
 
 function Kitty:new(o)
