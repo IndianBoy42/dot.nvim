@@ -35,7 +35,7 @@ function M.on_attach(bufnr)
     ["O"] = { api.node.open.no_window_picker, "Open: No Window Picker" },
 
     ["<CR>"] = { api.node.open.edit, "Open" },
-    ["l"] = { api.node.open.edit, "Open" },
+    ["l"] = { api.node.open.no_window_picker, "Open" },
     ["<Tab>"] = { api.node.open.preview, "Open Preview" },
     ["h"] = { api.node.navigate.parent_close, "Close Directory" },
     ["<BS>"] = { api.node.navigate.parent_close, "Close Directory" },

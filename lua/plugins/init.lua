@@ -115,8 +115,9 @@ return {
   -- TODO: "is0n/fm-nvim",
   {
     "tzachar/local-highlight.nvim",
-    config = function()
-      require("local-highlight").setup {}
+    opts = {},
+    config = function(_, opts)
+      require("local-highlight").setup(opts)
       -- vim.api.nvim_create_autocmd("BufRead", {
       --   pattern = { "*.*" },
       --   callback = function(data)

@@ -103,7 +103,6 @@ function M.simple_echo_diagnostic()
 end
 
 local getmark = api.nvim_buf_get_mark
-local range_formatting = lsp.buf.range_formatting
 local feedkeys = api.nvim_feedkeys
 local termcodes = vim.api.nvim_replace_termcodes
 local function t(k)
@@ -116,7 +115,9 @@ function M.format_range_operator()
   _G.op_func_formatting = function()
     local start = getmark(0, "[")
     local finish = getmark(0, "]")
-    range_formatting({}, start, finish)
+    lsp.buf.format {
+      range = { start = start, ["end"] = finish },
+    }
     vim.go.operatorfunc = old_func
     _G.op_func_formatting = nil
   end
@@ -276,6 +277,32 @@ function M.show_codelens()
     codelens.display(nil, 0, k)
     -- lsp.codelens.display(nil, 0, k, O.lsp.codeLens)
   end
+end
+
+function M.run_any_codelens(select)
+  local codelens = lsp.codelens.get(0)
+  select = select or vim.ui.select
+  select(codelens, {
+    prompt = "CodeLens actions:",
+    format_item = function(item)
+      local title = item.command.title .. ": "
+      if item.command.arguments[1] then
+        title = title .. item.command.arguments[1].kind .. " " .. item.command.arguments[1].label
+      end
+
+      return title
+    end,
+  }, function(selected)
+    if not selected then
+      return
+    end
+
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    local start = selected.range.start
+    vim.api.nvim_win_set_cursor(0, { start.line + 1, start.character })
+    vim.lsp.codelens.run()
+    vim.api.nvim_win_set_cursor(0, cursor)
+  end)
 end
 
 -- Jump between diagnostics
@@ -486,5 +513,7 @@ M.cb_on_attach = function(on_attach)
     end,
   })
 end
+
+-- TODO: `:h lsp-on-list-handler`
 
 return M

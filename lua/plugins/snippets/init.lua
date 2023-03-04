@@ -33,6 +33,7 @@ local M = {
       end
       map("i", "<C-j>", cj, { silent = true })
       map("s", "<C-j>", cj, { silent = true })
+      map("i", "<C-u>", require "luasnip.extras.select_choice", { silent = true })
       map("i", "<C-k>", "<Plug>luasnip-jump-prev", { silent = true })
       map("s", "<C-k>", "<Plug>luasnip-jump-prev", { silent = true })
       map("i", "<M-j>", "<Plug>luasnip-next-choice", { silent = true })
@@ -43,6 +44,28 @@ local M = {
       map("s", "<C-y>", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
       local operatorfunc_keys = require("utils").operatorfunc_keys
       map("n", "<M-s>", operatorfunc_keys("luasnip_select", "<TAB>"), { silent = true })
+      for _, v in ipairs { "a", "b", "c" } do
+        -- vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>
+        -- inoremap <c-f>a  <cmd>lua require('luasnip.extras.otf').on_the_fly("a")<cr>
+        map(
+          "v",
+          "<C-f>" .. v,
+          "\"ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>",
+          { silent = true, desc = "On the fly: " .. v }
+        )
+
+        map(
+          "i",
+          "<C-f>" .. v,
+          "<cmd>lua require('luasnip.extras.otf').on_the_fly('" .. v .. "')<cr>",
+          { silent = true, desc = "On the fly: " .. v }
+        )
+      end
+      vim.api.nvim_create_user_command(
+        "LuaSnipEdit",
+        require("luasnip.loaders").edit_snippet_files,
+        { desc = "Edit LuaSnip Files" }
+      )
 
       -- some shorthands...
       local ls = require "luasnip"
@@ -57,16 +80,53 @@ local M = {
         return t { line, "" }
       end
 
-      local function sel(opts)
-        return f(function(_, snip)
-          return snip.env.TM_SELECTED_TEXT or ""
+      -- Shorthands for lambdas
+      local lambda = require("luasnip.extras").lambda
+      lambda.sel = lambda.TM_SELECTED_TEXT
+      lambda.re1 = lambda.LS_CAPTURE_1
+      lambda.re2 = lambda.LS_CAPTURE_2
+      lambda.re3 = lambda.LS_CAPTURE_3
+      lambda.re4 = lambda.LS_CAPTURE_4
+      lambda.post = lambda.POSTFIX_MATCH
+
+      local function sel_helper(_, snip)
+        return snip.env.TM_SELECTED_TEXT or ""
+        -- local res, env = {}, snip.env
+        -- local selected = env.TM_SELECT_TEXT
+        -- if false and (selected == nil or selected == "" or selected == {}) then
+        --   res = vim.split(vim.fn.getreg '"', "\n")
+        -- else
+        --   for _, ele in ipairs(selected) do
+        --     table.insert(res, ele)
+        --   end
+        -- end
+        -- return res
+      end
+      local function sel(ji)
+        -- TODO: make this an insert node
+        if ji then
+          return dl(ji, l.TM_SELECTED_TEXT)
+        else
+          return l(l.TM_SELECTED_TEXT)
+        end
+        -- return f(sel_helper, vim.tbl_extend("force", {}, opts or {}))
+      end
+      local function dsel(opts)
+        return f(function()
+          return sn(nil, { i(1, sel_helper()) })
+        end, vim.tbl_extend("force", {}, opts or {}))
+      end
+
+      local function reg(rn, opts)
+        return f(function()
+          return vim.fn.getreg(rn or '"')
         end, vim.tbl_extend("force", {}, opts or {}))
       end
 
       require("luasnip").setup {
         history = true,
         enable_autosnippets = true,
-        updateevents = "TextChanged,TextChangedP,TextChangedI",
+        update_events = "TextChanged,TextChangedP,TextChangedI",
         -- region_check_events = "CursorMoved,CursorHold,InsertEnter",
         region_check_events = "CursorMoved,CursorMovedI,InsertEnter",
         -- delete_check_events = "TextChangedI,TextChangedP,TextChanged",
@@ -87,6 +147,8 @@ local M = {
           tnl = tnl,
           nlt = nlt,
           nl = nl,
+          reg = reg,
+          dsel = dsel,
         },
         -- parser_nested_assembler = require "lv-luasnips.nested",
       }
@@ -94,7 +156,14 @@ local M = {
       require("plugins.snippets.luasnips_choices").config()
       require("luasnip.loaders.from_lua").load { paths = _G.CONFIG_PATH .. "/luasnippets" }
 
-      vim.api.nvim_create_user_command("EditSnippets", require("luasnip.loaders").edit_snippet_files, {})
+      vim.api.nvim_create_user_command("EditSnippets", function()
+        require("luasnip.loaders").edit_snippet_files {
+          edit = function(f)
+            print("edit!" .. f)
+            vim.cmd("edit! " .. f)
+          end,
+        }
+      end, {})
     end,
   },
   { import = "plugins.snippets.docs" },
@@ -128,6 +197,7 @@ local M = {
           require("SnippetGenie").finalize_snippet()
         end,
         mode = "n",
+        desc = "Genie Finalize",
       },
     },
   },

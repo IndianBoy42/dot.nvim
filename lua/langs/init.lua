@@ -3,7 +3,8 @@ return {
   require "langs.complete",
   { import = "langs.copilot" },
   require "langs.null_ls",
-
+  require "langs.refactoring",
+  -- https://github.com/lukas-reineke/lsp-format.nvim
   -- Languages
   { import = "langs.lua" },
   { import = "langs.tex" },

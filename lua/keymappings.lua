@@ -390,9 +390,9 @@ function M.setup()
 
   -- Search for the current selection
   map("x", "*", srchrpt '"zy/<C-R>z<cr>', nore) -- Search for the current selection
-  map("n", "<leader>*", operatorfunc_keys("searchbwd_for", "*"), {}) -- Search textobject
+  map("n", "<leader>*", operatorfunc_keys("searchbwd_for", "*"), { desc = "Search (op)" }) -- Search textobject
   map("x", "#", srchrpt '"zy?<C-R>z<cr>', nore) -- Backwards
-  map("n", "<leader>#", operatorfunc_keys("search_for", "#"), {})
+  map("n", "<leader>#", operatorfunc_keys("search_for", "#"), { desc = "^Search (op)" })
 
   -- Search for the current yank register
   map("n", "+", [[/<C-R>+<cr>]], {})
@@ -441,12 +441,12 @@ function M.setup()
   -- map("n", "gco", "o-<esc>gccA<BS>", sile)
 
   -- Select last pasted
-  map("n", "gp", "`[v`]", sile)
-  map("x", "gp", "<esc>gp", sile)
-  map("n", "gP", "`[V`]", sile)
-  map("x", "gP", "<esc>gP", sile)
-  map("n", "g<C-p>", "`[<C-v>`]", sile)
-  map("x", "g<C-p>", "<esc>g<C-p>", sile)
+  map("n", "gp", "`[v`]", { desc = "Select Last Paste" })
+  map("x", "gp", "<esc>gp", { desc = "Select Last Paste" })
+  map("n", "gP", "`[V`]", { desc = "SelLine Last Paste" })
+  map("x", "gP", "<esc>gP", { desc = "SelLine Last Paste" })
+  map("n", "g<C-p>", "`[<C-v>`]", { desc = "SelBlock Last Paste" })
+  map("x", "g<C-p>", "<esc>g<C-p>", { desc = "SelBlock Last Paste" })
   -- Use reselect as an operator
   op_from "gp"
   op_from "gP"
@@ -492,12 +492,9 @@ function M.setup()
   map("i", ";;", "<esc>A;", nore)
 
   -- lsp keys
-  map("n", "gd", lspbuf.definition, sile)
-  map("n", "gD", lspbuf.declaration, sile)
-  map("n", "gi", lspbuf.implementation, sile)
-  map("n", "gr", telescope_fn.lsp_references, sile)
+  map("n", "gd", lspbuf.definition, { desc = "Goto Definition" })
+  map("n", "gD", lspbuf.declaration, { desc = "Goto Declaration" })
   map("n", "gK", vim.lsp.codelens.run, { desc = "Codelens" })
-  -- map("n", "gr", lspbuf.references, sile)
   -- Preview variants
   map("n", "gpd", lsputil.preview_location_at "definition", sile)
   map("n", "gpD", lsputil.preview_location_at "declaration", sile)
@@ -505,17 +502,16 @@ function M.setup()
   map("n", "gpi", lsputil.preview_location_at "implementation", sile)
   -- Hover
   -- map("n", "K", lspbuf.hover, sile)
-  map("n", "gh", lspbuf.hover, sile)
-  local do_code_action = cmd "CodeActionMenu"
-  map("n", "K", do_code_action, {})
-  map("x", "gK", ":lua vim.lsp.buf.range_code_action()<cr>", {})
+  map("n", "gh", lspbuf.hover, { desc = "LSP Hover" })
+  local do_code_action = telescope_fn.code_actions_previewed
+  map("n", "K", do_code_action, { desc = "Do Code Action" })
 
   -- Formatting keymaps
-  map("n", "gq", lsputil.format_range_operator, sile)
-  map("x", "gq", lsputil.format, sile)
+  map("n", "gq", lsputil.format_range_operator, { desc = "Format Range" })
+  map("x", "gq", lsputil.format, { desc = "Format Range" })
   map("n", "gf", function()
     lsputil.format { async = true }
-  end, sile)
+  end, { desc = "Format Async" })
 
   -- TODO: Use more standard regex syntax
   -- map("n", "/", "/\v", nore)
@@ -525,7 +521,7 @@ function M.setup()
   map("n", "<M-S-cr>", "O<esc>", nore)
 
   -- Split line
-  map("n", "go", "i<cr><ESC>k<cmd>sil! keepp s/\v +$//<cr><cmd>noh<cr>j^", nore)
+  map("n", "go", "i<cr><ESC>k<cmd>sil! keepp s/\v +$//<cr><cmd>noh<cr>j^", {desc = "Split Line"})
 
   -- Quick activate macro
   map("n", "Q", "@q", nore)
@@ -696,14 +692,13 @@ function M.setup()
 
   -- TODO: support vim-sandwich in the which-key menus
   local leaderMappings = {
-    [";"] = { telescope_fn.commands, "Commands" },
-    [" "] = { name = "Electric Boogaloo" },
-    ["*"] = "Search obj",
-    ["#"] = "Search(bwd) obj",
+    [";"] = { telescope_fn.commands, "Srch Commands" },
+    [" "] = { name = "<localleader>" },
     -- [";"] = { cmd "Dashboard", "Dashboard" },
     ["/"] = { telescope_fn.live_grep, "Global search" },
     ["?"] = { telescope_fn.live_grep_all, "Global search" },
-    f = { telescope_fn.find_files, "Find File" },
+    -- f = { telescope_fn.find_files, "Smart Open File" },
+    f = { telescope_fn.smart_open, "Smart Open File" },
     F = { telescope_fn.find_all_files, "Find all Files" },
     [ldr_goto_next] = "Jump next (])",
     [ldr_goto_prev] = "Jump prev ([)",
@@ -734,6 +729,7 @@ function M.setup()
     t = { name = "Terminals" },
     x = { name = "Run" },
     p = { name = "Project (Tasks)" },
+    v = { name = "Visualize" },
     T = {
       name = "Toggle Opts",
       w = { cmd "setlocal wrap!", "Wrap" },
@@ -783,25 +779,33 @@ function M.setup()
       ["<CR>"] = { cmd "Git", "Fugitive Status" },
       [" "] = { ":Git ", "Fugitive ..." },
     },
+    I = {
+      name = "Info",
+      L = { cmd "LspInfo", "LSP" },
+      N = { cmd "NullLsInfo", "Null-ls" },
+      I = { cmd "Mason", "LspInstall" },
+      T = { cmd "TSConfigInfo", "Treesitter" },
+      P = { cmd "Lazy", "Lazy plugins" },
+    },
     l = {
       name = "LSP",
-      i = {
-        l = { cmd "LspInfo", "LSP" },
-        n = { cmd "NullLsInfo", "Null-ls" },
-        i = { cmd "Mason", "LspInstall" },
-        t = { cmd "TSConfigInfo", "Treesitter" },
-      },
       h = { lspbuf.hover, "Hover (gh)" },
       a = { do_code_action, "Code Action (K)" },
       k = { vim.lsp.codelens.run, "Run Code Lens (gK)" },
       t = { lspbuf.type_definition, "Type Definition" },
       f = { lsputil.format, "Format" },
+      r = { telescope_fn.lsp_references, "References" },
+      i = { telescope_fn.lsp_implementations, "Implementations" },
+      d = { telescope_fn.diagnostics, "Document Diagnostics" },
+      D = { telescope_fn.workspace_diagnostics, "Workspace Diagnostics" },
+      s = { telescope_fn.lsp_document_symbols, "Document Symbols" },
+      S = { telescope_fn.lsp_dynamic_workspace_symbols, "Workspace Symbols" },
       c = {
         name = "Calls",
         i = { lspbuf.incoming_calls, "Incoming" },
         o = { lspbuf.outgoing_calls, "Outgoing" },
       },
-      s = {
+      z = {
         name = "View in Split",
         d = {
           lsputil.view_location_split("definition", "FocusSplitNicely"),
@@ -825,33 +829,35 @@ function M.setup()
       name = "Search",
       [" "] = { telescope_fn.resume, "Redo last" },
       -- n = { telescope_fn.notify.notify, "Notifications" },
-      c = { telescope_fn.colorscheme, "Colorscheme" },
+      f = { telescope_fn.find_files, "Find File" },
+      -- c = { telescope_fn.colorscheme, "Colorscheme" },
       a = { telescope_fn.lsp_code_actions, "Code Actions" },
       s = { telescope_fn.lsp_document_symbols, "Document Symbols" },
       S = { telescope_fn.lsp_dynamic_workspace_symbols, "Workspace Symbols" },
       d = { telescope_fn.diagnostics, "Document Diagnostics" },
-      D = { telescope_fn.diagnostics, "Workspace Diagnostics" },
+      D = { telescope_fn.workspace_diagnostics, "Workspace Diagnostics" },
       r = { telescope_fn.lsp_references, "References" },
       I = { telescope_fn.lsp_implementations, "Implementations" },
       h = { telescope_fn.help_tags, "Find Help" },
       j = { telescope_fn.jumplist, "Jump List" },
       M = { telescope_fn.man_pages, "Man Pages" },
-      R = { telescope_fn.oldfiles, "Open Recent File" },
       -- R = { telescope_fn.registers, "Registers" },
       t = { telescope_fn.live_grep, "Text" },
       T = { telescope_fn.live_grep_all, "Text (ALL)" },
       b = { telescope_fn.curbuf, "Current Buffer" },
       k = { telescope_fn.keymaps, "Keymappings" },
+      c = { telescope_fn.commands, "Commands" },
       o = { cmd "TodoTelescope", "TODOs" },
       q = { telescope_fn.quickfix, "Quickfix" },
       ["*"] = { telescope_fn.grep_string, "Curr word" },
       ["/"] = { telescope_fn.grep_last_search, "Last Search" },
-      -- ["+"] = { telescope_fn.grep_last_yank, "Last Yank" },
       -- ["."] = { [[:%s/<C-R>.//g<Left><Left>]], "Last insert" },
-      i = "for (object)",
       p = { cmd "SearchSession", "Sessions" },
       m = { telescope_fn.marks, "Marks" },
       ["<CR>"] = { ":Telescope ", "Telescope ..." },
+      B = { telescope_fn.builtin, "Telescopes" },
+      ["+"] = { [[/<C-R>+<cr>]], "Last yank" },
+      ["."] = { [[/<C-R>.<cr>]], "Last insert" },
     },
     r = {
       name = "Replace/Refactor",
@@ -876,7 +882,6 @@ function M.setup()
       name = "Diagnostics",
       T = { lsputil.toggle_diagnostics, "Toggle Diags" },
       l = { lsputil.diag_line, "Line Diagnostics" },
-      c = { lsputil.diag_cursor, "Cursor Diagnostics" },
       v = {
         -- TODO: make this not move the cursor
         operatorfunc_scaffold("show_diagnostics", lsputil.range_diagnostics),
@@ -886,8 +891,7 @@ function M.setup()
     P = {
       name = "Projects",
     },
-    -- m = "Multi",
-    m = "which_key_ignore",
+    m = "Move",
     -- c = {
     --   operatorfunc_keys("change_all", "<leader>c"),
     --   "Change all",
@@ -913,13 +917,16 @@ function M.setup()
 
   local vLeaderMappings = {
     -- ["/"] = { cmd "CommentToggle", "Comment" },
-    d = { lsputil.range_diagnostics, "Range Diagnostics" },
+    l = {
+      d = { lsputil.range_diagnostics, "Range Diagnostics" },
+      a = { telescope_fn.code_actions_previewed, "Code Actions" },
+    },
     r = { name = "Replace/Refactor" },
     -- c = {
     --   [["z<M-y>:%s/<C-r>z//g<Left><Left>]],
     --   "Change all",
     -- },
-    s = { 'ygvc<CR><C-r>"<CR><ESC>', "separate" },
+    s = { 'ygvc<CR><C-r>"<CR><ESC>', "Add newlines around" },
     D = {
       name = "Debug",
       v = {

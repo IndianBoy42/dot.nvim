@@ -437,7 +437,7 @@ return {
   {
     "lervag/vimtex",
     ft = "tex",
-    config = function()
+    init = function()
       vim.g.tex_flavor = "latex"
       vim.g.vimtex_view_method = "zathura"
       vim.g.vimtex_view_automatic = 1
@@ -520,6 +520,11 @@ return {
     vim.opt_local.spell = true
     vim.opt.number = false
     vim.opt.relativenumber = false
+    require("lsp.functions").cb_on_attach(function(client, buffer)
+      if client.name == "texlab" then
+        client.server_capabilities.semanticTokensProvider = nil
+      end
+    end)
 
     local map = vim.keymap.setl
     require("keymappings").wrapjk()
@@ -581,8 +586,8 @@ return {
       },
     }
 
-    require("luasnip").add_snippets("tex", require("plugins.snippets.tex").snippets)
-    require("luasnip").add_snippets("tex", require("plugins.snippets.tex").autosnippets, { type = "autosnippets" })
+    -- require("luasnip").add_snippets("tex", require("plugins.snippets.tex").snippets)
+    -- require("luasnip").add_snippets("tex", require("plugins.snippets.tex").autosnippets, { type = "autosnippets" })
 
     -- TODO: mini.surround
     -- require("plugins.pairs.sandwich").add_local_recipes(sandwich_recipes)
@@ -618,6 +623,10 @@ return {
       },
       m = { cmd "VimtexToggleMain", "Toggle Main File" },
       a = { cmd "AirLatex", "Air Latex" },
+    }
+    mappings.ftleader {
+      ot = { cmd "VimtexTocToggle", "Table of Contents" },
+      ol = { cmd "VimtexLabelsToggle", "Latex Labels" },
     }
 
     -- utils.define_augroups { _vimtex_event = {

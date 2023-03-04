@@ -3,13 +3,6 @@ local telescope = {
   dependencies = {
     {
       "danielfalk/smart-open.nvim",
-      config = function()
-        require("plugins.telescope.functions").find_files = function()
-          require("telescope").extensions.smart_open.smart_open {
-            cwd_only = true,
-          }
-        end
-      end,
       dependencies = { "kkharji/sqlite.lua" },
     },
     { "nvim-telescope/telescope-frecency.nvim", dependencies = {
@@ -43,22 +36,8 @@ local telescope = {
       noremap = true,
       silent = true,
     }
-    local function map_tele(mode, key, f, options, buffer)
-      -- local map_key = vim.api.nvim_replace_termcodes(key .. f, true, true, true)
-      -- TelescopeMapArgs[map_key] = options or {}
-      -- local rhs = string.format("<cmd>lua require('telescope')['%s'](TelescopeMapArgs['%s'])<CR>", f, map_key)
-      local rhs = function()
-        require("telescope")[f](options or {})
-      end
 
-      if not buffer then
-        map_(mode, key, rhs, map_options)
-      else
-        map_b(mode, key, rhs, map_options)
-      end
-    end
-
-    local function with_rg(ignore, hidden, files)
+    local function with_rg(opts)
       return {
         "rg",
         "--color=never",
@@ -68,15 +47,16 @@ local telescope = {
         "--line-number",
         "--column",
         "--smart-case",
-        ignore and "--ignore" or "--no-ignore",
-        hidden and "--hidden" or "--no-hidden",
-        files and "--files" or nil,
+        "--trim",
+        opts.ignore and "--ignore" or "--no-ignore",
+        opts.hidden and "--hidden" or "--no-hidden",
+        opts.files and "--files" or nil,
       }
     end
 
-    local rg = with_rg(true, true, false)
+    local rg = with_rg { ignore = true, hidden = true }
     -- M.shell_cmd.fd = vim.list_extend(vim.deepcopy(M.shell_cmd.rg), { "--files" })
-    local fd = with_rg(true, true, true)
+    local fd = with_rg { ignore = true, hidden = true, files = true }
 
     local telescope = require "telescope"
     telescope.setup {
@@ -123,6 +103,8 @@ local telescope = {
         mappings = {
           i = {
             -- ["<M-p>"] = action_layout.toggle_preview,
+            ["<Esc>"] = actions.close,
+
             ["<C-h>"] = telescope.extensions.hop.hop,
             ["<C-x>"] = actions.delete_buffer,
             ["<C-s>"] = actions.select_horizontal,

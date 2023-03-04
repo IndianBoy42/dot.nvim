@@ -1,6 +1,7 @@
 return {
   {
-    dir = _G.CONFIG_PATH .. "/kitty.lua",
+    "IndianBoy42/kitty.lua",
+    dev = true,
     config = function()
       local K = require("kitty").setup {
         target_providers = {
@@ -17,11 +18,16 @@ return {
         end
 
         K.open()
-        KT = K.launch()
+        K.close_on_leave()
         K.setup_make()
-        vim.keymap.set("n", "<leader>tk", K.run, { desc = "Kitty Run" })
-        vim.keymap.set("n", "<leader>tt", K.make, { desc = "Kitty Make" })
-        vim.keymap.set("n", "<leader>tK", KT.run, { desc = "Kitty Run" })
+        vim.keymap.set("n", "<leader>tk", function()
+          K.run()
+        end, { desc = "Kitty Run" })
+        vim.keymap.set("n", "<leader>tt", function()
+          utils.dump(K)
+          K.make()
+        end, { desc = "Kitty Make" })
+        -- vim.keymap.set("n", "<leader>tK", KT.run, { desc = "Kitty Run" })
         -- vim.keymap.set("n", "", require("kitty").send_cell, { buffer = 0 })
       end, {})
     end,

@@ -42,7 +42,7 @@ local M = {
           enable = not not plugconf.ts_matchup,
           -- disable = {}, -- list of languages to disable
           highlight_pair_events = { "CursorMoved" }, -- e.g. {"CursorMoved"}, -- when to highlight the pairs, use {} to deactivate highlighting
-          highlight_self = false, -- whether to highlight also the part of the pair under cursor (or only the partner)
+          highlight_self = true, -- whether to highlight also the part of the pair under cursor (or only the partner)
           goto_right_end = false, -- whether to go to the end of the right partner or the beginning
           -- TODO: call matchup?
           -- fallback_cmd_normal = "call matchit#Match_wrapper('',1,'n')", -- What command to issue when we can't find a pair (e.g. "normal! %")

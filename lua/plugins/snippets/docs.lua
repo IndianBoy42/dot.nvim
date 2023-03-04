@@ -1,7 +1,10 @@
 return { {
   "danymat/neogen",
   cmd = "Neogen",
-  opts = { enabled = true },
+  opts = {
+    enabled = true,
+    snippet_engine = "luasnip",
+  },
 } }
 -- Vim Doge Documentation Generator
 -- use {

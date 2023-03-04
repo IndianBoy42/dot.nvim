@@ -19,6 +19,12 @@ function M.set_prompt_to_entry_value(prompt_bufnr)
   require("telescope.actions.state").get_current_picker(prompt_bufnr):reset_prompt(entry.ordinal)
 end
 
+M.smart_open = function()
+  require("telescope").extensions.smart_open.smart_open {
+    cwd_only = true,
+  }
+end
+
 function M.edit_neovim()
   require("telescope.builtin").find_files {
     prompt_title = "< VimRC >",
@@ -88,7 +94,7 @@ function M.git_branches()
   }
 end
 
-local cursor_menu = function()
+M.cursor_menu = function()
   return require("telescope.themes").get_cursor {
     -- previewer = true,
     shorten_path = false,
@@ -101,11 +107,11 @@ function M.lsp_code_actions()
     layout_config = {
       width = 0.3,
     },
-  }, cursor_menu()))
+  }, M.cursor_menu()))
 end
 
 function M.lsp_references()
-  require("telescope.builtin").lsp_references(cursor_menu())
+  require("telescope.builtin").lsp_references(M.cursor_menu())
 end
 
 -- M.codelens_actions = function(opts)
@@ -263,7 +269,7 @@ function M.project_search()
   require("telescope.builtin").find_files {
     previewer = false,
     layout_strategy = "vertical",
-    cwd = require("nvim_lsp.util").root_pattern ".git" (vim.fn.expand "%:p"),
+    cwd = require("nvim_lsp.util").root_pattern ".git"(vim.fn.expand "%:p"),
   }
 end
 
@@ -304,35 +310,35 @@ function M.uiselect(topts)
     local format_item = opts.format_item or tostring
 
     require("telescope.pickers")
-        .new(topts, {
-          prompt_title = prompt,
-          finder = require("telescope.finders").new_table {
-            results = items, -- TODO:
-            entry_maker = function(entry)
-              local str = format_item(entry)
-              -- local str = function(tbl)
-              --   utils.dump(tbl)
-              --   return format_item(tbl.value)
-              -- end
+      .new(topts, {
+        prompt_title = prompt,
+        finder = require("telescope.finders").new_table {
+          results = items, -- TODO:
+          entry_maker = function(entry)
+            local str = format_item(entry)
+            -- local str = function(tbl)
+            --   utils.dump(tbl)
+            --   return format_item(tbl.value)
+            -- end
 
-              return {
-                value = entry,
-                display = str,
-                ordinal = str,
-              }
-            end,
-          },
-          sorter = conf.generic_sorter(topts),
-          attach_mappings = function(prompt_bufnr, map)
-            require("telescope.actions").select_default:replace(function()
-              require("telescope.actions").close(prompt_bufnr)
-              local selection = require("telescope.actions.state").get_selected_entry()
-              on_choice(selection.value)
-            end)
-            return true
+            return {
+              value = entry,
+              display = str,
+              ordinal = str,
+            }
           end,
-        })
-        :find()
+        },
+        sorter = conf.generic_sorter(topts),
+        attach_mappings = function(prompt_bufnr, map)
+          require("telescope.actions").select_default:replace(function()
+            require("telescope.actions").close(prompt_bufnr)
+            local selection = require("telescope.actions.state").get_selected_entry()
+            on_choice(selection.value, selection.index)
+          end)
+          return true
+        end,
+      })
+      :find()
   end
 end
 
@@ -371,7 +377,7 @@ function M.file_browser()
       end
 
       map("i", "<M-=>", modify_depth(1))
-      map("i", "<M-+>", modify_depth( -1))
+      map("i", "<M-+>", modify_depth(-1))
 
       map("n", "yy", function()
         local entry = require("telescope.actions.state").get_selected_entry()
@@ -407,25 +413,21 @@ function M.git_commits()
   }
 end
 
-function M.find_only_certain_files(ignore)
-  local cmd = vim.tbl_extend(rg(ignore, ignore, true), { "--type", vim.fn.input "Type: " })
-  require("telescope.builtin").find_files {
-    find_command = cmd,
-  }
-end
-
 function M.projects()
   require("telescope").extensions.project.project {}
-end
-
-function M.yabs()
-  require("telescope").extensions.yabs.tasks {}
 end
 
 function M.diagnostics(opts)
   require("telescope.builtin").diagnostics(vim.tbl_extend("keep", opts or {}, {
     bufnr = 0,
   }))
+end
+function M.workspace_diagnostics(opts)
+  require("telescope.builtin").diagnostics(opts)
+end
+
+function M.code_actions_previewed()
+  require("actions-preview").code_actions()
 end
 
 return setmetatable(M, {

@@ -165,8 +165,9 @@ return {
     "stevearc/aerial.nvim",
     cmd = { "AerialToggle", "AerialOpen" },
     keys = {
-      { "<leader>os", "<cmd>AerialToggle!<cr>", desc = "Aerial Outline" },
+      { "<leader>os", "<cmd>AerialToggle<cr>", desc = "Aerial Outline" },
     },
+    opts = {},
   },
   { --
     "simrat39/symbols-outline.nvim",
@@ -179,9 +180,9 @@ return {
         close = "<Esc>",
         goto_location = "<Cr>",
         focus_location = "o",
-        hover_symbol = "<C-space>",
-        rename_symbol = "r",
-        code_actions = "a",
+        hover_symbol = "<localleader>h",
+        rename_symbol = "<localleader>r",
+        code_actions = "<localleader>a",
       },
       lsp_blacklist = {},
     },
@@ -203,19 +204,20 @@ return {
       -- { "<leader>dL", "<cmd>TroubleToggle loclist<cr>", desc = "Location List" },
       { "<leader>do", "<cmd>TroubleToggle todo<cr>", desc = "TODOs" },
     },
-    config = function()
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      position = "right",
+      auto_preview = false,
+      hover = "h",
+    },
+    config = function(_, opts)
       vim.api.nvim_create_autocmd(
         { "CursorMoved", "InsertLeave", "BufEnter", "BufWinEnter", "TabEnter", "BufWritePost" },
         { command = "TroubleRefresh" }
       )
 
-      require("trouble").setup {
-        -- your configuration comes here
-        -- or leave it empty to use the default settings
-        position = "right",
-        auto_preview = false,
-        hover = "h",
-      }
+      require("trouble").setup(opts)
 
       local trouble = require "trouble.providers.telescope"
       local telescope = require "telescope"
@@ -298,13 +300,6 @@ return {
       })
     end,
     event = { "CursorHold", "CursorHoldI" },
-  },
-  {
-    "weilbith/nvim-code-action-menu",
-    config = function()
-      utils.augroup._lsputil_codeaction_list.Filetype["code-action-menu-menu"] = "nmap <buffer> K <CR>"
-    end,
-    cmd = "CodeActionMenu",
   },
   {
     "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
@@ -410,7 +405,7 @@ return {
       vim.o.foldenable = true
 
       require("ufo").setup {
-        provider_selector = function(bufnr, filetype, buftype)
+        provider_selector = function()
           return { "treesitter", "indent" }
         end,
       }
@@ -421,4 +416,17 @@ return {
   { "ElPiloto/significant.nvim" },
   require "plugins.ui.files",
   require "plugins.ui.windowman",
+  -- {
+  --   "weilbith/nvim-code-action-menu",
+  --   config = function()
+  --     utils.augroup._lsputil_codeaction_list.Filetype["code-action-menu-menu"] = "nmap <buffer> K <CR>"
+  --   end,
+  --   cmd = "CodeActionMenu",
+  -- },
+  {
+    "aznhe21/actions-preview.nvim",
+    opts = {
+      telescope = require("plugins.telescope.functions").cursor_menu(),
+    },
+  },
 }

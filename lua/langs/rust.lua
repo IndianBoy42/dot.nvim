@@ -31,32 +31,6 @@ return {
     opts = {
       setup = {
         rust_analyzer = function(_, opts)
-          require("lsp.functions").cb_on_attach(function(client, buffer)
-            if client.name ~= "rust_analyzer" then
-              return
-            end
-            require("lsp.functions").live_codelens()
-
-            mappings.localleader {
-              m = { "<Cmd>RustExpandMacro<CR>", "Expand Macro" },
-              H = { "<Cmd>RustToggleInlayHints<CR>", "Toggle Inlay Hints" },
-              e = { "<Cmd>RustRunnables<CR>", "Runnables" },
-              h = { "<Cmd>RustHoverActions<CR>", "Hover Actions" },
-              s = { ":RustSSR  ==>> <Left><Left><Left><Left><Left><Left>", "Structural S&R" },
-            }
-            local map = vim.keymap.setl
-            map("x", "gh", "<cmd>RustHoverRange<CR>", { desc = "Hover Range" })
-            map("n", "gh", "<cmd>RustHoverActions<CR>", { desc = "Hover Actions" })
-            map("n", "gj", "<cmd>RustJoinLines<CR>", { desc = "Join Lines" })
-            -- map("n", "K", "<cmd>RustCodeAction<CR>")
-            map("n", "K", vim.lsp.buf.code_action, { desc = "Code Actions" })
-            map("x", "gK", ":lua vim.lsp.buf.range_code_action()<cr>", { desc = "Code Actions" })
-            mappings.ftleader {
-              pR = { "<CMD>RustRunnables<CR>", "Rust Run" },
-              pd = { "<CMD>RustDebuggables<CR>", "Rust Debug" },
-            }
-          end)
-
           local mason_registry = require "mason-registry"
           -- rust tools configuration for debugging support
           local codelldb = mason_registry.get_package "codelldb"
@@ -121,7 +95,7 @@ return {
             },
             tools = {
               hover_actions = {
-                auto_focus = false,
+                auto_focus = true,
                 border = "single",
               },
               inlay_hints = {
@@ -144,6 +118,70 @@ return {
               },
             },
             server = {
+              on_attach = function()
+                local rt = require "rust-tools"
+                require("lsp.functions").live_codelens()
+
+                mappings.localleader {
+                  m = { "<Cmd>RustExpandMacro<CR>", "Expand Macro" },
+                  H = { "<Cmd>RustToggleInlayHints<CR>", "Toggle Inlay Hints" },
+                  -- TODO: Integrate with Kitty.lua
+                  e = { "<Cmd>RustRunnables<CR>", "Runnables" },
+                  h = { "<Cmd>RustHoverActions<CR>", "Hover Actions" },
+                  a = { require("rust-tools").code_action_group.code_action_group, "Hover Actions" },
+                  s = { ":RustSSR  ==>> <Left><Left><Left><Left><Left><Left>", "Structural S&R" },
+                }
+                local map = vim.keymap.setl
+                map("x", "gh", "<cmd>RustHoverRange<CR>", { desc = "Hover Range" })
+                map("n", "gh", "<cmd>RustHoverActions<CR>", { desc = "Hover Actions" })
+                map("n", "gj", "<cmd>RustJoinLines<CR>", { desc = "Join Lines" })
+
+                local move_item = function(dir)
+                  return function()
+                    rt.move_item.move_item(dir == "k")
+                    vim.cmd("normal! " .. dir)
+                  end
+                end
+                local move_mode = require "hydra" {
+                  name = "Move Item",
+                  hint = false,
+                  config = { color = "pink" },
+                  mode = {
+                    "n",
+                  },
+                  heads = {
+                    {
+                      "j",
+                      move_item "j",
+                      { desc = "Move Item Down" },
+                    },
+                    {
+                      "k",
+                      move_item "k",
+                      { desc = "Move Item Up" },
+                    },
+                    { "q", nil, { exit = true, nowait = true, desc = "exit" } },
+                    { "<ESC>", nil, { exit = true, nowait = true, desc = "exit" } },
+                  },
+                }
+                map("n", "gmj", function()
+                  move_item "j"()
+                  -- move_mode:activate()
+                end, { desc = "Move Item Down" })
+                map("n", "gmk", function()
+                  move_item "k"()
+                  -- move_mode:activate()
+                end, { desc = "Move Item Up" })
+
+                -- map("n", "KK", require("rust-tools").code_action_group.code_action_group, { desc = "Code Actions" })
+                mappings.vlocalleader {
+                  h = { "<cmd>RustHoverRange<CR>", "Hover Range" },
+                }
+                mappings.ftleader {
+                  pR = { "<CMD>RustRunnables<CR>", "Rust Run" },
+                  pd = { "<CMD>RustDebuggables<CR>", "Rust Debug" },
+                }
+              end,
               settings = {
                 ["rust-analyzer"] = {
                   cargo = {

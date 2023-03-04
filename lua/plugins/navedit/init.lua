@@ -35,7 +35,16 @@ return {
       end)
     end,
   },
-  { "ggandor/leap-spooky.nvim", opts = {}, event = "VeryLazy" },
+  {
+    "ggandor/leap-spooky.nvim",
+    opts = {
+      affixes = {
+        remote = { window = "r", cross_window = "R" },
+        magnetic = { window = "<C-r>", cross_window = "<C-S-R>" },
+      },
+    },
+    event = "VeryLazy",
+  },
   {
     "ggandor/leap-ast.nvim",
     keys = {
@@ -96,14 +105,14 @@ return {
         ["Undo"] = "u",
         ["Redo"] = "<C-r>",
       }
-      vim.g.VM_leader = [[<leader>m]]
-      -- vim.g.VM_leader = [[\]]
+      vim.g.VM_leader = "\\"
+      -- vim.g.VM_leader = [[<leader>m]]
+    end,
+    config = function()
       local theme = "codedark"
       vim.g.VM_theme = theme
-
       require("which-key").register({ [vim.g.VM_leader] = "which_key_ignore" }, { mode = "n" })
-
-      -- vim.cmd.VMTheme(theme)
+      vim.cmd.VMTheme(theme)
       -- vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufNewFile" }, { command = "VMTheme " .. theme })
     end,
     event = { "BufReadPost", "BufNewFile" },
@@ -358,14 +367,14 @@ return {
     },
     keys = {
       {
-        "<C-o>",
+        "<C-i>",
         function()
           require("portal").jump_forward()
         end,
         desc = "portal fwd",
       },
       {
-        "<C-i>",
+        "<C-o>",
         function()
           require("portal").jump_backward()
         end,
@@ -397,6 +406,7 @@ return {
           require("ssr").open()
         end,
         mode = { "n", "v" },
+        desc = "Treesitter SSR",
       },
     },
   },

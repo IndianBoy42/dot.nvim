@@ -2,6 +2,19 @@ local prefix = "<C-w>"
 local function mode()
   local Hydra = require "hydra"
   local splits = require "smart-splits"
+  local splits_api = require "smart-splits"
+  local function smart_splits(name, ...)
+    local args = { ... }
+    return function()
+      splits[name](unpack(args))
+    end
+  end
+  local function smart_splits_api(name, ...)
+    local args = { ... }
+    return function()
+      splits_api[name](unpack(args))
+    end
+  end
 
   local cmd = require("hydra.keymap-util").cmd
   local pcmd = require("hydra.keymap-util").pcmd
@@ -35,37 +48,22 @@ local function mode()
       { "k", pcmd("wincmd k", "E11", "close") },
       { "l", "<C-w>l" },
 
-      { "H", cmd "WinShift left" },
-      { "J", cmd "WinShift down" },
-      { "K", cmd "WinShift up" },
-      { "L", cmd "WinShift right" },
+      -- { "<M-h>", smart_splits_api("move_to_edge", "left", false), { desc = false } },
+      -- { "<M-j>", smart_splits_api("move_to_edge", "down", false), { desc = false } },
+      -- { "<M-k>", smart_splits_api("move_to_edge", "up", false), { desc = false } },
+      -- { "<M-l>", smart_splits_api("move_to_edge", "right", false), { desc = false } },
 
-      { "r", "<C-w>r" },
+      { "H", smart_splits "swap_buf_left" },
+      { "J", smart_splits "swap_buf_down" },
+      { "K", smart_splits "swap_buf_up" },
+      { "L", smart_splits "swap_buf_right" },
 
-      {
-        "<C-h>",
-        function()
-          splits.resize_left(2)
-        end,
-      },
-      {
-        "<C-j>",
-        function()
-          splits.resize_down(2)
-        end,
-      },
-      {
-        "<C-k>",
-        function()
-          splits.resize_up(2)
-        end,
-      },
-      {
-        "<C-l>",
-        function()
-          splits.resize_right(2)
-        end,
-      },
+      { "r", "<C-w>r" }, -- Rotate
+
+      { "<C-h>", smart_splits("resize_left", 2) },
+      { "<C-j>", smart_splits("resize_down", 2) },
+      { "<C-k>", smart_splits("resize_up", 2) },
+      { "<C-l>", smart_splits("resize_right", 2) },
       { "=", "<C-w>=", { desc = "equalize" } },
 
       { "n", cmd "tabnew", { desc = "New Tab" } },
@@ -106,8 +104,9 @@ return {
   "anuvyklack/windows.nvim",
   dependencies = {
     "anuvyklack/middleclass",
-    { "mrjones2014/smart-splits.nvim", opts = {} },
-    { "sindrets/winshift.nvim", opts = {} },
+    { "mrjones2014/smart-splits.nvim", opts = {
+      cursor_follows_swapped_bufs = false,
+    } },
     {
       "beauwilliams/focus.nvim",
       opts = {
@@ -117,7 +116,7 @@ return {
         number = false,
         relativenumber = false,
         hybridnumber = false,
-        winhighlight = true,
+        winhighlight = false,
       },
       keys = function()
         -- stylua: ignore
@@ -140,6 +139,10 @@ return {
       duration = 20,
       fps = 30,
       easing = "in_out_sine",
+    },
+    ignore = { --			  |windows.ignore|
+      buftype = { "quickfix" },
+      filetype = { "NvimTree", "neo-tree", "undotree", "gundo", "Outline" },
     },
   },
   config = function(_, opts)

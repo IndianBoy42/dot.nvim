@@ -1,5 +1,6 @@
 -- local theme_choice = "github_dark_default"
 local theme_choice = "nebulous_night"
+-- local theme_choice = "nightfox_dawnfox"
 -- local theme_choice = "enfocado_neon"
 -- local theme_choice = "catppuccin_mocha"
 local is_active_theme = function(s)
@@ -12,6 +13,14 @@ local sub_theme = function(s, o)
     return o
   end
 end
+
+vim.cmd [[
+com! CheckHighlightUnderCursor echo {l,c,n ->
+        \   'hi<'    . synIDattr(synID(l, c, 1), n)             . '> '
+        \  .'trans<' . synIDattr(synID(l, c, 0), n)             . '> '
+        \  .'lo<'    . synIDattr(synIDtrans(synID(l, c, 1)), n) . '> '
+        \ }(line("."), col("."), "name")
+]]
 return {
   {
     "Yagua/nebulous.nvim",
@@ -137,7 +146,7 @@ return {
     opts = {},
     config = function(_, opts)
       require("nightfox").setup(opts)
-      vim.cmd.colorscheme "carbonfox"
+      vim.cmd.colorscheme(sub_theme "nightfox")
     end,
   },
   {
@@ -404,11 +413,28 @@ return {
     "folke/todo-comments.nvim",
     cmd = { "TodoTrouble", "TodoTelescope" },
     keys = {
-      "<leader>oT",
-      "<cmd>TodoTrouble<cr>",
-      desc = "Todos Sidebar",
+      {
+        "<leader>oT",
+        "<cmd>TodoTrouble<cr>",
+        desc = "Todos Sidebar",
+      },
+      {
+        "[T",
+        function()
+          require("todo-comments").jump_prev()
+        end,
+        desc = "Todo",
+      },
+      {
+        "]T",
+        function()
+          require("todo-comments").jump_next()
+        end,
+        desc = "Todo",
+      },
     },
-    -- event = { "BufReadPost", "BufNewFile" },
+    opts = {},
+    event = { "BufReadPost", "BufNewFile" },
   },
   {
     "giusgad/pets.nvim",

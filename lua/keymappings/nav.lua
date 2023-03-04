@@ -23,6 +23,7 @@ local moves = {
   "d", -- diags
   "u", -- usages
   "e", -- error
+  "T", -- error
 }
 
 M.setup = function()
@@ -35,13 +36,6 @@ M.setup = function()
       return "]"
     else
       return "["
-    end
-  end
-  local opp = function()
-    if dir == "[" then
-      return "]" .. ch
-    else
-      return "[" .. ch
     end
   end
 
