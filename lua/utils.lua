@@ -117,6 +117,7 @@ function M.conceal_toggle(n)
   end
 end
 
+-- TODO: convert to lua
 vim.cmd [[
 augroup quickfix
     autocmd!
@@ -255,7 +256,7 @@ M.cmd = setmetatable({
   lsp = luafn "vim.lsp.buf",
   -- diag = luafn "vim.lsp.diagnostic",
   diag = luafn "vim.diagnostic",
-  telescopes = luafn "require'plugins.telescope.functions'",
+  telescopes = luafn "require'telescopes'",
 }, {
   __call = function(tbl, arg)
     return "<cmd>" .. arg .. "<cr>"
@@ -408,21 +409,21 @@ function M.timeout_helper(timeout, callback)
 end
 
 M.hold_jumplist = (function()
-      -- local setmark = vim.api.nvim_buf_set_mark
-      -- local getcurpos = vim.api.nvim_win_get_cursor
-      return M.timeout_helper(1000, function()
-        -- local row, col = unpack(getcurpos(0))
-        -- setmark(0, "'", row, col)
-        if vim.api.nvim_get_mode().mode == "n" then
-          vim.cmd "normal! m'"
-        end
-        -- feedkeys("m'", "n", true)
-      end)
-    end)()
+  -- local setmark = vim.api.nvim_buf_set_mark
+  -- local getcurpos = vim.api.nvim_win_get_cursor
+  return M.timeout_helper(1000, function()
+    -- local row, col = unpack(getcurpos(0))
+    -- setmark(0, "'", row, col)
+    if vim.api.nvim_get_mode().mode == "n" then
+      vim.cmd "normal! m'"
+    end
+    -- feedkeys("m'", "n", true)
+  end)
+end)()
 M.hold_jumplist_aucmd = {
   { "InsertEnter,CmdlineEnter", "*", "lua require'utils'.hold_jumplist.disable()" },
   { "InsertLeave,CmdlineLeave", "*", "lua require'utils'.hold_jumplist.reenable()" },
-  { "CursorMoved",              "*", "lua require'utils'.hold_jumplist.reset()" },
+  { "CursorMoved", "*", "lua require'utils'.hold_jumplist.reset()" },
 }
 
 local function augroup_helper(tbl, name, clear)
@@ -474,11 +475,11 @@ M.augroup = setmetatable({}, {
 
 -- TODO: merge repeated 'x'
 M.delete_merge = (function()
-      local repeat_set = M.fn["repeat"].set
-      return M.timeout_helper(1000, function()
-        repeat_set("\\<Plug>RepeatDeletes", vim.v.count)
-      end)
-    end)()
+  local repeat_set = M.fn["repeat"].set
+  return M.timeout_helper(1000, function()
+    repeat_set("\\<Plug>RepeatDeletes", vim.v.count)
+  end)
+end)()
 
 local new_command_helper = function(idx, val, opts)
   if "string" == type(val) then
@@ -533,5 +534,7 @@ function M.setproxy(of)
   setmetatable(new, mt)
   return new
 end
+
+M.lsp = require "utils.lsp"
 
 return M

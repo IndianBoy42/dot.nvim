@@ -1,6 +1,7 @@
 local telescope = {
   "nvim-telescope/telescope.nvim",
   dependencies = {
+    -- https://github.com/orgs/nvim-telescope/repositories
     {
       "danielfalk/smart-open.nvim",
       dependencies = { "kkharji/sqlite.lua" },
@@ -9,6 +10,8 @@ local telescope = {
       "kkharji/sqlite.lua",
     } },
     "nvim-telescope/telescope-hop.nvim",
+    "nvim-telescope/telescope-media-files.nvim",
+    "nvim-telescope/telescope-github.nvim",
     {
       "nvim-telescope/telescope-fzf-native.nvim",
       -- NOTE: If you are having trouble with this installation,
@@ -26,7 +29,7 @@ local telescope = {
     local sorters = require "telescope.sorters"
     local actions = require "telescope.actions"
     -- local action_layout = require "telescope.actions.layout"
-    -- local functions = require "plugins.telescope.functions"
+    -- local functions = require "telescopes"
     -- Global remapping
     ------------------------------
     TelescopeMapArgs = TelescopeMapArgs or {}

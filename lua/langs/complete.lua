@@ -1,7 +1,6 @@
 local default_sources = {
   { name = "luasnip" },
   { name = "nvim_lsp" },
-  { name = "copilot" },
   -- { name = "buffer" },
   { name = "path" },
   -- { name = "latex_symbols" },

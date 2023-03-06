@@ -185,7 +185,7 @@ return {
     require("mason-lspconfig").setup_handlers { setup }
 
     if O.format_on_save then
-      require("lsp.functions").format_on_save()
+      require("utils.lsp").format_on_save()
     end
   end,
 }

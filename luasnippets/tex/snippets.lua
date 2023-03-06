@@ -4,19 +4,7 @@ local templates = require "plugins.snippets.texplates"
 
 -- -- some shorthands...
 local ls = require "luasnip"
--- local s = ls.snippet
--- local sn = ls.snippet_node
--- local t = ls.text_node
--- local i = ls.insert_node
--- local f = ls.function_node
--- local c = ls.choice_node
--- local d = ls.dynamic_node
--- local l = require("luasnip.extras").lambda
--- local r = require("luasnip.extras").rep
--- local p = require("luasnip.extras").partial
--- local m = require("luasnip.extras").match
--- local n = require("luasnip.extras").nonempty
--- local dl = require("luasnip.extras").dynamic_lambda
+-- TODO: https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#extend_decorator
 local pa = ls.parser.parse_snippet
 local ns = function(x)
   return sn(nil, x)
@@ -207,7 +195,7 @@ local math_maps = {
   ["nii"] = "ni",
   ["!in"] = "notin",
   ["!!"] = "neg",
-  ["--"] = "setminus",
+  [ [[\\]] ] = "setminus",
   ["null"] = "emptyset",
   ["varnull"] = "varnothing",
   "cup",
@@ -244,13 +232,13 @@ local math_maps = {
   ["AA"] = "forall",
   ["qq"] = "quad",
   ["EE"] = "exists",
+  ["NE"] = "nexists",
   ["RR"] = "R",
   ["NN"] = "N",
   ["ZZ"] = "Z",
   ["CC"] = "CC",
   ["QQ"] = "Q",
   ["OO"] = "Op",
-  ["to"] = "to",
   ["&&"] = "&",
   ["%%"] = "%",
   -- ["!!"] = "neg",
@@ -341,7 +329,21 @@ end
 list_extend(auto, {
 
   s("--- ", { t { "\\hline", "" } }),
-  lns("--", t "\\item"),
+  -- lns("--", t "\\item"),
+  lns(
+    "--",
+    d(1, function(nodes, parent, ...)
+      if in_env "itemize" or in_env "enumerate" then
+        return sn(nil, t "\\item ")
+      elseif in_env "description" then
+        return sn(nil, fmta("\\item[<>] ", { i(1) }))
+      elseif in_env "algorithmic" then
+        return sn(nil, t "\\STATE ")
+      else
+        return sn(nil, t "--")
+      end
+    end)
+  ),
   -- TODO: all of these can use TM_SELECTED_TEXT
   lns(
     "S{",
@@ -438,19 +440,19 @@ list_extend(auto, {
   ms(re [[(%\?[%w%^]+)^bar]], { t "\\overline{", sub(1), t "}" }),
   ms(re [[(%\?[%w%^]+)^_]], { t "\\overline{", sub(1), t "}" }),
   ms(re [[(%\?[%w%^]+)^hat]], { t "\\hat{", sub(1), t "}" }),
-  -- s("$", { t "\\(", i(1), t "\\)", i(0) }),
-  s(
-    "$",
-    c(1, {
-      ns { t "\\(", i(1), t "\\)" },
-      ns { t "$", i(1), t "$" },
-      ns { t "\\[", i(1), t "\\]" },
-      ns { t { "\\begin{equation}", "" }, i(1), t { "", "\\end{equation}" } },
-      ns { t { "\\begin{equation*}", "" }, i(1), t { "", "\\end{equation*}" } },
-      ns { t { "\\begin{align}", "" }, i(1), t { "", "\\end{align}" } },
-      ns { t { "\\begin{align*}", "" }, i(1), t { "", "\\end{align*}" } },
-    })
-  ),
+  s("$", { t "\\(", i(1), t "\\)", i(0) }),
+  -- s(
+  --   "$",
+  --   c(1, {
+  --     ns { t "\\(", i(1), t "\\)" },
+  --     ns { t "$", i(1), t "$" },
+  --     ns { t "\\[", i(1), t "\\]" },
+  --     -- ns { t { "\\begin{equation}", "" }, i(1), t { "", "\\end{equation}" } },
+  --     -- ns { t { "\\begin{equation*}", "" }, i(1), t { "", "\\end{equation*}" } },
+  --     -- ns { t { "\\begin{align}", "" }, i(1), t { "", "\\end{align}" } },
+  --     -- ns { t { "\\begin{align*}", "" }, i(1), t { "", "\\end{align*}" } },
+  --   })
+  -- ),
   ms("bar", { t "\\overline{", i(1), t "}", i(0) }),
   ms("hat", { t "\\hat{", i(1), t "}", i(0) }),
   ms("dot", { t "\\dot{", i(1), t "}", i(0) }),
@@ -652,6 +654,52 @@ list_extend(auto, {
     sel(),
     i(0),
   }),
+
+  -- TODO: more algorithm snippets
+  s(
+    "\\Loop",
+    fmta(
+      [[\Loop
+<>
+\EndLoop]],
+      { i(0) }
+    )
+  ),
+  s(
+    "\\While",
+    fmta(
+      [[\While{<>}
+<>
+\EndWhile]],
+      { i(1), i(0) }
+    )
+  ),
+  s(
+    "\\Function",
+    fmta(
+      [[\Function{<>}{$<>$}
+<>
+\EndFunction]],
+      { i(1, "name"), i(2, "args"), i(0) }
+    )
+  ),
+  s(
+    "\\If",
+    fmta(
+      [[\If{<>}
+<>
+\EndIf]],
+      { i(1), i(0) }
+    )
+  ),
+  s(
+    "\\ElsIf",
+    fmta(
+      [[\ElsIf{<>}
+<>]],
+      { i(1), i(0) }
+    )
+  ),
 })
 
 -- for k, v in pairs(intlike) do
@@ -768,7 +816,7 @@ list_extend(snips, {
                 i(1, "frame-title"),
               })
             )
-          elseif env == "figure" or env == "table" then
+          elseif env == "figure" or env == "table" or env == "algorithm" then
             return sn(
               nil,
               fmt([=[[{}]]=], {
@@ -803,12 +851,12 @@ list_extend(snips, {
                 [[\centering
 \includegraphics[<>]{<>}
 \caption{<>}
-\label{fig:<>}]],
+\label{<>}]],
                 {
                   i(4, "width = 0.8\\textwidth"),
                   i(1, "figure"),
                   dl(2, l._1, { 1 }),
-                  dl(3, l._1, { 1 }),
+                  dl(3, "fig:" .. l._1, { 1 }),
                 }
               )
             )
@@ -818,15 +866,31 @@ list_extend(snips, {
               fmta(
                 [[\centering
 \caption{<>}
-\label{tab:<>}
+\label{<>}
 \begin{tabular}{<>}
 <> \\
 \end{tabular}]],
                 {
-                  dl(1, l._1, { 1 }),
-                  dl(2, l._1, { 1 }),
+                  i(1, "caption"),
+                  dl(2, "tab:" .. l._1, { 1 }),
                   i(3, "c|c|c"),
                   dl(4, l._1:gsub("|", " & "), { 3 }),
+                }
+              )
+            )
+          elseif env == "algorithm" then
+            return sn(
+              nil,
+              fmta(
+                [[\caption{<>}
+\label{<>}
+\begin{algorithmic}
+<>
+\end{algorithmic}]],
+                {
+                  i(1, "algorithm caption"),
+                  dl(2, "tab:" .. l._1, { 1 }),
+                  i(3, "algorithm body"),
                 }
               )
             )
@@ -892,7 +956,7 @@ list_extend(snips, {
 })
 
 for k, v in pairs(templates.tex) do
-  list_extend(snips, { pa(k, v) })
+  list_extend(snips, { pa(k, v) }) -- TODO: dont use lsp parse for this
 end
 list_extend(snips, {
   s("subsubsec", { t "subsubsection{", i(0), t "}" }),

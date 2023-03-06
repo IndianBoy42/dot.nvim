@@ -23,7 +23,7 @@ local error_hlgroup = "ErrorMsg"
 local short_line_limit = 20
 
 -- Prints the first diagnostic for the current line.
--- Bind to CursorMoved to update live: cmd [[autocmd CursorMoved * :lua require("lsp.functions").echo_diagnostic()]]
+-- Bind to CursorMoved to update live: cmd [[autocmd CursorMoved * :lua require("utils.lsp").echo_diagnostic()]]
 function M.echo_diagnostic()
   if echo_timer then
     echo_timer:stop()
@@ -307,28 +307,30 @@ end
 
 -- Jump between diagnostics
 -- TODO: clean up and remove the deprecate functions
-local popup_diagnostics_opts = {
-  header = false,
-  border = O.lsp.border,
-}
+local popup_diagnostics_opts = function()
+  return {
+    header = false,
+    border = O.lsp.border,
+  }
+end
 function M.diag_line()
-  diags.open_float(vim.tbl_deep_extend("keep", { scope = "line" }, popup_diagnostics_opts))
+  diags.open_float(vim.tbl_deep_extend("keep", { scope = "line" }, popup_diagnostics_opts()))
 end
 
 function M.diag_cursor()
-  diags.open_float(vim.tbl_deep_extend("keep", { scope = "cursor" }, popup_diagnostics_opts))
+  diags.open_float(vim.tbl_deep_extend("keep", { scope = "cursor" }, popup_diagnostics_opts()))
 end
 
 function M.diag_buffer()
-  diags.open_float(vim.tbl_deep_extend("keep", { scope = "buffer" }, popup_diagnostics_opts))
+  diags.open_float(vim.tbl_deep_extend("keep", { scope = "buffer" }, popup_diagnostics_opts()))
 end
 
 function M.diag_next(opts)
-  diags.goto_next(vim.tbl_extend("keep", opts or {}, { enable_popup = true, float = popup_diagnostics_opts }))
+  diags.goto_next(vim.tbl_extend("keep", opts or {}, { enable_popup = true, float = popup_diagnostics_opts() }))
 end
 
 function M.diag_prev(opts)
-  diags.goto_prev(vim.tbl_extend("keep", opts or {}, { enable_popup = true, float = popup_diagnostics_opts }))
+  diags.goto_prev(vim.tbl_extend("keep", opts or {}, { enable_popup = true, float = popup_diagnostics_opts() }))
 end
 
 function M.error_next()

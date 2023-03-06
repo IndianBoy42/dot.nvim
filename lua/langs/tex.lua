@@ -520,7 +520,8 @@ return {
     vim.opt_local.spell = true
     vim.opt.number = false
     vim.opt.relativenumber = false
-    require("lsp.functions").cb_on_attach(function(client, buffer)
+    vim.cmd "setlocal iskeyword+=\\"
+    require("utils.lsp").cb_on_attach(function(client, buffer)
       if client.name == "texlab" then
         client.server_capabilities.semanticTokensProvider = nil
       end

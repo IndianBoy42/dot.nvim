@@ -8,6 +8,7 @@ return {
           function(T)
             T.helloworld = { desc = "Hello world", cmd = "echo hello world" }
           end,
+          "just",
           "cargo",
         },
       }
@@ -20,12 +21,15 @@ return {
         K.open()
         K.close_on_leave()
         K.setup_make()
+        require("rust-tools").config.options.tools.executor = K.rust_tools_executor()
         vim.keymap.set("n", "<leader>tk", function()
           K.run()
         end, { desc = "Kitty Run" })
         vim.keymap.set("n", "<leader>tt", function()
-          utils.dump(K)
           K.make()
+        end, { desc = "Kitty Make" })
+        vim.keymap.set("n", "<leader>t<CR>", function()
+          K.make "last"
         end, { desc = "Kitty Make" })
         -- vim.keymap.set("n", "<leader>tK", KT.run, { desc = "Kitty Run" })
         -- vim.keymap.set("n", "", require("kitty").send_cell, { buffer = 0 })

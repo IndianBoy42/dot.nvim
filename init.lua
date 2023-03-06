@@ -54,7 +54,7 @@ vim.api.nvim_create_autocmd("User", {
   callback = function()
     mappings.setup()
 
-    vim.ui.select = require("plugins.telescope.functions").uiselect()
+    vim.ui.select = require("telescopes").uiselect()
     vim.ui.input = function(opts, on_confirm)
       opts = opts or {}
       -- opts.completion

@@ -49,10 +49,10 @@ M.register_nN_repeat = register_nN_repeat
 local cmd = require("utils").cmd
 local luareq = cmd.require
 local gitsigns_fn = luareq "gitsigns"
-local telescope_fn = require "plugins.telescope.functions"
+local telescope_fn = require "telescopes"
 local focus_fn = luareq "focus"
 local lspbuf = vim.lsp.buf
-local lsputil = require "lsp.functions"
+local lsputil = require "utils.lsp"
 local operatorfunc_scaffold = require("utils").operatorfunc_scaffold
 local operatorfunc_keys = require("utils").operatorfunc_keys
 local operatorfuncV_keys = require("utils").operatorfuncV_keys
@@ -137,7 +137,6 @@ function M.setup()
   end
 
   -- Free keys for reference
-  map("n", "<C-q>", "<NOP>", {})
   map("n", "<C-p>", "<NOP>", {})
   -- map("n", "<C-o>", "<NOP>", {})
 
@@ -256,9 +255,7 @@ function M.setup()
 
   -- Tab switch buffer
   map("n", "<tab>", cmd "b#", nore)
-  map("n", "<leader><tab>", cmd "bnext", nore)
-  map("n", "<leader><S-tab>", cmd "bnext", nore)
-  map("n", "<S-tab>", cmd "bprev", nore)
+  map("n", "<S-tab>", cmd "bnext", nore)
 
   -- Preserve register on pasting in visual mode
   -- TODO: use the correct register
@@ -379,11 +376,10 @@ function M.setup()
   undotree "g+"
   undotree "g-"
 
-  require("keymappings.nav").setup()
-
   -- Close window
   map("n", "gq", "<C-w>q", nore)
   map("n", "<c-q>", "<C-w>q", nore)
+  map("n", "<c-s-q>", ":wqa", nore)
   map("n", "<c-w>d", cmd "bdelete!", nore)
 
   map("n", "zz", "za", nore)
@@ -505,6 +501,7 @@ function M.setup()
   map("n", "gh", lspbuf.hover, { desc = "LSP Hover" })
   local do_code_action = telescope_fn.code_actions_previewed
   map("n", "K", do_code_action, { desc = "Do Code Action" })
+  map("x", "K", do_code_action, { desc = "Do Code Action" })
 
   -- Formatting keymaps
   map("n", "gq", lsputil.format_range_operator, { desc = "Format Range" })
@@ -521,7 +518,7 @@ function M.setup()
   map("n", "<M-S-cr>", "O<esc>", nore)
 
   -- Split line
-  map("n", "go", "i<cr><ESC>k<cmd>sil! keepp s/\v +$//<cr><cmd>noh<cr>j^", {desc = "Split Line"})
+  map("n", "go", "i<cr><ESC>k<cmd>sil! keepp s/\v +$//<cr><cmd>noh<cr>j^", { desc = "Split Line" })
 
   -- Quick activate macro
   map("n", "Q", "@q", nore)
@@ -569,6 +566,8 @@ function M.setup()
   -- Go to multi insert from Visual mode
   map("x", "I", "<Plug>(VM-Visual-Add)i", { remap = true })
   map("x", "A", "<Plug>(VM-Visual-Add)a", { remap = true })
+  map("s", "I", "<ESC>I", {})
+  map("s", "A", "<ESC>A", {})
 
   -- Select all matching regex search
   -- map("n", "<M-S-/>", "<M-/><M-a>", {remap=true})
@@ -704,8 +703,34 @@ function M.setup()
     [ldr_goto_prev] = "Jump prev ([)",
     [ldr_swap_next] = "Swap next ())",
     [ldr_swap_prev] = "Swap prev (()",
-    w = { cmd "w", "Write" }, -- w = { cmd "up", "Write" },
-    W = { cmd "noau w", "Write (noau)" }, -- w = { cmd "noau up", "Write" },
+    w = {
+      function()
+        if vim.api.nvim_buf_get_name(0) == "" then
+          vim.notify("No filename yet, complete in cmdline", vim.log.levels.WARN)
+          feedkeys ":w "
+          -- vim.ui.input({ prompt = "filename:" }, function(f)
+          --   vim.cmd("w " .. f)
+          -- end)
+        else
+          vim.cmd "w"
+        end
+      end,
+      "Write",
+    }, -- w = { cmd "up", "Write" },
+    W = {
+      function()
+        if vim.api.nvim_buf_get_name(0) == "" then
+          vim.notify("No filename yet, complete in cmdline", vim.log.levels.WARN)
+          feedkeys ":noau w "
+          -- vim.ui.input({ prompt = "filename:" }, function(f)
+          --   vim.cmd("w " .. f)
+          -- end)
+        else
+          vim.cmd "noau w"
+        end
+      end,
+      "Write (noau)",
+    }, -- w = { cmd "noau up", "Write" },
     q = { "<C-W>q", "Quit" },
     Q = { "<C-W>q", "Quit" },
     o = {
@@ -718,7 +743,6 @@ function M.setup()
       r = { cmd "Oil", "File Browser" },
       q = { utils.quickfix_toggle, "Quick fixes" },
       E = { cmd "!open '%:p:h'", "Open File Explorer" },
-      F = { telescope_fn.file_browser, "Telescope browser" },
       v = { cmd "Vista nvim_lsp", "Vista" },
       -- ["v"] = {cmd "Vista", "Vista"},
       M = { vim.g.goneovim and cmd "GonvimMiniMap" or cmd "MinimapToggle", "Minimap" },
@@ -745,7 +769,7 @@ function M.setup()
     },
     b = {
       name = "Buffers",
-      j = { telescope_fn.buffers, "Jump to " },
+      s = { telescope_fn.curbuf, "Fuzzy Search" },
       w = { cmd "w", "Write" },
       W = { cmd "wa", "Write All" },
       c = { cmd "Bdelete!", "Close" },
@@ -796,10 +820,7 @@ function M.setup()
       f = { lsputil.format, "Format" },
       r = { telescope_fn.lsp_references, "References" },
       i = { telescope_fn.lsp_implementations, "Implementations" },
-      d = { telescope_fn.diagnostics, "Document Diagnostics" },
-      D = { telescope_fn.workspace_diagnostics, "Workspace Diagnostics" },
-      s = { telescope_fn.lsp_document_symbols, "Document Symbols" },
-      S = { telescope_fn.lsp_dynamic_workspace_symbols, "Workspace Symbols" },
+      d = { telescope_fn.lsp_definitions, "Definitions of" },
       c = {
         name = "Calls",
         i = { lspbuf.incoming_calls, "Incoming" },
@@ -831,23 +852,22 @@ function M.setup()
       -- n = { telescope_fn.notify.notify, "Notifications" },
       f = { telescope_fn.find_files, "Find File" },
       -- c = { telescope_fn.colorscheme, "Colorscheme" },
-      a = { telescope_fn.lsp_code_actions, "Code Actions" },
       s = { telescope_fn.lsp_document_symbols, "Document Symbols" },
       S = { telescope_fn.lsp_dynamic_workspace_symbols, "Workspace Symbols" },
       d = { telescope_fn.diagnostics, "Document Diagnostics" },
       D = { telescope_fn.workspace_diagnostics, "Workspace Diagnostics" },
-      r = { telescope_fn.lsp_references, "References" },
-      I = { telescope_fn.lsp_implementations, "Implementations" },
       h = { telescope_fn.help_tags, "Find Help" },
       j = { telescope_fn.jumplist, "Jump List" },
       M = { telescope_fn.man_pages, "Man Pages" },
       -- R = { telescope_fn.registers, "Registers" },
       t = { telescope_fn.live_grep, "Text" },
       T = { telescope_fn.live_grep_all, "Text (ALL)" },
-      b = { telescope_fn.curbuf, "Current Buffer" },
+      -- b = { telescope_fn.curbuf, "Current Buffer" },
+      b = { telescope_fn.buffers, "Buffers" },
       k = { telescope_fn.keymaps, "Keymappings" },
       c = { telescope_fn.commands, "Commands" },
-      o = { cmd "TodoTelescope", "TODOs" },
+      n = { telescope_fn.treesitter, "Treesitter Nodes" },
+      o = { cmd "TodoTelescope", "TODOs search" },
       q = { telescope_fn.quickfix, "Quickfix" },
       ["*"] = { telescope_fn.grep_string, "Curr word" },
       ["/"] = { telescope_fn.grep_last_search, "Last Search" },
@@ -966,7 +986,16 @@ function M.setup()
 
   -- Tab management keybindings
   local tab_mgmt = {
-    t = { cmd "tabnext", "Next" },
+    t = {
+      function()
+        if #vim.api.nvim_list_tabpages() == 1 then
+          vim.cmd "tabnew"
+        else
+          vim.cmd "tabnext"
+        end
+      end,
+      "Next",
+    },
     -- ["<C-t>"] = { cmd "tabnext", "which_key_ignore" },
     n = { cmd "tabnew", "New" },
     q = { cmd "tabclose", "Close" },
@@ -993,6 +1022,8 @@ function M.setup()
       silent = true,
     })
   end
+
+  require("keymappings.nav").setup()
 
   -- FIXME: duplicate entries for some of the operators
 end

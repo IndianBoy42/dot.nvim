@@ -195,14 +195,14 @@ return {
     "folke/trouble.nvim",
     cmd = "TroubleToggle",
     keys = {
-      { "<leader>d<space>", "<cmd>TroubleToggle<cr>", desc = "Trouble Toggle" },
+      { "<leader>dS", "<cmd>TroubleToggle<cr>", desc = "Trouble Sidebar" },
       { "<leader>dd", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "Document" },
       { "<leader>dD", "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "Workspace" },
       { "<leader>dr", "<cmd>TroubleToggle lsp_references<cr>", desc = "References" },
       { "<leader>ds", "<cmd>TroubleToggle lsp_definitions<cr>", desc = "Definitions" },
       { "<leader>dq", "<cmd>TroubleToggle quickfix<cr>", desc = "Quick Fixes" },
       -- { "<leader>dL", "<cmd>TroubleToggle loclist<cr>", desc = "Location List" },
-      { "<leader>do", "<cmd>TroubleToggle todo<cr>", desc = "TODOs" },
+      -- { "<leader>do", "<cmd>TroubleToggle todo<cr>", desc = "TODOs" },
     },
     opts = {
       -- your configuration comes here
@@ -394,8 +394,16 @@ return {
     "mbbill/undotree",
     cmd = { "UndotreeToggle", "UndotreeShow" },
   },
-  { "romgrk/nvim-treesitter-context", event = { "BufReadPost", "BufNewFile" } },
-  { "haringsrob/nvim_context_vt", event = { "BufReadPost", "BufNewFile" } },
+  {
+    "romgrk/nvim-treesitter-context",
+    event = { "BufReadPost", "BufNewFile" },
+    opts = {},
+  },
+  {
+    "haringsrob/nvim_context_vt",
+    event = { "BufReadPost", "BufNewFile" },
+    opts = {},
+  },
   {
     "kevinhwang91/nvim-ufo",
     config = function()
@@ -426,7 +434,7 @@ return {
   {
     "aznhe21/actions-preview.nvim",
     opts = {
-      telescope = require("plugins.telescope.functions").cursor_menu(),
+      telescope = require("telescopes").cursor_menu(),
     },
   },
 }

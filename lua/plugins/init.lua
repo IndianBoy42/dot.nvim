@@ -58,8 +58,8 @@ return {
   {
     "LudoPinelli/comment-box.nvim",
     keys = {
-      { "<leader>nbl", "<cmd>CBlbox", desc = "Left Box" },
-      { "<leader>nbc", "<cmd>CBcbox", desc = "Center Box" },
+      { "<leader>nbl", "<cmd>CBlbox<r>", desc = "Left Box" },
+      { "<leader>nbc", "<cmd>CBcbox<r>", desc = "Center Box" },
     },
   },
   {

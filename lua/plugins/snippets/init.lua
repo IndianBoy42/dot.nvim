@@ -92,7 +92,7 @@ local M = {
       local function sel_helper(_, snip)
         return snip.env.TM_SELECTED_TEXT or ""
         -- local res, env = {}, snip.env
-        -- local selected = env.TM_SELECT_TEXT
+        -- local selected = env.TM_SELECT_TEXT or {}
         -- if false and (selected == nil or selected == "" or selected == {}) then
         --   res = vim.split(vim.fn.getreg '"', "\n")
         -- else
@@ -105,9 +105,9 @@ local M = {
       local function sel(ji)
         -- TODO: make this an insert node
         if ji then
-          return dl(ji, l.TM_SELECTED_TEXT)
+          return dl(ji, lambda.TM_SELECTED_TEXT)
         else
-          return l(l.TM_SELECTED_TEXT)
+          return lambda(lambda.TM_SELECTED_TEXT)
         end
         -- return f(sel_helper, vim.tbl_extend("force", {}, opts or {}))
       end

@@ -89,6 +89,13 @@ return {
             },
           }
 
+          local inlay_hints_enabled = true
+          local rust_tools_executor = nil
+          local inlay_hints = vim.tbl_extend("keep", {
+            auto = inlay_hints_enabled,
+          }, require("langs").inlay_hint_opts)
+          utils.dump(inlay_hints)
+
           local rust_tools_opts = vim.tbl_deep_extend("force", opts, {
             dap = {
               adapter = require("rust-tools.dap").get_codelldb_adapter(codelldb_path, liblldb_path),
@@ -98,10 +105,7 @@ return {
                 auto_focus = true,
                 border = "single",
               },
-              inlay_hints = {
-                auto = false,
-                show_parameter_hints = true,
-              },
+              inlay_hints = inlay_hints,
               runnables = {
                 use_telescope = true,
                 layout_config = {
@@ -120,15 +124,24 @@ return {
             server = {
               on_attach = function()
                 local rt = require "rust-tools"
-                require("lsp.functions").live_codelens()
+                require("utils.lsp").live_codelens()
 
                 mappings.localleader {
                   m = { "<Cmd>RustExpandMacro<CR>", "Expand Macro" },
-                  H = { "<Cmd>RustToggleInlayHints<CR>", "Toggle Inlay Hints" },
+                  i = {
+                    function()
+                      if inlay_hints_enabled then
+                        rt.inlay_hints.disable()
+                      else
+                        rt.inlay_hints.enable()
+                      end
+                    end,
+                    "Toggle Inlay Hints",
+                  },
                   -- TODO: Integrate with Kitty.lua
                   e = { "<Cmd>RustRunnables<CR>", "Runnables" },
                   h = { "<Cmd>RustHoverActions<CR>", "Hover Actions" },
-                  a = { require("rust-tools").code_action_group.code_action_group, "Hover Actions" },
+                  a = { require("rust-tools").code_action_group.code_action_group, "Code Actions" },
                   s = { ":RustSSR  ==>> <Left><Left><Left><Left><Left><Left>", "Structural S&R" },
                 }
                 local map = vim.keymap.setl
@@ -221,7 +234,7 @@ return {
             end
           end
 
-          require("lsp.functions").cb_on_attach(function(client, buffer)
+          require("utils.lsp").cb_on_attach(function(client, buffer)
             if client.name == "taplo" then
               vim.keymap.set("n", "gh", show_documentation, { buffer = buffer })
               if is_cargo() then

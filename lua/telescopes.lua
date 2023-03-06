@@ -301,17 +301,19 @@ function M.find_all_files()
   }
 end
 
-function M.uiselect(topts)
-  topts = topts or require("telescope.themes").get_cursor() -- get_dropdown
+-- TODO: replace with https://github.com/nvim-telescope/telescope-ui-select.nvim
+function M.uiselect(picker_opts, sorter_opts)
+  picker_opts = picker_opts or require("telescope.themes").get_cursor() -- get_dropdown
   local conf = require("telescope.config").values
+
   return function(items, opts, on_choice)
     opts = opts or {}
-    local prompt = opts.prompt or ""
+    local prompt_title = opts.prompt or ""
     local format_item = opts.format_item or tostring
 
     require("telescope.pickers")
-      .new(topts, {
-        prompt_title = prompt,
+      .new(picker_opts, {
+        prompt_title = prompt_title,
         finder = require("telescope.finders").new_table {
           results = items, -- TODO:
           entry_maker = function(entry)
@@ -328,7 +330,7 @@ function M.uiselect(topts)
             }
           end,
         },
-        sorter = conf.generic_sorter(topts),
+        sorter = conf.generic_sorter(sorter_opts),
         attach_mappings = function(prompt_bufnr, map)
           require("telescope.actions").select_default:replace(function()
             require("telescope.actions").close(prompt_bufnr)
@@ -428,6 +430,38 @@ end
 
 function M.code_actions_previewed()
   require("actions-preview").code_actions()
+end
+
+function M.side_split_theme(opts)
+  opts = opts or {}
+
+  -- TODO:
+  local theme_opts = {
+    theme = "side-split",
+
+    sorting_strategy = "descending",
+
+    layout_strategy = "right_pane", -- TODO:
+    layout_config = {
+      height = 25,
+    },
+
+    border = true,
+    borderchars = {
+      prompt = { "─", " ", " ", " ", "─", "─", " ", " " },
+      results = { " " },
+      preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+    },
+  }
+  if opts.layout_config and opts.layout_config.prompt_position == "bottom" then
+    theme_opts.borderchars = {
+      prompt = { " ", " ", "─", " ", " ", " ", "─", "─" },
+      results = { "─", " ", " ", " ", "─", "─", " ", " " },
+      preview = { "─", " ", "─", "│", "┬", "─", "─", "╰" },
+    }
+  end
+
+  return vim.tbl_deep_extend("force", theme_opts, opts)
 end
 
 return setmetatable(M, {

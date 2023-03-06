@@ -414,9 +414,9 @@ return {
     cmd = { "TodoTrouble", "TodoTelescope" },
     keys = {
       {
-        "<leader>oT",
+        "<leader>do",
         "<cmd>TodoTrouble<cr>",
-        desc = "Todos Sidebar",
+        desc = "TODOs sidebar",
       },
       {
         "[T",
