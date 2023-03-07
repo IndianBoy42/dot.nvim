@@ -47,9 +47,9 @@ return {
 
     return {
       -- With Spaces
-      [")"] = { output = { left = "( ", right = " )" } },
-      ["}"] = { output = { left = "{ ", right = " }" } },
-      ["]"] = { output = { left = "[ ", right = " ]" } },
+      [")"] = { output = { left = "(", right = ")" } },
+      ["}"] = { output = { left = "{", right = "}" } },
+      ["]"] = { output = { left = "[", right = "]" } },
 
       c = { input = tsi "@call" },
       f = { input = tsi "@function" },

@@ -249,7 +249,6 @@ return {
   },
   require "plugins.ui.findreplace",
   -- TODO: try https://github.com/goolord/alpha-nvim (new dashboard plugin)
-  -- TODO: noice.nvim
   require "plugins.ui.noice_gui",
   -- TODO: dressing.nvim
   { "j-hui/fidget.nvim", opts = {}, event = "VeryLazy" },

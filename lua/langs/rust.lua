@@ -94,7 +94,6 @@ return {
           local inlay_hints = vim.tbl_extend("keep", {
             auto = inlay_hints_enabled,
           }, require("langs").inlay_hint_opts)
-          utils.dump(inlay_hints)
 
           local rust_tools_opts = vim.tbl_deep_extend("force", opts, {
             dap = {

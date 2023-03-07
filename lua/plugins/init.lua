@@ -56,13 +56,6 @@ return {
     end,
   },
   {
-    "LudoPinelli/comment-box.nvim",
-    keys = {
-      { "<leader>nbl", "<cmd>CBlbox<r>", desc = "Left Box" },
-      { "<leader>nbc", "<cmd>CBcbox<r>", desc = "Center Box" },
-    },
-  },
-  {
     "famiu/bufdelete.nvim",
     cmd = { "Bdelete", "Bwipeout" },
     keys = {
@@ -114,20 +107,6 @@ return {
   },
   -- TODO: "is0n/fm-nvim",
   {
-    "tzachar/local-highlight.nvim",
-    opts = {},
-    config = function(_, opts)
-      require("local-highlight").setup(opts)
-      -- vim.api.nvim_create_autocmd("BufRead", {
-      --   pattern = { "*.*" },
-      --   callback = function(data)
-      --     require("local-highlight").attach(data.buf)
-      --   end,
-      -- })
-    end,
-    event = { "BufReadPost", "BufNewFile" },
-  },
-  {
     "nacro90/numb.nvim",
     event = "CmdLineEnter",
     opts = {
@@ -135,7 +114,6 @@ return {
       show_cursorline = true, -- Enable 'cursorline' for the window while peeking
     },
   },
-  { "rmagatti/auto-session", lazy = false },
   {
     "ahmedkhalf/project.nvim",
     opts = {
@@ -193,8 +171,12 @@ return {
     event = { "BufReadPost", "BufNewFile" },
     opt = { lazy = true, fallback = O.clipboard },
   },
-  { "EricDriussi/remember-me.nvim", opts = {
-    project_roots = { ".git", ".svn", ".venv" },
-  } },
-  { "johmsalas/text-case.nvim", opts = {} },
+  {
+    "EricDriussi/remember-me.nvim",
+    opts = {
+      project_roots = { ".git", ".svn", ".venv" },
+    },
+    lazy = false,
+  },
+  -- { "rmagatti/auto-session", lazy = false },
 }

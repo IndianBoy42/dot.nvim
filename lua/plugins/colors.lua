@@ -466,4 +466,18 @@ return {
       },
     },
   },
+  {
+    "tzachar/local-highlight.nvim",
+    opts = {},
+    config = function(_, opts)
+      require("local-highlight").setup(opts)
+      -- vim.api.nvim_create_autocmd("BufRead", {
+      --   pattern = { "*.*" },
+      --   callback = function(data)
+      --     require("local-highlight").attach(data.buf)
+      --   end,
+      -- })
+    end,
+    event = { "BufReadPost", "BufNewFile" },
+  },
 }

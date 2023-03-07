@@ -46,7 +46,7 @@ local in_env = function(env)
     return vim.fn["vimtex#env#is_inside"](env)[1] ~= 0
   end
 end
-local in_align = make_condition(in_env)
+local in_align = make_condition(in_env "align")
 local function ms(lhs, rhs)
   return s(lhs, rhs, mathmode)
 end
@@ -333,12 +333,12 @@ list_extend(auto, {
   lns(
     "--",
     d(1, function(nodes, parent, ...)
-      if in_env "itemize" or in_env "enumerate" then
+      if in_env "itemize"() or in_env "enumerate"() then
         return sn(nil, t "\\item ")
-      elseif in_env "description" then
+      elseif in_env "description"() then
         return sn(nil, fmta("\\item[<>] ", { i(1) }))
-      elseif in_env "algorithmic" then
-        return sn(nil, t "\\STATE ")
+      elseif in_env "algorithmic"() then
+        return sn(nil, t "\\State ")
       else
         return sn(nil, t "--")
       end
@@ -671,6 +671,15 @@ list_extend(auto, {
       [[\While{<>}
 <>
 \EndWhile]],
+      { i(1), i(0) }
+    )
+  ),
+  s(
+    "\\For",
+    fmta(
+      [[\For{<>}
+<>
+\EndFor]],
       { i(1), i(0) }
     )
   ),

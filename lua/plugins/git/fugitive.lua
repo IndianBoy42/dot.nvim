@@ -2,6 +2,7 @@ return {
   "tpope/vim-fugitive",
   config = function() end,
   in_fugitive_menu = function()
+    vim.o.previewwindow = true
     -- TODO: hydra.nvim submode?
     local maps = {
       s = { "s", "Stage" },

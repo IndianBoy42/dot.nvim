@@ -3,7 +3,7 @@ return {
   config = function()
     -- Do NOT run setup, otherwise it creates default keybindings
     if false then
-    -- require("textcase").setup({})
+      require("textcase").setup {}
     else
       local hydra = require "hydra"
 

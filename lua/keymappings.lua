@@ -383,6 +383,9 @@ function M.setup()
   map("n", "<c-w>d", cmd "bdelete!", nore)
 
   map("n", "zz", "za", nore)
+  map("n", "==", "zz", { desc = "Center this Line" })
+  map("n", "=_", "zb", { desc = "Bottom this Line" })
+  map("n", "=^", "zt", { desc = "Top this Line" })
 
   -- Search for the current selection
   map("x", "*", srchrpt '"zy/<C-R>z<cr>', nore) -- Search for the current selection
@@ -427,8 +430,18 @@ function M.setup()
   -- map("n", "xp", "<Plug>TransposeCharacters", {})
 
   -- Go Back
-  map("n", "gb", "<c-o>", nore)
-  map("n", "GB", "<c-i>", nore)
+  require "hydra" {
+    name = "Jumplist",
+    body = "g",
+    mode = "n",
+    heads = {
+      { "b", "<c-o>", { desc = "Go Back" } },
+      { "f", "<c-i>", { desc = "Go Forward" } },
+      { "B", "<c-i>", { desc = "Go Back" } },
+      { "q", nil, { exit = true } },
+    },
+  }
+  -- map("n", "gb", "<c-o>", nore)
   -- map("n", "<c-o>", "<c-o>", nore)
   -- map("n", "<c-i>", "<c-i>", nore)
 
@@ -450,27 +463,13 @@ function M.setup()
 
   -- comment and copy
   -- map("x", "gy", '"z<M-y>gvgc`>"zp`[', sile)
-  map("x", "gy", '"z<M-y>mz`<"zPgPgc`z', sile)
+  map("x", "gy", '"z<M-y>mz`<"zPgPgc`z', { desc = "copy and comment" })
   map("n", "gy", operatorfuncV_keys("comment_copy", "gy"), sile)
   -- map("n", "gyy", "Vgy", sile)
 
   -- Swap the mark jump keys
   map("n", "'", "`", nore)
   map("n", "`", "'", nore)
-
-  -- Jupyter Cells
-  -- Change to onoremap
-  map("x", "aj", [[?#\+\s*%\+<cr>o/#\+\s*%\+/s-1<cr>]], nore)
-  op_from("aj", "aj", sile)
-  local cell_nN = {
-    -- "/#+s*%+/s-1<cr>",
-    [[/#\+\s*%\+<cr>]],
-    -- "?#+s*%+/e+1<cr>",
-    [[?#\+\s*%\+<cr>]],
-  }
-  map("n", pre_goto_next .. "j", cell_nN[1], nore)
-  map("n", pre_goto_prev .. "j", cell_nN[2], nore)
-  -- map("n", pre_goto_next .. "j", [[/#\+\s*%\+<cr>]], nore)
 
   -- Spell checking
   -- map("i", "<C-l>", "<c-g>u<Esc>[s1z=`]a<c-g>u", nore)
@@ -488,7 +487,13 @@ function M.setup()
   map("i", ";;", "<esc>A;", nore)
 
   -- lsp keys
-  map("n", "gd", lspbuf.definition, { desc = "Goto Definition" })
+  local telescope_cursor = function(name)
+    return function()
+      return telescope_fn[name](require("telescope.themes").get_cursor())
+    end
+  end
+  local goto_defn = telescope_cursor "lsp_definitions"
+  map("n", "gd", goto_defn, { desc = "Goto Definition" })
   map("n", "gD", lspbuf.declaration, { desc = "Goto Declaration" })
   map("n", "gK", vim.lsp.codelens.run, { desc = "Codelens" })
   -- Preview variants
@@ -496,6 +501,7 @@ function M.setup()
   map("n", "gpD", lsputil.preview_location_at "declaration", sile)
   map("n", "gpr", lsputil.preview_location_at "references", sile)
   map("n", "gpi", lsputil.preview_location_at "implementation", sile)
+  map("n", "gpe", lsputil.diag_line, sile)
   -- Hover
   -- map("n", "K", lspbuf.hover, sile)
   map("n", "gh", lspbuf.hover, { desc = "LSP Hover" })
@@ -578,9 +584,13 @@ function M.setup()
   map("n", "<M-S-v>", operatorfunc_keys("multiselect_all", "<M-S-a>"), sile)
 
   -- Keymaps for easier access to 'ci' and 'di'
-  local function quick_inside(key)
+  local function quick_inside(key, no_v)
     map("o", key, "i" .. key, { remap = true })
     map("o", "<M-" .. key .. ">", "a" .. key, { remap = true })
+    if not vis then
+      map("x", key, "i" .. key, { remap = true })
+      map("x", "<M-" .. key .. ">", "a" .. key, { remap = true })
+    end
     -- map("n", "<M-" .. key .. ">", "vi" .. key, {remap=true})
     -- map("n", "<C-M-" .. key .. ">", "va" .. key, {remap=true})
   end
@@ -591,7 +601,7 @@ function M.setup()
   end
 
   quick_inside "w"
-  quick_inside "p"
+  quick_inside("p", true)
   quick_inside "W"
   quick_inside "b"
   quick_inside "B"
@@ -800,8 +810,8 @@ function M.setup()
       b = { telescope_fn.git_branches, "Checkout branch" },
       c = { telescope_fn.git_commits, "Checkout commit" },
       C = { telescope_fn.git_bcommits, "Checkout commit(for current file)" },
-      ["<CR>"] = { cmd "Git", "Fugitive Status" },
-      [" "] = { ":Git ", "Fugitive ..." },
+      ["<CR>"] = { cmd "tab G", "Fugitive Status" },
+      [" "] = { ":tab G ", "Fugitive ..." },
     },
     I = {
       name = "Info",
@@ -887,8 +897,7 @@ function M.setup()
       ["/"] = { [[:%s/<C-R>///g<Left><Left>]], "Last search" },
       ["+"] = { [[:%s/<C-R>+//g<Left><Left>]], "Last yank" },
       ["."] = { [[:%s/<C-R>.//g<Left><Left>]], "Last insert" },
-      s = { [[:%s///g<Left><Left><Left>]], "From Search" },
-      S = { [[:s///g<Left><Left><Left>]], "From Search" },
+      s = { [[:%s///g<Left><Left><Left>]], "In File" },
     },
     n = {
       name = "Generate",
@@ -941,7 +950,13 @@ function M.setup()
       d = { lsputil.range_diagnostics, "Range Diagnostics" },
       a = { telescope_fn.code_actions_previewed, "Code Actions" },
     },
-    r = { name = "Replace/Refactor" },
+    r = {
+      name = "Replace/Refactor",
+      s = { ":s///g<Left><Left><Left>", "In Selection" },
+      ["/"] = { [[:s/<C-R>///g<Left><Left>]], "Last search" },
+      ["+"] = { [[:s/<C-R>+//g<Left><Left>]], "Last yank" },
+      ["."] = { [[:s/<C-R>.//g<Left><Left>]], "Last insert" },
+    },
     -- c = {
     --   [["z<M-y>:%s/<C-r>z//g<Left><Left>]],
     --   "Change all",

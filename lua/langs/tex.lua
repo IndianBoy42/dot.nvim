@@ -42,6 +42,14 @@ local surroundings = function(ms)
         return { left = nil, right = nil }
       end,
     },
+    ["$"] = {
+      input = function()
+        return { "\\%(().-()\\%)" }
+      end,
+      output = function()
+        return { left = "(", right = ")" }
+      end,
+    },
   }
 end
 local sandwich_recipes = {

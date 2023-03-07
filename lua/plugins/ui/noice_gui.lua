@@ -15,6 +15,25 @@ return {
       end,
     })
     require("noice").setup {
+      cmdline = {
+        format = {
+          -- execute shell command (!command)
+          filter = { pattern = "^:%s*!", icon = "$", ft = "sh" },
+
+          -- replace file content with shell command output (%!command)
+          f_filter = { pattern = "^:%s*%%%s*!", icon = " $", ft = "sh" },
+
+          -- replace selection with shell command output (%! command on visual selection)
+          v_filter = { pattern = "^:%s*%'<,%'>%s*!", icon = " $", ft = "sh" },
+
+          substitute = {
+            pattern = "^:%%?s/",
+            icon = " ",
+            ft = "regex",
+            opts = { border = { text = { top = " sub (old/new/) " } } },
+          },
+        },
+      },
       lsp = {
         progress = { enabled = false }, -- Using fidget so...
         override = {
@@ -37,6 +56,9 @@ return {
         -- view_warn = "notify", -- view for warnings
         -- view_history = "messages", -- view for :messages
         -- view_search = "virtualtext", -- view for search count messages. Set to `false` to disable
+      },
+      popupmenu = {
+        backend = "cmp",
       },
       views = {
         cmdline_popup = {
