@@ -192,7 +192,7 @@ local M = {
         mode = "x",
       },
       {
-        "<leader>S",
+        "<leader>ns",
         function()
           require("SnippetGenie").finalize_snippet()
         end,

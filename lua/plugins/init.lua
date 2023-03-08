@@ -55,6 +55,7 @@ return {
       require("mini.comment").setup(opts)
     end,
   },
+
   {
     "famiu/bufdelete.nvim",
     cmd = { "Bdelete", "Bwipeout" },
@@ -62,6 +63,26 @@ return {
       { "<leader>bc", "Bdelete!", desc = "Close" },
     },
   },
+  { "jghauser/mkdir.nvim", event = "BufWritePre" },
+  { "lambdalisue/suda.vim", cmd = { "SudaWrite", "SudaRead" } },
+  {
+    "tpope/vim-eunuch",
+    cmd = {
+      "Delete",
+      "Unlink",
+      "Move",
+      "Rename",
+      "Chmod",
+      "Mkdir",
+      "Cfind",
+      "Clocate",
+      "Lfind",
+      "Wall",
+      "SudoWrite",
+      "SudoEdit",
+    },
+  },
+
   {
     "monaqa/dial.nvim",
     config = function()
@@ -114,6 +135,19 @@ return {
       show_cursorline = true, -- Enable 'cursorline' for the window while peeking
     },
   },
+  { "seandewar/nvimesweeper", cmd = "Nvimesweeper" },
+  {
+    "EtiamNullam/deferred-clipboard.nvim",
+    event = { "BufReadPost", "BufNewFile" },
+    opt = { lazy = true, fallback = O.clipboard },
+  },
+  {
+    "EricDriussi/remember-me.nvim",
+    opts = {
+      project_roots = { ".git", ".svn", ".venv" },
+    },
+    lazy = false,
+  },
   {
     "ahmedkhalf/project.nvim",
     opts = {
@@ -145,38 +179,6 @@ return {
       { "<leader>pR", "<cmd>ProjectRoot<cr>", desc = "Rooter" },
       { "<leader>pP", "<cmd>Telescope projects<cr>", desc = "T Projects" },
     },
-  },
-  { "jghauser/mkdir.nvim", event = "BufWritePre" },
-  { "lambdalisue/suda.vim", cmd = { "SudaWrite", "SudaRead" } },
-  {
-    "tpope/vim-eunuch",
-    cmd = {
-      "Delete",
-      "Unlink",
-      "Move",
-      "Rename",
-      "Chmod",
-      "Mkdir",
-      "Cfind",
-      "Clocate",
-      "Lfind",
-      "Wall",
-      "SudoWrite",
-      "SudoEdit",
-    },
-  },
-  { "seandewar/nvimesweeper", cmd = "Nvimesweeper" },
-  {
-    "EtiamNullam/deferred-clipboard.nvim",
-    event = { "BufReadPost", "BufNewFile" },
-    opt = { lazy = true, fallback = O.clipboard },
-  },
-  {
-    "EricDriussi/remember-me.nvim",
-    opts = {
-      project_roots = { ".git", ".svn", ".venv" },
-    },
-    lazy = false,
   },
   -- { "rmagatti/auto-session", lazy = false },
 }

@@ -14,6 +14,14 @@ local sub_theme = function(s, o)
   end
 end
 
+local config_colorscheme = function(name, cscheme)
+  cscheme = cscheme or name
+  return function(_, opts)
+    require(name).setup(opts)
+    vim.cmd.colorscheme(cscheme)
+  end
+end
+
 vim.cmd [[
 com! CheckHighlightUnderCursor echo {l,c,n ->
         \   'hi<'    . synIDattr(synID(l, c, 1), n)             . '> '
@@ -56,67 +64,65 @@ return {
     lazy = not is_active_theme "tundra",
     -- cond = is_active_theme "github",
     priority = 1000,
-    opts = {},
-    config = function(_, opts)
-      require("nvim-tundra").setup {
-        transparent_background = false,
-        dim_inactive_windows = {
-          enabled = false,
-          color = nil,
-        },
-        sidebars = {
-          enabled = true,
-          color = nil,
-        },
-        editor = {
-          search = {},
-          substitute = {},
-        },
-        syntax = {
-          booleans = { bold = true, italic = true },
-          comments = { bold = true, italic = true },
-          conditionals = {},
-          constants = { bold = true },
-          fields = {},
-          functions = {},
-          keywords = {},
-          loops = {},
-          numbers = { bold = true },
-          operators = { bold = true },
-          punctuation = {},
-          strings = {},
-          types = { italic = true },
-        },
-        diagnostics = {
-          errors = {},
-          warnings = {},
-          information = {},
-          hints = {},
-        },
-        plugins = {
-          lsp = true,
-          treesitter = true,
-          telescope = true,
-          nvimtree = true,
-          cmp = true,
-          context = true,
-          dbui = true,
-          gitsigns = true,
-          neogit = true,
-        },
-        overwrite = {
-          colors = {},
-          highlights = {},
-        },
-      }
-    end,
+    opts = {
+      transparent_background = false,
+      dim_inactive_windows = {
+        enabled = false,
+        color = nil,
+      },
+      sidebars = {
+        enabled = true,
+        color = nil,
+      },
+      editor = {
+        search = {},
+        substitute = {},
+      },
+      syntax = {
+        booleans = { bold = true, italic = true },
+        comments = { bold = true, italic = true },
+        conditionals = {},
+        constants = { bold = true },
+        fields = {},
+        functions = {},
+        keywords = {},
+        loops = {},
+        numbers = { bold = true },
+        operators = { bold = true },
+        punctuation = {},
+        strings = {},
+        types = { italic = true },
+      },
+      diagnostics = {
+        errors = {},
+        warnings = {},
+        information = {},
+        hints = {},
+      },
+      plugins = {
+        lsp = true,
+        treesitter = true,
+        telescope = true,
+        nvimtree = true,
+        cmp = true,
+        context = true,
+        dbui = true,
+        gitsigns = true,
+        neogit = true,
+      },
+      overwrite = {
+        colors = {},
+        highlights = {},
+      },
+    },
+    config = config_colorscheme("nvim-tundra", "tundra"),
   },
   {
     "projekt0n/github-nvim-theme",
     lazy = not is_active_theme "github",
     -- cond = is_active_theme "github",
     priority = 1000,
-    opts = { theme_style = sub_theme "github" },
+    opts = { theme_style = sub_theme("github", "dark_default") },
     config = function(_, opts)
       require("github-theme").setup(opts)
     end,
@@ -125,6 +131,15 @@ return {
     "rebelot/kanagawa.nvim",
     lazy = not is_active_theme "kanagawa",
     -- cond = is_active_theme "kanagawa",
+    opts = {
+      compile = true,
+      theme = sub_theme("kanagawa", "wave"),
+      background = { -- map the value of 'background' option to a theme
+        dark = sub_theme("kanagawa", "wave"), -- try "dragon" !
+        light = "lotus",
+      },
+    },
+    config = config_colorscheme("kanagawa", "kanagawa"),
     priority = 1000,
   },
   {
@@ -132,22 +147,16 @@ return {
     lazy = not is_active_theme "tokyonight",
     priority = 1000,
     opts = {
-      style = sub_theme "tokyonight",
+      style = sub_theme("tokyonight", "night"),
     },
-    config = function(_, opts)
-      require("tokyonight").setup(opts)
-      vim.cmd.colorscheme "tokyonight"
-    end,
+    config = config_colorscheme "tokyonight",
   },
   {
     "EdenEast/nightfox.nvim",
     lazy = not is_active_theme "nightfox",
     priority = 1000,
     opts = {},
-    config = function(_, opts)
-      require("nightfox").setup(opts)
-      vim.cmd.colorscheme(sub_theme "nightfox")
-    end,
+    config = config_colorscheme("nightfox", "carbonfox"),
   },
   {
     "nyoom-engineering/oxocarbon.nvim",
@@ -159,7 +168,7 @@ return {
     "wuelnerdotexe/vim-enfocado",
     lazy = not is_active_theme "enfocado",
     init = function()
-      vim.g.enfocado_style = sub_theme "enfocado"
+      vim.g.enfocado_style = sub_theme("enfocado", "neon")
       vim.cmd.colorscheme "enfocado"
     end,
     priority = 1000,
@@ -171,151 +180,151 @@ return {
     lazy = not is_active_theme "catppuccin",
     -- cond = is_active_theme "catppuccin",
     priority = 1000,
-    config = function()
+    opts = {
+      flavour = sub_theme("catppuccin", "mocha"),
+      color_overrides = {
+        mocha = {
+          -- base = "#000000",
+          -- mantle = "#000000",
+          -- crust = "#000000",
+          rosewater = "#F5E0DC",
+          flamingo = "#F2CDCD",
+          mauve = "#DDB6F2",
+          pink = "#F5C2E7",
+          red = "#F28FAD",
+          maroon = "#E8A2AF",
+          peach = "#F8BD96",
+          yellow = "#FAE3B0",
+          green = "#ABE9B3",
+          blue = "#96CDFB",
+          sky = "#89DCEB",
+          teal = "#B5E8E0",
+          lavender = "#C9CBFF",
+
+          text = "#D9E0EE",
+          subtext1 = "#BAC2DE",
+          subtext0 = "#A6ADC8",
+          overlay2 = "#C3BAC6",
+          overlay1 = "#988BA2",
+          overlay0 = "#6E6C7E",
+          surface2 = "#6E6C7E",
+          surface1 = "#575268",
+          surface0 = "#302D41",
+
+          base = "#1E1E2E",
+          mantle = "#1A1826",
+          crust = "#161320",
+        },
+      },
+      highlight_overrides = {
+        mocha = function(cp)
+          return {
+            -- For base configs.
+            NormalFloat = { fg = cp.text, bg = transparent_background and cp.none or cp.base },
+            CursorLineNr = { fg = cp.green },
+            Search = { bg = cp.surface1, fg = cp.pink, style = { "bold" } },
+            IncSearch = { bg = cp.pink, fg = cp.surface1 },
+            Keyword = { fg = cp.pink },
+            Type = { fg = cp.blue },
+            Typedef = { fg = cp.yellow },
+            StorageClass = { fg = cp.red, style = { "italic" } },
+            -- For native lsp configs.
+            DiagnosticVirtualTextError = { bg = cp.none },
+            DiagnosticVirtualTextWarn = { bg = cp.none },
+            DiagnosticVirtualTextInfo = { bg = cp.none },
+            DiagnosticVirtualTextHint = { fg = cp.rosewater, bg = cp.none },
+            DiagnosticHint = { fg = cp.rosewater },
+            LspDiagnosticsDefaultHint = { fg = cp.rosewater },
+            LspDiagnosticsHint = { fg = cp.rosewater },
+            LspDiagnosticsVirtualTextHint = { fg = cp.rosewater },
+            LspDiagnosticsUnderlineHint = { sp = cp.rosewater },
+            -- For fidget.
+            FidgetTask = { bg = cp.none, fg = cp.surface2 },
+            FidgetTitle = { fg = cp.blue, style = { "bold" } },
+            -- For trouble.nvim
+            TroubleNormal = { bg = cp.base },
+            -- For treesitter.
+            ["@field"] = { fg = cp.rosewater },
+            ["@property"] = { fg = cp.yellow },
+            ["@include"] = { fg = cp.teal },
+            -- ["@operator"] = { fg = cp.sky },
+            ["@keyword.operator"] = { fg = cp.sky },
+            ["@punctuation.special"] = { fg = cp.maroon },
+            -- ["@float"] = { fg = cp.peach },
+            -- ["@number"] = { fg = cp.peach },
+            -- ["@boolean"] = { fg = cp.peach },
+
+            ["@constructor"] = { fg = cp.lavender },
+            -- ["@constant"] = { fg = cp.peach },
+            -- ["@conditional"] = { fg = cp.mauve },
+            -- ["@repeat"] = { fg = cp.mauve },
+            ["@exception"] = { fg = cp.peach },
+            ["@constant.builtin"] = { fg = cp.lavender },
+            -- ["@function.builtin"] = { fg = cp.peach, style = { "italic" } },
+            -- ["@type.builtin"] = { fg = cp.yellow, style = { "italic" } },
+            ["@type.qualifier"] = { link = "@keyword" },
+            ["@variable.builtin"] = { fg = cp.red, style = { "italic" } },
+            -- ["@function"] = { fg = cp.blue },
+            ["@function.macro"] = { fg = cp.red, style = {} },
+            ["@parameter"] = { fg = cp.rosewater },
+            ["@keyword"] = { fg = cp.red, style = { "italic" } },
+            ["@keyword.function"] = { fg = cp.maroon },
+            ["@keyword.return"] = { fg = cp.pink, style = {} },
+            -- ["@text.note"] = { fg = cp.base, bg = cp.blue },
+            -- ["@text.warning"] = { fg = cp.base, bg = cp.yellow },
+            -- ["@text.danger"] = { fg = cp.base, bg = cp.red },
+            -- ["@constant.macro"] = { fg = cp.mauve },
+
+            -- ["@label"] = { fg = cp.blue },
+            ["@method"] = { fg = cp.blue, style = { "italic" } },
+            ["@namespace"] = { fg = cp.rosewater, style = {} },
+            ["@punctuation.delimiter"] = { fg = cp.teal },
+            ["@punctuation.bracket"] = { fg = cp.overlay2 },
+            -- ["@string"] = { fg = cp.green },
+            -- ["@string.regex"] = { fg = cp.peach },
+            ["@type"] = { fg = cp.yellow },
+            ["@variable"] = { fg = cp.text },
+            ["@tag.attribute"] = { fg = cp.mauve, style = { "italic" } },
+            ["@tag"] = { fg = cp.peach },
+            ["@tag.delimiter"] = { fg = cp.maroon },
+            ["@text"] = { fg = cp.text },
+            -- ["@text.uri"] = { fg = cp.rosewater, style = { "italic", "underline" } },
+            -- ["@text.literal"] = { fg = cp.teal, style = { "italic" } },
+            -- ["@text.reference"] = { fg = cp.lavender, style = { "bold" } },
+            -- ["@text.title"] = { fg = cp.blue, style = { "bold" } },
+            -- ["@text.emphasis"] = { fg = cp.maroon, style = { "italic" } },
+            -- ["@text.strong"] = { fg = cp.maroon, style = { "bold" } },
+            -- ["@string.escape"] = { fg = cp.pink },
+
+            -- ["@property.toml"] = { fg = cp.blue },
+            -- ["@field.yaml"] = { fg = cp.blue },
+
+            -- ["@label.json"] = { fg = cp.blue },
+
+            ["@function.builtin.bash"] = { fg = cp.red, style = { "italic" } },
+            ["@parameter.bash"] = { fg = cp.yellow, style = { "italic" } },
+            ["@field.lua"] = { fg = cp.lavender },
+            ["@constructor.lua"] = { fg = cp.flamingo },
+            ["@constant.java"] = { fg = cp.teal },
+            ["@property.typescript"] = { fg = cp.lavender, style = { "italic" } },
+            -- ["@constructor.typescript"] = { fg = cp.lavender },
+
+            -- ["@constructor.tsx"] = { fg = cp.lavender },
+            -- ["@tag.attribute.tsx"] = { fg = cp.mauve },
+
+            ["@type.css"] = { fg = cp.lavender },
+            ["@property.css"] = { fg = cp.yellow, style = { "italic" } },
+            ["@type.builtin.c"] = { fg = cp.yellow, style = {} },
+            ["@property.cpp"] = { fg = cp.text },
+            ["@type.builtin.cpp"] = { fg = cp.yellow, style = {} },
+            -- ["@symbol"] = { fg = cp.flamingo },
+          }
+        end,
+      },
+    },
+    config = function(_, opts)
       local transparent_background = false -- Set background transparency here!
-
-      require("catppuccin").setup {
-        flavour = sub_theme "catppuccin",
-        color_overrides = {
-          mocha = {
-            -- base = "#000000",
-            -- mantle = "#000000",
-            -- crust = "#000000",
-            rosewater = "#F5E0DC",
-            flamingo = "#F2CDCD",
-            mauve = "#DDB6F2",
-            pink = "#F5C2E7",
-            red = "#F28FAD",
-            maroon = "#E8A2AF",
-            peach = "#F8BD96",
-            yellow = "#FAE3B0",
-            green = "#ABE9B3",
-            blue = "#96CDFB",
-            sky = "#89DCEB",
-            teal = "#B5E8E0",
-            lavender = "#C9CBFF",
-
-            text = "#D9E0EE",
-            subtext1 = "#BAC2DE",
-            subtext0 = "#A6ADC8",
-            overlay2 = "#C3BAC6",
-            overlay1 = "#988BA2",
-            overlay0 = "#6E6C7E",
-            surface2 = "#6E6C7E",
-            surface1 = "#575268",
-            surface0 = "#302D41",
-
-            base = "#1E1E2E",
-            mantle = "#1A1826",
-            crust = "#161320",
-          },
-        },
-        highlight_overrides = {
-          mocha = function(cp)
-            return {
-              -- For base configs.
-              NormalFloat = { fg = cp.text, bg = transparent_background and cp.none or cp.base },
-              CursorLineNr = { fg = cp.green },
-              Search = { bg = cp.surface1, fg = cp.pink, style = { "bold" } },
-              IncSearch = { bg = cp.pink, fg = cp.surface1 },
-              Keyword = { fg = cp.pink },
-              Type = { fg = cp.blue },
-              Typedef = { fg = cp.yellow },
-              StorageClass = { fg = cp.red, style = { "italic" } },
-              -- For native lsp configs.
-              DiagnosticVirtualTextError = { bg = cp.none },
-              DiagnosticVirtualTextWarn = { bg = cp.none },
-              DiagnosticVirtualTextInfo = { bg = cp.none },
-              DiagnosticVirtualTextHint = { fg = cp.rosewater, bg = cp.none },
-              DiagnosticHint = { fg = cp.rosewater },
-              LspDiagnosticsDefaultHint = { fg = cp.rosewater },
-              LspDiagnosticsHint = { fg = cp.rosewater },
-              LspDiagnosticsVirtualTextHint = { fg = cp.rosewater },
-              LspDiagnosticsUnderlineHint = { sp = cp.rosewater },
-              -- For fidget.
-              FidgetTask = { bg = cp.none, fg = cp.surface2 },
-              FidgetTitle = { fg = cp.blue, style = { "bold" } },
-              -- For trouble.nvim
-              TroubleNormal = { bg = cp.base },
-              -- For treesitter.
-              ["@field"] = { fg = cp.rosewater },
-              ["@property"] = { fg = cp.yellow },
-              ["@include"] = { fg = cp.teal },
-              -- ["@operator"] = { fg = cp.sky },
-              ["@keyword.operator"] = { fg = cp.sky },
-              ["@punctuation.special"] = { fg = cp.maroon },
-              -- ["@float"] = { fg = cp.peach },
-              -- ["@number"] = { fg = cp.peach },
-              -- ["@boolean"] = { fg = cp.peach },
-
-              ["@constructor"] = { fg = cp.lavender },
-              -- ["@constant"] = { fg = cp.peach },
-              -- ["@conditional"] = { fg = cp.mauve },
-              -- ["@repeat"] = { fg = cp.mauve },
-              ["@exception"] = { fg = cp.peach },
-              ["@constant.builtin"] = { fg = cp.lavender },
-              -- ["@function.builtin"] = { fg = cp.peach, style = { "italic" } },
-              -- ["@type.builtin"] = { fg = cp.yellow, style = { "italic" } },
-              ["@type.qualifier"] = { link = "@keyword" },
-              ["@variable.builtin"] = { fg = cp.red, style = { "italic" } },
-              -- ["@function"] = { fg = cp.blue },
-              ["@function.macro"] = { fg = cp.red, style = {} },
-              ["@parameter"] = { fg = cp.rosewater },
-              ["@keyword"] = { fg = cp.red, style = { "italic" } },
-              ["@keyword.function"] = { fg = cp.maroon },
-              ["@keyword.return"] = { fg = cp.pink, style = {} },
-              -- ["@text.note"] = { fg = cp.base, bg = cp.blue },
-              -- ["@text.warning"] = { fg = cp.base, bg = cp.yellow },
-              -- ["@text.danger"] = { fg = cp.base, bg = cp.red },
-              -- ["@constant.macro"] = { fg = cp.mauve },
-
-              -- ["@label"] = { fg = cp.blue },
-              ["@method"] = { fg = cp.blue, style = { "italic" } },
-              ["@namespace"] = { fg = cp.rosewater, style = {} },
-              ["@punctuation.delimiter"] = { fg = cp.teal },
-              ["@punctuation.bracket"] = { fg = cp.overlay2 },
-              -- ["@string"] = { fg = cp.green },
-              -- ["@string.regex"] = { fg = cp.peach },
-              ["@type"] = { fg = cp.yellow },
-              ["@variable"] = { fg = cp.text },
-              ["@tag.attribute"] = { fg = cp.mauve, style = { "italic" } },
-              ["@tag"] = { fg = cp.peach },
-              ["@tag.delimiter"] = { fg = cp.maroon },
-              ["@text"] = { fg = cp.text },
-              -- ["@text.uri"] = { fg = cp.rosewater, style = { "italic", "underline" } },
-              -- ["@text.literal"] = { fg = cp.teal, style = { "italic" } },
-              -- ["@text.reference"] = { fg = cp.lavender, style = { "bold" } },
-              -- ["@text.title"] = { fg = cp.blue, style = { "bold" } },
-              -- ["@text.emphasis"] = { fg = cp.maroon, style = { "italic" } },
-              -- ["@text.strong"] = { fg = cp.maroon, style = { "bold" } },
-              -- ["@string.escape"] = { fg = cp.pink },
-
-              -- ["@property.toml"] = { fg = cp.blue },
-              -- ["@field.yaml"] = { fg = cp.blue },
-
-              -- ["@label.json"] = { fg = cp.blue },
-
-              ["@function.builtin.bash"] = { fg = cp.red, style = { "italic" } },
-              ["@parameter.bash"] = { fg = cp.yellow, style = { "italic" } },
-              ["@field.lua"] = { fg = cp.lavender },
-              ["@constructor.lua"] = { fg = cp.flamingo },
-              ["@constant.java"] = { fg = cp.teal },
-              ["@property.typescript"] = { fg = cp.lavender, style = { "italic" } },
-              -- ["@constructor.typescript"] = { fg = cp.lavender },
-
-              -- ["@constructor.tsx"] = { fg = cp.lavender },
-              -- ["@tag.attribute.tsx"] = { fg = cp.mauve },
-
-              ["@type.css"] = { fg = cp.lavender },
-              ["@property.css"] = { fg = cp.yellow, style = { "italic" } },
-              ["@type.builtin.c"] = { fg = cp.yellow, style = {} },
-              ["@property.cpp"] = { fg = cp.text },
-              ["@type.builtin.cpp"] = { fg = cp.yellow, style = {} },
-              -- ["@symbol"] = { fg = cp.flamingo },
-            }
-          end,
-        },
-      }
+      require("catppuccin").setup(opts)
       vim.cmd.colorscheme "catppuccin"
     end,
   },
@@ -337,7 +346,7 @@ return {
       vim.cmd "ColorizerReloadAllBuffers"
     end,
   },
-  { "mrjones2014/nvim-ts-rainbow", event = { "BufReadPost", "BufNewFile" } },
+  { "HiPhish/nvim-ts-rainbow2", event = { "BufReadPost", "BufNewFile" } },
   {
     "lukas-reineke/indent-blankline.nvim",
     event = { "BufReadPost", "BufNewFile" },

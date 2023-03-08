@@ -25,4 +25,11 @@ return {
     cmd = "JupyterAttach",
     build = ":UpdateRemotePlugins",
   },
+
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      setup = {},
+    },
+  },
 }

@@ -357,10 +357,7 @@ return {
     },
     opts = {
       portal = {
-        title = {
-          border = "none",
-        },
-        body = {
+        window_options = {
           border = "none",
         },
       },
@@ -368,18 +365,15 @@ return {
     keys = {
       {
         "<C-i>",
-        function()
-          require("portal").jump_forward()
-        end,
+        "<cmd>Portal jumplist backward<cr>",
         desc = "portal fwd",
       },
       {
         "<C-o>",
-        function()
-          require("portal").jump_backward()
-        end,
+        "<cmd>Portal jumplist backward<cr>",
         desc = "portal bwd",
       },
+      -- TODO: use other queries?
     },
   },
   {

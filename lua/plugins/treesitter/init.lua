@@ -35,7 +35,7 @@ local M = {
         ensure_installed = tsconfig.ensure_installed, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
         ignore_install = tsconfig.ignore_install,
         matchup = {
-          enable = not not plugconf.matchup,
+          enable = true,
           -- disable = { "c", "ruby" },  -- list of language that will be disabled
         },
         pairs = {
@@ -58,17 +58,17 @@ local M = {
           disable = { "latex" },
         },
         context_commentstring = {
-          enable = not not plugconf.ts_context_commentstring,
+          enable = true,
           config = { css = "// %s" },
           enable_autocmd = false,
         },
         -- indent = {enable = true, disable = {"python", "html", "javascript"}},
         -- TODO seems to be broken
         indent = { enable = { "javascriptreact" } },
-        autotag = { enable = not not plugconf.ts_autotag },
+        autotag = { enable = true },
         textobjects = {},
         textsubjects = {
-          enable = not not plugconf.ts_textsubjects,
+          enable = true,
           keymaps = {
             ["<Up>"] = "textsubjects-smart",
             ["."] = "textsubjects-container-outer",
@@ -76,7 +76,7 @@ local M = {
           },
         },
         playground = {
-          enable = not not plugconf.ts_playground,
+          enable = true,
           disable = {},
           updatetime = 25, -- Debounced time for highlighting nodes in the playground from source code
           persist_queries = false, -- Whether the query persists across vim sessions
@@ -94,9 +94,9 @@ local M = {
           },
         },
         rainbow = {
-          enable = not not plugconf.ts_rainbow,
-          extended_mode = true, -- Highlight also non-parentheses delimiters, boolean or table: lang -> boolean
-          max_file_lines = 1000, -- Do not enable for files with more than 1000 lines, int
+          enable = true,
+          -- extended_mode = true, -- Highlight also non-parentheses delimiters, boolean or table: lang -> boolean
+          -- max_file_lines = 1000, -- Do not enable for files with more than 1000 lines, int
         },
         refactor = {
           smart_rename = {
@@ -128,7 +128,7 @@ local M = {
           },
         },
         -- element_textobject = {
-        --   enable = not not plugconf.ts_textobjects,
+        --   enable = true,
         --   keymaps = {
         --     [textobj_prefixes.swap_next .. other_suffixes.element[1]] = "swap_next_element",
         --     [textobj_prefixes.swap_prev .. other_suffixes.element[1]] = "swap_prev_element",
@@ -138,7 +138,7 @@ local M = {
         --   set_jumps = true,
         -- },
         -- scope_textobject = {
-        --   enable = not not plugconf.ts_textobjects,
+        --   enable = true,
         --   keymaps = {
         --     ["a" .. other_suffixes.scope[1]] = "a_scope",
         --   },

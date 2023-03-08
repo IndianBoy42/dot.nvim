@@ -97,6 +97,7 @@ return function()
   opt.listchars = { extends = ">", precedes = "<", trail = "_" }
   opt.background = "dark"
   vim.g.python3_host_prog = O.python_interp
+  opt.confirm = true
 
   -- opt.undodir = CACHE_PATH .. "/undo" -- set an undo directory
   local undodir = "/tmp/.undodir_" .. vim.env.USER

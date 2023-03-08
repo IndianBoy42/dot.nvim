@@ -587,7 +587,7 @@ function M.setup()
   local function quick_inside(key, no_v)
     map("o", key, "i" .. key, { remap = true })
     map("o", "<M-" .. key .. ">", "a" .. key, { remap = true })
-    if not vis then
+    if not no_v then
       map("x", key, "i" .. key, { remap = true })
       map("x", "<M-" .. key .. ">", "a" .. key, { remap = true })
     end

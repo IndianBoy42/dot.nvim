@@ -39,12 +39,13 @@ return {
       local actions = require "diffview.actions"
 
       return {
-        key_bindings = require("plugins.git.keys").hydra(actions),
+        key_bindings = require("keymappings.git").diffview(actions),
       }
     end,
     ft = "diff",
     cmd = { "DiffviewOpen", "DiffviewFileHistory" },
   },
   require "plugins.git.fugitive",
-  -- https://github.com/anuvyklack/hydra.nvim/wiki/Git
+  -- TODO: https://github.com/anuvyklack/hydra.nvim/wiki/Git
+  -- TODO: https://github.com/aaronhallaert/advanced-git-search.nvim
 }
