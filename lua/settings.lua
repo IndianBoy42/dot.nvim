@@ -95,7 +95,7 @@ return function()
   opt.sidescroll = 1
   opt.sidescrolloff = 10
   opt.listchars = { extends = ">", precedes = "<", trail = "_" }
-  opt.background = "dark"
+  opt.background = vim.env.NVIM_THEME_BG or "dark"
   vim.g.python3_host_prog = O.python_interp
   opt.confirm = true
 
@@ -121,8 +121,8 @@ return function()
   _general_settings.Filetype.qf = "set nobuflisted"
 
   -- Default autocommands
+  -- TODO: Reorganize this
   require("utils").define_augroups {
-    _packer_compile = { { "User", "PackerComplete", "PackerCompile" } },
     _buffer_bindings = { { "FileType", "dashboard", "nnoremap <silent> <buffer> q :q<CR>" } },
     _terminal_insert = { { "BufEnter", "term://*", "startinsert" }, { "BufLeave", "term://*", "stopinsert" } },
     -- will check for external file changes on cursor hold
@@ -159,6 +159,7 @@ return function()
 
   if vim.g.kitty_scrollback then
     opt.signcolumn = "no"
+    -- TODO: more stuff?
     -- opt.virtualedit = "all"
   end
 end

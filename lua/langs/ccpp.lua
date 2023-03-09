@@ -27,14 +27,6 @@ local clangd_flags =
 -- table.insert(clangd_flags, "--header-insertion=never")
 
 return {
-  -- correctly setup mason lsp / dap extensions
-  {
-    "williamboman/mason.nvim",
-    opts = function(_, opts)
-      vim.list_extend(opts.ensure_installed, { "clangd" })
-    end,
-  },
-
   -- correctly setup lspconfig
   {
     "neovim/nvim-lspconfig",

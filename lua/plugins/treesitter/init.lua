@@ -6,14 +6,19 @@ local M = {
     event = { "BufReadPost", "BufNewFile" },
     dependencies = {
       "nvim-treesitter/nvim-treesitter-textobjects",
-      "theHamsta/nvim-treesitter-pairs",
       "RRethy/nvim-treesitter-textsubjects",
       "nvim-treesitter/nvim-treesitter-refactor",
+      {
+        "andymass/vim-matchup",
+        setup = function()
+          -- may set any options here
+          vim.g.matchup_matchparen_offscreen = { method = "popup" }
+        end,
+      },
     },
     config = function()
       -- pcall(require("nvim-treesitter.install").update { with_sync = true })
       local tsconfig = O.treesitter
-      local plugconf = O.plugin
 
       -- Custom parsers
       local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
@@ -37,21 +42,23 @@ local M = {
         matchup = {
           enable = true,
           -- disable = { "c", "ruby" },  -- list of language that will be disabled
+          include_match_words = true,
+          disable_virtual_text = false,
         },
-        pairs = {
-          enable = not not plugconf.ts_matchup,
-          -- disable = {}, -- list of languages to disable
-          highlight_pair_events = { "CursorMoved" }, -- e.g. {"CursorMoved"}, -- when to highlight the pairs, use {} to deactivate highlighting
-          highlight_self = true, -- whether to highlight also the part of the pair under cursor (or only the partner)
-          goto_right_end = false, -- whether to go to the end of the right partner or the beginning
-          -- TODO: call matchup?
-          -- fallback_cmd_normal = "call matchit#Match_wrapper('',1,'n')", -- What command to issue when we can't find a pair (e.g. "normal! %")
-          -- fallback_cmd_normal = "normal! <Plug>(matchup-%)",
-          fallback_cmd_normal = plugconf.matchup and "call matchup#motion#find_matching_pair(0, 1)" or "normal! %",
-          keymaps = {
-            goto_partner = "%",
-          },
-        },
+        -- pairs = {
+        --   enable = true,
+        --   -- disable = {}, -- list of languages to disable
+        --   highlight_pair_events = { "CursorMoved" }, -- e.g. {"CursorMoved"}, -- when to highlight the pairs, use {} to deactivate highlighting
+        --   highlight_self = true, -- whether to highlight also the part of the pair under cursor (or only the partner)
+        --   goto_right_end = false, -- whether to go to the end of the right partner or the beginning
+        --   -- TODO: call matchup?
+        --   -- fallback_cmd_normal = "call matchit#Match_wrapper('',1,'n')", -- What command to issue when we can't find a pair (e.g. "normal! %")
+        --   -- fallback_cmd_normal = "normal! <Plug>(matchup-%)",
+        --   fallback_cmd_normal = plugconf.matchup and "call matchup#motion#find_matching_pair(0, 1)" or "normal! %",
+        --   keymaps = {
+        --     goto_partner = "%",
+        --   },
+        -- },
         highlight = {
           enable = not not tsconfig.active, -- false will disable the whole extension
           additional_vim_regex_highlighting = tsconfig.additional_vim_regex_highlighting,

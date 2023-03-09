@@ -1,5 +1,5 @@
 local prefix = "<C-w>"
-local function mode()
+local function window_hydra_setup()
   local Hydra = require "hydra"
   local splits = require "smart-splits"
   local splits_api = require "smart-splits"
@@ -60,6 +60,7 @@ local function mode()
 
       { "r", "<C-w>r" }, -- Rotate
 
+      -- TODO: open nvim-tree if we go left far enough
       { "<C-h>", smart_splits("resize_left", 2) },
       { "<C-j>", smart_splits("resize_down", 2) },
       { "<C-k>", smart_splits("resize_up", 2) },
@@ -147,7 +148,7 @@ return {
   },
   config = function(_, opts)
     require("windows").setup(opts)
-    mode()
+    window_hydra_setup()
   end,
   event = "VeryLazy",
 }

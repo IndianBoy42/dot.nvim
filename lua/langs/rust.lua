@@ -19,12 +19,8 @@ return {
     end,
   },
   -- correctly setup mason lsp / dap extensions
-  {
-    "williamboman/mason.nvim",
-    opts = function(_, opts)
-      vim.list_extend(opts.ensure_installed, { "codelldb", "rust-analyzer", "taplo" })
-    end,
-  },
+
+  require("langs").mason_ensure_installed { "codelldb", "rust-analyzer", "taplo" },
   {
     "neovim/nvim-lspconfig",
     dependencies = { "simrat39/rust-tools.nvim" },
@@ -39,15 +35,20 @@ return {
           local liblldb_path = vim.fn.has "mac" == 1 and extension_path .. "lldb/lib/liblldb.dylib"
             or extension_path .. "lldb/lib/liblldb.so"
 
-          local function postfix_wrap_call(trig, call, requires)
+          local function postfix_wrap_call(trig, call, requires, pair)
+            pair = pair or { "(", ")" }
+
             return {
               postfix = trig,
               body = {
-                call .. "(${receiver})",
+                call .. pair[1] .. "${receiver}" .. pair[2],
               },
               requires = requires,
               scope = "expr",
             }
+          end
+          local function postfix_wrap_type(trig, call, requires)
+            postfix_wrap_call(trig, call, requires, { "<", ">" })
           end
           local snippets = {
             ["Arc::new"] = postfix_wrap_call("arc", "Arc::new", "std::sync::Arc"),
@@ -56,6 +57,13 @@ return {
             ["Cell::new"] = postfix_wrap_call("cell", "Cell::new", "std::cell::Cell"),
             ["Rc::new"] = postfix_wrap_call("rc", "Rc::new", "std::rc::Rc"),
             ["Box::pin"] = postfix_wrap_call("pin", "Box::pin"),
+            ["Some"] = postfix_wrap_call("some", "Some", nil),
+            ["Ok"] = postfix_wrap_call("ok", "Ok", nil),
+            ["Err"] = postfix_wrap_call("err", "Err", nil),
+            ["Option"] = postfix_wrap_type("option_type", "Option", nil),
+            ["RefCell"] = postfix_wrap_type("refcell_type", "RefCell", nil),
+            ["Rc"] = postfix_wrap_type("rc_type", "Rc", nil),
+            ["Box"] = postfix_wrap_type("box_type", "Box", nil),
             ["unsafe"] = {
               postfix = "unsafe",
               body = { "unsafe { ${receiver} }" },
@@ -225,7 +233,7 @@ return {
           local function is_cargo()
             return vim.fn.expand "%:t" == "Cargo.toml"
           end
-          local function show_documentation()
+          local function show_popup()
             if vim.fn.expand "%:t" == "Cargo.toml" and require("crates").popup_available() then
               require("crates").show_popup()
             else
@@ -233,27 +241,28 @@ return {
             end
           end
 
-          require("utils.lsp").cb_on_attach(function(client, buffer)
-            if client.name == "taplo" then
-              vim.keymap.set("n", "gh", show_documentation, { buffer = buffer })
-              if is_cargo() then
-                local crates = require "crates"
-                mappings.localleader {
-                  t = { crates.toggle, "Toggle" },
-                  r = { crates.reload, "Reload" },
-                  u = { crates.update_crate, "Update Crate" },
-                  a = { crates.update_all_crates, "Update All" },
-                  U = { crates.upgrade_crate, "Upgrade Crate" },
-                  A = { crates.upgrade_all_crates, "Upgrade All" },
-                  ["<localleader>"] = { crates.show_versions_popup, "Versions" },
-                }
-                mappings.vlocalleader {
-                  u = { crates.update_crates, "Update" },
-                  U = { crates.upgrade_crates, "Upgrade" },
-                }
-              end
+          local taplo_on_attach = function(client, buffer)
+            if is_cargo() then
+              vim.keymap.set("n", "gh", show_popup, { buffer = buffer })
+              local crates = require "crates"
+              mappings.localleader {
+                t = { crates.toggle, "Toggle" },
+                r = { crates.reload, "Reload" },
+                u = { crates.update_crate, "Update Crate" },
+                a = { crates.update_all_crates, "Update All" },
+                U = { crates.upgrade_crate, "Upgrade Crate" },
+                A = { crates.upgrade_all_crates, "Upgrade All" },
+                ["<localleader>"] = { crates.show_versions_popup, "Versions" },
+              }
+              mappings.vlocalleader {
+                u = { crates.update_crates, "Update" },
+                U = { crates.upgrade_crates, "Upgrade" },
+              }
             end
-          end)
+          end
+          -- require("utils.lsp").cb_on_attach(taplo_on_attach)
+          opts.on_attach = taplo_on_attach
+          -- utils.dump("taplo", opts)
           return false -- make sure the base implementation calls taplo.setup
         end,
       },

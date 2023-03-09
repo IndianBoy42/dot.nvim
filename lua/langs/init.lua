@@ -1,20 +1,11 @@
 return {
-  require "langs.lspconfig",
-  require "langs.complete",
-  { import = "langs.copilot" },
-  require "langs.null_ls",
-  require "langs.refactoring",
+  -- require "langs.lspconfig",
+  -- require "langs.complete",
+  -- { import = "langs.copilot" },
+  -- require "langs.null_ls",
+  -- require "langs.refactoring",
   -- https://github.com/lukas-reineke/lsp-format.nvim
   -- Languages
-  { import = "langs.lua" },
-  { import = "langs.tex" },
-  { import = "langs.rust" },
-  { import = "langs.markdown" },
-  { "NoahTheDuke/vim-just", ft = "just" },
-  {
-    "IndianBoy42/tree-sitter-just",
-    opts = { ["local"] = true },
-  },
   { "kmonad/kmonad-vim", ft = "kmonad" },
   { "gennaro-tedesco/nvim-jqx", ft = "json" },
   {
@@ -43,4 +34,12 @@ return {
     -- default: "=>"
     -- other_hints_prefix = ":: ",
   },
+  mason_ensure_installed = function(app)
+    return {
+      "williamboman/mason.nvim",
+      opts = function(_, opts)
+        vim.list_extend(opts.ensure_installed, app)
+      end,
+    }
+  end,
 }

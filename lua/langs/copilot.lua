@@ -35,6 +35,11 @@ return {
         suggestion = { enabled = false },
         panel = { enabled = false },
       },
+      config = function(_, opts)
+        require("copilot").setup(opts)
+        -- TODO: telescope or virtual_lines display
+        -- https://github.com/zbirenbaum/copilot.lua/blob/master/lua/copilot/api.lua
+      end,
     },
   },
   -- {

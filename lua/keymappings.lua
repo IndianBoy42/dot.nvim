@@ -194,7 +194,6 @@ function M.setup()
   map("n", "<C-S-ScrollWheelUp>", cmd "FontUp", sile)
   map("n", "<C-S-ScrollWheelDown>", cmd "FontDown", sile)
   map("n", "<C-->", cmd "FontDown", sile)
-  -- map("n", "<C-S-=>", cmd "FontUp", sile)
   map("n", "<C-+>", cmd "FontUp", sile)
 
   -- More convenient incr/decr
@@ -434,11 +433,12 @@ function M.setup()
     name = "Jumplist",
     body = "g",
     mode = "n",
+    -- FIXME: glitchy because it doesn't redraw
     heads = {
       { "b", "<c-o>", { desc = "Go Back" } },
       { "f", "<c-i>", { desc = "Go Forward" } },
-      { "B", "<c-i>", { desc = "Go Back" } },
       { "q", nil, { exit = true } },
+      { "<ESC>", nil, { exit = true } },
     },
   }
   -- map("n", "gb", "<c-o>", nore)
@@ -588,8 +588,9 @@ function M.setup()
     map("o", key, "i" .. key, { remap = true })
     map("o", "<M-" .. key .. ">", "a" .. key, { remap = true })
     if not no_v then
-      map("x", key, "i" .. key, { remap = true })
-      map("x", "<M-" .. key .. ">", "a" .. key, { remap = true })
+      -- TODO: weirdly buggy with mini.surround
+      -- map("x", key, "i" .. key, { remap = true })
+      -- map("x", "<M-" .. key .. ">", "a" .. key, { remap = true })
     end
     -- map("n", "<M-" .. key .. ">", "vi" .. key, {remap=true})
     -- map("n", "<C-M-" .. key .. ">", "va" .. key, {remap=true})
@@ -831,6 +832,7 @@ function M.setup()
       r = { telescope_fn.lsp_references, "References" },
       i = { telescope_fn.lsp_implementations, "Implementations" },
       d = { telescope_fn.lsp_definitions, "Definitions of" },
+      s = { lspbuf.signature_help, "Signature Help" },
       c = {
         name = "Calls",
         i = { lspbuf.incoming_calls, "Incoming" },

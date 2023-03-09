@@ -504,12 +504,8 @@ return {
       }
     end,
   },
-  {
-    "williamboman/mason.nvim",
-    opts = function(_, opts)
-      vim.list_extend(opts.ensure_installed, { "texlab", "latexindent" })
-    end,
-  },
+
+  require("langs").mason_ensure_installed { "texlab", "latexindent" },
   {
     "neovim/nvim-lspconfig",
     opts = {
@@ -529,7 +525,7 @@ return {
     vim.opt.number = false
     vim.opt.relativenumber = false
     vim.cmd "setlocal iskeyword+=\\"
-    require("utils.lsp").cb_on_attach(function(client, buffer)
+    utils.lsp.cb_on_attach(function(client, buffer)
       if client.name == "texlab" then
         client.server_capabilities.semanticTokensProvider = nil
       end

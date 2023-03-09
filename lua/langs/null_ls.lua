@@ -37,6 +37,7 @@ return {
     local hover = null.builtins.hover
     local compl = null.builtins.completion
 
+    -- TODO: move this to individual files
     return {
       -- debug = true,
       diagnostics_format = diagnostics_format,

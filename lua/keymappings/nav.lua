@@ -180,6 +180,7 @@ last: %{last} dir: %{dir}
     config = {
       color = "pink",
       invoke_on_body = true,
+      timeout = 2000, -- millis
       hint = {
         border = "rounded",
         type = "window",

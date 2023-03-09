@@ -7,6 +7,9 @@ return {
     {
       "williamboman/mason.nvim",
       cmd = "Mason",
+      opts = {
+        ensure_installed = {},
+      },
       config = function(_, opts)
         require("mason").setup(opts)
         local mr = require "mason-registry"
@@ -19,8 +22,16 @@ return {
       end,
     },
     "williamboman/mason-lspconfig.nvim",
-    -- mason-null-ls
-    -- mason-nvim-dap
+    {
+      "camilledejoye/nvim-lsp-selection-range",
+      opts = function()
+        local lsr_client = require "lsp-selection-range.client"
+        return {
+          get_client = lsr_client.select_by_filetype(lsr_client.select),
+        }
+      end,
+    },
+    -- https://github.com/lvimuser/lsp-inlayhints.nvim
   },
   opts = {
     -- options for vim.diagnostic.config()
@@ -148,6 +159,14 @@ return {
     local servers = opts.servers
     local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
 
+    local lsp_sel_rng = require "lsp-selection-range"
+    lsp_sel_rng.update_capabilities(capabilities)
+    utils.lsp.cb_on_attach(function()
+      local mapl = vim.keymap.setl
+      mapl("n", "vv", lsp_sel_rng.trigger)
+      mapl("v", "vv", lsp_sel_rng.expand)
+    end)
+
     local function setup(server)
       local server_opts = vim.tbl_deep_extend("force", {
         capabilities = vim.deepcopy(capabilities),
@@ -188,4 +207,5 @@ return {
       require("utils.lsp").format_on_save()
     end
   end,
+  mason_ensure_installed = function(append) end,
 }

@@ -1,5 +1,5 @@
 -- local theme_choice = "github_dark_default"
-local theme_choice = "nebulous_night"
+local theme_choice = vim.env.NVIM_THEME or "nebulous_night"
 -- local theme_choice = "nightfox_dawnfox"
 -- local theme_choice = "enfocado_neon"
 -- local theme_choice = "catppuccin_mocha"
@@ -29,8 +29,10 @@ com! CheckHighlightUnderCursor echo {l,c,n ->
         \  .'lo<'    . synIDattr(synIDtrans(synID(l, c, 1)), n) . '> '
         \ }(line("."), col("."), "name")
 ]]
+-- TODO: set lualine theme
 return {
-  {
+  -- Colorschemes
+  { --Yagua/nebulous.nvim --
     "Yagua/nebulous.nvim",
     lazy = not is_active_theme "nebulous",
     -- cond = is_active_theme "nebulous",
@@ -59,7 +61,7 @@ return {
     end,
     cmd = { "Nebulous" },
   },
-  {
+  { --sam4llis/nvim-tundra
     "sam4llis/nvim-tundra",
     lazy = not is_active_theme "tundra",
     -- cond = is_active_theme "github",
@@ -117,7 +119,7 @@ return {
     },
     config = config_colorscheme("nvim-tundra", "tundra"),
   },
-  {
+  { --projekt0n/github-nvim-theme
     "projekt0n/github-nvim-theme",
     lazy = not is_active_theme "github",
     -- cond = is_active_theme "github",
@@ -127,7 +129,7 @@ return {
       require("github-theme").setup(opts)
     end,
   },
-  {
+  { --rebelot/kanagawa.nvim
     "rebelot/kanagawa.nvim",
     lazy = not is_active_theme "kanagawa",
     -- cond = is_active_theme "kanagawa",
@@ -142,7 +144,7 @@ return {
     config = config_colorscheme("kanagawa", "kanagawa"),
     priority = 1000,
   },
-  {
+  { --folke/tokyonight.nvim
     "folke/tokyonight.nvim",
     lazy = not is_active_theme "tokyonight",
     priority = 1000,
@@ -151,20 +153,20 @@ return {
     },
     config = config_colorscheme "tokyonight",
   },
-  {
+  { --EdenEast/nightfox.nvim
     "EdenEast/nightfox.nvim",
     lazy = not is_active_theme "nightfox",
     priority = 1000,
     opts = {},
     config = config_colorscheme("nightfox", "carbonfox"),
   },
-  {
+  { --nyoom-engineering/oxocarbon.nvim
     "nyoom-engineering/oxocarbon.nvim",
     lazy = not is_active_theme "oxocarbon",
     priority = 1000,
     config = false,
   },
-  {
+  { --wuelnerdotexe/vim-enfocado
     "wuelnerdotexe/vim-enfocado",
     lazy = not is_active_theme "enfocado",
     init = function()
@@ -174,7 +176,14 @@ return {
     priority = 1000,
     config = false,
   },
-  {
+  { --NTBBloodbath/sweetie.nvim
+    "NTBBloodbath/sweetie.nvim",
+    lazy = not is_active_theme "sweetie",
+    opts = {},
+    config = config_colorscheme("sweetie", "sweetie"),
+    priority = 1000,
+  },
+  { --catppuccin/nvim
     "catppuccin/nvim",
     name = "catppuccin",
     lazy = not is_active_theme "catppuccin",
@@ -346,8 +355,10 @@ return {
       vim.cmd "ColorizerReloadAllBuffers"
     end,
   },
+
+  -- Highlighting based extensions:
   { "HiPhish/nvim-ts-rainbow2", event = { "BufReadPost", "BufNewFile" } },
-  {
+  { --lukas-reineke/indent-blankline.nvim
     "lukas-reineke/indent-blankline.nvim",
     event = { "BufReadPost", "BufNewFile" },
     -- opts = {
@@ -418,7 +429,7 @@ return {
       require("indent_blankline").setup(opts)
     end,
   },
-  {
+  { --folke/todo-comments.nvim
     "folke/todo-comments.nvim",
     cmd = { "TodoTrouble", "TodoTelescope" },
     keys = {
@@ -445,7 +456,7 @@ return {
     opts = {},
     event = { "BufReadPost", "BufNewFile" },
   },
-  {
+  { --giusgad/pets.nvim
     "giusgad/pets.nvim",
     opts = {
       random = true,
@@ -462,7 +473,7 @@ return {
       "PetsSleepToggle",
     },
   },
-  {
+  { --tamton-aquib/duck.nvim
     "tamton-aquib/duck.nvim",
     keys = {
       {
@@ -475,7 +486,7 @@ return {
       },
     },
   },
-  {
+  { --tzachar/local-highlight.nvim
     "tzachar/local-highlight.nvim",
     opts = {},
     config = function(_, opts)

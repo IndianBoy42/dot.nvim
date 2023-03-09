@@ -423,17 +423,11 @@ return {
   { "ElPiloto/significant.nvim" },
   require "plugins.ui.files",
   require "plugins.ui.windowman",
-  -- {
-  --   "weilbith/nvim-code-action-menu",
-  --   config = function()
-  --     utils.augroup._lsputil_codeaction_list.Filetype["code-action-menu-menu"] = "nmap <buffer> K <CR>"
-  --   end,
-  --   cmd = "CodeActionMenu",
-  -- },
   {
     "aznhe21/actions-preview.nvim",
     opts = {
       telescope = require("telescopes").cursor_menu(),
     },
   },
+  -- TODO: https://github.com/DNLHC/glance.nvim
 }
