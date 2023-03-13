@@ -23,8 +23,12 @@ local moves = {
   "d", -- diags
   "u", -- usages
   "e", -- error
-  "T", -- error
+  "T", -- tags
+  "q", -- quickfix
+  "l", -- loclist
+  "i", -- implementation
 }
+local lsp_lists = {}
 
 M.setup = function()
   local Hydra = require "hydra"
@@ -161,12 +165,12 @@ last: %{last} dir: %{dir}
     })
   end
   for _, ch in ipairs(require "plugins.navedit.hops") do
-    ch = ch[1]
+    local c = ch[1]
     table.insert(heads, {
-      "h" .. ch,
+      "h" .. c,
       function()
-        last = ch
-        feedkeys(t("<leader>h" .. ch), "m", false)
+        last = c
+        feedkeys(t("<leader>h" .. c), "m", false)
       end,
       { desc = false },
     })
@@ -176,7 +180,7 @@ last: %{last} dir: %{dir}
     heads = heads,
     name = "Navigate/Select",
     hint = hint,
-    body = "<leader>j", -- <leader>j, <leader>k
+    body = "<leader>H", -- <leader>j, <leader>k
     config = {
       color = "pink",
       invoke_on_body = true,

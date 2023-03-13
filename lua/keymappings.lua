@@ -56,10 +56,16 @@ local lsputil = require "utils.lsp"
 local operatorfunc_scaffold = require("utils").operatorfunc_scaffold
 local operatorfunc_keys = require("utils").operatorfunc_keys
 local operatorfuncV_keys = require("utils").operatorfuncV_keys
-local function make_nN_pair(pair)
+local function make_nN_pair(pair, pre_action)
   return {
     function()
       vim.cmd [[normal! m']]
+      if pre_action then
+        pre_action[1]()
+        if pre_action[3] then
+          pre_action[3]()
+        end
+      end
       register_nN_repeat(pair)
       if type(pair[1]) == "string" then
         feedkeys(pair[1])
@@ -69,6 +75,12 @@ local function make_nN_pair(pair)
     end,
     function()
       vim.cmd [[normal! m']]
+      if pre_action then
+        pre_action[2]()
+        if pre_action[3] then
+          pre_action[3]()
+        end
+      end
       register_nN_repeat(pair)
       if type(pair[2]) == "string" then
         feedkeys(pair[2])
@@ -317,9 +329,62 @@ function M.setup()
   local pre_swap_prev = O.treesitter.textobj_prefixes.swap_prev
 
   -- QuickFix
-  local quickfix_nN = make_nN_pair { cmd "cnext", cmd "cprev" }
+  -- local quickfix_looping =
+  --   { cmd "try | cnext | catch | cfirst | catch | endtry", cmd "try | cprev | catch | clast | catch | endtry" }
+  local quickfix_looping = {
+    function()
+      local ok, _ = pcall(vim.cmd.cafter)
+      if ok then
+        return
+      end
+      local ok, _ = pcall(vim.cmd.cnext)
+      if ok then
+        return
+      end
+      vim.cmd.cfirst()
+    end,
+    function()
+      local ok, _ = pcall(vim.cmd.cbefore)
+      if ok then
+        return
+      end
+      local ok, _ = pcall(vim.cmd.cprev)
+      if ok then
+        return
+      end
+      vim.cmd.clast()
+    end,
+  }
+  local loclist_looping = {
+    function()
+      local ok, _ = pcall(vim.cmd.lafter)
+      if ok then
+        return
+      end
+      local ok, _ = pcall(vim.cmd.lnext)
+      if ok then
+        return
+      end
+      vim.cmd.lfirst()
+    end,
+    function()
+      local ok, _ = pcall(vim.cmd.lbefore)
+      if ok then
+        return
+      end
+      local ok, _ = pcall(vim.cmd.lprev)
+      if ok then
+        return
+      end
+      vim.cmd.llast()
+    end,
+  }
+  local quickfix_nN = make_nN_pair(quickfix_looping)
   map("n", pre_goto_next .. "q", quickfix_nN[1], nore)
   map("n", pre_goto_prev .. "q", quickfix_nN[2], nore)
+  local loclist_nN = make_nN_pair(loclist_looping)
+  map("n", pre_goto_next .. "l", loclist_nN[1], nore)
+  map("n", pre_goto_prev .. "l", loclist_nN[2], nore)
 
   -- Diagnostics jumps
   local diag_nN = make_nN_pair { lsputil.diag_next, lsputil.diag_prev }
@@ -329,12 +394,12 @@ function M.setup()
   map("n", pre_goto_next .. "e", error_nN[1], nore)
   map("n", pre_goto_prev .. "e", error_nN[2], nore)
 
-  local usage_nN = make_nN_pair {
-    require("nvim-treesitter-refactor.navigation").goto_next_usage,
-    require("nvim-treesitter-refactor.navigation").goto_previous_usage,
-  }
-  map("n", pre_goto_next .. "u", usage_nN[1], nore)
-  map("n", pre_goto_prev .. "u", usage_nN[2], nore)
+  -- local usage_nN = make_nN_pair {
+  --   require("nvim-treesitter-refactor.navigation").goto_next_usage,
+  --   require("nvim-treesitter-refactor.navigation").goto_previous_usage,
+  -- }
+  -- map("n", pre_goto_next .. "u", usage_nN[1], nore)
+  -- map("n", pre_goto_prev .. "u", usage_nN[2], nore)
 
   local para_nN = make_nN_pair { "}", "{" }
   map("n", pre_goto_next .. "p", para_nN[1], nore)
@@ -342,7 +407,9 @@ function M.setup()
 
   local jumps = {
     d = "Diagnostics",
+    e = "Errors",
     q = "QuickFix",
+    l = "Loc List",
     g = "Git Hunk",
     u = "Usage",
     p = "Paragraph",
@@ -502,6 +569,48 @@ function M.setup()
   map("n", "gpr", lsputil.preview_location_at "references", sile)
   map("n", "gpi", lsputil.preview_location_at "implementation", sile)
   map("n", "gpe", lsputil.diag_line, sile)
+  local on_list_next = {
+    reuse_win = true,
+    on_list = function(options)
+      vim.fn.setqflist({}, " ", options)
+      utils.dump(options)
+      if #options.items > 1 then
+        register_nN_repeat(quickfix_looping)
+      end
+      -- vim.cmd.cfirst()
+      quickfix_looping[1]()
+    end,
+  }
+  local on_list_prev = {
+    reuse_win = true,
+    on_list = function(options)
+      vim.fn.setqflist({}, " ", options)
+      utils.dump(options)
+      if #options.items > 1 then
+        register_nN_repeat(quickfix_looping)
+      end
+      -- vim.cmd.clast()
+      quickfix_looping[2]()
+    end,
+  }
+  map("n", pre_goto_next .. "u", function()
+    vim.lsp.buf.references(nil, on_list_next)
+  end, { desc = "Reference" })
+  map("n", pre_goto_prev .. "u", function()
+    vim.lsp.buf.references(nil, on_list_prev)
+  end, { desc = "Reference" })
+  map("n", "]i", function()
+    vim.lsp.buf.implementation(on_list_next)
+  end, { desc = "Next Implementation" })
+  map("n", "[i", function()
+    vim.lsp.buf.implementation(on_list_prev)
+  end, { desc = "Prev Implementation" })
+  map("n", "gd", function()
+    vim.lsp.buf.definition(on_list_next)
+  end, { desc = "Definition" })
+  map("n", "gtd", function()
+    vim.lsp.buf.definition(on_list_next)
+  end, { desc = "Type Definition" })
   -- Hover
   -- map("n", "K", lspbuf.hover, sile)
   map("n", "gh", lspbuf.hover, { desc = "LSP Hover" })
