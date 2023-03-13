@@ -496,19 +496,46 @@ function M.setup()
   -- map("n", "xp", "<Plug>TransposeCharacters", {})
 
   -- Go Back
-  require "hydra" {
-    name = "Jumplist",
-    body = "g",
-    mode = "n",
-    -- FIXME: glitchy because it doesn't redraw
-    heads = {
-      { "b", "<c-o>", { desc = "Go Back" } },
-      { "f", "<c-i>", { desc = "Go Forward" } },
-      { "q", nil, { exit = true } },
-      { "<ESC>", nil, { exit = true } },
-    },
-  }
-  -- map("n", "gb", "<c-o>", nore)
+  if false then
+    require "hydra" {
+      name = "Jumplist",
+      body = "g",
+      mode = "n",
+      -- FIXME: glitchy because it doesn't redraw
+      config = {
+        on_key = function()
+          -- Preserve animation
+          vim.wait(200, function()
+            vim.cmd "redraw!"
+          end, 30, false)
+        end,
+      },
+      heads = {
+        {
+          "b",
+          function()
+            feedkeys("<c-o>", "n")
+            -- vim.cmd.normal { "<c-o>", bang = true }
+            -- vim.cmd.redraw { bang = true }
+          end,
+          { desc = "Go Back" },
+        },
+        {
+          "f",
+          function()
+            feedkeys("<c-i>", "n")
+            -- vim.cmd.normal { "<c-i>", bang = true }
+            -- vim.cmd.redraw { bang = true }
+          end,
+          { desc = "Go Forward" },
+        },
+        { "q", nil, { exit = true } },
+        { "<ESC>", nil, { exit = true } },
+      },
+    }
+  else
+    map("n", "gb", "<c-o>", nore)
+  end
   -- map("n", "<c-o>", "<c-o>", nore)
   -- map("n", "<c-i>", "<c-i>", nore)
 
