@@ -329,6 +329,11 @@ return {
     end,
   },
   {
+    "VidocqH/lsp-lens.nvim",
+    opts = { include_declaration = true },
+    event = { "BufReadPost", "BufNewFile" },
+  },
+  {
     "echasnovski/mini.animate",
     cond = not vim.g.neovide,
     event = "VeryLazy",

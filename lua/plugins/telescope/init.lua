@@ -22,6 +22,7 @@ local telescope = {
       end,
     },
     "LukasPietzschmann/telescope-tabs",
+    "benfowler/telescope-luasnip.nvim",
   },
   cmd = "Telescope",
   config = function()
@@ -40,23 +41,7 @@ local telescope = {
       silent = true,
     }
 
-    local function with_rg(opts)
-      return {
-        "rg",
-        "--color=never",
-        "--no-config",
-        "--no-heading",
-        "--with-filename",
-        "--line-number",
-        "--column",
-        "--smart-case",
-        "--trim",
-        opts.ignore and "--ignore" or "--no-ignore",
-        opts.hidden and "--hidden" or "--no-hidden",
-        opts.files and "--files" or nil,
-      }
-    end
-
+    local with_rg = require("telescopes").with_rg
     local rg = with_rg { ignore = true, hidden = true }
     -- M.shell_cmd.fd = vim.list_extend(vim.deepcopy(M.shell_cmd.rg), { "--files" })
     local fd = with_rg { ignore = true, hidden = true, files = true }
@@ -167,6 +152,7 @@ local telescope = {
     telescope.load_extension "hop"
     telescope.load_extension "smart_open"
     telescope.load_extension "frecency"
+    telescope.load_extension "luasnip"
     -- telescope.load_extension('project')
   end,
 }

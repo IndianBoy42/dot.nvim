@@ -288,16 +288,32 @@ function M.help_tags()
     show_version = true,
   }
 end
+function M.with_rg(opts)
+  return {
+    "rg",
+    "--color=never",
+    "--no-config",
+    "--no-heading",
+    "--with-filename",
+    "--line-number",
+    "--column",
+    "--smart-case",
+    "--trim",
+    opts.ignore and "--ignore" or "--no-ignore",
+    opts.hidden and "--hidden" or "--no-hidden",
+    opts.files and "--files" or nil,
+  }
+end
 
 function M.live_grep_all()
   require("telescope.builtin").find_files {
-    find_command = rg(false, false, false),
+    find_command = M.with_rg(),
   }
 end
 
 function M.find_all_files()
   require("telescope.builtin").find_files {
-    find_command = rg(false, false, true),
+    find_command = M.with_rg { files = true },
   }
 end
 

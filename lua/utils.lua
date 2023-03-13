@@ -370,6 +370,7 @@ mapper_meta = {
 local mapper = setmetatable({ {}, "n" }, mapper_meta)
 M.map = mapper
 
+-- TODO: change this to use `vim.on_key`
 function M.timeout_helper(timeout, callback)
   local timerperiod = 20
   timeout = (timeout or 1000) / timerperiod

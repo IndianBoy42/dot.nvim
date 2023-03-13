@@ -70,6 +70,14 @@ return {
               description = "Wrap in unsafe{}",
               scope = "expr",
             },
+            ["for"] = {
+              postfix = "for",
+              body = { [[for ${1:i} in ${receiver} {
+              $0
+              }]] },
+              description = "Wrap in unsafe{}",
+              scope = "expr",
+            },
             ["thread::spawn"] = {
               prefix = "spawn",
               body = {
@@ -96,6 +104,11 @@ return {
               scope = "expr",
             },
           }
+
+          -- TODO:
+          -- vim.b.miniai_config = {
+          --     custom_textobjects =
+          -- }
 
           local inlay_hints_enabled = true
           local rust_tools_executor = nil
@@ -252,6 +265,7 @@ return {
                 a = { crates.update_all_crates, "Update All" },
                 U = { crates.upgrade_crate, "Upgrade Crate" },
                 A = { crates.upgrade_all_crates, "Upgrade All" },
+                d = { crates.open_documentation, "Docs" },
                 ["<localleader>"] = { crates.show_versions_popup, "Versions" },
               }
               mappings.vlocalleader {

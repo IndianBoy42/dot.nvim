@@ -1,5 +1,19 @@
 return {
   "stevearc/oil.nvim",
+  lazy = false, -- So that i can do `nvim .` or `nvim <some_directory>`
+  -- init = function()
+  --   vim.api.nvim_create_autocmd("BufEnter", {
+  --     callback = function()
+  --       print "hello world"
+  --       if vim.fn.isdirectory(vim.fn.expand "%:p") ~= 0 then
+  --         print "hello oil"
+  --         vim.cmd "cd %:p"
+  --         require("oil").open()
+  --         -- require("lazy").load { plugins = { "oil" } }
+  --       end
+  --     end,
+  --   })
+  -- end,
   opts = {
     columns = {
       "icon",
@@ -35,7 +49,8 @@ return {
       ["<localleader>H"] = "actions.toggle_hidden",
     },
   },
-  cmd = "Oil",
+  -- event = "BufEnter",
+  -- cmd = "Oil",
   keys = {
     {
       "-",

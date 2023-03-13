@@ -7,7 +7,7 @@ local M = {
     dependencies = {
       "nvim-treesitter/nvim-treesitter-textobjects",
       "RRethy/nvim-treesitter-textsubjects",
-      "nvim-treesitter/nvim-treesitter-refactor",
+      -- "nvim-treesitter/nvim-treesitter-refactor",
       {
         "andymass/vim-matchup",
         setup = function()
@@ -114,7 +114,7 @@ local M = {
           },
           highlight_definitions = { enable = false },
           navigation = {
-            enable = true,
+            enable = false,
             keymaps = {
               goto_definition_lsp_fallback = "<F1>d",
               goto_definition = "<leader>lnd",

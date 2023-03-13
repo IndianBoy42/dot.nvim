@@ -316,11 +316,9 @@ end
 function M.diag_line()
   diags.open_float(vim.tbl_deep_extend("keep", { scope = "line" }, popup_diagnostics_opts()))
 end
-
 function M.diag_cursor()
   diags.open_float(vim.tbl_deep_extend("keep", { scope = "cursor" }, popup_diagnostics_opts()))
 end
-
 function M.diag_buffer()
   diags.open_float(vim.tbl_deep_extend("keep", { scope = "buffer" }, popup_diagnostics_opts()))
 end
@@ -328,7 +326,6 @@ end
 function M.diag_next(opts)
   diags.goto_next(vim.tbl_extend("keep", opts or {}, { enable_popup = true, float = popup_diagnostics_opts() }))
 end
-
 function M.diag_prev(opts)
   diags.goto_prev(vim.tbl_extend("keep", opts or {}, { enable_popup = true, float = popup_diagnostics_opts() }))
 end
@@ -336,7 +333,6 @@ end
 function M.error_next()
   M.diag_next { severity = vim.diagnostic.severity.ERROR }
 end
-
 function M.error_prev()
   M.diag_prev { severity = vim.diagnostic.severity.ERROR }
 end

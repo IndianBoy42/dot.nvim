@@ -25,11 +25,16 @@ return {
     "ggandor/leap.nvim",
     keys = {
       { "s", mode = "n", desc = "Leap" },
+      { "s", mode = "x", desc = "Leap" },
     },
     config = function()
       -- require("leap").set_default_keymaps()
       -- Bidirectional leap
       vim.keymap.set("n", "s", function()
+        local current_window = vim.fn.win_getid()
+        require("leap").leap { target_windows = { current_window } }
+      end)
+      vim.keymap.set("x", "s", function()
         local current_window = vim.fn.win_getid()
         require("leap").leap { target_windows = { current_window } }
       end)
@@ -106,13 +111,13 @@ return {
         ["Redo"] = "<C-r>",
       }
       vim.g.VM_leader = "\\"
+      local theme = "codedark"
+      vim.g.VM_theme = theme
       -- vim.g.VM_leader = [[<leader>m]]
     end,
     config = function()
-      local theme = "codedark"
-      vim.g.VM_theme = theme
       require("which-key").register({ [vim.g.VM_leader] = "which_key_ignore" }, { mode = "n" })
-      vim.cmd.VMTheme(theme)
+      vim.cmd.VMTheme(vim.g.VM_theme)
       -- vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufNewFile" }, { command = "VMTheme " .. theme })
     end,
     event = { "BufReadPost", "BufNewFile" },
@@ -365,7 +370,7 @@ return {
     keys = {
       {
         "<C-i>",
-        "<cmd>Portal jumplist backward<cr>",
+        "<cmd>Portal jumplist forward<cr>",
         desc = "portal fwd",
       },
       {

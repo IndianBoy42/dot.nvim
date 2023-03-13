@@ -61,11 +61,6 @@ local M = {
           { silent = true, desc = "On the fly: " .. v }
         )
       end
-      vim.api.nvim_create_user_command(
-        "LuaSnipEdit",
-        require("luasnip.loaders").edit_snippet_files,
-        { desc = "Edit LuaSnip Files" }
-      )
 
       -- some shorthands...
       local ls = require "luasnip"
@@ -156,14 +151,14 @@ local M = {
       require("plugins.snippets.luasnips_choices").config()
       require("luasnip.loaders.from_lua").load { paths = _G.CONFIG_PATH .. "/luasnippets" }
 
-      vim.api.nvim_create_user_command("EditSnippets", function()
+      vim.api.nvim_create_user_command("EditSnippets", function(args)
+        local args = args.args or "edit!"
         require("luasnip.loaders").edit_snippet_files {
           edit = function(f)
-            print("edit!" .. f)
-            vim.cmd("edit! " .. f)
+            vim.cmd(args .. " " .. f)
           end,
         }
-      end, {})
+      end, { nargs = "?" })
     end,
   },
   { import = "plugins.snippets.docs" },
@@ -203,6 +198,7 @@ local M = {
   },
   {
     "LudoPinelli/comment-box.nvim",
+    -- TODO: configure this better
     keys = {
       { "<leader>nbl", "<cmd>CBlbox<r>", desc = "Left Box" },
       { "<leader>nbc", "<cmd>CBcbox<r>", desc = "Center Box" },

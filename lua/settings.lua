@@ -111,7 +111,11 @@ return function()
   _general_settings.TextYankPost(function()
     vim.highlight.on_yank { higroup = "Search", timeout = 200 }
   end)
-  local formatoptions = "formatoptions-=c formatoptions-=r" -- .. " formatoptions-=o"
+
+  local formatoptions = ""
+  formatoptions = formatoptions .. "formatoptions-=c"
+  -- formatoptions = formatoptions .. "formatoptions-=r"
+  formatoptions = formatoptions .. "formatoptions-=o"
   _general_settings.BufWinEnter("setlocal " .. formatoptions)
   _general_settings.BufNewFile("setlocal " .. formatoptions)
   _general_settings.BufRead = function()

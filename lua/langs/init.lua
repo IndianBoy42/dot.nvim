@@ -12,9 +12,16 @@ return {
     "Kasama/nvim-custom-diagnostic-highlight",
     opts = {},
   },
+  {
+    "LhKipp/nvim-nu",
+    build = ":TSInstall nu",
+    opts = {},
+    config = function(_, opts)
+      require("nu").setup(opts)
+    end,
+  },
 
   -- EXTRAS
-
   inlay_hint_opts = {
     auto = true,
     -- Only show inlay hints for the current line

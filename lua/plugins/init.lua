@@ -17,30 +17,8 @@ return {
   },
   { "nvim-lua/plenary.nvim" },
 
-  -- {
-  --   "numToStr/Comment.nvim",
-  --   config = function()
-  --     require("Comment").setup {
-  --       mappings = {
-  --         ---Includes `gcc`, `gcb`, `gc[count]{motion}` and `gb[count]{motion}`
-  --         basic = true,
-  --         ---Includes `g>`, `g<`, `g>[count]{motion}` and `g<[count]{motion}`
-  --         extended = true,
-  --         ---Includes gco, gcO, gcA
-  --         extra = true,
-  --       },
-  --       toggler = { line = "gcc", block = "gCC" },
-  --       opleader = { line = "gc", block = "gC" },
-  --       -- pre_hook = function()
-  --       --   return require("ts_context_commentstring.internal").calculate_commentstring()
-  --       -- end,
-  --     }
-  --   end,
-  --   keys = { "gc", "gC" },
-  -- },
-  {
-    "JoosepAlviste/nvim-ts-context-commentstring",
-  },
+  -- TODO: https://github.com/Dax89/automaton.nvim
+  { "JoosepAlviste/nvim-ts-context-commentstring" },
   {
     "echasnovski/mini.comment",
     event = "VeryLazy",
@@ -178,6 +156,32 @@ return {
     keys = {
       { "<leader>pR", "<cmd>ProjectRoot<cr>", desc = "Rooter" },
       { "<leader>pP", "<cmd>Telescope projects<cr>", desc = "T Projects" },
+    },
+  },
+  {
+    "willothy/flatten.nvim",
+    lazy = false,
+    opts = {
+      -- <String, Bool> dictionary of filetypes that should be blocking
+      block_for = {
+        gitcommit = true,
+      },
+      -- Window options
+      window = {
+        -- Options:
+        -- tab            -> open in new tab (default)
+        -- split          -> open in split
+        -- vsplit         -> open in vsplit
+        -- current        -> open in current window
+        -- func(new_bufs) -> only open the files, allowing you to handle window opening yourself.
+        -- Argument is an array of buffer numbers representing the newly opened files.
+        open = "tab",
+        -- Affects which file gets focused when opening multiple at once
+        -- Options:
+        -- "first"        -> open first file of new files (default)
+        -- "last"         -> open last file of new files
+        focus = "first",
+      },
     },
   },
   -- { "rmagatti/auto-session", lazy = false },

@@ -143,7 +143,7 @@ local M = {
         custom_surroundings = require("plugins.navedit.ai").custom_surroundings(),
         mappings = {
           add = "ys", -- Add surrounding in Normal and Visual modes
-          vadd = "s", -- Add surrounding in Normal and Visual modes
+          vadd = "S", -- Add surrounding in Normal and Visual modes
           delete = "ds", -- Delete surrounding
           -- TODO: make repeatable?
           find = "]s", -- Find surrounding (to the right)
@@ -160,8 +160,7 @@ local M = {
       -- Remap adding surrounding to Visual mode selection
       local map = vim.keymap.set
       vim.api.nvim_del_keymap("x", opts.mappings.add)
-      -- map("x", opts.mappings.vadd, [[:<C-u>lua MiniSurround.add('visual')<CR>]], { noremap = true, silent = true })
-      map("x", opts.mappings.vadd, [[<cmd>lua MiniSurround.add('visual')<CR>]], { noremap = true, silent = true })
+      map("x", opts.mappings.vadd, [[:<C-u>lua MiniSurround.add('visual')<CR>]], { noremap = true, silent = true })
       map("x", "(", [[s(]], { noremap = false, silent = true })
       map("x", "{", [[s{]], { noremap = false, silent = true })
       map("x", "[", [[s[]], { noremap = false, silent = true })
