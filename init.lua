@@ -23,6 +23,24 @@ require("lazy").setup("plugins", {
   checker = { enabled = true },
   change_detection = { enabled = false },
   dev = { path = "~/plugins.nvim/", filter = { "IndianBoy42" } },
+  ui = {
+    border = "single",
+    custom_keys = {
+      ["<localleader>l"] = false,
+      ["<localleader>t"] = function(plugin)
+        require("kitty").new_os_window { open_cwd = plugin.dir }
+      end,
+      ["<localleader>g"] = function(plugin)
+        require("kitty").new_os_window({ open_cwd = plugin.dir }, "gitui")
+      end,
+      ["<localleader>m"] = function(plugin)
+        vim.cmd("!smerge " .. plugin.dir)
+        -- require("kitty").new_os_window({ open_cwd = plugin.dir }, "gitui")
+      end,
+      ["<C-n>"] = "/[○●]<CR>",
+      ["<C-p>"] = "?[○●]<CR>",
+    },
+  },
   performance = {
     rtp = {
       disabled_plugins = {
