@@ -1090,7 +1090,8 @@ function M.setup()
     },
     r = {
       name = "Replace/Refactor",
-      s = { ":s///g<Left><Left><Left>", "In Selection" },
+      S = { ":s///g<Left><Left><Left>", "In Selection" },
+      s = { '"zy:<C-u>s/<C-R>z//g<Left><Left>', "Selection" },
       ["/"] = { [[:s/<C-R>///g<Left><Left>]], "Last search" },
       ["+"] = { [[:s/<C-R>+//g<Left><Left>]], "Last yank" },
       ["."] = { [[:s/<C-R>.//g<Left><Left>]], "Last insert" },
@@ -1153,7 +1154,7 @@ function M.setup()
     n = { cmd "tabnew", "New" },
     q = { cmd "tabclose", "Close" },
     p = { cmd "tabprev", "Prev" },
-    l = { cmd "tabs", "List tabs" },
+    l = { cmd "Telescope telescope-tabs list_tabs", "List tabs" },
     o = { cmd "tabonly", "Close others" },
     ["1"] = { cmd "tabfirst", "First tab" },
     ["0"] = { cmd "tablast", "Last tab" },
