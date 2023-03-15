@@ -1,0 +1,1 @@
+-- require'utils.lsp'.disable_diagnostic()

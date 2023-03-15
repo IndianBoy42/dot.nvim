@@ -77,6 +77,13 @@ return {
       display = { "Terminal", "VirtualTextOk", "LongTempFloatingWindowErr", "NvimNotifyErr" },
       live_mode_toggle = "enable",
     },
+    config = function(_, opts)
+      require("sniprun").setup(opts)
+      -- local sd = require "sniprun.display"
+      -- sd.term_close = function() end
+      -- sd.term_open = function() end
+      -- sd.write_to_term = function(message, ok) end
+    end,
     cmd = "SnipRun",
     keys = {
       { "<leader>xx", "<Plug>SnipRun", desc = "SnipRun Line" },
@@ -96,7 +103,7 @@ return {
   --   config = function()
   --     require("lv-terms").fterm()
   --   end,
-  --   disable = not O.plugin.floatterm,
+
   -- },
   -- use {
   --   "dccsillag/magma-nvim",
@@ -106,7 +113,7 @@ return {
   --   run = ":UpdateRemotePlugins",
   --   -- python3.9 -m pip install cairosvg pnglatex jupyter_client ipython ueberzug pillow
   --   -- cmd = "MagmaStart", -- see lv-terms
-  --   disable = not O.plugin.magma,
+
   -- }
   -- -- Better neovim terminal
   -- use {
@@ -125,7 +132,7 @@ return {
   --     "<Plug>(neoterm-repl-send)",
   --     "<Plug>(neoterm-repl-send-line)",
   --   },
-  --   disable = not O.plugin.neoterm,
+
   -- }
   -- use {
   --   "CRAG666/code_runner.nvim",
@@ -133,7 +140,7 @@ return {
   --     require("lv-terms").coderunner()
   --   end,
   --   cmd = { "CRFileType", "CRProjects", "RunCode", "RunFile", "RunProject" },
-  --   disable = not O.plugin.coderunner,
+
   -- }
   -- use {
   --   "jubnzv/mdeval.nvim",
@@ -141,24 +148,34 @@ return {
   --     require("lv-terms").mdeval()
   --   end,
   -- }
-  -- use { "goerz/jupytext.vim" }
-  -- use {
+  {
+    "goerz/jupytext.vim",
+    build = "pipx install jupytext",
+    event = { "BufRead *.ipynb" },
+    init = function()
+      vim.g.jupytext_fmt = "md:markdown"
+      vim.g.jupytext_fmt = "py:percent"
+    end,
+  },
+  -- {
   --   "untitled-ai/jupyter_ascending.vim",
-  --   setup = function()
+  --   build = "pipx install jupyter_ascending",
+  --   init = function()
   --     vim.g.jupyter_ascending_default_mappings = false
   --   end,
-  -- }
+  -- },
   -- use {
   --   "pianocomposer321/yabs.nvim",
   --   config = function()
   --     require("lv-yabs").config()
   --   end,
   --   module = { "yabs", "telescope._extensions.yabs" },
-  --   disable = not O.plugin.yabs,
+
   -- }
-  -- -- use { -- TODO: configure vs-tasks
-  -- --   "EthanJWright/vs-tasks.nvim",
-  -- --   config = function() end,
-  -- -- }
+  -- TODO: https://github.com/Dax89/automaton.nvim
+  -- use { -- TODO: configure vs-tasks
+  --   "EthanJWright/vs-tasks.nvim",
+  --   config = function() end,
+  -- }
   -- https://github.com/lpoto/telescope-tasks.nvim
 }

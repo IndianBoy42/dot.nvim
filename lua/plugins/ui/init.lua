@@ -1,3 +1,28 @@
+vim.api.nvim_create_autocmd("User", {
+  pattern = "VeryLazy",
+  callback = function()
+    mappings.setup()
+
+    -- TODO: https://github.com/stevearc/dressing.nvim
+    vim.ui.select = require("telescopes").uiselect()
+    vim.ui.input = function(opts, on_confirm)
+      opts = opts or {}
+      -- opts.completion
+      -- opts.highlight
+
+      require("plugins.ui.input").inline_text_input {
+        prompt = opts.prompt,
+        border = O.input_border,
+        enter = on_confirm,
+        initial = opts.default,
+        at_begin = false,
+        minwidth = 20,
+        insert = true,
+      }
+    end
+    -- require "commands"
+  end,
+})
 return {
   {
     "folke/which-key.nvim",
@@ -304,24 +329,25 @@ return {
     "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
     config = function()
       require("lsp_lines").setup()
-
-      vim.diagnostic.config {
-        virtual_text = false,
-        virtual_lines = true,
-      }
     end,
     event = { "BufReadPost", "BufNewFile" },
     keys = function()
-      local enabled = true
       return {
         {
           "<leader>dL",
           function()
-            enabled = not enabled
-            vim.diagnostic.config {
-              virtual_text = not enabled,
-              virtual_lines = enabled,
-            }
+            local enabled = vim.diagnostic.config().virtual_lines
+            if enabled then
+              vim.diagnostic.config {
+                virtual_lines = false,
+                virtual_text = require("langs").diagnostic_config,
+              }
+            else
+              vim.diagnostic.config {
+                virtual_lines = true,
+                virtual_text = false,
+              }
+            end
           end,
           desc = "Toggle lsp_lines",
         },

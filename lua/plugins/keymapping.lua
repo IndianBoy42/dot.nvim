@@ -1,6 +1,6 @@
 return {
-  -- "liangxianzhe/nap.nvim"
-  -- { "zdcthomas/yop.nvim" }
+  -- { "liangxianzhe/nap.nvim" },
+  { "zdcthomas/yop.nvim" },
 
   {
     "max397574/better-escape.nvim",

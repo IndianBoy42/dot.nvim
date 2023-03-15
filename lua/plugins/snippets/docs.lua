@@ -11,7 +11,7 @@ return { {
 --   "kkoomen/vim-doge",
 --   run = ":call doge#install()",
 --   cmd = "DogeGenerate",
---   disable = not O.plugin.doge,
+
 -- }
 -- use {
 --   "nvim-treesitter/nvim-tree-docs",

@@ -34,15 +34,6 @@ return {
     -- https://github.com/lvimuser/lsp-inlayhints.nvim
   },
   opts = {
-    -- options for vim.diagnostic.config()
-    diagnostics = {
-      virtual_text = { spacing = 4, prefix = "", severity_limit = "Warning" },
-      -- virtual_text = false,
-      signs = true,
-      underline = true,
-      severity_sort = true,
-      update_in_insert = true,
-    },
     border = "rounded",
     rename_border = "none",
     -- Automatically format on save
@@ -102,8 +93,8 @@ return {
     local lsp = vim.lsp
     local handlers = vim.lsp.handlers
     local lspwith = vim.lsp.with
-    vim.diagnostic.config(opts.diagnostics)
-    handlers["textDocument/codeLens"] = lspwith(vim.lsp.codelens.on_codelens, opts.codeLens)
+    vim.diagnostic.config(require("langs").diagnostic_config)
+    handlers["textDocument/codeLens"] = lspwith(vim.lsp.codelens.on_codelens, require("langs").codelens_config)
     -- handlers["textDocument/hover"] = lspwith(handlers.hover, {
     --   border = opts.border,
     -- })

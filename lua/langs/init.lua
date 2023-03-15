@@ -49,4 +49,30 @@ return {
       end,
     }
   end,
+  diagnostic_config = {
+    _virtual_text = function(ns, bufnr)
+      local highest = require("utils.lsp").get_highest_diag(ns, bufnr)
+      return {
+        spacing = 4,
+        prefix = "",
+        severity = { min = highest },
+      }
+    end,
+    virtual_text = {
+      spacing = 4,
+      prefix = "",
+      severity_limit = "Warning",
+    },
+    virtual_lines = false,
+    signs = true,
+    underline = { severity = "Error" },
+    severity_sort = true,
+    update_in_insert = true,
+  },
+  codelens_config = {
+    virtual_text = { spacing = 0, prefix = "" },
+    signs = true,
+    underline = true,
+    severity_sort = true,
+  },
 }

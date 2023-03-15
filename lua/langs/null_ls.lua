@@ -12,7 +12,6 @@ return {
           "prettierd",
           "shfmt",
           "stylua",
-          "write-good",
           "markdownlint",
           "yamllint",
         },
@@ -69,13 +68,13 @@ return {
         -- diagnostics.pylint,
         -- diagnostics.hadolint,
         -- -- diagnostics.luacheck,
-        diagnostics.write_good,
+        -- diagnostics.write_good,
         -- diagnostics.proselint,
         -- diagnostics.vale, -- lets install vale-linter
         -- -- diagnostics.misspell,
         diagnostics.markdownlint,
         diagnostics.yamllint,
-        -- diagnostics.gccdiag,
+        diagnostics.gccdiag,
 
         -- Code Actions
         -- code_actions.gitsigns, -- TODO: reenable when I can lower the priority

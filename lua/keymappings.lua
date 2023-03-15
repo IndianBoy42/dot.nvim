@@ -297,7 +297,7 @@ function M.setup()
   dont_clobber_if_meta("n", "D")
   dont_clobber_if_meta("x", "r")
   dont_clobber_by_default("n", "c")
-  dont_clobber_by_default("x", "c")
+  -- dont_clobber_by_default("x", "c")
   dont_clobber_by_default("n", "C")
   dont_clobber_by_default("n", "x")
   dont_clobber_by_default("x", "x")
@@ -326,7 +326,6 @@ function M.setup()
   local pre_goto_next = O.treesitter.textobj_prefixes.goto_next
   local pre_goto_prev = O.treesitter.textobj_prefixes.goto_previous
   local pre_swap_next = O.treesitter.textobj_prefixes.swap_next
-  local pre_swap_prev = O.treesitter.textobj_prefixes.swap_prev
 
   -- QuickFix
   -- local quickfix_looping =
@@ -507,6 +506,7 @@ function M.setup()
           -- Preserve animation
           vim.wait(200, function()
             vim.cmd "redraw!"
+            return false
           end, 30, false)
         end,
       },
@@ -555,7 +555,7 @@ function M.setup()
   op_from "gP"
   op_from "g<C-p>"
 
-  -- comment and copy
+  -- FIXME: comment and copy
   -- map("x", "gy", '"z<M-y>gvgc`>"zp`[', sile)
   map("x", "gy", '"z<M-y>mz`<"zPgPgc`z', { desc = "copy and comment" })
   map("n", "gy", operatorfuncV_keys("comment_copy", "gy"), sile)
@@ -578,7 +578,7 @@ function M.setup()
 
   -- Add semicolon
   -- map("i", ";;", "<esc>mzA;`z", nore)
-  map("i", ";;", "<esc>A;", nore)
+  map("i", "<M-;>", "<esc>A;", nore)
 
   -- lsp keys
   local telescope_cursor = function(name)
@@ -586,16 +586,7 @@ function M.setup()
       return telescope_fn[name](require("telescope.themes").get_cursor())
     end
   end
-  local goto_defn = telescope_cursor "lsp_definitions"
-  map("n", "gd", goto_defn, { desc = "Goto Definition" })
-  map("n", "gD", lspbuf.declaration, { desc = "Goto Declaration" })
-  map("n", "gK", vim.lsp.codelens.run, { desc = "Codelens" })
-  -- Preview variants
-  map("n", "gpd", lsputil.preview_location_at "definition", sile)
-  map("n", "gpD", lsputil.preview_location_at "declaration", sile)
-  map("n", "gpr", lsputil.preview_location_at "references", sile)
-  map("n", "gpi", lsputil.preview_location_at "implementation", sile)
-  map("n", "gpe", lsputil.diag_line, sile)
+  -- TODO: highlight these items like when using `/` search
   local on_list_next = {
     reuse_win = true,
     on_list = function(options)
@@ -606,6 +597,7 @@ function M.setup()
       end
       -- vim.cmd.cfirst()
       quickfix_looping[1]()
+      -- require("portal.builtin").quickfix.tunnel_forward()
     end,
   }
   local on_list_prev = {
@@ -618,29 +610,41 @@ function M.setup()
       end
       -- vim.cmd.clast()
       quickfix_looping[2]()
+      -- require("portal.builtin").quickfix.tunnel_backward()
     end,
   }
+
+  map("n", "gd", telescope_cursor "lsp_definitions", { desc = "Goto Definition" })
+  map("n", "gd", function()
+    vim.lsp.buf.definition(on_list_next)
+  end, { desc = "Definition" })
+  map("n", "gtd", function()
+    vim.lsp.buf.type_definition(on_list_next)
+  end, { desc = "Type Definition" })
+  map("n", "gD", lspbuf.declaration, { desc = "Goto Declaration" })
+  map("n", "gK", vim.lsp.codelens.run, { desc = "Codelens" })
+  -- Preview variants
+  map("n", "gpd", lsputil.preview_location_at "definition", sile)
+  map("n", "gpD", lsputil.preview_location_at "declaration", sile)
+  map("n", "gpr", lsputil.preview_location_at "references", sile)
+  map("n", "gpi", lsputil.preview_location_at "implementation", sile)
+  map("n", "gpe", lsputil.diag_line, sile)
   map("n", pre_goto_next .. "u", function()
     vim.lsp.buf.references(nil, on_list_next)
   end, { desc = "Reference" })
   map("n", pre_goto_prev .. "u", function()
     vim.lsp.buf.references(nil, on_list_prev)
   end, { desc = "Reference" })
-  map("n", "]i", function()
+  map("n", pre_goto_next .. "i", function()
     vim.lsp.buf.implementation(on_list_next)
   end, { desc = "Next Implementation" })
-  map("n", "[i", function()
+  map("n", pre_goto_prev .. "i", function()
     vim.lsp.buf.implementation(on_list_prev)
   end, { desc = "Prev Implementation" })
-  map("n", "gd", function()
-    vim.lsp.buf.definition(on_list_next)
-  end, { desc = "Definition" })
-  map("n", "gtd", function()
-    vim.lsp.buf.definition(on_list_next)
-  end, { desc = "Type Definition" })
   -- Hover
   -- map("n", "K", lspbuf.hover, sile)
   map("n", "gh", lspbuf.hover, { desc = "LSP Hover" })
+  map("i", "<C-s>", lspbuf.signature_help, { desc = "Signature Help" })
   local do_code_action = telescope_fn.code_actions_previewed
   map("n", "K", do_code_action, { desc = "Do Code Action" })
   map("x", "K", do_code_action, { desc = "Do Code Action" })
@@ -706,10 +710,8 @@ function M.setup()
   map("n", "U", "<C-R>", nore)
 
   -- Go to multi insert from Visual mode
-  map("x", "I", "<Plug>(VM-Visual-Add)i", { remap = true })
-  map("x", "A", "<Plug>(VM-Visual-Add)a", { remap = true })
-  map("s", "I", "<ESC>I", {})
-  map("s", "A", "<ESC>A", {})
+  map("s", "<M-i>", "<ESC>I", {})
+  map("s", "<M-a>", "<ESC>A", {})
 
   -- Select all matching regex search
   -- map("n", "<M-S-/>", "<M-/><M-a>", {remap=true})
@@ -738,10 +740,10 @@ function M.setup()
   end
 
   quick_inside "w"
-  quick_inside("p", true)
   quick_inside "W"
-  quick_inside "b"
-  quick_inside "B"
+  -- quick_inside("p", true)
+  -- quick_inside "b"
+  -- quick_inside "B"
   quick_inside "["
   quick_around "]"
   quick_inside "("
@@ -750,6 +752,8 @@ function M.setup()
   quick_around "}"
   quick_inside '"'
   quick_inside "'"
+  quick_inside "<"
+  quick_inside ">"
   quick_inside "q"
   -- map("n", "r", '"_ci', {})
   -- map("n", "x", '"_d', {})
@@ -795,13 +799,10 @@ function M.setup()
 
   local ldr_goto_next = "j"
   local ldr_goto_prev = "k"
-  local ldr_swap_next = "a"
-  local ldr_swap_prev = "A"
+  local ldr_swap = "a"
   -- Leader shortcut for ][ jumping and )( swapping
   map("n", "<leader>" .. ldr_goto_next, pre_goto_next, { remap = true })
   map("n", "<leader>" .. ldr_goto_prev, pre_goto_prev, { remap = true })
-  map("n", "<leader>" .. ldr_swap_next, pre_swap_next, { remap = true })
-  map("n", "<leader>" .. ldr_swap_prev, pre_swap_prev, { remap = true })
 
   map("n", "<leader><leader>", "<localleader>", { remap = true })
   map("x", "<leader><leader>", "<localleader>", { remap = true })
@@ -848,8 +849,12 @@ function M.setup()
     F = { telescope_fn.find_all_files, "Find all Files" },
     [ldr_goto_next] = "Jump next (])",
     [ldr_goto_prev] = "Jump prev ([)",
-    [ldr_swap_next] = "Swap next ())",
-    [ldr_swap_prev] = "Swap prev (()",
+    [ldr_swap] = {
+      name = "Swap next ())",
+      [ldr_swap] = { cmd "ISwapWith", "ISwapWith" },
+      i = { cmd "ISwap", "ISwap" },
+      n = { cmd "ISwapNodeWith", "I. With" },
+    },
     w = {
       function()
         if vim.api.nvim_buf_get_name(0) == "" then
@@ -880,6 +885,7 @@ function M.setup()
     }, -- w = { cmd "noau up", "Write" },
     q = { "<C-W>q", "Quit" },
     Q = { "<C-W>q", "Quit" },
+    e = "Edit",
     o = {
       name = "Open window",
       -- s = { focus_fn.split_nicely, "Nice split" },
@@ -910,6 +916,7 @@ function M.setup()
       g = { cmd "setlocal signcolumn!", "Cursor column" },
       l = { cmd "setlocal cursorline!", "Cursor line" },
       h = { cmd "setlocal hlsearch", "hlsearch" },
+      b = { cmd "set buflisted", "hlsearch" },
       c = { utils.conceal_toggle, "Conceal" },
       f = { focus_fn.focus_toggle, "Focus.nvim" },
       -- TODO: Toggle comment visibility
@@ -1029,13 +1036,16 @@ function M.setup()
     },
     r = {
       name = "Replace/Refactor",
-      n = { lsputil.rename, "Rename" },
-      t = "Rename TS",
-      ["*"] = { [["zyiw:%s/<C-R>z//g<Left><Left>]], "Curr word" },
+      -- n = { lsputil.rename, "Rename" }, -- Use IncRename
+      -- ["*"] = { [["zyiw:%s/<C-R>z//g<Left><Left>]], "Curr word" },
       ["/"] = { [[:%s/<C-R>///g<Left><Left>]], "Last search" },
       ["+"] = { [[:%s/<C-R>+//g<Left><Left>]], "Last yank" },
       ["."] = { [[:%s/<C-R>.//g<Left><Left>]], "Last insert" },
       s = { [[:%s///g<Left><Left><Left>]], "In File" },
+      i = "Inside",
+      r = {
+        name = "Spectre",
+      },
     },
     n = {
       name = "Generate",
@@ -1049,37 +1059,12 @@ function M.setup()
       name = "Diagnostics",
       T = { lsputil.toggle_diagnostics, "Toggle Diags" },
       l = { lsputil.diag_line, "Line Diagnostics" },
-      v = {
-        -- TODO: make this not move the cursor
-        operatorfunc_scaffold("show_diagnostics", lsputil.range_diagnostics),
-        "Range Diagnostics",
-      },
-    },
-    P = {
-      name = "Projects",
     },
     m = "Move",
     -- c = {
     --   operatorfunc_keys("change_all", "<leader>c"),
     --   "Change all",
     -- },
-  }
-
-  M.whichkey {
-    [O.treesitter.textobj_prefixes.swap_prev] = {
-      name = "Swap Prev",
-      [O.treesitter.textobj_prefixes.swap_prev] = { cmd "ISwap", "Interactive" },
-      [ldr_swap_prev] = { cmd "ISwap", "Interactive" },
-      [O.treesitter.textobj_prefixes.swap_next] = { cmd "ISwapWith", "I. With" },
-    },
-    [O.treesitter.textobj_prefixes.swap_next] = {
-      name = "Swap Next",
-      [O.treesitter.textobj_prefixes.swap_next] = { cmd "ISwap", "Interactive" },
-      [O.treesitter.textobj_prefixes.swap_prev] = { cmd "ISwapWith", "I. With" },
-      [ldr_swap_next] = { cmd "ISwapWith", "I. With" },
-      [ldr_swap_prev] = { cmd "ISwap", "I. With" },
-      n = { cmd "ISwapNodeWith", "I. With" },
-    },
   }
 
   local vLeaderMappings = {
@@ -1090,11 +1075,14 @@ function M.setup()
     },
     r = {
       name = "Replace/Refactor",
-      S = { ":s///g<Left><Left><Left>", "In Selection" },
-      s = { '"zy:<C-u>s/<C-R>z//g<Left><Left>', "Selection" },
-      ["/"] = { [[:s/<C-R>///g<Left><Left>]], "Last search" },
-      ["+"] = { [[:s/<C-R>+//g<Left><Left>]], "Last yank" },
-      ["."] = { [[:s/<C-R>.//g<Left><Left>]], "Last insert" },
+      i = {
+        name = "In",
+        s = { ":s///g<Left><Left><Left>", "In Selection" },
+      },
+      s = { '"zy:<C-u>%s/<C-R>z//g<Left><Left>', "Selection" },
+      ["/"] = { [[:%s/<C-R>///g<Left><Left>]], "Last search" },
+      ["+"] = { [[:%s/<C-R>+//g<Left><Left>]], "Last yank" },
+      ["."] = { [[:%s/<C-R>.//g<Left><Left>]], "Last insert" },
     },
     -- c = {
     --   [["z<M-y>:%s/<C-r>z//g<Left><Left>]],
@@ -1115,16 +1103,6 @@ function M.setup()
   -- TODO: move these to different modules?
   wk.register(leaderMappings, leaderOpts)
   wk.register(vLeaderMappings, vLeaderOpts)
-
-  -- TODO: move to plugin config files?
-  if O.plugin.surround then
-    local ops = { mode = "o" }
-    wk.register({ ["s"] = "Surround", ["S"] = "Surround Rest", ["ss"] = "Line" }, ops)
-  end
-  if O.plugin.lightspeed then
-    local ops = { mode = "o" }
-    wk.register({ ["z"] = "Light speed", ["Z"] = "Light speed bwd" }, ops)
-  end
 
   local ops = { mode = "n" }
   wk.register({

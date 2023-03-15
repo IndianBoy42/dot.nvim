@@ -1,3 +1,73 @@
+local function postfix_wrap_call(trig, call, requires, pair)
+  pair = pair or { "(", ")" }
+
+  return {
+    postfix = trig,
+    body = {
+      call .. pair[1] .. "${receiver}" .. pair[2],
+    },
+    requires = requires,
+    scope = "expr",
+  }
+end
+local function postfix_wrap_type(trig, call, requires)
+  postfix_wrap_call(trig, call, requires, { "<", ">" })
+end
+local snippets = {
+  ["Arc::new"] = postfix_wrap_call("arc", "Arc::new", "std::sync::Arc"),
+  ["Mutex::new"] = postfix_wrap_call("mutex", "Mutex::new", "std::sync::Mutex"),
+  ["RefCell::new"] = postfix_wrap_call("refcell", "RefCell::new", "std::cell::RefCell"),
+  ["Cell::new"] = postfix_wrap_call("cell", "Cell::new", "std::cell::Cell"),
+  ["Rc::new"] = postfix_wrap_call("rc", "Rc::new", "std::rc::Rc"),
+  ["Box::pin"] = postfix_wrap_call("pin", "Box::pin"),
+  ["Some"] = postfix_wrap_call("some", "Some", nil),
+  ["Ok"] = postfix_wrap_call("ok", "Ok", nil),
+  ["Err"] = postfix_wrap_call("err", "Err", nil),
+  ["Option"] = postfix_wrap_type("option_type", "Option", nil),
+  ["RefCell"] = postfix_wrap_type("refcell_type", "RefCell", nil),
+  ["Rc"] = postfix_wrap_type("rc_type", "Rc", nil),
+  ["Box"] = postfix_wrap_type("box_type", "Box", nil),
+  ["unsafe"] = {
+    postfix = "unsafe",
+    body = { "unsafe { ${receiver} }" },
+    description = "Wrap in unsafe{}",
+    scope = "expr",
+  },
+  ["for"] = {
+    postfix = "for",
+    body = { [[for ${1:i} in ${receiver} {
+              $0
+              }]] },
+    description = "Wrap in unsafe{}",
+    scope = "expr",
+  },
+  ["thread::spawn"] = {
+    prefix = "spawn",
+    body = {
+      "thread::spawn(move || {",
+      "\t$0",
+      "});",
+    },
+    description = "Spawn a new thread",
+    requires = "std::thread",
+    scope = "expr",
+  },
+  ["channel"] = {
+    prefix = "channel",
+    body = { "let (tx,rx) = mpsc::channel()" },
+    description = "(tx,rx) = channel()",
+    requires = "std::sync::mpsc",
+    scope = "expr",
+  },
+  ["from"] = {
+    postfix = "from",
+    body = {
+      "${0:From}::from(${receiver})",
+    },
+    scope = "expr",
+  },
+}
+
 return {
   {
     "hrsh7th/nvim-cmp",
@@ -21,6 +91,7 @@ return {
   -- correctly setup mason lsp / dap extensions
 
   require("langs").mason_ensure_installed { "codelldb", "rust-analyzer", "taplo" },
+
   {
     "neovim/nvim-lspconfig",
     dependencies = { "simrat39/rust-tools.nvim" },
@@ -34,76 +105,6 @@ return {
           local codelldb_path = extension_path .. "adapter/codelldb"
           local liblldb_path = vim.fn.has "mac" == 1 and extension_path .. "lldb/lib/liblldb.dylib"
             or extension_path .. "lldb/lib/liblldb.so"
-
-          local function postfix_wrap_call(trig, call, requires, pair)
-            pair = pair or { "(", ")" }
-
-            return {
-              postfix = trig,
-              body = {
-                call .. pair[1] .. "${receiver}" .. pair[2],
-              },
-              requires = requires,
-              scope = "expr",
-            }
-          end
-          local function postfix_wrap_type(trig, call, requires)
-            postfix_wrap_call(trig, call, requires, { "<", ">" })
-          end
-          local snippets = {
-            ["Arc::new"] = postfix_wrap_call("arc", "Arc::new", "std::sync::Arc"),
-            ["Mutex::new"] = postfix_wrap_call("mutex", "Mutex::new", "std::sync::Mutex"),
-            ["RefCell::new"] = postfix_wrap_call("refcell", "RefCell::new", "std::cell::RefCell"),
-            ["Cell::new"] = postfix_wrap_call("cell", "Cell::new", "std::cell::Cell"),
-            ["Rc::new"] = postfix_wrap_call("rc", "Rc::new", "std::rc::Rc"),
-            ["Box::pin"] = postfix_wrap_call("pin", "Box::pin"),
-            ["Some"] = postfix_wrap_call("some", "Some", nil),
-            ["Ok"] = postfix_wrap_call("ok", "Ok", nil),
-            ["Err"] = postfix_wrap_call("err", "Err", nil),
-            ["Option"] = postfix_wrap_type("option_type", "Option", nil),
-            ["RefCell"] = postfix_wrap_type("refcell_type", "RefCell", nil),
-            ["Rc"] = postfix_wrap_type("rc_type", "Rc", nil),
-            ["Box"] = postfix_wrap_type("box_type", "Box", nil),
-            ["unsafe"] = {
-              postfix = "unsafe",
-              body = { "unsafe { ${receiver} }" },
-              description = "Wrap in unsafe{}",
-              scope = "expr",
-            },
-            ["for"] = {
-              postfix = "for",
-              body = { [[for ${1:i} in ${receiver} {
-              $0
-              }]] },
-              description = "Wrap in unsafe{}",
-              scope = "expr",
-            },
-            ["thread::spawn"] = {
-              prefix = "spawn",
-              body = {
-                "thread::spawn(move || {",
-                "\t$0",
-                "});",
-              },
-              description = "Spawn a new thread",
-              requires = "std::thread",
-              scope = "expr",
-            },
-            ["channel"] = {
-              prefix = "channel",
-              body = { "let (tx,rx) = mpsc::channel()" },
-              description = "(tx,rx) = channel()",
-              requires = "std::sync::mpsc",
-              scope = "expr",
-            },
-            ["from"] = {
-              postfix = "from",
-              body = {
-                "${0:From}::from(${receiver})",
-              },
-              scope = "expr",
-            },
-          }
 
           -- TODO:
           -- vim.b.miniai_config = {
@@ -120,6 +121,7 @@ return {
             dap = {
               adapter = require("rust-tools.dap").get_codelldb_adapter(codelldb_path, liblldb_path),
             },
+            on_initialized = function() end,
             tools = {
               hover_actions = {
                 auto_focus = true,
@@ -217,23 +219,39 @@ return {
               end,
               settings = {
                 ["rust-analyzer"] = {
+                  -- https://rust-analyzer.github.io/manual.html#configuration
                   cargo = {
                     features = "all",
                   },
                   -- Add clippy lints for Rust.
-                  checkOnSave = {
-                    enable = true,
-                    command = "clippy", -- comment out to not use clippy
-                  },
+                  checkOnSave = true,
                   check = {
                     command = "clippy",
                     features = "all",
                   },
                   completion = {
                     snippets = snippets,
+                    postfix = { enable = true },
                   },
                   procMacro = {
                     enable = true,
+                  },
+                  experimental = {
+                    enable = true,
+                  },
+                  hover = {
+                    actions = {
+                      references = { enable = true },
+                    },
+                  },
+                  inlayHints = {
+                    expressionAdjustmentHints = { enable = true },
+                  },
+                  rustfmt = {
+                    rangeFormatting = { enable = true },
+                  },
+                  typing = {
+                    autoClosingAngleBrackets = { enable = true },
                   },
                 },
               },

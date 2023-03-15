@@ -24,21 +24,35 @@ return {
   {
     "ggandor/leap.nvim",
     keys = {
-      { "s", mode = "n", desc = "Leap" },
-      { "s", mode = "x", desc = "Leap" },
+      {
+        "s",
+        function()
+          local current_window = vim.fn.win_getid()
+          require("leap").leap { target_windows = { current_window } }
+        end,
+        mode = "n",
+        desc = "Leap",
+      },
+      {
+        "z",
+        function()
+          local current_window = vim.fn.win_getid()
+          require("leap").leap { target_windows = { current_window } }
+        end,
+        mode = "x",
+        desc = "Leap",
+      },
+      {
+        "z",
+        function()
+          local current_window = vim.fn.win_getid()
+          require("leap").leap { target_windows = { current_window } }
+        end,
+        mode = "o",
+        desc = "Leap",
+      },
     },
-    config = function()
-      -- require("leap").set_default_keymaps()
-      -- Bidirectional leap
-      vim.keymap.set("n", "s", function()
-        local current_window = vim.fn.win_getid()
-        require("leap").leap { target_windows = { current_window } }
-      end)
-      vim.keymap.set("x", "s", function()
-        local current_window = vim.fn.win_getid()
-        require("leap").leap { target_windows = { current_window } }
-      end)
-    end,
+    config = function() end,
   },
   {
     "ggandor/leap-spooky.nvim",
@@ -88,9 +102,12 @@ return {
     "mg979/vim-visual-multi",
     init = function()
       vim.g.VM_maps = nil
+      vim.g.VM_leader = "\\"
       vim.g.VM_maps = {
         ["Find Under"] = "<M-n>",
-        ["Select All"] = "<M-a>",
+        ["Find Next"] = "<M-n>",
+        ["Find Prev"] = "<M-S-n>",
+        ["Select All"] = vim.g.VM_leader .. "a",
         ["Find Subword Under"] = "<M-n>",
         ["Add Cursor Down"] = "<M-j>",
         ["Add Cursor Up"] = "<M-k>",
@@ -98,27 +115,70 @@ return {
         ["Select Cursor Up"] = "<M-S-k>",
         ["Skip Region"] = "n",
         ["Remove Region"] = "N",
-        ["Visual Cursors"] = "<M-c>",
-        ["Visual Add"] = "<M-a>",
-        ["Visual All"] = "<M-S-a>",
-        ["Start Regex Search"] = "<M-/>",
+        ["Visual Cursors"] = vim.g.VM_leader .. vim.g.VM_leader,
+        ["Visual Add"] = vim.g.VM_leader .. "v",
+        ["Visual All"] = vim.g.VM_leader .. "a",
         ["Visual Regex"] = "/",
         ["Add Cursor At Pos"] = "<M-S-n>", -- TODO: better keymap for this?
         -- FIXME: Which key(?) is conflicting and making this not work, unless i type fast
         ["Find Operator"] = "m",
-        ["Visual Find"] = "<M-f>",
+        -- ["Visual Find"] = "<M-f>",
         ["Undo"] = "u",
         ["Redo"] = "<C-r>",
+        ["Reselect Last"] = vim.g.VM_leader .. vim.g.VM_leader,
       }
-      vim.g.VM_leader = "\\"
+
       local theme = "codedark"
       vim.g.VM_theme = theme
       -- vim.g.VM_leader = [[<leader>m]]
     end,
     config = function()
-      require("which-key").register({ [vim.g.VM_leader] = "which_key_ignore" }, { mode = "n" })
+      require("which-key").register(
+        { [vim.g.VM_leader .. "g"] = "which_key_ignore", [vim.g.VM_leader] = "which_key_ignore" },
+        { mode = "n" }
+      )
       vim.cmd.VMTheme(vim.g.VM_theme)
-      -- vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufNewFile" }, { command = "VMTheme " .. theme })
+      local map = vim.keymap.set
+      local feedkeys_ = vim.api.nvim_feedkeys
+      local termcode = vim.api.nvim_replace_termcodes
+      local function feedkeys(keys, o)
+        if o == nil then
+          o = "m"
+        end
+        feedkeys_(termcode(keys, true, true, true), o, false)
+      end
+      local function wrap_vm(prefix, vm, affix)
+        prefix = prefix or ""
+        local first = prefix .. "<Plug>(VM-" .. vm .. ")"
+        if affix == nil then
+          return first
+        end
+        return function()
+          feedkeys(first, "m")
+          -- Defer to avoid `<Plug>(VM-Hls)`
+          vim.defer_fn(function()
+            if type(affix) == "function" then
+              affix = affix()
+            end
+            feedkeys(affix, "m")
+          end, 100)
+        end
+      end
+      -- map("x", "I", wrap_vm(nil, "Visual-Add", "i"), { remap = true })
+      map("x", "I", wrap_vm(nil, "Visual-Add", "i"), { remap = true })
+      map("x", "A", wrap_vm(nil, "Visual-Add", "a"), { remap = true })
+      local c_v = termcode("<C-v>", true, true, true)
+      map("x", "c", function()
+        if vim.api.nvim_get_mode().mode == c_v then
+          wrap_vm(nil, "Visual-Add", "c")()
+          return ""
+        else
+          return '"_c'
+        end
+      end, { expr = true, remap = false })
+
+      map("x", "<C-v>", "<Plug>(VM-Visual-Add)")
+      -- map("x", "<C-v>", function()      -- vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufNewFile" }, { command = "VMTheme " .. theme })
     end,
     event = { "BufReadPost", "BufNewFile" },
   },
@@ -147,88 +207,37 @@ return {
     cmd = { "ISwap", "ISwapWith", "ISwapNode", "ISwapNodeWith" },
   },
   {
-    "gbprod/substitute.nvim",
-    opts = {},
-    keys = function()
-      local substitute = function(fn, opts)
-        return function()
-          local substitute = require "substitute"
-          substitute[fn](opts)
-        end
-      end
-      local substitute_range = function(fn, opts)
-        return function()
-          local range = require "substitute.range"
-          range[fn](opts)
-        end
-      end
-      local exchange = function(fn, opts)
-        return function()
-          local exchange = require "substitute.exchange"
-          exchange[fn](opts)
-        end
-      end
-
-      return {
-        { "r", substitute "operator", mode = "n", desc = "Replace" },
-        {
-          "rr",
-          substitute "line",
-          mode = "n",
-          desc = "Replace Line",
-        },
-        {
-          "R",
-          substitute "eol",
-          mode = "n",
-          desc = "Replace EOL",
-        },
-        { "r", substitute "visual", mode = "x", desc = "Replace" },
-        {
-          "<leader>c",
-          substitute_range "operator",
-          mode = "n",
-          desc = "Replace all",
-        },
-        {
-          "<leader>c",
-          substitute_range "visual",
-          mode = "x",
-          desc = "Replace all",
-        },
-        {
-          "<leader>cc",
-          substitute_range "word",
-          mode = "n",
-          desc = "R all this word",
-        },
-        { "<leader>C", substitute_range("operator", { motion2 = "iG" }), mode = "n", desc = "R all all" },
-        { "cx", exchange "operator", mode = "n", desc = "Exchange" },
-        { "cxx", exchange "line", mode = "n", desc = "Exchange Line" },
-        { "X", exchange "visual", mode = "x", desc = "Exchange" },
-        { "cX", exchange "cancel", mode = "n", desc = "Exchange Cancel" },
-      }
-    end,
-  },
-  {
-    "bennypowers/splitjoin.nvim",
+    -- "bennypowers/splitjoin.nvim",
+    "Wansmer/treesj",
+    dependencies = { "nvim-treesitter" },
+    opts = {
+      use_default_keymaps = true,
+    },
     keys = {
       {
-        "gJ",
+        "<leader>ej",
         function()
-          require("splitjoin").join()
+          require("treesj").toggle()
         end,
-        desc = "Join the object under cursor",
+        desc = "SplitJoin",
       },
       {
-        "gs",
+        "<leader>es",
         function()
-          require("splitjoin").split()
+          require("treesj").split()
         end,
-        desc = "Split the object under cursor",
+        desc = "Split",
+      },
+      {
+        "<leader>eJ",
+        function()
+          require("treesj").join()
+        end,
+        desc = "Join",
       },
     },
   },
+  require "plugins.navedit.tsnodeaction",
   -- TODO: https://github.com/gbprod/yanky.nvim
   {
     "echasnovski/mini.ai",
@@ -323,37 +332,6 @@ return {
       require("mini.move").setup(opts)
     end,
   },
-  -- { -- TODO: mini.move
-  --   "booperlv/nvim-gomove",
-  --   opts = {
-  --     -- whether or not to map default key bindings, (true/false)
-  --     map_defaults = false,
-  --     -- whether or not to reindent lines moved vertically (true/false)
-  --     reindent = true,
-  --     -- whether or not to undojoin same direction moves (true/false)
-  --     undojoin = true,
-  --     -- whether to not to move past end column when moving blocks horizontally, (true/false)
-  --     move_past_end_col = true,
-  --   },
-  --   keys = {
-  --     { "<C-M-h>", "<Plug>GoNSMLeft", mode = "n", desc = "Move Left" },
-  --     { "<C-M-j>", "<Plug>GoNSMDown", mode = "n", desc = "Move Down" },
-  --     { "<C-M-k>", "<Plug>GoNSMUp", mode = "n", desc = "Move Up" },
-  --     { "<C-M-l>", "<Plug>GoNSMRight", mode = "n", desc = "Move Right" },
-  --     { "<M-h>", "<Plug>GoVSMLeft", mode = "x", desc = "Move Left" },
-  --     { "<M-j>", "<Plug>GoVSMDown", mode = "x", desc = "Move Down" },
-  --     { "<M-k>", "<Plug>GoVSMUp", mode = "x", desc = "Move Up" },
-  --     { "<M-l>", "<Plug>GoVSMRight", mode = "x", desc = "Move Right" },
-  --     { "<C-M-S-h>", "<Plug>GoNSDLeft", mode = "n", desc = "Dup Left" },
-  --     { "<C-M-S-j>", "<Plug>GoNSDDown", mode = "n", desc = "Dup Down" },
-  --     { "<C-M-S-k>", "<Plug>GoNSDUp", mode = "n", desc = "Dup Up" },
-  --     { "<C-M-S-l>", "<Plug>GoNSDRight", mode = "n", desc = "Dup Right" },
-  --     { "<M-S-h>", "<Plug>GoVSDLeft", mode = "x", desc = "Dup Left" },
-  --     { "<M-S-j>", "<Plug>GoVSDDown", mode = "x", desc = "Dup Down" },
-  --     { "<M-S-k>", "<Plug>GoVSDUp", mode = "x", desc = "Dup Up" },
-  --     { "<M-S-l>", "<Plug>GoVSDRight", mode = "x", desc = "Dup Right" },
-  --   },
-  -- },
   {
     "cbochs/portal.nvim",
     dependencies = {
@@ -367,15 +345,20 @@ return {
         },
       },
     },
+    cmd = "Portal",
     keys = {
       {
         "<C-i>",
-        "<cmd>Portal jumplist forward<cr>",
+        function()
+          require("portal.builtin").jumplist.tunnel_forward()
+        end,
         desc = "portal fwd",
       },
       {
         "<C-o>",
-        "<cmd>Portal jumplist backward<cr>",
+        function()
+          require("portal.builtin").jumplist.tunnel_backward()
+        end,
         desc = "portal bwd",
       },
       -- TODO: use other queries?

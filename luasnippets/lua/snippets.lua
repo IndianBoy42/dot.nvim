@@ -94,8 +94,11 @@ local function fmt_node(srch, fmts)
     }) ]=], {
     i(1),
     d(2, function(args)
-      local snip = args[1][1]
-      local _, count = string.gsub(snip, srch, srch)
+      local count = 0
+      for _, snip in ipairs(args[1]) do
+        local _, c = string.gsub(snip, srch, srch)
+        count = c + count
+      end
       local res = {}
       for j = 1, count do
         table.insert(res, any_node(j))
@@ -155,12 +158,53 @@ local snippets = {
   s("dlambda-node", dyn_lambda_node()),
   s("selected_text", t "snip.env.TM_SELECTED_TEXT"),
 
-  s("localM", {
-    tnl [[local M = {}]],
-    t "M.",
-    i(0),
-    nlt [[return M]],
-  }),
+  s(
+    "module",
+    fmta(
+      [[local <> = {}
+local <> = {}
+<>.<>
+return setmetatable(<>, <>)]],
+      {
+        i(1, "M"),
+        l("meta_" .. l._1, { 1 }),
+        l(l._1, { 1 }),
+        -- i(2, "field"),
+        c(2, {
+          sn(
+            nil,
+            fmta([[<> = <>]], {
+              i(1, "field"),
+              i(2, "value"),
+            })
+          ),
+          sn(
+            nil,
+            fmta(
+              [[<> = function(<>)
+        <>
+        end]],
+              {
+                i(1, "setup"),
+                i(2, "..."),
+                -- c(2, { i(1, "opts"), i(1, "...") }),
+                i(3, "return "),
+              }
+            )
+          ),
+        }),
+        l(l._1, { 1 }),
+        l("meta_" .. l._1, { 1 }),
+      }
+    )
+    -- {
+    -- i(1),
+    -- tnl [[local M = {}]],
+    -- t "M.",
+    -- i(0),
+    -- nlt [[return M]],
+    -- }
+  ),
   s("link_url", {
     t '<a href="',
     sel(),
@@ -168,6 +212,7 @@ local snippets = {
     i(1),
     t "</a>",
   }),
+  -- TODO: make this smarter?
   s("function", {
     t "function ",
     i(1),
@@ -215,7 +260,28 @@ local snippets = {
       i(1),
     })
   ),
-  postfix("assign", l(l.POSTFIX_MATCH)),
+  postfix(
+    "assign",
+    fmta([[<> = <>]], {
+      c(1, {
+        i(1, "var"),
+        sn(
+          nil,
+          fmta([[local <>]], {
+            i(1, "var"),
+          })
+        ),
+        sn(
+          nil,
+          fmta([[<>.<>]], {
+            i(1, "var"),
+            i(2, "M"),
+          })
+        ),
+      }),
+      l(l.POSTFIX_MATCH),
+    })
+  ),
   s( -- Ignore stylua {{{
     { trig = "ignore", name = "Ignore Stylua" },
     fmt("-- stylua: ignore {}\n{}", {
@@ -226,6 +292,31 @@ local snippets = {
       i(0),
     })
   ), --}}}
+  s(
+    "plugin",
+    fmta(
+      [[{"<>", opts = {
+<>
+}, cmd = {}, event = {}, keys = {}}]],
+      {
+        i(1),
+        i(2),
+      }
+    )
+  ),
+  s(
+    "config",
+    fmta(
+      [[config = function(_, opts) 
+require'<>'.setup(opts)
+<>
+end,]],
+      {
+        i(1),
+        i(2),
+      }
+    )
+  ),
 }
 
 return snippets, autosnippets

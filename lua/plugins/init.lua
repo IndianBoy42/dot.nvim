@@ -17,7 +17,6 @@ return {
   },
   { "nvim-lua/plenary.nvim" },
 
-  -- TODO: https://github.com/Dax89/automaton.nvim
   { "JoosepAlviste/nvim-ts-context-commentstring" },
   {
     "echasnovski/mini.comment",
@@ -161,6 +160,7 @@ return {
   {
     "willothy/flatten.nvim",
     lazy = false,
+    priority = 1001,
     opts = {
       -- <String, Bool> dictionary of filetypes that should be blocking
       block_for = {

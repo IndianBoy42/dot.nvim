@@ -515,6 +515,9 @@ return {
           settings = {
             texlab = conf.texlab,
           },
+          on_attach = function(client, bufnr)
+            client.server_capabilities.semanticTokensProvider = nil
+          end,
         },
       },
     },
@@ -524,12 +527,7 @@ return {
     vim.opt_local.spell = true
     vim.opt.number = false
     vim.opt.relativenumber = false
-    vim.cmd "setlocal iskeyword+=\\"
-    utils.lsp.cb_on_attach(function(client, buffer)
-      if client.name == "texlab" then
-        client.server_capabilities.semanticTokensProvider = nil
-      end
-    end)
+    vim.opt.iskeyword:append "\\"
 
     local map = vim.keymap.setl
     require("keymappings").wrapjk()

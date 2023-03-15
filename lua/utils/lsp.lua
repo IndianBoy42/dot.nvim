@@ -125,75 +125,18 @@ function M.format_range_operator()
   feedkeys("g@", "n", false)
 end
 
--- TODO: Wait for diags.show_diagnostics to be public
+-- TODO: Figure out the easiest way to implement this
 local lsputil = require "vim.lsp.util"
 local if_nil = vim.F.if_nil
 function M.range_diagnostics(opts, buf_nr, start, finish)
   start = start or getmark(0, "[")
   finish = finish or getmark(0, "]")
 
-  opts = opts or {}
-  opts.focus_id = "position_diagnostics"
-  buf_nr = buf_nr or 0
-  local function match_position_predicate(diag)
-    -- FIXME: this is wrong sometimes?
-    if finish[1] < diag.range["start"].line then
-      return false
-    else
-      return start[1] <= diag.range["end"].line
-    end
-    return ((finish[1] >= diag.range["start"].line) and (start[1] <= diag.range["end"].line))
-  end
-
-  local diagnostics = diags.get(buf_nr, nil, match_position_predicate)
-  -- if opts.severity then
-  --   range_diagnostics = filter_to_severity_limit(opts.severity, range_diagnostics)
-  -- elseif opts.severity_limit then
-  --   range_diagnostics = filter_by_severity_limit(opts.severity_limit, range_diagnostics)
-  -- end
-  table.sort(diagnostics, function(a, b)
-    return a.severity < b.severity
-  end)
-
-  -- diags.show_diagnostics
-  -- return diags.show_diagnostics(opts, range_diagnostics)
-  if vim.tbl_isempty(diagnostics) then
-    return
-  end
-  local lines = {}
-  local highlights = {}
-  local show_header = if_nil(opts.show_header, true)
-  local ins = table.insert
-  if show_header then
-    ins(lines, "Diagnostics:")
-    ins(highlights, { 0, "Bold" })
-  end
-
-  for i, diagnostic in ipairs(diagnostics) do
-    local prefix = string.format("%d. ", i)
-    local hiname = diags._get_floating_severity_highlight_name(diagnostic.severity)
-    assert(hiname, "unknown severity: " .. tostring(diagnostic.severity))
-
-    local message_lines = vim.split(diagnostic.message, "\n", true)
-    ins(lines, prefix .. message_lines[1])
-    ins(highlights, { #prefix, hiname })
-    for j = 2, #message_lines do
-      ins(lines, string.rep(" ", #prefix) .. message_lines[j])
-      ins(highlights, { 0, hiname })
-    end
-  end
-
-  local popup_bufnr, winnr = lsputil.open_floating_preview(lines, "plaintext", opts)
-  for i, hi in ipairs(highlights) do
-    local prefixlen, hiname = unpack(hi)
-    -- Start highlight after the prefix
-    api.nvim_buf_add_highlight(popup_bufnr, -1, hiname, i - 1, prefixlen, -1)
-  end
-
-  return popup_bufnr, winnr
+  vim.notify("Unimplemented", vim.log.levels.ERROR)
 end
 
 -- Preview definitions and things
+-- TODO: most buf_request could probably just use vim.lsp.buf + on_list_handler
 local function preview_location_callback(_, result)
   if result == nil or vim.tbl_isempty(result) then
     return nil
@@ -241,6 +184,7 @@ function M.view_location_split_callback(split_cmd)
   return handler
 end
 
+-- TODO: generalized view_location_in (existing windows, new tabs, etc)
 function M.view_location_split(name, split_cmd)
   local cb = M.view_location_split_callback(split_cmd)
   return function()
@@ -249,13 +193,29 @@ function M.view_location_split(name, split_cmd)
   end
 end
 
-function M.toggle_diagnostics()
-  if vim.b.lsp_diagnostics_hide then
-    diags.enable()
+vim.api.nvim_create_autocmd("BufReadPost", {
+  callback = function()
+    if vim.b.lsp_diagnostics_hide == nil then
+      vim.b.lsp_diagnostics_hide = false
+    end
+  end,
+})
+function M.toggle_diagnostics(b)
+  local hide = vim.api.nvim_buf_get_var(b or 0, "lsp_diagnostics_hide")
+  if hide then
+    diags.enable(b or 0)
   else
-    diags.disable()
+    diags.disable(b or 0)
   end
-  vim.b.lsp_diagnostics_hide = not vim.b.lsp_diagnostics_hide
+  vim.api.nvim_buf_set_var(b or 0, "lsp_diagnostics_hide", not hide)
+end
+function M.disable_diagnostic(b)
+  diags.disable(b or 0)
+  vim.api.nvim_buf_set_var(b or 0, "lsp_diagnostics_hide", true)
+end
+function M.enable_diagnostic(b)
+  diags.enable(b or 0)
+  vim.api.nvim_buf_set_var(b or 0, "lsp_diagnostics_hide", false)
 end
 
 -- TODO: Implement codeLens handlers
@@ -275,7 +235,6 @@ function M.show_codelens()
   local codelens = lsp.codelens
   for k, v in pairs(clients) do
     codelens.display(nil, 0, k)
-    -- lsp.codelens.display(nil, 0, k, O.lsp.codeLens)
   end
 end
 
@@ -310,7 +269,8 @@ end
 local popup_diagnostics_opts = function()
   return {
     header = false,
-    border = O.lsp.border,
+    border = "single",
+    scope = "line",
   }
 end
 function M.diag_line()
@@ -323,11 +283,30 @@ function M.diag_buffer()
   diags.open_float(vim.tbl_deep_extend("keep", { scope = "buffer" }, popup_diagnostics_opts()))
 end
 
+function M.get_highest_diag(ns, bufnr)
+  local diags = vim.diagnostic.get(bufnr, { namespace = ns })
+  local highest = vim.diagnostic.severity.HINT
+  for _, diag in ipairs(diags) do
+    local sev = diag.severity
+    if sev < highest then
+      highest = sev
+    end
+  end
+  return highest
+end
 function M.diag_next(opts)
-  diags.goto_next(vim.tbl_extend("keep", opts or {}, { enable_popup = true, float = popup_diagnostics_opts() }))
+  diags.goto_next(vim.tbl_extend("keep", opts or {}, {
+    enable_popup = true,
+    float = popup_diagnostics_opts(),
+    severity = M.get_highest_diag(),
+  }))
 end
 function M.diag_prev(opts)
-  diags.goto_prev(vim.tbl_extend("keep", opts or {}, { enable_popup = true, float = popup_diagnostics_opts() }))
+  diags.goto_prev(vim.tbl_extend("keep", opts or {}, {
+    enable_popup = true,
+    float = popup_diagnostics_opts(),
+    severity = M.get_highest_diag(),
+  }))
 end
 
 function M.error_next()

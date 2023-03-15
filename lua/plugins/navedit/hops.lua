@@ -10,7 +10,7 @@
 -- end
 local hops = function(n)
   return function()
-    -- Proxies into require'hop' for you
+    -- Proxies into require'hop' for me
     require("hop-extensions")[n]()
   end
 end
@@ -51,7 +51,7 @@ return {
   {
     "u",
     function()
-      require("hop-extensions").hint_references "<cword>"
+      require("hop-extensions").hint_locals_pattern "<cword>"
     end,
     "Usages",
   },
@@ -67,21 +67,22 @@ return {
   {
     "g",
     function()
-      require("hop-extensions.lsp").hint_diagnostics()
+      require("hop-extensions").hint_diagnostics()
     end,
     "LSP Diagnostics",
   },
   {
     "f",
     function()
-      require("hop-extensions").hint_textobjects { query = "function" }
+      require("hop-extensions").hint_textobjects { captures = "@function" }
     end,
     "Functions",
   },
   {
     "a",
     function()
-      require("hop-extensions").hint_textobjects { query = "parameter" }
+      require("hop-extensions").hint_textobjects { captures = "@parameter" }
+      -- require("hop-extensions").hint_from_queryfile "indents"
     end,
     "Parameters",
   },
