@@ -16,9 +16,17 @@ local M = {
         end,
       },
     },
-    config = function()
+    opts = {
+      ensure_installed = "all",
+      ignore_install = {},
+      active = true,
+      enabled = true,
+      -- Specify languages that need the normal vim syntax highlighting as well
+      -- disable as much as possible for performance
+      additional_vim_regex_highlighting = { "latex" },
+    },
+    config = function(_, opts)
       -- pcall(require("nvim-treesitter.install").update { with_sync = true })
-      local tsconfig = O.treesitter
 
       -- Custom parsers
       local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
@@ -37,8 +45,8 @@ local M = {
       }
 
       require("nvim-treesitter.configs").setup {
-        ensure_installed = tsconfig.ensure_installed, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
-        ignore_install = tsconfig.ignore_install,
+        ensure_installed = opts.ensure_installed, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+        ignore_install = opts.ignore_install,
         matchup = {
           enable = true,
           -- disable = { "c", "ruby" },  -- list of language that will be disabled
@@ -60,8 +68,8 @@ local M = {
         --   },
         -- },
         highlight = {
-          enable = not not tsconfig.active, -- false will disable the whole extension
-          additional_vim_regex_highlighting = tsconfig.additional_vim_regex_highlighting,
+          enable = not not opts.active, -- false will disable the whole extension
+          additional_vim_regex_highlighting = opts.additional_vim_regex_highlighting,
           disable = { "latex" },
         },
         context_commentstring = {
@@ -134,23 +142,6 @@ local M = {
             scope_incremental = "grc",
           },
         },
-        -- element_textobject = {
-        --   enable = true,
-        --   keymaps = {
-        --     [textobj_prefixes.swap_next .. other_suffixes.element[1]] = "swap_next_element",
-        --     [textobj_prefixes.swap_prev .. other_suffixes.element[1]] = "swap_prev_element",
-        --     ["i" .. other_suffixes.element[1]] = "inner_element",
-        --     ["a" .. other_suffixes.element[1]] = "an_element", -- around
-        --   },
-        --   set_jumps = true,
-        -- },
-        -- scope_textobject = {
-        --   enable = true,
-        --   keymaps = {
-        --     ["a" .. other_suffixes.scope[1]] = "a_scope",
-        --   },
-        --   set_jumps = true,
-        -- },
       }
 
       vim.opt.foldmethod = "expr"

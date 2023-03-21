@@ -41,7 +41,7 @@ return function()
   -- https://github.com/tpope/vim-sensible/blob/master/plugin/sensible.vim
   opt.shell = O.shell
   -- opt.shell = O.termshell
-  opt.inccommand = O.inc_subs -- Incremental substitution style
+  opt.inccommand = "nosplit" -- Incremental substitution style
   opt.backspace = "indent,eol,start"
   opt.backup = false -- creates a backup file
   opt.clipboard = O.clipboard -- allows neovim to access the system clipboard
@@ -78,7 +78,7 @@ return function()
   opt.number = O.number -- set numbered lines
   opt.relativenumber = false
   opt.numberwidth = 2
-  opt.signcolumn = "no"
+  opt.signcolumn = "yes"
   opt.wrap = O.wrap_lines -- display lines as one long line
   opt.linebreak = true -- dont linebreak in the middle of words
   opt.spell = O.spell

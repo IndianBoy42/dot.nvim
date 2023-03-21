@@ -133,7 +133,7 @@ return {
   opts = {
     autowidth = {
       enable = true,
-      winwidth = 20,
+      winwidth = 0.5
     },
     animation = {
       enable = false,

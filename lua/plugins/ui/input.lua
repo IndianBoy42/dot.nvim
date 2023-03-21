@@ -75,7 +75,6 @@ function M.inline_text_input(opts)
     width = opts.initwidth,
     height = 1,
     style = "minimal",
-    -- border = O.lsp.border,
     border = opts.border,
     -- noautocmd = false
   }

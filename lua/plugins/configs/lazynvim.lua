@@ -5,13 +5,25 @@ local function t(k)
 end
 
 return {
-  defaults = { lazy = true, config = true },
-  install = { colorscheme = { "nebulous", "torte" } },
-  checker = { enabled = true },
-  change_detection = { enabled = false },
-  dev = { path = "~/plugins.nvim/", filter = { "IndianBoy42" } },
+  defaults = {
+    lazy = true,
+    config = true,
+  },
+  install = {
+    colorscheme = { "nebulous", "torte" },
+  },
+  checker = {
+    enabled = true,
+  },
+  change_detection = {
+    enabled = false,
+  },
+  dev = {
+    path = "~/plugins.nvim/",
+    filter = { "IndianBoy42" },
+  },
   ui = {
-    border = "single",
+    border = "rounded",
     custom_keys = {
       ["<localleader>l"] = false,
       ["<localleader>t"] = function(plugin)
@@ -24,10 +36,14 @@ return {
         vim.cmd("!smerge " .. plugin.dir)
         -- require("kitty").new_os_window({ open_cwd = plugin.dir }, "gitui")
       end,
-      ["<C-n>"] = function()
+      ["<localleader>h"] = function(plugin)
+        vim.cmd("!gh repo view --web " .. plugin[1])
+        -- require("kitty").new_os_window({ open_cwd = plugin.dir }, "gitui")
+      end,
+      ["<localleader>n"] = function()
         feedkeys(t "/[○●]<CR>", "m", false)
       end,
-      ["<C-p>"] = function()
+      ["<localleader>p"] = function()
         feedkeys(t "?[○●]<CR>", "m", false)
       end,
     },

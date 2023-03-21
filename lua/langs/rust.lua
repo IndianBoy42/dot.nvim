@@ -1,19 +1,25 @@
-local function postfix_wrap_call(trig, call, requires, pair)
-  pair = pair or { "(", ")" }
-
+local function postfix_wrap_call(trig, call, requires)
   return {
     postfix = trig,
     body = {
-      call .. pair[1] .. "${receiver}" .. pair[2],
+      call .. "(${receiver})",
     },
     requires = requires,
     scope = "expr",
   }
 end
 local function postfix_wrap_type(trig, call, requires)
-  postfix_wrap_call(trig, call, requires, { "<", ">" })
+  return {
+    postfix = trig,
+    body = {
+      call .. "<${receiver}>",
+    },
+    requires = requires,
+    scope = "type",
+  }
 end
 local snippets = {
+  ["Extend::extend"] = postfix_wrap_call("extend", "_.extend"),
   ["Arc::new"] = postfix_wrap_call("arc", "Arc::new", "std::sync::Arc"),
   ["Mutex::new"] = postfix_wrap_call("mutex", "Mutex::new", "std::sync::Mutex"),
   ["RefCell::new"] = postfix_wrap_call("refcell", "RefCell::new", "std::cell::RefCell"),
@@ -50,14 +56,12 @@ local snippets = {
     },
     description = "Spawn a new thread",
     requires = "std::thread",
-    scope = "expr",
   },
   ["channel"] = {
     prefix = "channel",
     body = { "let (tx,rx) = mpsc::channel()" },
     description = "(tx,rx) = channel()",
     requires = "std::sync::mpsc",
-    scope = "expr",
   },
   ["from"] = {
     postfix = "from",
@@ -125,7 +129,7 @@ return {
             tools = {
               hover_actions = {
                 auto_focus = true,
-                border = "single",
+                border = "rounded",
               },
               inlay_hints = inlay_hints,
               runnables = {
@@ -148,6 +152,17 @@ return {
                 local rt = require "rust-tools"
                 require("utils.lsp").live_codelens()
 
+                local dap = require "dap"
+                dap.listeners.after.event_initialized.rust_tools = function()
+                  rqeuire("rust-tools").inlay_hints.disable()
+                end
+                dap.listeners.before.event_terminated.rust_tools = function()
+                  rqeuire("rust-tools").inlay_hints.enable()
+                end
+                dap.listeners.before.event_exited.rust_tools = function()
+                  rqeuire("rust-tools").inlay_hints.enable()
+                end
+
                 mappings.localleader {
                   m = { "<Cmd>RustExpandMacro<CR>", "Expand Macro" },
                   i = {
@@ -162,6 +177,7 @@ return {
                   },
                   -- TODO: Integrate with Kitty.lua
                   e = { "<Cmd>RustRunnables<CR>", "Runnables" },
+                  d = { "<Cmd>RustDebuggables<CR>", "Debuggables" },
                   h = { "<Cmd>RustHoverActions<CR>", "Hover Actions" },
                   a = { require("rust-tools").code_action_group.code_action_group, "Code Actions" },
                   s = { ":RustSSR  ==>> <Left><Left><Left><Left><Left><Left>", "Structural S&R" },
@@ -236,9 +252,9 @@ return {
                   procMacro = {
                     enable = true,
                   },
-                  experimental = {
-                    enable = true,
-                  },
+                  -- experimental = {
+                  --   enable = true,
+                  -- },
                   hover = {
                     actions = {
                       references = { enable = true },

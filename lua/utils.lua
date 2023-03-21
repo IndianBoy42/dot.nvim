@@ -34,7 +34,6 @@ local function dump(...)
   return ...
 end
 M.dump = dump
-
 function M.dump_text(...)
   local objects, v = {}, nil
   for i = 1, select("#", ...) do
@@ -151,7 +150,6 @@ end
 
 function M.post_operatorfunc(old_func)
   vim.go.operatorfunc = old_func
-  _G.op_func_change_all_operator = nil
 end
 
 _G.lv_utils_operatorfuncs = {}
@@ -178,7 +176,6 @@ function M.operatorfuncV_keys(name, verbkeys)
     feedkeys(t(verbkeys), "m", false)
   end)
 end
-
 -- keys charwise
 function M.operatorfunc_keys(name, verbkeys)
   return M.operatorfunc_scaffold(name, function()
@@ -194,12 +191,25 @@ function M.operatorfunc_Vcmd(name, verbkeys)
     vim.cmd(verbkeys)
   end)
 end
-
 -- cmd charwise
 function M.operatorfunc_cmd(name, verbkeys)
   return M.operatorfunc_scaffold(name, function()
     M.operatorfunc_helper_select(false)
     vim.cmd(verbkeys)
+  end)
+end
+-- fn linewise
+function M.operatorfunc_Vfn(name, func)
+  return M.operatorfunc_scaffold(name, function()
+    M.operatorfunc_helper_select(true)
+    func()
+  end)
+end
+-- fn charwise
+function M.operatorfunc_fn(name, func)
+  return M.operatorfunc_scaffold(name, function()
+    M.operatorfunc_helper_select(false)
+    func()
   end)
 end
 
@@ -538,5 +548,40 @@ function M.setproxy(of)
 end
 
 M.lsp = require "utils.lsp"
+
+function M.partial(func, ...)
+  local args = { ... }
+  return function(...)
+    local allArgs = {}
+    local n = 1
+    for i = 1, #args do
+      if args[i] == nil then
+        allArgs[i] = select(n, ...)
+        n = n + 1
+      else
+        allArgs[i] = args[i]
+      end
+    end
+    for i = n, select("#", ...) do
+      table.insert(allArgs, select(i, ...))
+    end
+    return func(unpack(allArgs))
+  end
+end
+
+function M.lazy_require(moduleName)
+  return setmetatable({}, {
+    __index = function(self, key)
+      return function(...)
+        local module = require(moduleName)
+        return module[key](...)
+      end
+    end,
+  })
+end
+
+function M.partial_require(mod, name, ...)
+  return M.partial(M.lazy_require("mod")[name], ...)
+end
 
 return M

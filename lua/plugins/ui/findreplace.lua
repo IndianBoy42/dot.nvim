@@ -48,44 +48,43 @@ return {
         },
         { "r", substitute "visual", mode = "x", desc = "Replace" },
         {
-          "<leader>ra",
+          "<leader>c",
           substitute_range "operator",
           mode = "n",
           desc = "All (motion1) in (motion2)",
         },
         {
-          "<leader>rw",
+          "<leader>C",
+          substitute_range("operator", { motion2 = "iG" }),
+          mode = "n",
+          desc = "All (motion) in file",
+        },
+        {
+          "co",
           -- substitute_range("operator", { motion1 = "iw" }),
           substitute_range "word",
           mode = "n",
           desc = "All iw in (motion)",
         },
         {
-          "<leader>r*",
+          "<leader>rw",
           -- substitute_range("operator", { motion1 = "iw" }),
           substitute_range("word", { motion2 = "iG" }),
           mode = "n",
           desc = "All iw in file",
         },
         {
-          "<leader>rif",
-          substitute_range("operator", { motion2 = "iG" }),
-          mode = "n",
-          desc = "All (motion) in file",
-        },
-        {
-          "<leader>rii",
-          substitute_range("visual", { motion2 = "iG" }),
+          "<leader>c",
+          substitute_range("visual", {}),
           mode = "x",
           desc = "All (sel) in (motion)",
         },
         {
-          "<leader>rif",
+          "<leader>C",
           substitute_range("visual", { motion2 = "iG" }),
           mode = "x",
           desc = "All (sel) in file",
         },
-        { "<leader>C", substitute_range("operator", { motion2 = "iG" }), mode = "n", desc = "R all all" },
         { "cx", exchange "operator", mode = "n", desc = "Exchange" },
         { "cxx", exchange "line", mode = "n", desc = "Exchange Line" },
         { "X", exchange "visual", mode = "x", desc = "Exchange" },
@@ -101,14 +100,14 @@ return {
         function()
           require("spectre").open()
         end,
-        desc = "Current Project",
+        desc = "Spectre Project",
       },
       {
         "<leader>rf",
         function()
           require("spectre").open_file_search { select_word = true }
         end,
-        desc = "Current File Spectre",
+        desc = "Spectre File",
       },
       {
         "<leader>rr*",

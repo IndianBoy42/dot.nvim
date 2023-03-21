@@ -163,6 +163,7 @@ function M.setup()
   end
 
   map("n", "/", srchrpt "/", nore)
+  map("x", "g/", "/", nore)
   map("n", "?", srchrpt "?", nore)
   map("n", "*", srchrpt("viw*", "m"), nore) -- Swap g* and *
   map("n", "#", srchrpt("viw#", "m"), nore)
@@ -323,9 +324,8 @@ function M.setup()
   map("n", "<down>", "v:count == 0 ? 'gj' : '<down>'", norexpr)
   map("x", "<down>", "v:count == 0 ? 'gj' : '<down>'", norexpr)
 
-  local pre_goto_next = O.treesitter.textobj_prefixes.goto_next
-  local pre_goto_prev = O.treesitter.textobj_prefixes.goto_previous
-  local pre_swap_next = O.treesitter.textobj_prefixes.swap_next
+  local pre_goto_next = O.goto_next
+  local pre_goto_prev = O.goto_previous
 
   -- QuickFix
   -- local quickfix_looping =
@@ -447,7 +447,7 @@ function M.setup()
   map("n", "<c-s-q>", ":wqa", nore)
   map("n", "<c-w>d", cmd "bdelete!", nore)
 
-  map("n", "zz", "za", nore)
+  map("n", "zz", "za", { desc = "Fold" })
   map("n", "==", "zz", { desc = "Center this Line" })
   map("n", "=_", "zb", { desc = "Bottom this Line" })
   map("n", "=^", "zt", { desc = "Top this Line" })
@@ -457,10 +457,6 @@ function M.setup()
   map("n", "<leader>*", operatorfunc_keys("searchbwd_for", "*"), { desc = "Search (op)" }) -- Search textobject
   map("x", "#", srchrpt '"zy?<C-R>z<cr>', nore) -- Backwards
   map("n", "<leader>#", operatorfunc_keys("search_for", "#"), { desc = "^Search (op)" })
-
-  -- Search for the current yank register
-  map("n", "+", [[/<C-R>+<cr>]], {})
-  sel_map("+", "`[o`]")
 
   -- Search for last edited text
   map("n", 'g"', [[/\V<C-r>"<CR>]], { desc = "Search for last cdy" })
@@ -555,9 +551,11 @@ function M.setup()
   op_from "gP"
   op_from "g<C-p>"
 
-  -- FIXME: comment and copy
-  -- map("x", "gy", '"z<M-y>gvgc`>"zp`[', sile)
-  map("x", "gy", '"z<M-y>mz`<"zPgPgc`z', { desc = "copy and comment" })
+  map("x", "gy", function()
+    feedkeys('"zy' .. "mz" .. "`<" .. '"zP' .. "`[V`]", "n")
+    feedkeys("gc", "m")
+    feedkeys("`z", "m")
+  end, { desc = "copy and comment" })
   map("n", "gy", operatorfuncV_keys("comment_copy", "gy"), sile)
   -- map("n", "gyy", "Vgy", sile)
 
@@ -591,7 +589,6 @@ function M.setup()
     reuse_win = true,
     on_list = function(options)
       vim.fn.setqflist({}, " ", options)
-      utils.dump(options)
       if #options.items > 1 then
         register_nN_repeat(quickfix_looping)
       end
@@ -604,7 +601,6 @@ function M.setup()
     reuse_win = true,
     on_list = function(options)
       vim.fn.setqflist({}, " ", options)
-      utils.dump(options)
       if #options.items > 1 then
         register_nN_repeat(quickfix_looping)
       end
@@ -624,10 +620,15 @@ function M.setup()
   map("n", "gD", lspbuf.declaration, { desc = "Goto Declaration" })
   map("n", "gK", vim.lsp.codelens.run, { desc = "Codelens" })
   -- Preview variants
-  map("n", "gpd", lsputil.preview_location_at "definition", sile)
-  map("n", "gpD", lsputil.preview_location_at "declaration", sile)
-  map("n", "gpr", lsputil.preview_location_at "references", sile)
-  map("n", "gpi", lsputil.preview_location_at "implementation", sile)
+  local lsp_split_command = "FocusSplitNicely"
+  map("n", "gsd", lsputil.view_location_split("definition", lsp_split_command), { desc = "Split definition" })
+  map("n", "gsD", lsputil.view_location_split("declaration", lsp_split_command), { desc = "Split declaration" })
+  map("n", "gsr", lsputil.view_location_split("references", lsp_split_command), { desc = "Split references" })
+  map("n", "gsi", lsputil.view_location_split("implementation", lsp_split_command), { desc = "Split implementation" })
+  map("n", "gpd", lsputil.preview_location_at "definition", { desc = "Peek definition" })
+  map("n", "gpD", lsputil.preview_location_at "declaration", { desc = "Peek declaration" })
+  map("n", "gpr", lsputil.preview_location_at "references", { desc = "Peek references" })
+  map("n", "gpi", lsputil.preview_location_at "implementation", { desc = "Peek implementation" })
   map("n", "gpe", lsputil.diag_line, sile)
   map("n", pre_goto_next .. "u", function()
     vim.lsp.buf.references(nil, on_list_next)
@@ -715,11 +716,6 @@ function M.setup()
 
   -- Select all matching regex search
   -- map("n", "<M-S-/>", "<M-/><M-a>", {remap=true})
-
-  -- Multi select object
-  map("n", "<M-v>", operatorfunc_keys("multiselect", "<M-n>"), sile)
-  -- Multi select all
-  map("n", "<M-S-v>", operatorfunc_keys("multiselect_all", "<M-S-a>"), sile)
 
   -- Keymaps for easier access to 'ci' and 'di'
   local function quick_inside(key, no_v)
@@ -847,6 +843,7 @@ function M.setup()
     -- f = { telescope_fn.find_files, "Smart Open File" },
     f = { telescope_fn.smart_open, "Smart Open File" },
     F = { telescope_fn.find_all_files, "Find all Files" },
+    h = { name = "Hops" },
     [ldr_goto_next] = "Jump next (])",
     [ldr_goto_prev] = "Jump prev ([)",
     [ldr_swap] = {
@@ -855,7 +852,7 @@ function M.setup()
       i = { cmd "ISwap", "ISwap" },
       n = { cmd "ISwapNodeWith", "I. With" },
     },
-    w = {
+    ["<CR>"] = {
       function()
         if vim.api.nvim_buf_get_name(0) == "" then
           vim.notify("No filename yet, complete in cmdline", vim.log.levels.WARN)
@@ -916,7 +913,7 @@ function M.setup()
       g = { cmd "setlocal signcolumn!", "Cursor column" },
       l = { cmd "setlocal cursorline!", "Cursor line" },
       h = { cmd "setlocal hlsearch", "hlsearch" },
-      b = { cmd "set buflisted", "hlsearch" },
+      b = { cmd "set buflisted", "buflisted" },
       c = { utils.conceal_toggle, "Conceal" },
       f = { focus_fn.focus_toggle, "Focus.nvim" },
       -- TODO: Toggle comment visibility
@@ -1047,6 +1044,9 @@ function M.setup()
         name = "Spectre",
       },
     },
+    c = {
+      name = "Change/Substitute",
+    },
     n = {
       name = "Generate",
       n = { cmd "Neogen", "Gen Doc" },
@@ -1073,6 +1073,9 @@ function M.setup()
       d = { lsputil.range_diagnostics, "Range Diagnostics" },
       a = { telescope_fn.code_actions_previewed, "Code Actions" },
     },
+    c = {
+      name = "Change/Substitute",
+    },
     r = {
       name = "Replace/Refactor",
       i = {
@@ -1091,12 +1094,6 @@ function M.setup()
     s = { 'ygvc<CR><C-r>"<CR><ESC>', "Add newlines around" },
     D = {
       name = "Debug",
-      v = {
-        function()
-          require("dapui").eval()
-        end,
-        "Eval",
-      },
     },
   }
 

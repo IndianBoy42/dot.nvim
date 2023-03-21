@@ -49,7 +49,7 @@ return {
         group = "+", -- symbol prepended to a group
       },
       window = {
-        border = "single", -- none, single, double, shadow
+        border = "rounded", -- none, single, double, shadow
         position = "bottom", -- bottom, top
         margin = { 0, 0, 0, 0 }, -- extra window margin [top, right, bottom, left]
         padding = { 0, 0, 0, 0 }, -- extra window padding [top, right, bottom, left]
@@ -59,12 +59,9 @@ return {
         width = { min = 20, max = 50 }, -- min and max width of the columns
         spacing = 3, -- spacing between columns
       },
-      hidden = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "call", "lua", "^:", "^ " }, -- hide mapping boilerplate
+      hidden = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "call", "lua", "^:", "^ ", "<Plug>" }, -- hide mapping boilerplate
       show_help = true, -- show help message on the command line when the popup is visible
     },
-    config = function(_, opts)
-      require("which-key").setup(opts)
-    end,
   },
   {
     "rcarriga/nvim-notify",
@@ -176,8 +173,8 @@ return {
           require("gitsigns").prev_hunk()
         end,
       }
-      local pre_goto_next = O.treesitter.textobj_prefixes.goto_next
-      local pre_goto_prev = O.treesitter.textobj_prefixes.goto_previous
+      local pre_goto_next = O.goto_next
+      local pre_goto_prev = O.goto_previous
       return {
         { pre_goto_next .. "g", hunk_nN[1], desc = "Next Hunk" },
         { pre_goto_prev .. "g", hunk_nN[2], desc = "Prev Hunk" },
@@ -340,11 +337,11 @@ return {
             if enabled then
               vim.diagnostic.config {
                 virtual_lines = false,
-                virtual_text = require("langs").diagnostic_config,
+                virtual_text = require("langs").diagnostic_config_all.virtual_text,
               }
             else
               vim.diagnostic.config {
-                virtual_lines = true,
+                virtual_lines = require("langs").diagnostic_config_all.virtual_lines,
                 virtual_text = false,
               }
             end
@@ -356,12 +353,16 @@ return {
   },
   {
     "VidocqH/lsp-lens.nvim",
-    opts = { include_declaration = true },
+    opts = {
+      enable = false,
+      include_declaration = true,
+    },
     event = { "BufReadPost", "BufNewFile" },
   },
   {
     "echasnovski/mini.animate",
-    cond = not vim.g.neovide,
+    main = "mini.animate",
+    cond = false and not vim.g.neovide,
     event = "VeryLazy",
     opts = function()
       -- don't use animate when scrolling with the mouse
@@ -403,9 +404,6 @@ return {
         },
       }
     end,
-    config = function(_, opts)
-      require("mini.animate").setup(opts)
-    end,
   },
   -- {
   --   "karb94/neoscroll.nvim",
@@ -437,16 +435,50 @@ return {
   {
     "kevinhwang91/nvim-ufo",
     config = function()
-      vim.o.foldcolumn = "1" -- '0' is not bad
-      vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
-      vim.o.foldlevelstart = 99
+      vim.o.foldcolumn = "0" -- '0' is not bad
+      vim.o.foldlevel = 9999 -- Using ufo provider need a large value, feel free to decrease the value
+      vim.o.foldlevelstart = 9999
       vim.o.foldenable = true
+
+      local handler = function(virtText, lnum, endLnum, width, truncate)
+        local newVirtText = {}
+        local suffix = ("  %d "):format(endLnum - lnum)
+        local sufWidth = vim.fn.strdisplaywidth(suffix)
+        local targetWidth = width - sufWidth
+        local curWidth = 0
+        for _, chunk in ipairs(virtText) do
+          local chunkText = chunk[1]
+          local chunkWidth = vim.fn.strdisplaywidth(chunkText)
+          if targetWidth > curWidth + chunkWidth then
+            table.insert(newVirtText, chunk)
+          else
+            chunkText = truncate(chunkText, targetWidth - curWidth)
+            local hlGroup = chunk[2]
+            table.insert(newVirtText, { chunkText, hlGroup })
+            chunkWidth = vim.fn.strdisplaywidth(chunkText)
+            -- str width returned from truncate() may less than 2nd argument, need padding
+            if curWidth + chunkWidth < targetWidth then
+              suffix = suffix .. (" "):rep(targetWidth - curWidth - chunkWidth)
+            end
+            break
+          end
+          curWidth = curWidth + chunkWidth
+        end
+        table.insert(newVirtText, { suffix, "MoreMsg" })
+        return newVirtText
+      end
 
       require("ufo").setup {
         provider_selector = function()
           return { "treesitter", "indent" }
         end,
+        fold_virt_text_handler = handler,
       }
+      vim.keymap.set("n", "zR", require("ufo").openAllFolds)
+      vim.keymap.set("n", "zM", require("ufo").closeAllFolds)
+      vim.keymap.set("n", "zr", require("ufo").openFoldsExceptKinds)
+      vim.keymap.set("n", "zm", require("ufo").closeFoldsWith)
+      vim.keymap.set("n", "zp", require("ufo").peekFoldedLinesUnderCursor)
     end,
     dependencies = "kevinhwang91/promise-async",
     event = { "BufReadPost", "BufNewFile" },
@@ -461,4 +493,10 @@ return {
     },
   },
   -- TODO: https://github.com/DNLHC/glance.nvim
+  {
+    "projekt0n/circles.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    opts = {},
+  },
+  { "mortepau/codicons.nvim" },
 }

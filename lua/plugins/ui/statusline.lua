@@ -102,6 +102,20 @@ M.config = function()
     return { i.get_hl, cond = i.has }
   end
 
+  vim.api.nvim_create_autocmd({ "User" }, {
+    pattern = "visual_multi_start",
+    callback = function()
+      require("lualine").hide()
+    end,
+  })
+
+  vim.api.nvim_create_autocmd({ "User" }, {
+    pattern = "visual_multi_exit",
+    callback = function()
+      require("lualine").hide { unhide = true }
+    end,
+  })
+
   require("lualine").setup {
     options = {
       icons_enabled = true,
@@ -110,7 +124,7 @@ M.config = function()
       -- theme = "catppuccino",
       -- theme = "nebulous",
       -- theme = "onedark",
-      theme = "material-nvim",
+      -- theme = "tokyonight",
       -- component_separators = { "", "" },
       -- section_separators = { "", "" },
       disabled_filetypes = {},
@@ -125,8 +139,8 @@ M.config = function()
       },
       -- lualine_c = { ts_statusline },
       lualine_c = { noice "ruler", noice "command", noice "mode", noice "search" },
-      lualine_x = { diff, diagnostics },
-      lualine_y = { get_lsp_clients, filetype, "branch" },
+      lualine_x = { diagnostics },
+      lualine_y = { get_lsp_clients, filetype, "branch", diff },
       lualine_z = { "location" },
     },
     inactive_sections = {

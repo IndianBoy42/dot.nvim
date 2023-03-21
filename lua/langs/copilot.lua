@@ -34,6 +34,7 @@ return {
         -- },
         suggestion = { enabled = false },
         panel = { enabled = false },
+        -- copilot_node_command = "bun", -- Node.js version must be > 16.x
       },
       config = function(_, opts)
         require("copilot").setup(opts)

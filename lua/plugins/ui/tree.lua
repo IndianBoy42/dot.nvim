@@ -2,7 +2,7 @@ local M = {
   "nvim-tree/nvim-tree.lua",
   cmd = { "NvimTreeOpen", "NvimTreeFocus", "NvimTreeToggle" },
   dependencies = {
-    "kyazdani42/nvim-web-devicons",
+    "nvim-tree/nvim-web-devicons",
   },
 }
 
@@ -111,6 +111,7 @@ M.opts = {
   diagnostics = {
     enable = true,
   },
+  -- renderer = { icons = { glyphs = require("circles").get_nvimtree_glyphs() } },
 }
 M.config = function(_, opts)
   require("nvim-tree").setup(opts)

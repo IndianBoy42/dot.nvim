@@ -1,13 +1,3 @@
--- for k, v in pairs(O.treesitter.textobj_suffixes) do
---   -- hops[v[1]] = hops[v[1]] or { prefix .. "hint_textobjects{query='" .. k .. "'}<cr>", "@" .. k }
---   hops[v[1]] = hops[v[1]]
---       or {
---         function()
---           exts"hint_textobjects" { query = k }
---         end,
---         "@" .. k,
---       }
--- end
 local hops = function(n)
   return function()
     -- Proxies into require'hop' for me
@@ -45,17 +35,26 @@ return {
     end,
     "cWORD",
   },
-  { "h", hops "hint_locals", "Locals" },
-  { "d", hops "hint_definitions", "Definitions" },
-  { "r", hops "hint_references", "References" },
   {
-    "u",
+    "j",
     function()
-      require("hop-extensions").hint_locals_pattern "<cword>"
+      require("tsht").move { side = "end" }
     end,
-    "Usages",
+    "TS Nodes Containing",
   },
-  { "s", hops "hint_scopes", "Scopes" },
+  {
+    "k",
+    function()
+      require("tsht").move { side = "start" }
+    end,
+    "TS Nodes Containing",
+  },
+  { "i", hops "hint_all_ts_defnref", "Locals" },
+  { "d", hops "hint_lsp_definition", "LSP Definitions" },
+  { "r", hops "hint_lsp_references", "LSP References" },
+  { "u", hops "hint_ts_usages", "References" },
+  { "s", hops "hint_all_ts_scopes", "Scopes" },
+  { "S", hops "hint_containing_scopes", "Scopes" },
   { "t", hops "hint_textobjects", "Textobjects" },
   {
     "b",

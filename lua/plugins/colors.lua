@@ -150,6 +150,9 @@ return {
     priority = 1000,
     opts = {
       style = sub_theme("tokyonight", "night"),
+      on_colors = function(colors)
+        colors.bg = colors.bg_dark
+      end,
     },
     config = config_colorscheme "tokyonight",
   },
@@ -440,16 +443,12 @@ return {
       },
       {
         "[T",
-        function()
-          require("todo-comments").jump_prev()
-        end,
+        utils.partial_require("todo-comments", jump_prev),
         desc = "Todo",
       },
       {
         "]T",
-        function()
-          require("todo-comments").jump_next()
-        end,
+        utils.partial_require("todo-comments", jump_next),
         desc = "Todo",
       },
     },
@@ -460,7 +459,19 @@ return {
     "giusgad/pets.nvim",
     opts = {
       random = true,
+      row = 2,
     },
+    config = function(_, opts)
+      require("pets").setup(opts)
+      vim.api.nvim_create_user_command("LotsOPets", function()
+        local names = "abcdefghijklmnopqrstuvwxyz"
+
+        local chars = {}
+        names:gsub(".", function(c)
+          vim.cmd.PetsNew(c)
+        end)
+      end, {})
+    end,
     dependencies = { "MunifTanjim/nui.nvim", "edluffy/hologram.nvim" },
     cmd = {
       "PetsNew",
@@ -477,7 +488,7 @@ return {
     "tamton-aquib/duck.nvim",
     keys = {
       {
-        "gzd",
+        "gzD",
         function()
           -- 🦆 ඞ  🦀 🐈 🐎 🦖 🐤
           require("duck").hatch("🦆", "10")
@@ -489,15 +500,6 @@ return {
   { --tzachar/local-highlight.nvim
     "tzachar/local-highlight.nvim",
     opts = {},
-    config = function(_, opts)
-      require("local-highlight").setup(opts)
-      -- vim.api.nvim_create_autocmd("BufRead", {
-      --   pattern = { "*.*" },
-      --   callback = function(data)
-      --     require("local-highlight").attach(data.buf)
-      --   end,
-      -- })
-    end,
     event = { "BufReadPost", "BufNewFile" },
   },
 }

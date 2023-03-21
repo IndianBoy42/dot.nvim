@@ -1,6 +1,6 @@
 return {
   "subnut/nvim-ghost.nvim",
-  build = ":call nvim_ghost#installer#install()",
+  -- build = ":call nvim_ghost#installer#install()",
   config = function()
     -- " Autocommand for a single website (i.e. stackoverflow.com)
     -- au nvim_ghost_user_autocommands User www.stackoverflow.com set filetype=markdown

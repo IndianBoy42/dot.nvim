@@ -201,21 +201,17 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 function M.toggle_diagnostics(b)
-  local hide = vim.api.nvim_buf_get_var(b or 0, "lsp_diagnostics_hide")
-  if hide then
+  if vim.diagnostic.is_disabled(b) then
     diags.enable(b or 0)
   else
     diags.disable(b or 0)
   end
-  vim.api.nvim_buf_set_var(b or 0, "lsp_diagnostics_hide", not hide)
 end
 function M.disable_diagnostic(b)
   diags.disable(b or 0)
-  vim.api.nvim_buf_set_var(b or 0, "lsp_diagnostics_hide", true)
 end
 function M.enable_diagnostic(b)
   diags.enable(b or 0)
-  vim.api.nvim_buf_set_var(b or 0, "lsp_diagnostics_hide", false)
 end
 
 -- TODO: Implement codeLens handlers
@@ -269,7 +265,7 @@ end
 local popup_diagnostics_opts = function()
   return {
     header = false,
-    border = "single",
+    border = "rounded",
     scope = "line",
   }
 end
@@ -284,15 +280,15 @@ function M.diag_buffer()
 end
 
 function M.get_highest_diag(ns, bufnr)
-  local diags = vim.diagnostic.get(bufnr, { namespace = ns })
+  local diag_list = vim.diagnostic.get(bufnr, { namespace = ns })
   local highest = vim.diagnostic.severity.HINT
-  for _, diag in ipairs(diags) do
+  for _, diag in ipairs(diag_list) do
     local sev = diag.severity
     if sev < highest then
       highest = sev
     end
   end
-  return highest
+  -- return highest
 end
 function M.diag_next(opts)
   diags.goto_next(vim.tbl_extend("keep", opts or {}, {

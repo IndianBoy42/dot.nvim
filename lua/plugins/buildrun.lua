@@ -79,6 +79,7 @@ return {
     },
     config = function(_, opts)
       require("sniprun").setup(opts)
+      -- TODO: patch to use Kitty.lua
       -- local sd = require "sniprun.display"
       -- sd.term_close = function() end
       -- sd.term_open = function() end
@@ -96,52 +97,12 @@ return {
       { "<leader>tc", "<Plug>SnipClose", desc = "SnipRun Close" },
     },
   },
-  -- TODO: Figure all this bullshit out
-  -- {
-  --   "numToStr/FTerm.nvim",
-  --   event = "BufRead",
-  --   config = function()
-  --     require("lv-terms").fterm()
-  --   end,
-
-  -- },
-  -- use {
-  --   "dccsillag/magma-nvim",
-  --   setup = function()
-  --     require("lv-terms").magma()
-  --   end,
-  --   run = ":UpdateRemotePlugins",
-  --   -- python3.9 -m pip install cairosvg pnglatex jupyter_client ipython ueberzug pillow
-  --   -- cmd = "MagmaStart", -- see lv-terms
-
+  -- TODO: https://github.com/Dax89/automaton.nvim
+  -- use { -- TODO: configure vs-tasks
+  --   "EthanJWright/vs-tasks.nvim",
   -- }
-  -- -- Better neovim terminal
-  -- use {
-  --   "kassio/neoterm",
-  --   config = function()
-  --     require("lv-terms").neoterm()
-  --   end,
-  --   cmd = {
-  --     "T",
-  --     "Tmap",
-  --     "Tnew",
-  --     "Ttoggle",
-  --     "Topen",
-  --   },
-  --   keys = {
-  --     "<Plug>(neoterm-repl-send)",
-  --     "<Plug>(neoterm-repl-send-line)",
-  --   },
+  -- TODO: https://github.com/stevearc/overseer.nvim
 
-  -- }
-  -- use {
-  --   "CRAG666/code_runner.nvim",
-  --   config = function()
-  --     require("lv-terms").coderunner()
-  --   end,
-  --   cmd = { "CRFileType", "CRProjects", "RunCode", "RunFile", "RunProject" },
-
-  -- }
   -- use {
   --   "jubnzv/mdeval.nvim",
   --   config = function()
@@ -171,11 +132,6 @@ return {
   --   end,
   --   module = { "yabs", "telescope._extensions.yabs" },
 
-  -- }
-  -- TODO: https://github.com/Dax89/automaton.nvim
-  -- use { -- TODO: configure vs-tasks
-  --   "EthanJWright/vs-tasks.nvim",
-  --   config = function() end,
   -- }
   -- https://github.com/lpoto/telescope-tasks.nvim
 }

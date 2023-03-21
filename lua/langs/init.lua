@@ -1,3 +1,23 @@
+local diagnostic_config_all = {
+  _virtual_text = function(ns, bufnr)
+    local highest = require("utils.lsp").get_highest_diag(ns, bufnr)
+    return {
+      spacing = 4,
+      prefix = "",
+      severity = { min = highest },
+    }
+  end,
+  virtual_text_config = {
+    spacing = 4,
+    prefix = "",
+    severity_limit = "Warning",
+  },
+  virtual_lines = true,
+  signs = true,
+  underline = { severity = "Error" },
+  severity_sort = true,
+  update_in_insert = true,
+}
 return {
   -- require "langs.lspconfig",
   -- require "langs.complete",
@@ -15,10 +35,8 @@ return {
   {
     "LhKipp/nvim-nu",
     build = ":TSInstall nu",
+    main = "nu",
     opts = {},
-    config = function(_, opts)
-      require("nu").setup(opts)
-    end,
   },
 
   -- EXTRAS
@@ -49,26 +67,11 @@ return {
       end,
     }
   end,
-  diagnostic_config = {
-    _virtual_text = function(ns, bufnr)
-      local highest = require("utils.lsp").get_highest_diag(ns, bufnr)
-      return {
-        spacing = 4,
-        prefix = "",
-        severity = { min = highest },
-      }
-    end,
-    virtual_text = {
-      spacing = 4,
-      prefix = "",
-      severity_limit = "Warning",
-    },
-    virtual_lines = false,
-    signs = true,
-    underline = { severity = "Error" },
-    severity_sort = true,
-    update_in_insert = true,
-  },
+  diagnostic_config = vim.tbl_extend("keep", {
+    virtual_text = false,
+    signs = false,
+  }, diagnostic_config_all),
+  diagnostic_config_all = diagnostic_config_all,
   codelens_config = {
     virtual_text = { spacing = 0, prefix = "" },
     signs = true,

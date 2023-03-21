@@ -136,7 +136,7 @@ M.opts = function()
 
     window = {
       documentation = cmp.config.window.bordered {
-        border = "single",
+        border = "rounded",
         winhighlight = "NormalFloat:CompeDocumentation,FloatBorder:CompeDocumentationBorder",
         max_width = 120,
         min_width = 60,

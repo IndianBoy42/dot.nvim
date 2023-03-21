@@ -317,6 +317,112 @@ end,]],
       }
     )
   ),
+  s(
+    "create_cmd",
+    fmta([[vim.api.<>("<>", <>, {<>})]], {
+      c(1, { i(1, "nvim_create_user_command"), i(1, "nvim_buf_create_user_command") }),
+      i(2, "Command"),
+      c(4, {
+        sn(nil, fmt([[function(args) {} end)]], { i(1) })),
+        sn(nil, fmt([["{}"]], { i(1) })),
+      }),
+      c(3, {
+        sn(
+          nil,
+          fmt([[nargs = {}]], {
+            c(1, {
+              i(1, "*"),
+              i(1, "?"),
+              i(1, "+"),
+              i(1, "0"),
+              i(1, "1"),
+            }),
+          })
+        ),
+      }),
+    })
+  ),
+  s(
+    "feedkeys_termcodes",
+    fmta(
+      [[
+local feedkeys = vim.api.nvim_feedkeys
+local termcodes = vim.api.nvim_replace_termcodes
+local function t(k)
+  return termcodes(k, true, true, true)
+end
+   ]],
+      {}
+    )
+  ),
+  s(
+    "augroup",
+    fmta([[local <> = vim.api.nvim_create_augroup("<>")]], {
+      l(l._1, { 1 }),
+      i(1),
+    })
+  ),
+  s(
+    "autocmd",
+    fmta(
+      [[vim.api.nvim_create_autocmd(<>, {
+    group = <>,
+    pattern = <>,
+    <>
+})]],
+      {
+        c(1, {
+          sn(
+            nil,
+            fmta([["<>"]], {
+              i(1, "event"),
+            })
+          ),
+          sn(
+            nil,
+            fmta([[{"<>"}]], {
+              i(1, "events"),
+            })
+          ),
+        }),
+        i(2, "group"),
+        c(3, {
+          sn(
+            nil,
+            fmta([["<>"]], {
+              i(1, "pattern"),
+            })
+          ),
+          sn(
+            nil,
+            fmta([[{"<>"}]], {
+              i(1, "patterns"),
+            })
+          ),
+          t '"*"',
+        }),
+        c(4, {
+          sn(
+            nil,
+            fmta(
+              [[callback = function()
+        <>
+        end]],
+              {
+                i(1),
+              }
+            )
+          ),
+          sn(
+            nil,
+            fmta([[command = "<>"]], {
+              i(1),
+            })
+          ),
+        }),
+      }
+    )
+  ),
 }
 
 return snippets, autosnippets

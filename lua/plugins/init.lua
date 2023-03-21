@@ -21,6 +21,7 @@ return {
   {
     "echasnovski/mini.comment",
     event = "VeryLazy",
+    main = "mini.comment",
     opts = {
       hooks = {
         pre = function()
@@ -28,9 +29,6 @@ return {
         end,
       },
     },
-    config = function(_, opts)
-      require("mini.comment").setup(opts)
-    end,
   },
 
   {
@@ -116,7 +114,10 @@ return {
   {
     "EtiamNullam/deferred-clipboard.nvim",
     event = { "BufReadPost", "BufNewFile" },
-    opt = { lazy = true, fallback = O.clipboard },
+    opt = {
+      lazy = true,
+      fallback = O.clipboard,
+    },
   },
   {
     "EricDriussi/remember-me.nvim",

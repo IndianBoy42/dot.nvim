@@ -33,6 +33,10 @@ return {
         mode = "n",
         desc = "Leap",
       },
+      { "ff", "<Plug>(leap-forward-to)", mode = "n", desc = "Leap" },
+      { "tt", "<Plug>(leap-forward-till)", mode = "n", desc = "Leap" },
+      { "FF", "<Plug>(leap-backward-to)", mode = "n", desc = "Leap" },
+      { "TT", "<Plug>(leap-backward-till)", mode = "n", desc = "Leap" },
       {
         "z",
         function()
@@ -66,15 +70,15 @@ return {
   },
   {
     "ggandor/leap-ast.nvim",
-    keys = {
-      {
-        "S",
-        function()
-          require("leap-ast").leap()
-        end,
-        mode = { "n", "x", "o" },
-      },
-    },
+    -- keys = {
+    --   {
+    --     "",
+    --     function()
+    --       require("leap-ast").leap()
+    --     end,
+    --     mode = { "n", "x", "o" },
+    --   },
+    -- },
   },
   {
     "ggandor/flit.nvim",
@@ -101,7 +105,7 @@ return {
   require "plugins.navedit.multi",
   require "plugins.navedit.selectease",
   {
-    "mfussenegger/nvim-ts-hint-textobject",
+    "mfussenegger/nvim-treehopper",
     config = function()
       local labels = {}
       O.hint_labels:gsub(".", function(c)
@@ -128,11 +132,11 @@ return {
     "Wansmer/treesj",
     dependencies = { "nvim-treesitter" },
     opts = {
-      use_default_keymaps = true,
+      use_default_keymaps = false,
     },
     keys = {
       {
-        "<leader>ej",
+        "gs",
         function()
           require("treesj").toggle()
         end,
@@ -146,7 +150,7 @@ return {
         desc = "Split",
       },
       {
-        "<leader>eJ",
+        "<leader>ej",
         function()
           require("treesj").join()
         end,
@@ -221,9 +225,7 @@ return {
     "echasnovski/mini.align",
     event = "VeryLazy",
     opts = {},
-    config = function(_, opts)
-      require("mini.align").setup(opts)
-    end,
+    main = "mini.align",
   },
   {
     "echasnovski/mini.move",
@@ -245,9 +247,6 @@ return {
         line_up = "<C-M-k>",
       },
     },
-    config = function(_, opts)
-      require("mini.move").setup(opts)
-    end,
   },
   {
     "cbochs/portal.nvim",
