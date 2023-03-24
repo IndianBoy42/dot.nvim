@@ -499,4 +499,5 @@ return {
     opts = {},
   },
   { "mortepau/codicons.nvim" },
+  -- https://github.com/lvimuser/lsp-inlayhints.nvim
 }

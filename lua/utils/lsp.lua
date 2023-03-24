@@ -126,8 +126,6 @@ function M.format_range_operator()
 end
 
 -- TODO: Figure out the easiest way to implement this
-local lsputil = require "vim.lsp.util"
-local if_nil = vim.F.if_nil
 function M.range_diagnostics(opts, buf_nr, start, finish)
   start = start or getmark(0, "[")
   finish = finish or getmark(0, "]")

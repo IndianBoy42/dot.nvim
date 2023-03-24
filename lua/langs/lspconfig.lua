@@ -22,16 +22,6 @@ return {
       end,
     },
     "williamboman/mason-lspconfig.nvim",
-    {
-      "camilledejoye/nvim-lsp-selection-range",
-      opts = function()
-        local lsr_client = require "lsp-selection-range.client"
-        return {
-          get_client = lsr_client.select_by_filetype(lsr_client.select),
-        }
-      end,
-    },
-    -- https://github.com/lvimuser/lsp-inlayhints.nvim
   },
   opts = {
     border = "rounded",
@@ -198,5 +188,4 @@ return {
       require("utils.lsp").format_on_save()
     end
   end,
-  mason_ensure_installed = function(append) end,
 }

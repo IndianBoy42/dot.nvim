@@ -229,6 +229,7 @@ return {
   },
   {
     "echasnovski/mini.move",
+    main = "mini.move",
     keys = {
       { "<M-h>", mode = "x" },
       { "<M-j>", mode = "x" },
@@ -307,5 +308,14 @@ return {
         desc = "Treesitter SSR",
       },
     },
+  },
+  {
+    "camilledejoye/nvim-lsp-selection-range",
+    opts = function()
+      local lsr_client = require "lsp-selection-range.client"
+      return {
+        get_client = lsr_client.select_by_filetype(lsr_client.select),
+      }
+    end,
   },
 }

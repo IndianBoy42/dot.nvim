@@ -1,13 +1,3 @@
--- local action_mt = require "telescope.actions.mt"
--- local action_set = require "telescope.actions.set"
--- local extensions = require("telescope").extensions
--- local require "telescope.actions.state" = require "telescope.actions.state"
--- local actions = require "telescope.actions"
--- local themes = require "telescope.themes"
--- local builtins = require "telescope.builtin"
--- local pickers = require "telescope.pickers"
--- local finders = require "telescope.finders"
-
 local M = {}
 
 function M.set_prompt_to_entry_value(prompt_bufnr)

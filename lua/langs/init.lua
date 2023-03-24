@@ -19,12 +19,7 @@ local diagnostic_config_all = {
   update_in_insert = true,
 }
 return {
-  -- require "langs.lspconfig",
-  -- require "langs.complete",
-  -- { import = "langs.copilot" },
-  -- require "langs.null_ls",
-  -- require "langs.refactoring",
-  -- https://github.com/lukas-reineke/lsp-format.nvim
+  -- TODO: https://github.com/lukas-reineke/lsp-format.nvim
   -- Languages
   { "kmonad/kmonad-vim", ft = "kmonad" },
   { "gennaro-tedesco/nvim-jqx", ft = "json" },
@@ -38,6 +33,7 @@ return {
     main = "nu",
     opts = {},
   },
+  -- TODO: https://github.com/codethread/qmk.nvim
 
   -- EXTRAS
   inlay_hint_opts = {

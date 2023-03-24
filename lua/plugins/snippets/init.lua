@@ -149,7 +149,7 @@ local M = {
       }
 
       require("plugins.snippets.luasnips_choices").config()
-      require("luasnip.loaders.from_lua").load { paths = _G.CONFIG_PATH .. "/luasnippets" }
+      require("luasnip.loaders.from_lua").lazy_load { paths = _G.CONFIG_PATH .. "/luasnippets" }
 
       vim.api.nvim_create_user_command("EditSnippets", function(args)
         local args = args.args or "edit!"

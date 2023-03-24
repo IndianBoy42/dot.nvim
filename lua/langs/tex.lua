@@ -429,8 +429,8 @@ local conf = {
         -- uncomment the following line.
         --"--outdir out",
       },
-      forwardSearchAfter = false,
-      onSave = true,
+      forwardSearchAfter = true,
+      onSave = false,
     },
     chktex = { on_edit = true, on_open_and_save = true },
     diagnostics_delay = vim.opt.updatetime,
@@ -453,7 +453,7 @@ return {
       vim.g.tex_conceal = "abdmgs"
       vim.g.vimtex_subfile_start_local = 1
 
-      vim.g.vimtex_compiler_method = "tectonic"
+      vim.g.vimtex_compiler_method = "latexmk"
       vim.g.vimtex_compiler_generic = { cmd = "watchexec -e tex -- tectonic --synctex --keep-logs *.tex" }
       vim.g.vimtex_compiler_tectonic = {
         ["options"] = { "--synctex", "--keep-logs" },
@@ -464,42 +464,8 @@ return {
           "-verbose",
           "-file-line-error",
           "-synctex=1",
+          "-pdflatex",
           "-interaction=nonstopmode",
-        },
-      }
-    end,
-  },
-  {
-    "jbyuki/nabla.nvim",
-    keys = function()
-      local enabled = false
-      return {
-        {
-          "<leader>vn",
-          function()
-            require("nabla").popup()
-          end,
-          desc = "Nabla Popup",
-        },
-        {
-          "<leader>vN",
-          function()
-            if enabled then
-              require("nabla").disable_virt()
-            else
-              require("nabla").enable_virt()
-              local id = vim.api.nvim_create_augroup("nabla_live_popup", { clear = true })
-              vim.api.nvim_create_autocmd("CursorHold", {
-                callback = function()
-                  require("nabla").popup()
-                end,
-                buffer = 0,
-                group = id,
-              })
-            end
-            enabled = not enabled
-          end,
-          desc = "Nabla Virtual",
         },
       }
     end,
@@ -523,6 +489,7 @@ return {
     },
   },
   on_open_file = function()
+    vim.b.vimtex_main = "main.tex"
     vim.opt_local.wrap = true
     vim.opt_local.spell = true
     vim.opt.number = false
@@ -635,5 +602,14 @@ return {
     -- utils.define_augroups { _vimtex_event = {
     --   { "InsertLeave", "*.tex", "VimtexCompile" },
     -- } }
+
+    vim.b.knap_settings = {
+      textopdfviewerlaunch = "zathura"
+        .. "--synctex-editor-command"
+        .. "'nvim --headless -es --cmd \"lua require('\"'\"'knaphelper'\"'\"').relayjump('\"'\"'%servername%'\"'\"','\"'\"'%{input}'\"'\"',%{line},0)\"'"
+        .. "outputfile%",
+      textopdfviewerrefresh = "none",
+      textopdfforwardjump = "zathura --synctex-forward=%line%:%column%:%srcfile% %outputfile%",
+    }
   end,
 }

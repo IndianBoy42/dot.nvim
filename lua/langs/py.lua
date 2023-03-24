@@ -22,8 +22,9 @@ return {
         group = vim.api.nvim_create_augroup("jupyter_kernel_setup", {}),
       })
     end,
-    cmd = "JupyterAttach",
+    cmd = { "JupyterAttach", "JupyterInspect", "JupyterExecute" },
     build = ":UpdateRemotePlugins",
+    opts = {},
   },
 
   require("langs").mason_ensure_installed { "pyright", "ruff-lsp" },

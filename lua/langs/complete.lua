@@ -54,7 +54,6 @@ end
 
 function M.supertab(when_cmp_visible)
   local cmp = require "cmp"
-  local luasnip = require "luasnip"
 
   local function t(str)
     return vim.api.nvim_replace_termcodes(str, true, true, true)
@@ -69,7 +68,7 @@ function M.supertab(when_cmp_visible)
   return function()
     if cmp.visible() then
       when_cmp_visible()
-    elseif luasnip.expand_or_jumpable() then
+    elseif require("luasnip").expand_or_jumpable() then
       feedkeys(t "<Plug>luasnip-expand-or-jump", "", false)
     else
       -- local ok, neogen = pcall(require, "neogen")

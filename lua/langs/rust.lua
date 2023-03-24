@@ -154,13 +154,13 @@ return {
 
                 local dap = require "dap"
                 dap.listeners.after.event_initialized.rust_tools = function()
-                  rqeuire("rust-tools").inlay_hints.disable()
+                  require("rust-tools").inlay_hints.disable()
                 end
                 dap.listeners.before.event_terminated.rust_tools = function()
-                  rqeuire("rust-tools").inlay_hints.enable()
+                  require("rust-tools").inlay_hints.enable()
                 end
                 dap.listeners.before.event_exited.rust_tools = function()
-                  rqeuire("rust-tools").inlay_hints.enable()
+                  require("rust-tools").inlay_hints.enable()
                 end
 
                 mappings.localleader {
