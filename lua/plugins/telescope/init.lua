@@ -30,7 +30,7 @@ local telescope = {
     local sorters = require "telescope.sorters"
     local actions = require "telescope.actions"
     -- local action_layout = require "telescope.actions.layout"
-    -- local functions = require "telescopes"
+    -- local functions = require "utils.telescope"
     -- Global remapping
     ------------------------------
     TelescopeMapArgs = TelescopeMapArgs or {}
@@ -41,7 +41,7 @@ local telescope = {
       silent = true,
     }
 
-    local with_rg = require("telescopes").with_rg
+    local with_rg = require("utils.telescope").with_rg
     local rg = with_rg { ignore = true, hidden = true }
     -- M.shell_cmd.fd = vim.list_extend(vim.deepcopy(M.shell_cmd.rg), { "--files" })
     local fd = with_rg { ignore = true, hidden = true, files = true }

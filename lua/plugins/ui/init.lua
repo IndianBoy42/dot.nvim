@@ -4,7 +4,7 @@ vim.api.nvim_create_autocmd("User", {
     mappings.setup()
 
     -- TODO: https://github.com/stevearc/dressing.nvim
-    vim.ui.select = require("telescopes").uiselect()
+    vim.ui.select = require("utils.telescope").uiselect()
     vim.ui.input = function(opts, on_confirm)
       opts = opts or {}
       -- opts.completion
@@ -489,7 +489,7 @@ return {
   {
     "aznhe21/actions-preview.nvim",
     opts = {
-      telescope = require("telescopes").cursor_menu(),
+      telescope = require("utils.telescope").cursor_menu(),
     },
   },
   -- TODO: https://github.com/DNLHC/glance.nvim

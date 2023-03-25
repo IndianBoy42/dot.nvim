@@ -267,7 +267,7 @@ M.cmd = setmetatable({
   lsp = luafn "vim.lsp.buf",
   -- diag = luafn "vim.lsp.diagnostic",
   diag = luafn "vim.diagnostic",
-  telescopes = luafn "require'telescopes'",
+  telescopes = luafn "require'utils.telescope'",
 }, {
   __call = function(tbl, arg)
     return "<cmd>" .. arg .. "<cr>"

@@ -19,7 +19,7 @@ function M.edit_neovim()
   require("telescope.builtin").find_files {
     prompt_title = "< VimRC >",
     shorten_path = false,
-    cwd = "~/.config/nvim",
+    cwd = CONFIG_PATH,
 
     layout_strategy = "vertical",
     layout_config = {
