@@ -521,6 +521,9 @@ M.on_very_lazy = function(cb)
     end,
   })
 end
+M.plugin_spec = function(name)
+  return require("lazy.core.config").plugins[name]
+end
 M.have_plugin = function(name)
   return require("lazy.core.config").plugins[name] ~= nil
 end
@@ -582,6 +585,25 @@ end
 
 function M.partial_require(mod, name, ...)
   return M.partial(M.lazy_require("mod")[name], ...)
+end
+
+function M.rotate_split(tabpage)
+  tabpage = tabpage or vim.api.nvim_get_current_tabpage()
+  local win = vim.api.nvim_tabpage_get_win(tabpage)
+  for _, o in ipairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
+    -- TODO: complete this implementation
+  end
+  vim.notify("Unimplemented", vim.log.levels.WARN)
+end
+
+function M.swap_buf_to_win(win)
+  if win == nil then
+    win = require("window-picker").pick_window()
+  end
+  local o = vim.api.nvim_win_get_buf(win)
+  vim.api.nvim_win_set_buf(win, vim.api.nvim_get_current_buf())
+  vim.api.nvim_win_set_buf(win, o)
+  vim.api.nvim_set_current_win(win)
 end
 
 return M

@@ -58,7 +58,7 @@ local function window_hydra_setup()
       { "K", smart_splits "swap_buf_up" },
       { "L", smart_splits "swap_buf_right" },
 
-      { "r", "<C-w>r" }, -- Rotate
+      { "r", "<C-w>t<C-w>K" }, -- Rotate
 
       -- TODO: open nvim-tree if we go left far enough
       { "<C-h>", smart_splits("resize_left", 2) },
@@ -85,6 +85,8 @@ local function window_hydra_setup()
 
       { "z", cmd "WindowsMaximize", { exit = true, desc = "maximize" } },
       { "<C-z>", cmd "WindowsMaximize", { exit = true, desc = false } },
+      { "Z", cmd "WindowsMaximizeVertically", { exit = true, desc = "maximize" } },
+      { "<C-S-z>", cmd "WindowsMaximizeVertically", { exit = true, desc = false } },
 
       { "o", "<C-w>o", { exit = true, desc = "remain only" } },
       { "<C-o>", "<C-w>o", { exit = true, desc = false } },

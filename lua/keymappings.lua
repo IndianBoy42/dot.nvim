@@ -442,7 +442,6 @@ function M.setup()
   undotree "g-"
 
   -- Close window
-  map("n", "gq", "<C-w>q", nore)
   map("n", "<c-q>", "<C-w>q", nore)
   map("n", "<c-s-q>", ":wqa", nore)
   map("n", "<c-w>d", cmd "bdelete!", nore)
@@ -621,19 +620,21 @@ function M.setup()
   map("n", "gK", vim.lsp.codelens.run, { desc = "Codelens" })
   -- Preview variants
   local lsp_split_command = "FocusSplitNicely"
-  map("n", "gsd", lsputil.view_location_split("definition", lsp_split_command), { desc = "Split definition" })
-  map("n", "gsD", lsputil.view_location_split("declaration", lsp_split_command), { desc = "Split declaration" })
-  map("n", "gsr", lsputil.view_location_split("references", lsp_split_command), { desc = "Split references" })
-  map("n", "gsi", lsputil.view_location_split("implementation", lsp_split_command), { desc = "Split implementation" })
+  -- map("n", "gsd", lsputil.view_location_split("definition", lsp_split_command), { desc = "Split definition" })
+  -- map("n", "gsD", lsputil.view_location_split("declaration", lsp_split_command), { desc = "Split declaration" })
+  -- map("n", "gsr", lsputil.view_location_split("references", lsp_split_command), { desc = "Split references" })
+  -- map("n", "gsi", lsputil.view_location_split("implementation", lsp_split_command), { desc = "Split implementation" })
   map("n", "gpd", lsputil.preview_location_at "definition", { desc = "Peek definition" })
   map("n", "gpD", lsputil.preview_location_at "declaration", { desc = "Peek declaration" })
-  map("n", "gpr", lsputil.preview_location_at "references", { desc = "Peek references" })
-  map("n", "gpi", lsputil.preview_location_at "implementation", { desc = "Peek implementation" })
+  -- map("n", "gpr", lsputil.preview_location_at "references", { desc = "Peek references" })
+  -- map("n", "gpi", lsputil.preview_location_at "implementation", { desc = "Peek implementation" })
+  map("n", "gpr", telescope_fn.lsp_references, { desc = "Peek references" })
+  map("n", "gpi", telescope_fn.lsp_implementations, { desc = "Peek implementation" })
   map("n", "gpe", lsputil.diag_line, sile)
-  map("n", pre_goto_next .. "u", function()
+  map("n", pre_goto_next .. "r", function()
     vim.lsp.buf.references(nil, on_list_next)
   end, { desc = "Reference" })
-  map("n", pre_goto_prev .. "u", function()
+  map("n", pre_goto_prev .. "r", function()
     vim.lsp.buf.references(nil, on_list_prev)
   end, { desc = "Reference" })
   map("n", pre_goto_next .. "i", function()
@@ -916,6 +917,7 @@ function M.setup()
       b = { cmd "set buflisted", "buflisted" },
       c = { utils.conceal_toggle, "Conceal" },
       f = { focus_fn.focus_toggle, "Focus.nvim" },
+      H = { cmd "ToggleHiLightComments", "Comment Highlights" },
       -- TODO: Toggle comment visibility
     },
     b = {

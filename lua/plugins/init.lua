@@ -186,4 +186,18 @@ return {
     },
   },
   -- { "rmagatti/auto-session", lazy = false },
+  {
+    "krady21/compiler-explorer.nvim",
+    cmd = {
+      "CECompile",
+      "CECompileLive",
+      "CEFormat",
+      "CEAddLibrary",
+      "CELoadExample",
+      "CEOpenWebsite",
+      "CEDeleteCache",
+      "CEShowTooltip",
+      "CEGotoLabel",
+    },
+  },
 }

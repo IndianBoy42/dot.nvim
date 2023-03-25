@@ -99,25 +99,31 @@ return {
   --   dependencies = "RishabhRD/popfix",
   -- },
   {
+    "s1n7ax/nvim-window-picker",
+    -- FYI: local picked_window_id = require('window-picker').pick_window()
+    opts = {},
+  },
+  {
     "hrsh7th/nvim-cmp",
     dependencies = {
 
       "onsails/lspkind-nvim",
     },
     opts = function(_, opts)
-      vim.tbl_extend("force", opts, {
-        formatting = {
-          format = require("lspkind").cmp_format { mode = "symbol_text" },
+      opts.formatting = opts.formatting or {}
+      opts.formatting.format = require("lspkind").cmp_format {
+        mode = "symbol",
+        symbol_map = {
+          Copilot = "",
         },
-      })
+      }
     end,
   },
   {
-    "onsails/lspkind-nvim",
-    config = function()
-      require("lspkind").init {
-        mode = "symbol_text",
-        -- symbol_map = {
+    "onsails/lspkind.nvim",
+    opts = {
+      mode = "symbol_text",
+      symbol_map = {
         --   Text = "",
         --   Method = "",
         --   Function = "",
@@ -143,8 +149,36 @@ return {
         --   Event = "",
         --   Operator = "",
         --   TypeParameter = "",
-        -- },
-      }
+        -- Text = "",
+        -- Method = "",
+        -- Function = "",
+        -- Constructor = "",
+        -- Field = "ﴲ",
+        -- Variable = "]",
+        -- Class = "",
+        -- Interface = "ﰮ",
+        -- Module = "",
+        -- Property = "襁",
+        -- Unit = "",
+        -- Value = "",
+        -- Enum = "練",
+        -- Keyword = "",
+        -- Snippet = "",
+        -- Color = "",
+        -- File = "",
+        -- Reference = "",
+        -- Folder = "",
+        -- EnumMember = "",
+        -- Constant = "ﲀ",
+        -- Struct = "ﳤ",
+        -- Event = "",
+        -- Operator = "",
+        -- TypeParameter = "",
+        Copilot = "",
+      },
+    },
+    config = function(_, opts)
+      require("lspkind").init(opts)
     end,
   },
   {
@@ -430,7 +464,9 @@ return {
   {
     "haringsrob/nvim_context_vt",
     event = { "BufReadPost", "BufNewFile" },
-    opts = {},
+    opts = {
+      highlight = "DiagnosticVirtualTextInfo",
+    },
   },
   {
     "kevinhwang91/nvim-ufo",

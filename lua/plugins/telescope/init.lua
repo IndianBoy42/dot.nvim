@@ -1,3 +1,18 @@
+local function select_pick_window(prompt_bufnr)
+  -- Use nvim-window-picker to choose the window by dynamically attaching a function
+  local action_set = require "telescope.actions.set"
+  local action_state = require "telescope.actions.state"
+
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  picker.get_selection_window = function(picker, entry)
+    local picked_window_id = require("window-picker").pick_window() or vim.api.nvim_get_current_win()
+    -- Unbind after using so next instance of the picker acts normally
+    picker.get_selection_window = nil
+    return picked_window_id
+  end
+
+  return action_set.edit(prompt_bufnr, "edit")
+end
 local telescope = {
   "nvim-telescope/telescope.nvim",
   dependencies = {
@@ -97,7 +112,7 @@ local telescope = {
             ["<C-x>"] = actions.delete_buffer,
             ["<C-s>"] = actions.select_horizontal,
             ["<C-v>"] = actions.select_vertical,
-            -- ["<C-t>"] = actions.select_tab,
+            ["<C-t>"] = actions.select_tab,
             ["<C-j>"] = actions.move_selection_next,
             ["<C-k>"] = actions.move_selection_previous,
             ["<CR>"] = actions.select_default + actions.center,
@@ -106,6 +121,7 @@ local telescope = {
             ["<M-q>"] = actions.send_to_qflist + actions.open_qflist,
             ["<C-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
             -- ["<C-y>"] = functions.set_prompt_to_entry_value,
+            ["<M-CR>"] = select_pick_window,
           },
           n = {
             -- ["<M-p>"] = action_layout.toggle_preview,
@@ -114,7 +130,7 @@ local telescope = {
             ["<C-x>"] = actions.delete_buffer,
             ["<C-s>"] = actions.select_horizontal,
             ["<C-v>"] = actions.select_vertical,
-            -- ["<C-t>"] = actions.select_tab,
+            ["<C-t>"] = actions.select_tab,
             ["<S-up>"] = actions.preview_scrolling_up,
             ["<S-down>"] = actions.preview_scrolling_down,
             ["<C-up>"] = actions.preview_scrolling_up,
@@ -122,6 +138,7 @@ local telescope = {
             ["<C-q>"] = actions.send_to_qflist,
             ["<M-q>"] = actions.send_to_qflist + actions.open_qflist,
             ["<C-c>"] = actions.close,
+            ["<M-CR>"] = select_pick_window,
           },
         },
       },

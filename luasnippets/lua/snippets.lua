@@ -1,5 +1,4 @@
 -- https://github.com/L3MON4D3/LuaSnip/blob/4baa7334e17d177841d66dbe71d51000ca55c144/lua/luasnip/config.lua#L22
-local autosnippets = {}
 local preamble = [[
     local snippets = {
 
@@ -423,6 +422,9 @@ end
       }
     )
   ),
+}
+local autosnippets = {
+  s("!=", t "~="),
 }
 
 return snippets, autosnippets

@@ -184,6 +184,11 @@ return {
           cmd = "<cmd>lua require('spectre.actions').select_entry()<CR>",
           desc = "goto current file",
         },
+        -- TODO: ["open_window_picker"] = {
+        --   map = "<M-CR>",
+        --   cmd = "<cmd>lua require('spectre.actions').select_entry()<CR>",
+        --   desc = "goto current file in",
+        -- },
         ["send_to_qf"] = {
           map = prefix .. "q",
           cmd = "<cmd>lua require('spectre.actions').send_to_qf()<CR>",

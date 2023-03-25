@@ -2,6 +2,27 @@ return {
   {
     "IndianBoy42/kitty.lua",
     dev = true,
+    init = function()
+      vim.api.nvim_create_user_command("Kitty", function(args)
+        if args.fargs and #args.fargs > 0 then
+          require("kitty").new_tab({}, args.fargs)
+        else
+          require("kitty").open()
+        end
+      end, {
+        nargs = "*",
+        -- preview = function(opts, ns, buf)
+        --   -- TODO: livestream to kitty
+        -- end,
+      })
+      vim.api.nvim_create_user_command("KittyOverlay", function(args)
+        local cmd = args.fargs
+        if not cmd or #cmd == 0 then
+          cmd = {} -- TODO: something
+        end
+        require("kitty.current_win").new_overlay({}, cmd)
+      end, { nargs = "*" })
+    end,
     config = function()
       local K = require("kitty").setup {
         -- from_current_win = "tab",
@@ -18,39 +39,12 @@ return {
 
       require("rust-tools").config.options.tools.executor = K.rust_tools_executor()
 
-      vim.keymap.set("n", "<leader>tk", function()
-        K.run()
-      end, { desc = "Kitty Run" })
-      vim.keymap.set("n", "<leader>tt", function()
-        K.make()
-      end, { desc = "Kitty Make" })
-      vim.keymap.set("n", "<leader>t<CR>", function()
-        K.make "last"
-      end, { desc = "Kitty ReMake" })
+      local p = utils.partial
+      vim.keymap.set("n", "<leader>tk", p(K.run), { desc = "Kitty Run" })
+      vim.keymap.set("n", "<leader>tt", p(K.make), { desc = "Kitty Make" })
+      vim.keymap.set("n", "<leader>t<CR>", p(K.make, "last"), { desc = "Kitty ReMake" })
       -- vim.keymap.set("n", "<leader>tK", KT.run, { desc = "Kitty Run" })
       -- vim.keymap.set("n", "", require("kitty").send_cell, { buffer = 0 })
-      vim.api.nvim_create_user_command("Kitty", function(args)
-        -- if args.fargs and #args.fargs > 0 then
-        --   K[args.fargs[1]](unpack(vim.list_slice(args.fargs, 2)))
-        -- end
-        if args.fargs and #args.fargs > 0 then
-          K.new_tab({}, args.fargs)
-        else
-          K.open()
-        end
-      end, {
-        nargs = "*",
-        -- preview = function(opts, ns, buf)
-        --   -- TODO: livestream to kitty
-        -- end,
-      })
-      vim.api.nvim_create_user_command("KittyOverlay", function(args)
-        local cmd = args.fargs
-        if not cmd or #cmd == 0 then
-          cmd = {} -- TODO: something
-        end
-        require("kitty.current_win").new_overlay({}, cmd)
-      end, { nargs = "*" })
     end,
     cmd = { "Kitty", "KittyOverlay" },
     keys = {

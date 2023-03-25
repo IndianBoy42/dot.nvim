@@ -2,7 +2,6 @@ local M = {
   "nvim-lualine/lualine.nvim",
   event = "VeryLazy",
   dependencies = {
-    "nvim-lua/lsp-status.nvim",
     "SmiteshP/nvim-gps",
     "marko-cerovac/material.nvim",
     {
@@ -17,9 +16,6 @@ local M = {
   },
 }
 M.config = function()
-  local lsp_status = require "lsp-status"
-  lsp_status.register_progress()
-
   local gps = require "nvim-gps"
   gps.setup {
     icons = {

@@ -12,3 +12,4 @@ return {
   },
   "anuvyklack/hydra.nvim",
 }
+-- TODO: legendary.nvim
