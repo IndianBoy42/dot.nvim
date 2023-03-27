@@ -2,26 +2,18 @@ local M = {}
 
 local feedkeys = vim.api.nvim_feedkeys
 local termcodes = vim.api.nvim_replace_termcodes
-local function t(k)
-  return termcodes(k, true, true, true)
-end
+local function t(k) return termcodes(k, true, true, true) end
 
 function M.else_meta(tbl, fallback)
   return setmetatable(tbl, {
     -- Return always true
-    __index = function(tbl, key)
-      return fallback
-    end,
+    __index = function(tbl, key) return fallback end,
   })
 end
 
-function M.else_true(tbl)
-  return M.else_meta(tbl, true)
-end
+function M.else_true(tbl) return M.else_meta(tbl, true) end
 
-function M.else_false(tbl)
-  return M.else_meta(tbl, false)
-end
+function M.else_false(tbl) return M.else_meta(tbl, false) end
 
 local function dump(...)
   local objects, v = {}, nil
@@ -47,16 +39,12 @@ function M.dump_text(...)
   return ...
 end
 
-vim.api.nvim_create_user_command("Lua", function(opts)
-  dump(opts.args)
-end, { nargs = "+" })
+vim.api.nvim_create_user_command("Lua", function(opts) dump(opts.args) end, { nargs = "+" })
 
 function M.check_lsp_client_active(name)
   local clients = vim.lsp.get_active_clients()
   for _, client in pairs(clients) do
-    if client.name == name then
-      return true
-    end
+    if client.name == name then return true end
   end
   return false
 end
@@ -106,9 +94,7 @@ function M.quickfix_toggle()
 end
 
 function M.conceal_toggle(n)
-  if n == nil then
-    n = 2
-  end
+  if n == nil then n = 2 end
   if vim.opt_local.conceallevel._value == 0 then
     vim.opt_local.conceallevel = n
   else
@@ -148,9 +134,7 @@ function M.operatorfunc_helper_select(lines)
   end
 end
 
-function M.post_operatorfunc(old_func)
-  vim.go.operatorfunc = old_func
-end
+function M.post_operatorfunc(old_func) vim.go.operatorfunc = old_func end
 
 _G.lv_utils_operatorfuncs = {}
 -- wrapper for making operators easily
@@ -176,6 +160,7 @@ function M.operatorfuncV_keys(name, verbkeys)
     feedkeys(t(verbkeys), "m", false)
   end)
 end
+
 -- keys charwise
 function M.operatorfunc_keys(name, verbkeys)
   return M.operatorfunc_scaffold(name, function()
@@ -191,6 +176,7 @@ function M.operatorfunc_Vcmd(name, verbkeys)
     vim.cmd(verbkeys)
   end)
 end
+
 -- cmd charwise
 function M.operatorfunc_cmd(name, verbkeys)
   return M.operatorfunc_scaffold(name, function()
@@ -198,6 +184,7 @@ function M.operatorfunc_cmd(name, verbkeys)
     vim.cmd(verbkeys)
   end)
 end
+
 -- fn linewise
 function M.operatorfunc_Vfn(name, func)
   return M.operatorfunc_scaffold(name, function()
@@ -205,6 +192,7 @@ function M.operatorfunc_Vfn(name, func)
     func()
   end)
 end
+
 -- fn charwise
 function M.operatorfunc_fn(name, func)
   return M.operatorfunc_scaffold(name, function()
@@ -215,9 +203,7 @@ end
 
 -- the font used in graphical neovim applications
 function M.set_guifont(size, font)
-  if font == nil then
-    font = vim.g.guifontface
-  end
+  if font == nil then font = vim.g.guifontface end
   vim.opt.guifont = font .. ":h" .. size
   vim.g.guifontface = font
   vim.g.guifontsize = size
@@ -243,9 +229,7 @@ end
 
 local function luafn(prefix)
   return setmetatable({}, {
-    __index = function(tbl, key)
-      return "<cmd>lua " .. prefix .. "." .. key .. "()<cr>"
-    end,
+    __index = function(tbl, key) return "<cmd>lua " .. prefix .. "." .. key .. "()<cr>" end,
     __call = function(tbl, key)
       -- dump("DEPRECATED", debug.getinfo(2).source, prefix, key)
       return "<cmd>lua " .. prefix .. "." .. key .. "<cr>"
@@ -253,44 +237,30 @@ local function luafn(prefix)
   })
 end
 M.cmd = setmetatable({
-  lua = function(arg)
-    return "<cmd>lua " .. arg .. "<cr>"
-  end,
-  call = function(arg)
-    return "<cmd>call " .. arg .. "<cr>"
-  end,
+  lua = function(arg) return "<cmd>lua " .. arg .. "<cr>" end,
+  call = function(arg) return "<cmd>call " .. arg .. "<cr>" end,
   from = M.to_cmd,
   op = M.operatorfunc_scaffold,
-  require = function(name)
-    return luafn("require'" .. name .. "'")
-  end,
+  require = function(name) return luafn("require'" .. name .. "'") end,
   lsp = luafn "vim.lsp.buf",
   -- diag = luafn "vim.lsp.diagnostic",
   diag = luafn "vim.diagnostic",
   telescopes = luafn "require'utils.telescope'",
 }, {
-  __call = function(tbl, arg)
-    return "<cmd>" .. arg .. "<cr>"
-  end,
+  __call = function(tbl, arg) return "<cmd>" .. arg .. "<cr>" end,
 })
 
 M.fn = setmetatable({}, {
   __index = function(_, key)
     return setmetatable({ key }, {
-      __index = function(tbl, key2)
-        return M.fn[tbl[1] .. "#" .. key2]
-      end,
-      __call = function(tbl, ...)
-        vim.fn[tbl[1]](...)
-      end,
+      __index = function(tbl, key2) return M.fn[tbl[1] .. "#" .. key2] end,
+      __call = function(tbl, ...) vim.fn[tbl[1]](...) end,
     })
   end,
 })
 
 -- Meta af autocmd function
-local function make_aucmd(trigger, trigargs, action)
-  vim.cmd("autocmd " .. trigger .. " " .. trigargs .. " " .. action)
-end
+local function make_aucmd(trigger, trigargs, action) vim.cmd("autocmd " .. trigger .. " " .. trigargs .. " " .. action) end
 local function make_augrp(tbl, cmds)
   local grp = tbl[1]
   vim.cmd("augroup " .. grp)
@@ -341,9 +311,7 @@ au = setmetatable({}, {
   __index = function(_, trigger)
     dump("DEPRECATED", debug.getinfo(2))
     return setmetatable({}, {
-      __newindex = function(_, trigargs, action)
-        make_aucmd(trigger, trigargs, action)
-      end,
+      __newindex = function(_, trigargs, action) make_aucmd(trigger, trigargs, action) end,
     })
   end,
 })
@@ -353,13 +321,9 @@ M.au = au
 -- TODO: change to keymap.set()
 local mapper_meta = nil
 local function mapper_call(tbl, mode)
-  if mode == nil then
-    mode = tbl[2]
-  end
+  if mode == nil then mode = tbl[2] end
   return function(args)
-    if args == nil then
-      args = tbl[1]
-    end
+    if args == nil then args = tbl[1] end
     return setmetatable({ args, mode }, mapper_meta)
   end
 end
@@ -426,9 +390,7 @@ M.hold_jumplist = (function()
   return M.timeout_helper(1000, function()
     -- local row, col = unpack(getcurpos(0))
     -- setmark(0, "'", row, col)
-    if vim.api.nvim_get_mode().mode == "n" then
-      vim.cmd "normal! m'"
-    end
+    if vim.api.nvim_get_mode().mode == "n" then vim.cmd "normal! m'" end
     -- feedkeys("m'", "n", true)
   end)
 end)()
@@ -488,9 +450,7 @@ M.augroup = setmetatable({}, {
 -- TODO: merge repeated 'x'
 M.delete_merge = (function()
   local repeat_set = M.fn["repeat"].set
-  return M.timeout_helper(1000, function()
-    repeat_set("\\<Plug>RepeatDeletes", vim.v.count)
-  end)
+  return M.timeout_helper(1000, function() repeat_set("\\<Plug>RepeatDeletes", vim.v.count) end)
 end)()
 
 local new_command_helper = function(idx, val, opts)
@@ -503,30 +463,20 @@ local new_command_helper = function(idx, val, opts)
   end
 end
 M.new_command = setmetatable({}, {
-  __newindex = function(tbl, idx, val)
-    new_command_helper(idx, val)
-  end,
+  __newindex = function(tbl, idx, val) new_command_helper(idx, val) end,
   __index = function(tbl, idx)
-    return function(val, opts)
-      new_command_helper(idx, val, opts)
-    end
+    return function(val, opts) new_command_helper(idx, val, opts) end
   end,
 })
 
 M.on_very_lazy = function(cb)
   vim.api.nvim_create_autocmd("User", {
     pattern = "VeryLazy",
-    callback = function()
-      cb()
-    end,
+    callback = function() cb() end,
   })
 end
-M.plugin_spec = function(name)
-  return require("lazy.core.config").plugins[name]
-end
-M.have_plugin = function(name)
-  return require("lazy.core.config").plugins[name] ~= nil
-end
+M.plugin_spec = function(name) return require("lazy.core.config").plugins[name] end
+M.have_plugin = function(name) return require("lazy.core.config").plugins[name] ~= nil end
 
 local mt = {}
 function mt.__index(self, key)
@@ -572,20 +522,32 @@ function M.partial(func, ...)
   end
 end
 
-function M.lazy_require(moduleName)
-  return setmetatable({}, {
-    __index = function(self, key)
-      return function(...)
-        local module = require(moduleName)
-        return module[key](...)
-      end
-    end,
-  })
-end
+local function lazy_require(moduleName)
+  local meta = {}
 
-function M.partial_require(mod, name, ...)
-  return M.partial(M.lazy_require("mod")[name], ...)
+  function meta.__call(tbl, ...)
+    local module = require(moduleName)
+    meta.__call = module -- Next time we don't go through require() again
+    meta.__index = module
+    return module(...)
+  end
+
+  function meta.__index(self, key)
+    return function(...)
+      local module = require(moduleName)
+      meta.__call = module -- Next time we don't go through require() again
+      meta.__index = module
+      return module[key](...)
+    end
+  end
+
+  -- TODO: other metamethods -- http://lua-users.org/wiki/MetatableEvents
+
+  return setmetatable({ moduleName = moduleName }, meta)
 end
+M.lazy_require = lazy_require
+
+function M.partial_require(mod, name, ...) return M.partial(M.lazy_require(mod)[name], ...) end
 
 function M.rotate_split(tabpage)
   tabpage = tabpage or vim.api.nvim_get_current_tabpage()
@@ -597,9 +559,7 @@ function M.rotate_split(tabpage)
 end
 
 function M.swap_buf_to_win(win)
-  if win == nil then
-    win = require("window-picker").pick_window()
-  end
+  if win == nil then win = require("window-picker").pick_window() end
   local o = vim.api.nvim_win_get_buf(win)
   vim.api.nvim_win_set_buf(win, vim.api.nvim_get_current_buf())
   vim.api.nvim_win_set_buf(win, o)

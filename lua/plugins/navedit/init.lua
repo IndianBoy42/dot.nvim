@@ -108,9 +108,7 @@ return {
     "mfussenegger/nvim-treehopper",
     config = function()
       local labels = {}
-      O.hint_labels:gsub(".", function(c)
-        vim.list_extend(labels, { c })
-      end)
+      O.hint_labels:gsub(".", function(c) vim.list_extend(labels, { c }) end)
       require("tsht").config.hint_keys = labels -- Requires https://github.com/mfussenegger/nvim-ts-hint-textobject/pull/2
     end,
     -- event = { "BufReadPost", "BufNewFile" },
@@ -135,27 +133,9 @@ return {
       use_default_keymaps = false,
     },
     keys = {
-      {
-        "gs",
-        function()
-          require("treesj").toggle()
-        end,
-        desc = "SplitJoin",
-      },
-      {
-        "<leader>es",
-        function()
-          require("treesj").split()
-        end,
-        desc = "Split",
-      },
-      {
-        "<leader>ej",
-        function()
-          require("treesj").join()
-        end,
-        desc = "Join",
-      },
+      { "gs", function() require("treesj").toggle() end, desc = "SplitJoin" },
+      { "<leader>es", function() require("treesj").split() end, desc = "Split" },
+      { "<leader>ej", function() require("treesj").join() end, desc = "Join" },
     },
   },
   require "plugins.navedit.tsnodeaction",
@@ -187,12 +167,8 @@ return {
         ia = ia or "a"
         name = name or textobj_id
         for _, mode in ipairs { "n", "x", "o" } do
-          local lf = function()
-            ai.move_cursor(side, ia, textobj_id, { search_method = "cover_or_prev" })
-          end
-          local rf = function()
-            ai.move_cursor(side, ia, textobj_id, { search_method = "cover_or_next" })
-          end
+          local lf = function() ai.move_cursor(side, ia, textobj_id, { search_method = "cover_or_prev" }) end
+          local rf = function() ai.move_cursor(side, ia, textobj_id, { search_method = "cover_or_next" }) end
           local nf, pf = unpack(make_nN_pair { rf, lf })
           vim.keymap.set(mode, lp .. ln, pf, { desc = desc })
           vim.keymap.set(mode, rp .. rn, nf, { desc = desc })
@@ -264,20 +240,8 @@ return {
     },
     cmd = "Portal",
     keys = {
-      {
-        "<C-i>",
-        function()
-          require("portal.builtin").jumplist.tunnel_forward()
-        end,
-        desc = "portal fwd",
-      },
-      {
-        "<C-o>",
-        function()
-          require("portal.builtin").jumplist.tunnel_backward()
-        end,
-        desc = "portal bwd",
-      },
+      { "<C-i>", function() require("portal.builtin").jumplist.tunnel_forward() end, desc = "portal fwd" },
+      { "<C-o>", function() require("portal.builtin").jumplist.tunnel_backward() end, desc = "portal bwd" },
       -- TODO: use other queries?
     },
   },
@@ -301,9 +265,7 @@ return {
     keys = {
       {
         "<leader>rr",
-        function()
-          require("ssr").open()
-        end,
+        function() require("ssr").open() end,
         mode = { "n", "v" },
         desc = "Treesitter SSR",
       },

@@ -41,9 +41,7 @@ return {
   end,
   custom_surroundings = function()
     local ts_input = require("mini.surround").gen_spec.input.treesitter
-    local tsi = function(id)
-      return ts_input { outer = id .. ".outer", inner = id .. ".inner" }
-    end
+    local tsi = function(id) return ts_input { outer = id .. ".outer", inner = id .. ".inner" } end
 
     return {
       -- With Spaces
@@ -117,9 +115,7 @@ return {
         local line = vim.fn.getline(line_num)
         local cond = function(l)
           if l:len() > 3 then
-            if l:sub(1, 4) == "# %%" then
-              return true
-            end
+            if l:sub(1, 4) == "# %%" then return true end
           end
           return false
         end

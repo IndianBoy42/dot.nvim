@@ -1,9 +1,7 @@
 local prefix = "<localleader>"
 local function spectre(name, ...)
   local table = { ... }
-  return function()
-    require("spectre")[name](unpack(table))
-  end
+  return function() require("spectre")[name](unpack(table)) end
 end
 return {
   {
@@ -95,46 +93,22 @@ return {
   {
     "windwp/nvim-spectre",
     keys = {
-      {
-        "<leader>rp",
-        function()
-          require("spectre").open()
-        end,
-        desc = "Spectre Project",
-      },
-      {
-        "<leader>rf",
-        function()
-          require("spectre").open_file_search { select_word = true }
-        end,
-        desc = "Spectre File",
-      },
-      {
-        "<leader>rr*",
-        function()
-          require("spectre").open_visual { select_word = true }
-        end,
-        desc = "Current Word",
-      },
+      { "<leader>rp", function() require("spectre").open() end, desc = "Project" },
+      { "<leader>rf", function() require("spectre").open_file_search { select_word = true } end, desc = "File" },
+      { "<leader>rr*", function() require("spectre").open_visual { select_word = true } end, desc = "cword" },
       {
         "<leader>rr/",
-        function()
-          require("spectre").open { search_text = vim.fn.getreg "/" }
-        end,
+        function() require("spectre").open { search_text = vim.fn.getreg "/" } end,
         desc = "Last search",
       },
       {
         "<leader>rr+",
-        function()
-          require("spectre").open { search_text = vim.fn.getreg "+" }
-        end,
+        function() require("spectre").open { search_text = vim.fn.getreg "+" } end,
         desc = "Last yank",
       },
       {
         "<leader>rr.",
-        function()
-          require("spectre").open { search_text = vim.fn.getreg "." }
-        end,
+        function() require("spectre").open { search_text = vim.fn.getreg "." } end,
         desc = "Last insert",
       },
     },
@@ -262,9 +236,7 @@ return {
       local get_file_path = function(filename)
         -- use default current working directory if state.cwd is nil or empty string
         --
-        if state.cwd == nil or state.cwd == "" then
-          state.cwd = vim.fn.getcwd()
-        end
+        if state.cwd == nil or state.cwd == "" then state.cwd = vim.fn.getcwd() end
 
         return vim.fn.expand(state.cwd) .. Path.path.sep .. filename
       end

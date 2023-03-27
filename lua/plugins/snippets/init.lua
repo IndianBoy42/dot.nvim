@@ -4,9 +4,7 @@ local M = {
     dependencies = {
       {
         "rafamadriz/friendly-snippets",
-        config = function()
-          require("luasnip.loaders.from_vscode").lazy_load()
-        end,
+        config = function() require("luasnip.loaders.from_vscode").lazy_load() end,
       },
     },
     config = function()
@@ -18,9 +16,7 @@ local M = {
       local feedkeys_ = vim.api.nvim_feedkeys
       local termcode = vim.api.nvim_replace_termcodes
       local feedkeys = function(keys, o)
-        if o == nil then
-          o = "m"
-        end
+        if o == nil then o = "m" end
         feedkeys_(termcode(keys, true, true, true), o, false)
       end
       local luasnip = require "luasnip"
@@ -68,12 +64,8 @@ local M = {
       local f = ls.function_node
       local types = require "luasnip.util.types"
       local nl = t { "", "" }
-      local function nlt(line)
-        return t { "", line }
-      end
-      local function tnl(line)
-        return t { line, "" }
-      end
+      local function nlt(line) return t { "", line } end
+      local function tnl(line) return t { line, "" } end
 
       -- Shorthands for lambdas
       local lambda = require("luasnip.extras").lambda
@@ -107,15 +99,11 @@ local M = {
         -- return f(sel_helper, vim.tbl_extend("force", {}, opts or {}))
       end
       local function dsel(opts)
-        return f(function()
-          return sn(nil, { i(1, sel_helper()) })
-        end, vim.tbl_extend("force", {}, opts or {}))
+        return f(function() return sn(nil, { i(1, sel_helper()) }) end, vim.tbl_extend("force", {}, opts or {}))
       end
 
       local function reg(rn, opts)
-        return f(function()
-          return vim.fn.getreg(rn or '"')
-        end, vim.tbl_extend("force", {}, opts or {}))
+        return f(function() return vim.fn.getreg(rn or '"') end, vim.tbl_extend("force", {}, opts or {}))
       end
 
       require("luasnip").setup {
@@ -154,9 +142,7 @@ local M = {
       vim.api.nvim_create_user_command("EditSnippets", function(args)
         local args = args.args or "edit!"
         require("luasnip.loaders").edit_snippet_files {
-          edit = function(f)
-            vim.cmd(args .. " " .. f)
-          end,
+          edit = function(f) vim.cmd(args .. " " .. f) end,
         }
       end, { nargs = "?" })
     end,
@@ -188,9 +174,7 @@ local M = {
       },
       {
         "<leader>ns",
-        function()
-          require("SnippetGenie").finalize_snippet()
-        end,
+        function() require("SnippetGenie").finalize_snippet() end,
         mode = "n",
         desc = "Genie Finalize",
       },

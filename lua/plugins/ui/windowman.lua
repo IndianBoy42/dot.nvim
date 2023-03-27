@@ -5,15 +5,11 @@ local function window_hydra_setup()
   local splits_api = require "smart-splits"
   local function smart_splits(name, ...)
     local args = { ... }
-    return function()
-      splits[name](unpack(args))
-    end
+    return function() splits[name](unpack(args)) end
   end
   local function smart_splits_api(name, ...)
     local args = { ... }
-    return function()
-      splits_api[name](unpack(args))
-    end
+    return function() splits_api[name](unpack(args)) end
   end
 
   local cmd = require("hydra.keymap-util").cmd
@@ -135,7 +131,7 @@ return {
   opts = {
     autowidth = {
       enable = true,
-      winwidth = 0.5
+      winwidth = 0.5,
     },
     animation = {
       enable = false,

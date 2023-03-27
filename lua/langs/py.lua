@@ -36,9 +36,7 @@ return {
           handlers = {
             ["textDocument/publishDiagnostics"] = function() end,
           },
-          on_attach = function(client, _)
-            client.server_capabilities.codeActionProvider = false
-          end,
+          on_attach = function(client, _) client.server_capabilities.codeActionProvider = false end,
           settings = {
             pyright = {
               disableOrganizeImports = true,
@@ -53,9 +51,7 @@ return {
           },
         },
         ["ruff_lsp"] = {
-          on_attach = function(client, _)
-            client.server_capabilities.hoverProvider = false
-          end,
+          on_attach = function(client, _) client.server_capabilities.hoverProvider = false end,
           init_options = {
             settings = {
               args = {},

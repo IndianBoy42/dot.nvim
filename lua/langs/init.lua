@@ -60,9 +60,7 @@ return {
   mason_ensure_installed = function(app)
     return {
       "williamboman/mason.nvim",
-      opts = function(_, opts)
-        vim.list_extend(opts.ensure_installed, app)
-      end,
+      opts = function(_, opts) vim.list_extend(opts.ensure_installed, app) end,
     }
   end,
   diagnostic_config = vim.tbl_extend("keep", {

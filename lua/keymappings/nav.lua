@@ -44,12 +44,8 @@ M.setup = function()
   end
 
   local hintfuncs = {
-    last = function()
-      return last
-    end,
-    dir = function()
-      return dir
-    end,
+    last = function() return last end,
+    dir = function() return dir end,
   }
   local hint = [[
 last: %{last} dir: %{dir}
@@ -57,9 +53,7 @@ last: %{last} dir: %{dir}
 
   local feedkeys = vim.api.nvim_feedkeys
   local termcodes = vim.api.nvim_replace_termcodes
-  local function t(k)
-    return termcodes(k, true, true, true)
-  end
+  local function t(k) return termcodes(k, true, true, true) end
 
   local heads = {
     {
@@ -124,9 +118,7 @@ last: %{last} dir: %{dir}
     -- TODO: Selection:
     {
       "v",
-      function()
-        feedkeys(t("vi" .. last), "m", false)
-      end,
+      function() feedkeys(t("vi" .. last), "m", false) end,
       { desc = "visual" },
     },
 
@@ -196,9 +188,7 @@ last: %{last} dir: %{dir}
     mode = { "n" },
   }
 
-  vim.api.nvim_create_user_command("NaviSel", function()
-    hydra:activate()
-  end, {})
+  vim.api.nvim_create_user_command("NaviSel", function() hydra:activate() end, {})
 end
 
 return M

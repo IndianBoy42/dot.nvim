@@ -68,29 +68,19 @@ return {
     keys = {
       {
         "<leader>un",
-        function()
-          require("notify").dismiss { silent = true, pending = true }
-        end,
+        function() require("notify").dismiss { silent = true, pending = true } end,
         desc = "Delete all Notifications",
       },
     },
     opts = {
       timeout = 3000,
       stages = "fade_in_slide_out",
-      max_height = function()
-        return math.floor(vim.o.lines * 0.75)
-      end,
-      max_width = function()
-        return math.floor(vim.o.columns * 0.75)
-      end,
+      max_height = function() return math.floor(vim.o.lines * 0.75) end,
+      max_width = function() return math.floor(vim.o.columns * 0.75) end,
     },
     init = function()
       -- when noice is not enabled, install notify on VeryLazy
-      if utils.have_plugin "noice.nvim" then
-        utils.on_very_lazy(function()
-          vim.notify = require "notify"
-        end)
-      end
+      if utils.have_plugin "noice.nvim" then utils.on_very_lazy(function() vim.notify = require "notify" end) end
     end,
   },
   require "plugins.ui.tree",
@@ -115,6 +105,7 @@ return {
         mode = "symbol",
         symbol_map = {
           Copilot = "",
+          Codeium = "",
         },
       }
     end,
@@ -124,6 +115,8 @@ return {
     opts = {
       mode = "symbol_text",
       symbol_map = {
+        Copilot = "",
+        Codeium = "",
         --   Text = "",
         --   Method = "",
         --   Function = "",
@@ -174,12 +167,9 @@ return {
         -- Event = "",
         -- Operator = "",
         -- TypeParameter = "",
-        Copilot = "",
       },
     },
-    config = function(_, opts)
-      require("lspkind").init(opts)
-    end,
+    config = function(_, opts) require("lspkind").init(opts) end,
   },
   {
     "lewis6991/gitsigns.nvim",
@@ -200,12 +190,8 @@ return {
       local make_nN_pair = mappings.make_nN_pair
 
       local hunk_nN = make_nN_pair {
-        function()
-          require("gitsigns").next_hunk()
-        end,
-        function()
-          require("gitsigns").prev_hunk()
-        end,
+        function() require("gitsigns").next_hunk() end,
+        function() require("gitsigns").prev_hunk() end,
       }
       local pre_goto_next = O.goto_next
       local pre_goto_prev = O.goto_previous
@@ -349,18 +335,14 @@ return {
     "kosayoda/nvim-lightbulb",
     config = function()
       vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
-        callback = function()
-          require("nvim-lightbulb").update_lightbulb()
-        end,
+        callback = function() require("nvim-lightbulb").update_lightbulb() end,
       })
     end,
     event = { "CursorHold", "CursorHoldI" },
   },
   {
     "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
-    config = function()
-      require("lsp_lines").setup()
-    end,
+    config = function() require("lsp_lines").setup() end,
     event = { "BufReadPost", "BufNewFile" },
     keys = function()
       return {
@@ -465,6 +447,7 @@ return {
     "haringsrob/nvim_context_vt",
     event = { "BufReadPost", "BufNewFile" },
     opts = {
+      prefix = "󱞿",
       highlight = "DiagnosticVirtualTextInfo",
     },
   },
@@ -505,9 +488,7 @@ return {
       end
 
       require("ufo").setup {
-        provider_selector = function()
-          return { "treesitter", "indent" }
-        end,
+        provider_selector = function() return { "treesitter", "indent" } end,
         fold_virt_text_handler = handler,
       }
       vim.keymap.set("n", "zR", require("ufo").openAllFolds)
@@ -535,5 +516,10 @@ return {
     opts = {},
   },
   { "mortepau/codicons.nvim" },
-  -- https://github.com/lvimuser/lsp-inlayhints.nvim
+  -- TODO: https://github.com/lvimuser/lsp-inlayhints.nvim
+  {
+    "nullchilly/fsread.nvim",
+    cmd = { "FSRead", "FSClear", "FSToggle" },
+    keys = { { "<leader>Tf", "<cmd>FSToggle<cr>", "Flow State Read" } },
+  },
 }

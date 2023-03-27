@@ -42,24 +42,18 @@ return {
     local feedkeys_ = vim.api.nvim_feedkeys
     local termcode = vim.api.nvim_replace_termcodes
     local function feedkeys(keys, o)
-      if o == nil then
-        o = "m"
-      end
+      if o == nil then o = "m" end
       feedkeys_(termcode(keys, true, true, true), o, false)
     end
     local function wrap_vm(prefix, vm, affix)
       prefix = prefix or ""
       local first = prefix .. "<Plug>(VM-" .. vm .. ")"
-      if affix == nil then
-        return first
-      end
+      if affix == nil then return first end
       return function()
         feedkeys(first, "m")
         -- Defer to avoid `<Plug>(VM-Hls)`
         vim.defer_fn(function()
-          if type(affix) == "function" then
-            affix = affix()
-          end
+          if type(affix) == "function" then affix = affix() end
           feedkeys(affix, "n")
         end, 100)
       end

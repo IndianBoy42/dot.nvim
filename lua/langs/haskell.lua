@@ -21,9 +21,12 @@ return {
                 -- Toggle a GHCi repl for the current package
                 vim.keymap.set("n", "<localleader>r", ht.repl.toggle, opts)
                 -- Toggle a GHCi repl for the current buffer
-                vim.keymap.set("n", "<localleader>f", function()
-                  ht.repl.toggle(vim.api.nvim_buf_get_name(0))
-                end, def_opts)
+                vim.keymap.set(
+                  "n",
+                  "<localleader>f",
+                  function() ht.repl.toggle(vim.api.nvim_buf_get_name(0)) end,
+                  def_opts
+                )
                 vim.keymap.set("n", "<localleader>q", ht.repl.quit, opts)
               end,
             },

@@ -112,21 +112,13 @@ return {
       dap.listeners.before.event_terminated.dapui_config = dapui.close
       dap.listeners.before.event_exited.dapui_config = dapui.close
 
-      dap.listeners.after.event_initialized.virt_diags = function()
-        utils.lsp.disable_diagnostic()
-      end
-      dap.listeners.before.event_terminated.virt_diags = function()
-        utils.lsp.enable_diagnostic()
-      end
-      dap.listeners.before.event_exited.virt_diags = function()
-        utils.lsp.enable_diagnostic()
-      end
+      dap.listeners.after.event_initialized.virt_diags = function() utils.lsp.disable_diagnostic() end
+      dap.listeners.before.event_terminated.virt_diags = function() utils.lsp.enable_diagnostic() end
+      dap.listeners.before.event_exited.virt_diags = function() utils.lsp.enable_diagnostic() end
 
       vim.api.nvim_create_autocmd("FileType", {
         pattern = "dap-repl",
-        callback = function()
-          require("dap.ext.autocompl").attach()
-        end,
+        callback = function() require("dap.ext.autocompl").attach() end,
       })
 
       dap_hydra_setup()
@@ -134,13 +126,7 @@ return {
     keys = {
       -- TODO: hydra.nvim submode
       -- name = "Debug",
-      {
-        "<leader>xd",
-        function()
-          require("dapui").toggle()
-        end,
-        desc = "Toggle DAP-UI",
-      },
+      { "<leader>xd", function() require("dapui").toggle() end, desc = "Toggle DAP-UI" },
       { "<leader>D", desc = "Debugging" },
     },
   },

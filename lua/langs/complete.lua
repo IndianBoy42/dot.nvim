@@ -55,9 +55,7 @@ end
 function M.supertab(when_cmp_visible)
   local cmp = require "cmp"
 
-  local function t(str)
-    return vim.api.nvim_replace_termcodes(str, true, true, true)
-  end
+  local function t(str) return vim.api.nvim_replace_termcodes(str, true, true, true) end
 
   local feedkeys = vim.api.nvim_feedkeys
   local function check_back_space()
@@ -111,19 +109,13 @@ M.opts = function()
     })
   end
 
-  local function autocomplete()
-    cmp.complete { reason = cmp.ContextReason.Auto }
-  end
+  local function autocomplete() cmp.complete { reason = cmp.ContextReason.Auto } end
 
-  local function complete_or(mapping)
-    return double_mapping(autocomplete, mapping)
-  end
+  local function complete_or(mapping) return double_mapping(autocomplete, mapping) end
 
   return {
     snippet = {
-      expand = function(args)
-        require("luasnip").lsp_expand(args.body)
-      end,
+      expand = function(args) require("luasnip").lsp_expand(args.body) end,
     },
     completion = {
       completeopt = "menu,menuone,noinsert",
@@ -159,13 +151,9 @@ M.opts = function()
         i = cmp.mapping.select_prev_item { behavior = cmp.SelectBehavior.Select },
         c = cmp.mapping.select_prev_item { behavior = cmp.SelectBehavior.Insert },
       },
-      ["<M-l>"] = complete_or(function()
-        cmp.confirm(cmdline_confirm)
-      end),
+      ["<M-l>"] = complete_or(function() cmp.confirm(cmdline_confirm) end),
       ["<C-space>"] = cmp.mapping {
-        i = function()
-          cmp.complete()
-        end,
+        i = function() cmp.complete() end,
       },
       -- TODO: overload this with Luasnip close choice node
       ["<M-h>"] = cmp.mapping(cmp.mapping.close(), { "i", "c" }),
@@ -201,9 +189,7 @@ M.opts = function()
   }
 end
 
-function M.autocomplete(enable)
-  require("cmp").setup.buffer { completion = { autocomplete = enable } }
-end
+function M.autocomplete(enable) require("cmp").setup.buffer { completion = { autocomplete = enable } } end
 
 function M.sources(list)
   local cmp = require "cmp"

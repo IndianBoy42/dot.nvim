@@ -3,9 +3,7 @@ local M = {}
 
 local feedkeys = vim.api.nvim_feedkeys
 local termcodes = vim.api.nvim_replace_termcodes
-local function t(k)
-  return termcodes(k, true, true, true)
-end
+local function t(k) return termcodes(k, true, true, true) end
 
 local function mini_window_setwidth(initwidth)
   local wid = 0
@@ -17,9 +15,7 @@ local function mini_window_setwidth(initwidth)
     wid = #cword + 1 -- + vim.o.sidescrolloff
   end
   if wid > 2 then
-    if wid > initwidth then
-      vim.api.nvim_win_set_width(0, wid)
-    end
+    if wid > initwidth then vim.api.nvim_win_set_width(0, wid) end
   end
 end
 
@@ -32,16 +28,10 @@ function M.inline_text_input(opts)
     -- FIXME: this doesn't work (through vim.ui.input)
     vim.cmd [[normal! wb]]
   end
-  if opts.init_cword then
-    opts.initial = vim.fn.expand "<cword>"
-  end
-  if opts.initial == nil then
-    opts.initial = ""
-  end
+  if opts.init_cword then opts.initial = vim.fn.expand "<cword>" end
+  if opts.initial == nil then opts.initial = "" end
 
-  if not opts.border then
-    opts.border = "none"
-  end
+  if not opts.border then opts.border = "none" end
   if opts.rel == nil then
     if opts.border == "none" then
       opts.rel = 0
@@ -116,18 +106,12 @@ function M.inline_text_input(opts)
   map("n", "<ESC>", close_win, { buffer = buf })
   map("n", "o", "<nop>", { buffer = buf, noremap = true })
   map("n", "O", "<nop>", { buffer = buf, noremap = true })
-  if opts.startup then
-    opts.startup()
-  end
-  if opts.insert then
-    vim.cmd [[startinsert]]
-  end
+  if opts.startup then opts.startup() end
+  if opts.insert then vim.cmd [[startinsert]] end
 
   vim.api.nvim_create_autocmd({ "InsertCharPre", "InsertLeave" }, {
     buffer = 0,
-    callback = function()
-      mini_window_setwidth(opts.initwidth)
-    end,
+    callback = function() mini_window_setwidth(opts.initwidth) end,
   })
 end
 

@@ -40,94 +40,42 @@ return {
   config = function(_, opts)
     local se = require "SelectEase"
     local queries = opts.queries
+    local modes = { "n", "s", "i" }
+    local function o(dir, opts) return vim.tbl_extend("keep", opts or {}, { queries = queries, direction = dir }) end
+    local function map(key, fn, dir, opts, desc)
+      vim.keymap.set(modes, key, function() se[fn](o(dir, opts)) end, { desc = desc })
+    end
 
-    vim.keymap.set({ "n", "s", "i" }, "<C-A-k>", function()
-      se.select_node {
-        queries = queries,
-        direction = "previous",
-        vertical_drill_jump = true,
-        visual_mode = true, -- if you want Visual Mode instead of Select Mode
-        fallback = function()
-          -- if there's no target, this function will be called
-          se.select_node { queries = queries, direction = "previous" }
-        end,
-      }
-    end, {})
-    vim.keymap.set({ "n", "s", "i" }, "<C-A-j>", function()
-      se.select_node {
-        queries = opts.queries,
-        direction = "next",
-        vertical_drill_jump = true,
-        visual_mode = true, -- if you want Visual Mode instead of Select Mode
-        fallback = function()
-          -- if there's no target, this function will be called
-          se.select_node { queries = queries, direction = "next" }
-        end,
-      }
-    end, {})
+    map("<C-A-k>", "select_node", "previous", {
+      vertical_drill_jump = true,
+      visual_mode = true, -- if you want Visual Mode instead of Select Mode
+      fallback = function() se.select_node(o "previous") end,
+    }, "Select Previous")
+    map("<C-A-j>", "select_node", "next", {
+      vertical_drill_jump = true,
+      visual_mode = true, -- if you want Visual Mode instead of Select Mode
+      fallback = function() se.select_node(o "next") end,
+    }, "Select Previous")
 
-    vim.keymap.set({ "n", "s", "i" }, "<C-A-h>", function()
-      se.select_node {
-        queries = queries,
-        direction = "previous",
-        current_line_only = true,
-        visual_mode = true, -- if you want Visual Mode instead of Select Mode
-      }
-    end, {})
-    vim.keymap.set({ "n", "s", "i" }, "<C-A-l>", function()
-      se.select_node {
-        queries = queries,
-        direction = "next",
-        current_line_only = true,
-        visual_mode = true, -- if you want Visual Mode instead of Select Mode
-      }
-    end, {})
+    map("<C-A-h>", "select_node", "previous", {
+      current_line_only = true,
+      visual_mode = true, -- if you want Visual Mode instead of Select Mode
+    }, "Select Prev on Line")
+    map("<C-A-l>", "select_node", "next", {
+      current_line_only = true,
+      visual_mode = true, -- if you want Visual Mode instead of Select Mode
+    }, "Select Next on Line")
 
     -- previous / next node that matches query
-    vim.keymap.set({ "n", "s", "i" }, "<C-A-p>", function()
-      se.select_node { queries = queries, direction = "previous" }
-    end, {})
-    vim.keymap.set({ "n", "s", "i" }, "<C-A-n>", function()
-      se.select_node { queries = queries, direction = "next" }
-    end, {})
+    map("<C-A-p>", "select_node", "previous")
+    map("<C-A-n>", "select_node", "next")
 
     -- Swap Nodes
-    vim.keymap.set({ "n", "s", "i" }, "<C-A-S-k>", function()
-      se.swap_nodes {
-        queries = queries,
-        direction = "previous",
-        vertical_drill_jump = true,
-
-        -- swap_in_place option. Default behavior is cursor will jump to target after the swap
-        -- jump_to_target_after_swap = false --> this will keep cursor in place after the swap
-      }
-    end, {})
-    vim.keymap.set({ "n", "s", "i" }, "<C-A-S-j>", function()
-      se.swap_nodes {
-        queries = queries,
-        direction = "next",
-        vertical_drill_jump = true,
-      }
-    end, {})
-    vim.keymap.set({ "n", "s", "i" }, "<C-A-S-h>", function()
-      se.swap_nodes {
-        queries = queries,
-        direction = "previous",
-        current_line_only = true,
-      }
-    end, {})
-    vim.keymap.set({ "n", "s", "i" }, "<C-A-S-l>", function()
-      se.swap_nodes {
-        queries = queries,
-        direction = "next",
-        current_line_only = true,
-      }
-    end, {})
-    vim.keymap.set({ "n", "s", "i" }, "<C-A-S-p>", function()
-      se.swap_nodes { queries = queries, direction = "previous" }
-    end, {})
-    vim.keymap.set({ "n", "s", "i" }, "<C-A-S-n>", function()
-      se.swap_nodes { queries = queries, direction = "next" }
-    end, {})
+    map("<C-A-S-k>", "swap_nodes", "previous", { vertical_drill_jump = true })
+    map("<C-A-S-j>", "swap_nodes", "next", { vertical_drill_jump = true })
+    map("<C-A-S-h>", "swap_nodes", "previous", { current_line_only = true })
+    map("<C-A-S-l>", "swap_nodes", "next", { current_line_only = true })
+    map("<C-A-S-p>", "swap_nodes", "previous", {})
+    map("<C-A-S-n>", "swap_nodes", "next", {})
   end,
 }

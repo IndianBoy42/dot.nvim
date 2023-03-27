@@ -5,14 +5,10 @@ return {
   config = function()
     local focused = true
     vim.api.nvim_create_autocmd("FocusGained", {
-      callback = function()
-        focused = true
-      end,
+      callback = function() focused = true end,
     })
     vim.api.nvim_create_autocmd("FocusLost", {
-      callback = function()
-        focused = false
-      end,
+      callback = function() focused = false end,
     })
     require("noice").setup {
       cmdline = {
@@ -127,9 +123,7 @@ return {
       routes = {
         { -- Desktop Notification if unfocused
           filter = {
-            cond = function()
-              return not focused
-            end,
+            cond = function() return not focused end,
           },
           view = "notify_send",
           opts = { stop = false },
@@ -152,9 +146,7 @@ return {
     vim.api.nvim_create_autocmd("FileType", {
       pattern = "markdown",
       callback = function(event)
-        vim.schedule(function()
-          require("noice.text.markdown").keys(event.buf)
-        end)
+        vim.schedule(function() require("noice.text.markdown").keys(event.buf) end)
       end,
     })
   end,

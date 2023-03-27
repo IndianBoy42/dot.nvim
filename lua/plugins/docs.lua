@@ -18,13 +18,7 @@ return {
     keys = function()
       local enabled = false
       return {
-        {
-          "<leader>vn",
-          function()
-            require("nabla").popup()
-          end,
-          desc = "Nabla Popup",
-        },
+        { "<leader>vn", function() require("nabla").popup() end, desc = "Nabla Popup" },
         {
           "<leader>vN",
           function()
@@ -34,9 +28,7 @@ return {
               require("nabla").enable_virt()
               local id = vim.api.nvim_create_augroup("nabla_live_popup", { clear = true })
               vim.api.nvim_create_autocmd("CursorHold", {
-                callback = function()
-                  require("nabla").popup()
-                end,
+                callback = function() require("nabla").popup() end,
                 buffer = 0,
                 group = id,
               })

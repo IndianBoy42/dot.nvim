@@ -61,9 +61,7 @@ M.config = function()
     local msg = "LSP Inactive"
     local buf_ft = vim.api.nvim_buf_get_option(0, "filetype")
     local clients = vim.lsp.get_active_clients()
-    if next(clients) == nil then
-      return msg
-    end
+    if next(clients) == nil then return msg end
     local lsps = ""
     for _, client in ipairs(clients) do
       local filetypes = client.config.filetypes
@@ -100,16 +98,12 @@ M.config = function()
 
   vim.api.nvim_create_autocmd({ "User" }, {
     pattern = "visual_multi_start",
-    callback = function()
-      require("lualine").hide()
-    end,
+    callback = function() require("lualine").hide() end,
   })
 
   vim.api.nvim_create_autocmd({ "User" }, {
     pattern = "visual_multi_exit",
-    callback = function()
-      require("lualine").hide { unhide = true }
-    end,
+    callback = function() require("lualine").hide { unhide = true } end,
   })
 
   require("lualine").setup {

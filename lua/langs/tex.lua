@@ -28,27 +28,17 @@ local surroundings = function(ms)
       end,
       output = function()
         local env = ui "environment"
-        if env == nil then
-          return
-        end
+        if env == nil then return end
         return { left = env, right = env }
       end,
     },
     p = {
-      input = function()
-        return { "\\left().-()\\right" }
-      end,
-      output = function()
-        return { left = nil, right = nil }
-      end,
+      input = function() return { "\\left().-()\\right" } end,
+      output = function() return { left = nil, right = nil } end,
     },
     ["$"] = {
-      input = function()
-        return { "\\%(().-()\\%)" }
-      end,
-      output = function()
-        return { left = "(", right = ")" }
-      end,
+      input = function() return { "\\%(().-()\\%)" } end,
+      output = function() return { left = "(", right = ")" } end,
     },
   }
 end
@@ -481,9 +471,7 @@ return {
           settings = {
             texlab = conf.texlab,
           },
-          on_attach = function(client, bufnr)
-            client.server_capabilities.semanticTokensProvider = nil
-          end,
+          on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end,
         },
       },
     },
@@ -517,9 +505,7 @@ return {
       --   },
       -- }
     end
-    if conf.fontsize then
-      utils.set_guifont(conf.fontsize)
-    end
+    if conf.fontsize then utils.set_guifont(conf.fontsize) end
 
     -- require("lv-utils").define_augroups {
     --   _general_lsp = {
@@ -546,9 +532,7 @@ return {
     cmp.setup.buffer {
       mapping = {
         ["<CR>"] = cmp.mapping {
-          i = function(fallback)
-            return fallback()
-          end,
+          i = function(fallback) return fallback() end,
         }, -- clear mapping
         ["<TAB>"] = cmp.mapping {
           i = require("langs.complete").supertab(cmp.confirm),
@@ -585,12 +569,7 @@ return {
       o = { cmd "VimtexCompileOutput", "Compile Output" },
       e = { cmd "VimtexErrors", "Errors" },
       l = { cmd "TexlabBuild", "Texlab Build" },
-      n = {
-        function()
-          require("nabla").popup()
-        end,
-        "Nabla",
-      },
+      n = { function() require("nabla").popup() end, "Nabla" },
       m = { cmd "VimtexToggleMain", "Toggle Main File" },
       a = { cmd "AirLatex", "Air Latex" },
     }

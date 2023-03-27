@@ -10,9 +10,7 @@ return {
       local head = function(key, operator_name, desc)
         return {
           key,
-          function()
-            require("textcase").operator(operator_name)
-          end,
+          function() require("textcase").operator(operator_name) end,
           { desc = desc },
         }
       end

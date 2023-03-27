@@ -156,12 +156,8 @@ return {
                 dap.listeners.after.event_initialized.rust_tools = function()
                   require("rust-tools").inlay_hints.disable()
                 end
-                dap.listeners.before.event_terminated.rust_tools = function()
-                  require("rust-tools").inlay_hints.enable()
-                end
-                dap.listeners.before.event_exited.rust_tools = function()
-                  require("rust-tools").inlay_hints.enable()
-                end
+                dap.listeners.before.event_terminated.rust_tools = function() require("rust-tools").inlay_hints.enable() end
+                dap.listeners.before.event_exited.rust_tools = function() require("rust-tools").inlay_hints.enable() end
 
                 mappings.localleader {
                   m = { "<Cmd>RustExpandMacro<CR>", "Expand Macro" },
@@ -277,9 +273,7 @@ return {
           return true
         end,
         taplo = function(_, opts)
-          local function is_cargo()
-            return vim.fn.expand "%:t" == "Cargo.toml"
-          end
+          local function is_cargo() return vim.fn.expand "%:t" == "Cargo.toml" end
           local function show_popup()
             if vim.fn.expand "%:t" == "Cargo.toml" and require("crates").popup_available() then
               require("crates").show_popup()

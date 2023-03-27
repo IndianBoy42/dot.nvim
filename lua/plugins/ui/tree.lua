@@ -116,9 +116,7 @@ M.opts = {
 M.config = function(_, opts)
   require("nvim-tree").setup(opts)
   vim.api.nvim_create_autocmd("VimLeavePre", {
-    callback = function()
-      vim.cmd.NvimTreeClose()
-    end,
+    callback = function() vim.cmd.NvimTreeClose() end,
   })
 end
 

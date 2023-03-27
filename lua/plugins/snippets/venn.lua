@@ -18,23 +18,19 @@ return {
         hint = {
           border = "rounded",
         },
-        on_enter = function()
-          vim.o.virtualedit = "all"
-        end,
+        on_enter = function() vim.o.virtualedit = "all" end,
       },
       mode = "n",
       heads = {
-        { "H",     "<C-v>h:VBox<CR>" },
-        { "J",     "<C-v>j:VBox<CR>" },
-        { "K",     "<C-v>k:VBox<CR>" },
-        { "L",     "<C-v>l:VBox<CR>" },
-        { "f",     ":VBox<CR>",      { mode = "v" } },
-        { "<Esc>", nil,              { exit = true } },
+        { "H", "<C-v>h:VBox<CR>" },
+        { "J", "<C-v>j:VBox<CR>" },
+        { "K", "<C-v>k:VBox<CR>" },
+        { "L", "<C-v>l:VBox<CR>" },
+        { "f", ":VBox<CR>", { mode = "v" } },
+        { "<Esc>", nil, { exit = true } },
       },
     }
-    vim.api.nvim_create_user_command("Venn", function()
-      venn_hydra:activate()
-    end, {})
+    vim.api.nvim_create_user_command("Venn", function() venn_hydra:activate() end, {})
   end,
   cmd = { "Venn" },
 }

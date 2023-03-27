@@ -23,12 +23,8 @@ return {
         vim.api.nvim_create_autocmd("User", {
           pattern = sites,
           callback = function(args)
-            if ft then
-              vim.bo.filetype = ft
-            end
-            if cb then
-              cb(args, sites, ft)
-            end
+            if ft then vim.bo.filetype = ft end
+            if cb then cb(args, sites, ft) end
           end,
           group = id,
         })

@@ -15,9 +15,7 @@ return {
         local mr = require "mason-registry"
         for _, tool in ipairs(opts.ensure_installed) do
           local p = mr.get_package(tool)
-          if not p:is_installed() then
-            p:install()
-          end
+          if not p:is_installed() then p:install() end
         end
       end,
     },
@@ -116,10 +114,26 @@ return {
 
     local lsp_sel_rng = require "lsp-selection-range"
     lsp_sel_rng.update_capabilities(capabilities)
-    utils.lsp.cb_on_attach(function()
+    utils.lsp.cb_on_attach(function(client, bufnr)
       local mapl = vim.keymap.setl
       mapl("n", "vv", lsp_sel_rng.trigger)
       mapl("v", "vv", lsp_sel_rng.expand)
+      -- autocmd CursorHold  <buffer> lua vim.lsp.buf.document_highlight()
+      -- autocmd CursorHoldI <buffer> lua vim.lsp.buf.document_highlight()
+      -- autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
+      if client.server_capabilities.documentHighlight then
+        local id = vim.api.nvim_create_augroup("document_highlight", { clear = false })
+        vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+          buffer = bufnr,
+          group = id,
+          callback = function() vim.lsp.buf.document_highlight() end,
+        })
+        vim.api.nvim_create_autocmd({ "CursorMoved" }, {
+          buffer = bufnr,
+          group = id,
+          callback = function() vim.lsp.buf.clear_references() end,
+        })
+      end
     end)
 
     local function setup(server)
@@ -128,13 +142,9 @@ return {
       }, servers[server] or {})
 
       if opts.setup[server] then
-        if opts.setup[server](server, server_opts) then
-          return
-        end
+        if opts.setup[server](server, server_opts) then return end
       elseif opts.setup["*"] then
-        if opts.setup["*"](server, server_opts) then
-          return
-        end
+        if opts.setup["*"](server, server_opts) then return end
       end
       require("lspconfig")[server].setup(server_opts)
     end
@@ -158,8 +168,6 @@ return {
     require("mason-lspconfig").setup { ensure_installed = ensure_installed }
     require("mason-lspconfig").setup_handlers { setup }
 
-    if O.format_on_save then
-      require("utils.lsp").format_on_save()
-    end
+    if O.format_on_save then require("utils.lsp").format_on_save() end
   end,
 }

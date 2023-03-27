@@ -25,17 +25,13 @@ local short_line_limit = 20
 -- Prints the first diagnostic for the current line.
 -- Bind to CursorMoved to update live: cmd [[autocmd CursorMoved * :lua require("utils.lsp").echo_diagnostic()]]
 function M.echo_diagnostic()
-  if echo_timer then
-    echo_timer:stop()
-  end
+  if echo_timer then echo_timer:stop() end
 
   echo_timer = vim.defer_fn(function()
     local line = vfn.line "." - 1
     local bufnr = api.nvim_win_get_buf(0)
 
-    if last_echo[1] and last_echo[2] == bufnr and last_echo[3] == line then
-      return
-    end
+    if last_echo[1] and last_echo[2] == bufnr and last_echo[3] == line then return end
 
     local ldiags = diags.get_line_diagnostics(bufnr, line, { severity_limit = "Warning" })
 
@@ -60,9 +56,7 @@ function M.echo_diagnostic()
     local lineindex = 2
 
     if width == 0 then
-      if #lines > 1 and #message <= short_line_limit then
-        message = message .. " " .. lines[lineindex]
-      end
+      if #lines > 1 and #message <= short_line_limit then message = message .. " " .. lines[lineindex] end
     else
       while #message < width do
         message = message .. " " .. lines[lineindex]
@@ -70,9 +64,7 @@ function M.echo_diagnostic()
       end
     end
 
-    if width > 0 and #message >= width then
-      message = message:sub(1, width) .. "..."
-    end
+    if width > 0 and #message >= width then message = message:sub(1, width) .. "..." end
 
     local kind = "warning"
     local hlgroup = warning_hlgroup
@@ -105,9 +97,7 @@ end
 local getmark = api.nvim_buf_get_mark
 local feedkeys = api.nvim_feedkeys
 local termcodes = vim.api.nvim_replace_termcodes
-local function t(k)
-  return termcodes(k, true, true, true)
-end
+local function t(k) return termcodes(k, true, true, true) end
 
 -- Format a range using LSP
 function M.format_range_operator()
@@ -136,9 +126,7 @@ end
 -- Preview definitions and things
 -- TODO: most buf_request could probably just use vim.lsp.buf + on_list_handler
 local function preview_location_callback(_, result)
-  if result == nil or vim.tbl_isempty(result) then
-    return nil
-  end
+  if result == nil or vim.tbl_isempty(result) then return nil end
   lsp.util.preview_location(result[1], {
     border = O.lsp.border,
   })
@@ -162,9 +150,7 @@ function M.view_location_split_callback(split_cmd)
       return nil
     end
 
-    if split_cmd then
-      vim.cmd(split_cmd)
-    end
+    if split_cmd then vim.cmd(split_cmd) end
 
     if vim.tbl_islist(result) then
       util.jump_to_location(result[1])
@@ -193,9 +179,7 @@ end
 
 vim.api.nvim_create_autocmd("BufReadPost", {
   callback = function()
-    if vim.b.lsp_diagnostics_hide == nil then
-      vim.b.lsp_diagnostics_hide = false
-    end
+    if vim.b.lsp_diagnostics_hide == nil then vim.b.lsp_diagnostics_hide = false end
   end,
 })
 function M.toggle_diagnostics(b)
@@ -205,12 +189,8 @@ function M.toggle_diagnostics(b)
     diags.disable(b or 0)
   end
 end
-function M.disable_diagnostic(b)
-  diags.disable(b or 0)
-end
-function M.enable_diagnostic(b)
-  diags.enable(b or 0)
-end
+function M.disable_diagnostic(b) diags.disable(b or 0) end
+function M.enable_diagnostic(b) diags.enable(b or 0) end
 
 -- TODO: Implement codeLens handlers
 function M.show_codelens()
@@ -246,9 +226,7 @@ function M.run_any_codelens(select)
       return title
     end,
   }, function(selected)
-    if not selected then
-      return
-    end
+    if not selected then return end
 
     local cursor = vim.api.nvim_win_get_cursor(0)
     local start = selected.range.start
@@ -267,24 +245,16 @@ local popup_diagnostics_opts = function()
     scope = "line",
   }
 end
-function M.diag_line()
-  diags.open_float(vim.tbl_deep_extend("keep", { scope = "line" }, popup_diagnostics_opts()))
-end
-function M.diag_cursor()
-  diags.open_float(vim.tbl_deep_extend("keep", { scope = "cursor" }, popup_diagnostics_opts()))
-end
-function M.diag_buffer()
-  diags.open_float(vim.tbl_deep_extend("keep", { scope = "buffer" }, popup_diagnostics_opts()))
-end
+function M.diag_line() diags.open_float(vim.tbl_deep_extend("keep", { scope = "line" }, popup_diagnostics_opts())) end
+function M.diag_cursor() diags.open_float(vim.tbl_deep_extend("keep", { scope = "cursor" }, popup_diagnostics_opts())) end
+function M.diag_buffer() diags.open_float(vim.tbl_deep_extend("keep", { scope = "buffer" }, popup_diagnostics_opts())) end
 
 function M.get_highest_diag(ns, bufnr)
   local diag_list = vim.diagnostic.get(bufnr, { namespace = ns })
   local highest = vim.diagnostic.severity.HINT
   for _, diag in ipairs(diag_list) do
     local sev = diag.severity
-    if sev < highest then
-      highest = sev
-    end
+    if sev < highest then highest = sev end
   end
   -- return highest
 end
@@ -303,12 +273,8 @@ function M.diag_prev(opts)
   }))
 end
 
-function M.error_next()
-  M.diag_next { severity = vim.diagnostic.severity.ERROR }
-end
-function M.error_prev()
-  M.diag_prev { severity = vim.diagnostic.severity.ERROR }
-end
+function M.error_next() M.diag_next { severity = vim.diagnostic.severity.ERROR } end
+function M.error_prev() M.diag_prev { severity = vim.diagnostic.severity.ERROR } end
 
 function M.live_codelens()
   local id = vim.api.nvim_create_augroup("lsp_codelens_refresh", { clear = false })
@@ -360,9 +326,7 @@ M.rename = (function()
     vim.cmd [[q!]]
     local params = lsp.util.make_position_params()
     local curr_name = vim.fn.expand "<cword>"
-    if not (new_name and #new_name > 0) or new_name == curr_name then
-      return
-    end
+    if not (new_name and #new_name > 0) or new_name == curr_name then return end
     params.newName = new_name
     lsp.buf_request(0, "textDocument/rename", params, handler)
   end
@@ -372,9 +336,7 @@ M.rename = (function()
       border = O.lsp.rename_border,
       -- enter = do_rename,
       enter = vim.lsp.buf.rename,
-      startup = function()
-        feedkeys(t "viw<C-G>", "n", false)
-      end,
+      startup = function() feedkeys(t "viw<C-G>", "n", false) end,
       init_cword = true,
       at_begin = true, -- FIXME: What happened to this?
       minwidth = true,
@@ -413,12 +375,8 @@ M.renamer = (function()
   end
 
   local function mk_keymaps(old)
-    local enter = function()
-      enter_cb(old, vim.api.nvim_win_get_cursor(0))
-    end
-    local cancel = function()
-      cancel_cb(old)
-    end
+    local enter = function() enter_cb(old, vim.api.nvim_win_get_cursor(0)) end
+    local cancel = function() cancel_cb(old) end
     vim.keymap.setl("i", "<CR>", enter, { silent = true })
     vim.keymap.setl("i", "<M-CR>", enter, { silent = true })
     vim.keymap.setl("i", "<ESC><ESC>", cancel, { silent = true })
@@ -441,23 +399,18 @@ function M.format(opts)
   vim.lsp.buf.format(vim.tbl_extend("force", {
     bufnr = buf,
     filter = function(client)
-      if have_nls then
-        return client.name == "null-ls"
-      end
+      if have_nls then return client.name == "null-ls" end
       return client.name ~= "null-ls"
     end,
   }, opts))
 end
 
 M.format_on_save = function(disable)
-  if disable then
-    return
-  end
+  -- TODO: only if client has formatting
+  if disable then return end
   local id = vim.api.nvim_create_augroup("format_on_save", { clear = true })
   vim.api.nvim_create_autocmd("BufWritePre", {
-    callback = function()
-      M.format { timeout_ms = O.format_on_save_timeout }
-    end,
+    callback = function() M.format { timeout_ms = O.format_on_save_timeout } end,
     group = id,
   })
 end

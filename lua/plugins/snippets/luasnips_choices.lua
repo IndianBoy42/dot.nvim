@@ -93,21 +93,15 @@ function M.config()
   vim.api.nvim_create_augroup("luasnip_choice_popup", {})
   vim.api.nvim_create_autocmd({ "User" }, {
     pattern = "LuasnipChoiceNodeEnter",
-    callback = function()
-      popup(require("luasnip").session.event_node)
-    end,
+    callback = function() popup(require("luasnip").session.event_node) end,
   })
   vim.api.nvim_create_autocmd({ "User" }, {
     pattern = "LuasnipChoiceNodeLeave",
-    callback = function()
-      popup_close()
-    end,
+    callback = function() popup_close() end,
   })
   vim.api.nvim_create_autocmd({ "User" }, {
     pattern = "LuasnipChangeChoice",
-    callback = function()
-      update_popup(require("luasnip").session.event_node)
-    end,
+    callback = function() update_popup(require("luasnip").session.event_node) end,
   })
 end
 

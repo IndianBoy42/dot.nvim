@@ -2,9 +2,7 @@ local M = {}
 
 function M.set_prompt_to_entry_value(prompt_bufnr)
   local entry = require("telescope.actions.state").get_selected_entry()
-  if not entry or not type(entry) == "table" then
-    return
-  end
+  if not entry or not type(entry) == "table" then return end
 
   require("telescope.actions.state").get_current_picker(prompt_bufnr):reset_prompt(entry.ordinal)
 end
@@ -100,9 +98,7 @@ function M.lsp_code_actions()
   }, M.cursor_menu()))
 end
 
-function M.lsp_references()
-  require("telescope.builtin").lsp_references(M.cursor_menu())
-end
+function M.lsp_references() require("telescope.builtin").lsp_references(M.cursor_menu()) end
 
 -- M.codelens_actions = function(opts)
 --   local results_lsp = vim.lsp.codelens.get(0)
@@ -367,13 +363,9 @@ function M.file_browser()
         current_picker:refresh(opts.new_finder(new_cwd), { reset_prompt = true })
       end
 
-      map("i", "-", function()
-        modify_cwd(current_picker.cwd .. "/..")
-      end)
+      map("i", "-", function() modify_cwd(current_picker.cwd .. "/..") end)
 
-      map("i", "~", function()
-        modify_cwd(vim.fn.expand "~")
-      end)
+      map("i", "~", function() modify_cwd(vim.fn.expand "~") end)
 
       local function modify_depth(mod)
         return function()
@@ -421,22 +413,16 @@ function M.git_commits()
   }
 end
 
-function M.projects()
-  require("telescope").extensions.project.project {}
-end
+function M.projects() require("telescope").extensions.project.project {} end
 
 function M.diagnostics(opts)
   require("telescope.builtin").diagnostics(vim.tbl_extend("keep", opts or {}, {
     bufnr = 0,
   }))
 end
-function M.workspace_diagnostics(opts)
-  require("telescope.builtin").diagnostics(opts)
-end
+function M.workspace_diagnostics(opts) require("telescope.builtin").diagnostics(opts) end
 
-function M.code_actions_previewed()
-  require("actions-preview").code_actions()
-end
+function M.code_actions_previewed() require("actions-preview").code_actions() end
 
 function M.side_split_theme(opts)
   opts = opts or {}

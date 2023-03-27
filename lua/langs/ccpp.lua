@@ -9,9 +9,7 @@ local function switch_source_header_splitcmd(bufnr, splitcmd)
     "textDocument/switchSourceHeader",
     params,
     lsputil.compat_handler(function(err, result)
-      if err then
-        error(tostring(err))
-      end
+      if err then error(tostring(err)) end
       if not result then
         print "Corresponding file can’t be determined"
         return
@@ -43,21 +41,15 @@ return {
           extra_cmd_args = clangd_flags,
           commands = {
             ClangdSwitchSourceHeader = {
-              function()
-                switch_source_header_splitcmd(0, "edit")
-              end,
+              function() switch_source_header_splitcmd(0, "edit") end,
               description = "Open source/header in current buffer",
             },
             ClangdSwitchSourceHeaderVSplit = {
-              function()
-                switch_source_header_splitcmd(0, "vsplit")
-              end,
+              function() switch_source_header_splitcmd(0, "vsplit") end,
               description = "Open source/header in a new vsplit",
             },
             ClangdSwitchSourceHeaderSplit = {
-              function()
-                switch_source_header_splitcmd(0, "split")
-              end,
+              function() switch_source_header_splitcmd(0, "split") end,
               description = "Open source/header in a new split",
             },
           },

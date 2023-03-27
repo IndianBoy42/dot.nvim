@@ -10,9 +10,7 @@ local custom_N_repeat = nil
 local feedkeys_ = vim.api.nvim_feedkeys
 local termcode = vim.api.nvim_replace_termcodes
 local function feedkeys(keys, o)
-  if o == nil then
-    o = "m"
-  end
+  if o == nil then o = "m" end
   feedkeys_(termcode(keys, true, true, true), o, false)
 end
 
@@ -62,9 +60,7 @@ local function make_nN_pair(pair, pre_action)
       vim.cmd [[normal! m']]
       if pre_action then
         pre_action[1]()
-        if pre_action[3] then
-          pre_action[3]()
-        end
+        if pre_action[3] then pre_action[3]() end
       end
       register_nN_repeat(pair)
       if type(pair[1]) == "string" then
@@ -77,9 +73,7 @@ local function make_nN_pair(pair, pre_action)
       vim.cmd [[normal! m']]
       if pre_action then
         pre_action[2]()
-        if pre_action[3] then
-          pre_action[3]()
-        end
+        if pre_action[3] then pre_action[3]() end
       end
       register_nN_repeat(pair)
       if type(pair[2]) == "string" then
@@ -102,42 +96,28 @@ local nore = { noremap = true, silent = true }
 local norexpr = { noremap = true, silent = true, expr = true }
 local expr = { silent = true, expr = true }
 local function op_from(lhs, rhs, opts)
-  if opts == nil then
-    opts = nore
-  end
-  if rhs == nil then
-    rhs = lhs
-  end
+  if opts == nil then opts = nore end
+  if rhs == nil then rhs = lhs end
 
   map("o", lhs, "<cmd>normal v" .. rhs .. "<cr>", opts)
 end
 
 M.op_from = op_from
 local function sel_map(lhs, rhs, opts)
-  if opts == nil then
-    opts = nore
-  end
+  if opts == nil then opts = nore end
   map("x", lhs, rhs, opts)
   op_from(lhs, rhs, opts)
 end
 
 M.sel_map = sel_map
 
-function M.sile(mode, from, to)
-  map(mode, from, to, sile)
-end
+function M.sile(mode, from, to) map(mode, from, to, sile) end
 
-function M.nore(mode, from, to)
-  map(mode, from, to, nore)
-end
+function M.nore(mode, from, to) map(mode, from, to, nore) end
 
-function M.expr(mode, from, to)
-  map(mode, from, to, expr)
-end
+function M.expr(mode, from, to) map(mode, from, to, expr) end
 
-function M.norexpr(mode, from, to)
-  map(mode, from, to, norexpr)
-end
+function M.norexpr(mode, from, to) map(mode, from, to, norexpr) end
 
 function M.setup()
   local wk = require "which-key"
@@ -227,9 +207,7 @@ function M.setup()
   -- end)
 
   local resize_prefix = "<C-"
-  if vim.fn.has "mac" == 1 then
-    resize_prefix = "<M-"
-  end
+  if vim.fn.has "mac" == 1 then resize_prefix = "<M-" end
   map("n", resize_prefix .. "Up>", cmd "resize -2", sile)
   map("n", resize_prefix .. "Down>", cmd "resize +2", sile)
   map("n", resize_prefix .. "Left>", cmd "vertical resize -2", sile)
@@ -333,48 +311,32 @@ function M.setup()
   local quickfix_looping = {
     function()
       local ok, _ = pcall(vim.cmd.cafter)
-      if ok then
-        return
-      end
+      if ok then return end
       local ok, _ = pcall(vim.cmd.cnext)
-      if ok then
-        return
-      end
+      if ok then return end
       vim.cmd.cfirst()
     end,
     function()
       local ok, _ = pcall(vim.cmd.cbefore)
-      if ok then
-        return
-      end
+      if ok then return end
       local ok, _ = pcall(vim.cmd.cprev)
-      if ok then
-        return
-      end
+      if ok then return end
       vim.cmd.clast()
     end,
   }
   local loclist_looping = {
     function()
       local ok, _ = pcall(vim.cmd.lafter)
-      if ok then
-        return
-      end
+      if ok then return end
       local ok, _ = pcall(vim.cmd.lnext)
-      if ok then
-        return
-      end
+      if ok then return end
       vim.cmd.lfirst()
     end,
     function()
       local ok, _ = pcall(vim.cmd.lbefore)
-      if ok then
-        return
-      end
+      if ok then return end
       local ok, _ = pcall(vim.cmd.lprev)
-      if ok then
-        return
-      end
+      if ok then return end
       vim.cmd.llast()
     end,
   }
@@ -422,12 +384,8 @@ function M.setup()
     require "hydra" {
       name = "undotree",
       body = body,
-      on_enter = function()
-        vim.cmd.UndotreeShow()
-      end,
-      on_exit = function()
-        vim.cmd.UndotreeHide()
-      end,
+      on_enter = function() vim.cmd.UndotreeShow() end,
+      on_exit = function() vim.cmd.UndotreeHide() end,
       config = { invoke_on_body = true },
       heads = {
         { "u", "u", { desc = false } },
@@ -579,18 +537,14 @@ function M.setup()
 
   -- lsp keys
   local telescope_cursor = function(name)
-    return function()
-      return telescope_fn[name](require("telescope.themes").get_cursor())
-    end
+    return function() return telescope_fn[name](require("telescope.themes").get_cursor()) end
   end
   -- TODO: highlight these items like when using `/` search
   local on_list_next = {
     reuse_win = true,
     on_list = function(options)
       vim.fn.setqflist({}, " ", options)
-      if #options.items > 1 then
-        register_nN_repeat(quickfix_looping)
-      end
+      if #options.items > 1 then register_nN_repeat(quickfix_looping) end
       -- vim.cmd.cfirst()
       quickfix_looping[1]()
       -- require("portal.builtin").quickfix.tunnel_forward()
@@ -600,9 +554,7 @@ function M.setup()
     reuse_win = true,
     on_list = function(options)
       vim.fn.setqflist({}, " ", options)
-      if #options.items > 1 then
-        register_nN_repeat(quickfix_looping)
-      end
+      if #options.items > 1 then register_nN_repeat(quickfix_looping) end
       -- vim.cmd.clast()
       quickfix_looping[2]()
       -- require("portal.builtin").quickfix.tunnel_backward()
@@ -610,12 +562,8 @@ function M.setup()
   }
 
   map("n", "gd", telescope_cursor "lsp_definitions", { desc = "Goto Definition" })
-  map("n", "gd", function()
-    vim.lsp.buf.definition(on_list_next)
-  end, { desc = "Definition" })
-  map("n", "gtd", function()
-    vim.lsp.buf.type_definition(on_list_next)
-  end, { desc = "Type Definition" })
+  map("n", "gd", function() vim.lsp.buf.definition(on_list_next) end, { desc = "Definition" })
+  map("n", "gtd", function() vim.lsp.buf.type_definition(on_list_next) end, { desc = "Type Definition" })
   map("n", "gD", lspbuf.declaration, { desc = "Goto Declaration" })
   map("n", "gK", vim.lsp.codelens.run, { desc = "Codelens" })
   -- Preview variants
@@ -631,18 +579,10 @@ function M.setup()
   map("n", "gpr", telescope_fn.lsp_references, { desc = "Peek references" })
   map("n", "gpi", telescope_fn.lsp_implementations, { desc = "Peek implementation" })
   map("n", "gpe", lsputil.diag_line, sile)
-  map("n", pre_goto_next .. "r", function()
-    vim.lsp.buf.references(nil, on_list_next)
-  end, { desc = "Reference" })
-  map("n", pre_goto_prev .. "r", function()
-    vim.lsp.buf.references(nil, on_list_prev)
-  end, { desc = "Reference" })
-  map("n", pre_goto_next .. "i", function()
-    vim.lsp.buf.implementation(on_list_next)
-  end, { desc = "Next Implementation" })
-  map("n", pre_goto_prev .. "i", function()
-    vim.lsp.buf.implementation(on_list_prev)
-  end, { desc = "Prev Implementation" })
+  map("n", pre_goto_next .. "r", function() vim.lsp.buf.references(nil, on_list_next) end, { desc = "Reference" })
+  map("n", pre_goto_prev .. "r", function() vim.lsp.buf.references(nil, on_list_prev) end, { desc = "Reference" })
+  map("n", pre_goto_next .. "i", function() vim.lsp.buf.implementation(on_list_next) end, { desc = "Implementation" })
+  map("n", pre_goto_prev .. "i", function() vim.lsp.buf.implementation(on_list_prev) end, { desc = "Implementation" })
   -- Hover
   -- map("n", "K", lspbuf.hover, sile)
   map("n", "gh", lspbuf.hover, { desc = "LSP Hover" })
@@ -654,9 +594,7 @@ function M.setup()
   -- Formatting keymaps
   map("n", "gq", lsputil.format_range_operator, { desc = "Format Range" })
   map("x", "gq", lsputil.format, { desc = "Format Range" })
-  map("n", "gf", function()
-    lsputil.format { async = true }
-  end, { desc = "Format Async" })
+  map("n", "gf", function() lsputil.format { async = true } end, { desc = "Format Async" })
 
   -- TODO: Use more standard regex syntax
   -- map("n", "/", "/\v", nore)
@@ -888,7 +826,6 @@ function M.setup()
       name = "Open window",
       -- s = { focus_fn.split_nicely, "Nice split" },
       o = { cmd "SidebarNvimToggle", "Sidebar.nvim" },
-      e = { focus_fn.focus_max_or_equal, "Max/Equal splits" },
       f = { cmd "NvimTreeToggle", "File Sidebar" },
       u = { cmd "UndotreeToggle", "Undo tree" },
       r = { cmd "Oil", "File Browser" },
@@ -916,7 +853,6 @@ function M.setup()
       h = { cmd "setlocal hlsearch", "hlsearch" },
       b = { cmd "set buflisted", "buflisted" },
       c = { utils.conceal_toggle, "Conceal" },
-      f = { focus_fn.focus_toggle, "Focus.nvim" },
       H = { cmd "ToggleHiLightComments", "Comment Highlights" },
       -- TODO: Toggle comment visibility
     },
@@ -1179,16 +1115,12 @@ M.wkopts = {
   nowait = false,
 }
 function M.whichkey(maps, opts)
-  if opts == nil then
-    opts = {}
-  end
+  if opts == nil then opts = {} end
   require("which-key").register(maps, vim.tbl_extend("keep", opts, M.wkopts))
 end
 
 function M.localleader(maps, opts)
-  if opts == nil then
-    opts = {}
-  end
+  if opts == nil then opts = {} end
   M.whichkey(
     maps,
     vim.tbl_extend("keep", opts, {
@@ -1199,9 +1131,7 @@ function M.localleader(maps, opts)
 end
 
 function M.ftleader(maps, opts)
-  if opts == nil then
-    opts = {}
-  end
+  if opts == nil then opts = {} end
   M.whichkey(
     maps,
     vim.tbl_extend("keep", opts, {
@@ -1212,14 +1142,10 @@ function M.ftleader(maps, opts)
 end
 
 function M.vlocalleader(maps, opts)
-  if opts == nil then
-    opts = {}
-  end
+  if opts == nil then opts = {} end
   M.localleader(maps, vim.tbl_extend("keep", opts, { mode = "v" }))
 end
 
 return setmetatable(M, {
-  __call = function(tbl, ...)
-    return map(unpack(...))
-  end,
+  __call = function(tbl, ...) return map(unpack(...)) end,
 })

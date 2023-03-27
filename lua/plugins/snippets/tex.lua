@@ -8,9 +8,7 @@ local templates = require "plugins.snippets.texplates"
 local ls = require "luasnip"
 local s = ls.snippet
 local sn = ls.snippet_node
-local ns = function(x)
-  return sn(nil, x)
-end
+local ns = function(x) return sn(nil, x) end
 local t = ls.text_node
 local i = ls.insert_node
 local f = ls.function_node
@@ -29,60 +27,36 @@ local list_extend = vim.list_extend
 local tbl_extend = vim.tbl_extend
 local conds = require "luasnip.extras.expand_conditions"
 local function sel()
-  return f(function(_, snip)
-    return (snip and snip.env and snip.env.TM_SELECTED_TEXT) or ""
-  end, {})
+  return f(function(_, snip) return (snip and snip.env and snip.env.TM_SELECTED_TEXT) or "" end, {})
 end
 
 local function fmt(fn, ipairs)
-  if ipairs == nil then
-    ipairs = {}
-  end
-  return f(function(_, args)
-    return string.format(unpack(fn(args.captures, args.trigger, args)))
-  end, ipairs)
+  if ipairs == nil then ipairs = {} end
+  return f(function(_, args) return string.format(unpack(fn(args.captures, args.trigger, args))) end, ipairs)
 end
 
 local function sub(j)
-  return f(function(_, args)
-    return string.format("%s", args.captures[j])
-  end, {})
+  return f(function(_, args) return string.format("%s", args.captures[j]) end, {})
 end
 
-local function con(fn)
-  return { condition = fn }
-end
+local function con(fn) return { condition = fn } end
 
 local mathmode_ = vim.fn["vimtex#syntax#in_mathzone"]
 local mathmode = {
-  condition = function()
-    return mathmode_() ~= 0
-  end,
+  condition = function() return mathmode_() ~= 0 end,
 }
 local nonmathmode = {
-  condition = function()
-    return mathmode_() == 0
-  end,
+  condition = function() return mathmode_() == 0 end,
 }
-local function ms(lhs, rhs)
-  return s(lhs, rhs, mathmode)
-end
+local function ms(lhs, rhs) return s(lhs, rhs, mathmode) end
 
-local function nms(lhs, rhs)
-  return s(lhs, rhs, nonmathmode)
-end
+local function nms(lhs, rhs) return s(lhs, rhs, nonmathmode) end
 
-local function nw(k)
-  return { trig = k, wordTrig = false }
-end
+local function nw(k) return { trig = k, wordTrig = false } end
 
-local function re(arg)
-  return { trig = arg, regTrig = true }
-end
+local function re(arg) return { trig = arg, regTrig = true } end
 
-local function renw(arg)
-  return { trig = arg, regTrig = true, wordTrig = false }
-end
+local function renw(arg) return { trig = arg, regTrig = true, wordTrig = false } end
 
 local line_begin = { condition = conds.line_begin }
 local no_backslash = {
@@ -92,9 +66,7 @@ local no_backslash = {
     return (mathmode_() ~= 0) and (line_to_cursor:sub(n, n) ~= "\\")
   end,
 }
-local function lns(lhs, rhs)
-  return s(lhs, rhs, line_begin)
-end
+local function lns(lhs, rhs) return s(lhs, rhs, line_begin) end
 
 local trig_fns = {
   "sin",
@@ -471,9 +443,7 @@ list_extend(auto, {
     t "}{",
     f(function(nodes, arg)
       local input = nodes[1]
-      if input:find("\\partial", 1, true) == 1 then
-        return "\\partial "
-      end
+      if input:find("\\partial", 1, true) == 1 then return "\\partial " end
       return ""
     end, { 1 }),
     i(2),
@@ -660,9 +630,7 @@ list_extend(snips, {
     t { "\\begin{itemize}", "" },
     f(function(_, snip)
       local text = snip and snip.env and snip.env.TM_SELECTED_TEXT
-      if text == nil then
-        return ""
-      end
+      if text == nil then return "" end
       local list = {}
       for _, line in pairs(text) do
         vim.list_extend(list, { "\\item " .. line })

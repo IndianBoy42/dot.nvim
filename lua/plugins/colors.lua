@@ -3,24 +3,23 @@ local theme_choice = vim.env.NVIM_THEME or "onedark_darker"
 -- local theme_choice = "tokyonight_night"
 -- local theme_choice = "nebulous_night"
 local nebulous_bg = "#03070e"
-local is_active_theme = function(s)
-  return string.sub(theme_choice, 1, #s) == s
-end
+local is_active_theme = function(s) return string.sub(theme_choice, 1, #s) == s end
 local sub_theme = function(s, o)
   if is_active_theme(s) then
     local sub = string.sub(theme_choice, #s + 2)
-    if #sub > 0 then
-      return sub
-    end
+    if #sub > 0 then return sub end
   end
   return o
 end
 
-local config_colorscheme = function(name, cscheme)
+local config_colorscheme = function(name, cscheme, cb)
   cscheme = cscheme or name
   return function(_, opts)
     require(name).setup(opts)
     vim.cmd.colorscheme(cscheme)
+    if cb then vim.api.nvim_create_autocmd("ColorScheme", {
+      callback = cb,
+    }) end
   end
 end
 
@@ -32,6 +31,8 @@ com! CheckHighlightUnderCursor echo {l,c,n ->
         \ }(line("."), col("."), "name")
 ]]
 
+local function get_hl(name) return vim.api.nvim_get_hl_by_name(name, true) end
+
 local hilight_comments = {
 
   de_lighted = true,
@@ -42,7 +43,7 @@ local hilight_comments = {
     -- local bright_hl_name = "@text.strong"
     local hl = vim.api.nvim_get_hl_by_name(bright_hl_name, true)
     hl = vim.tbl_deep_extend("force", hl, {
-      bg = hl.fg,
+      bg = hl.foreground,
       fg = "white",
       bold = true,
     })
@@ -50,9 +51,7 @@ local hilight_comments = {
   end,
 }
 vim.api.nvim_create_user_command("HiLightComments", function()
-  if not hilight_comments.de_lighted then
-    return
-  end
+  if not hilight_comments.de_lighted then return end
   local hl = vim.api.nvim_get_hl_by_name(hilight_comments.comment_hl_name[1], true)
   hilight_comments.cache_comment_hl = vim.deepcopy(hl)
   hl = hilight_comments.bright_hl()
@@ -63,9 +62,7 @@ vim.api.nvim_create_user_command("HiLightComments", function()
   hilight_comments.de_lighted = false
 end, {})
 vim.api.nvim_create_user_command("DeLightComments", function()
-  if hilight_comments.de_lighted then
-    return
-  end
+  if hilight_comments.de_lighted then return end
   local hl = hilight_comments.cache_comment_hl
   for _, n in ipairs(hilight_comments.comment_hl_name) do
     vim.api.nvim_set_hl(0, n, hl)
@@ -79,10 +76,82 @@ vim.api.nvim_create_user_command("ToggleHiLightComments", function()
     vim.cmd "DeLightComments"
   end
 end, {})
+vim.api.nvim_create_autocmd("ColorScheme", {
+  callback = function()
+    -- -- Hide all semantic highlights
+    -- for _, group in ipairs(vim.fn.getcompletion("@lsp", "highlight")) do
+    --   vim.api.nvim_set_hl(0, group, {})
+    -- end
+    local maps = {
+      ["@lsp.type.class"] = { link = "Structure" },
+      ["@lsp.type.decorator"] = { link = "Function" },
+      -- ["@lsp.type.enum"] = { link = "Structure" },
+      ["@lsp.type.enumMember"] = { link = "Constant" },
+      ["@lsp.type.function"] = { link = "Function" },
+      -- ["@lsp.type.interface"] = { link = "Structure" },
+      ["@lsp.type.macro"] = { link = "Macro" },
+      ["@lsp.type.method"] = { link = "Function" },
+      -- ["@lsp.type.namespace"] = { link = "Structure" },
+      -- ["@lsp.type.parameter"] = { link = "Identifier" },
+      -- ["@lsp.type.property"] = { link = "Identifier" },
+      ["@lsp.type.struct"] = { link = "Structure" },
+      ["@lsp.type.type"] = { link = "Type" },
+      ["@lsp.type.typeParameter"] = { link = "TypeDef" },
+      -- ["@lsp.type.variable"] = { link = "Identifier" },
+      -- Above this is builtins
+      -- Below are custom definition
+      ["@lsp.type.comment"] = { link = "@comment" },
+      ["@lsp.type.enum"] = { link = "@type" },
+      ["@lsp.type.interface"] = { link = "Identifier" },
+      ["@lsp.type.keyword"] = { link = "@keyword" },
+      ["@lsp.type.namespace"] = { link = "@namespace" },
+      ["@lsp.type.parameter"] = { link = "@parameter" },
+      ["@lsp.type.property"] = { link = "@field" },
+      ["@lsp.type.variable"] = {}, -- use treesitter styles for regular variables
+      ["@lsp.typemod.method.defaultLibrary"] = { link = "@function.builtin" },
+      ["@lsp.typemod.function.defaultLibrary"] = { link = "@function.builtin" },
+      ["@lsp.typemod.operator.injected"] = { link = "@operator" },
+      ["@lsp.typemod.string.injected"] = { link = "@string" },
+      ["@lsp.typemod.variable.defaultLibrary"] = { link = "@variable.builtin" },
+      ["@lsp.typemod.variable.injected"] = { link = "@variable" },
+      -- Below are language customs
+      ["@lsp.type.enumMember.rust"] = { link = "@type" },
+      ["@lsp.mod.mutable.rust"] = { bg = get_hl("DiagnosticVirtualTextHint").background },
+      ["@lsp.mod.reference.rust"] = { bg = get_hl("DiagnosticVirtualTextInfo").background },
+    }
+    for k, v in pairs(maps) do
+      vim.api.nvim_set_hl(0, k, v)
+    end
+  end,
+})
 
 -- TODO: set lualine theme
 return {
   -- Colorschemes
+  {
+    "navarasu/onedark.nvim",
+    lazy = not is_active_theme "onedark",
+    priority = 1000,
+    opts = {
+      style = sub_theme("onedark", "darker"),
+      code_style = {
+        comments = "italic",
+        strings = "italic",
+        keywords = "none",
+        -- functions = "bold",
+        -- variables = "bold",
+      },
+      colors = {
+        -- Darken backgrounds
+        bg_d = "#181b20",
+        bg0 = "#181b20",
+        bg1 = "#1f2329",
+        bg2 = "#282c34",
+        bg3 = "#30363f",
+      },
+    },
+    config = config_colorscheme("onedark", "onedark"),
+  },
   { --Yagua/nebulous.nvim --
     "Yagua/nebulous.nvim",
     lazy = not is_active_theme "nebulous",
@@ -295,20 +364,14 @@ return {
     "nyoom-engineering/oxocarbon.nvim",
     lazy = not is_active_theme "oxocarbon",
     priority = 1000,
-    config = function()
-      vim.cmd.colorscheme "oxocarbon"
-    end,
+    config = function() vim.cmd.colorscheme "oxocarbon" end,
   },
   { --wuelnerdotexe/vim-enfocado
     "wuelnerdotexe/vim-enfocado",
     lazy = not is_active_theme "enfocado",
-    init = function()
-      vim.g.enfocado_style = sub_theme("enfocado", "neon")
-    end,
+    init = function() vim.g.enfocado_style = sub_theme("enfocado", "neon") end,
     priority = 1000,
-    config = function()
-      vim.cmd.colorscheme "enfocado"
-    end,
+    config = function() vim.cmd.colorscheme "enfocado" end,
   },
   { --NTBBloodbath/sweetie.nvim
     "NTBBloodbath/sweetie.nvim",
@@ -488,29 +551,21 @@ return {
       vim.g.starry_borders = true
       vim.g.starry_style = sub_theme("starry", "moonlight")
     end,
-    config = function()
-      vim.cmd.colorscheme "starry"
-    end,
+    config = function() vim.cmd.colorscheme "starry" end,
   },
   {
     "rafamadriz/neon",
     lazy = not is_active_theme "neon",
     priority = 1000,
-    init = function()
-      vim.g.neon_style = sub_theme("neon", "dark")
-    end,
-    config = function()
-      vim.cmd.colorscheme "neon"
-    end,
+    init = function() vim.g.neon_style = sub_theme("neon", "dark") end,
+    config = function() vim.cmd.colorscheme "neon" end,
   },
   {
     "tiagovla/tokyodark.nvim",
     lazy = not is_active_theme "tokyodark",
     priority = 1000,
     init = function() end,
-    config = function()
-      vim.cmd.colorscheme "tokyodark"
-    end,
+    config = function() vim.cmd.colorscheme "tokyodark" end,
   },
   {
     "Mofiqul/dracula.nvim",
@@ -518,30 +573,6 @@ return {
     priority = 1000,
     opts = { colors = { bg = nebulous_bg } },
     config = config_colorscheme("dracula", "dracula"),
-  },
-  {
-    "navarasu/onedark.nvim",
-    lazy = not is_active_theme "onedark",
-    priority = 1000,
-    opts = {
-      style = sub_theme("onedark", "darker"),
-      code_style = {
-        comments = "italic",
-        strings = "italic",
-        keywords = "bold",
-        functions = "none",
-        variables = "none",
-      },
-      colors = {
-        -- Darken backgrounds
-        bg_d = "#181b20",
-        bg0 = "#181b20",
-        bg1 = "#1f2329",
-        bg2 = "#282c34",
-        bg3 = "#30363f",
-      },
-    },
-    config = config_colorscheme("onedark", "onedark"),
   },
   {
     "norcalli/nvim-colorizer.lua",
@@ -669,14 +700,10 @@ return {
         local names = "abcdefghijklmnopqrstuvwxyz"
 
         local chars = {}
-        names:gsub(".", function(c)
-          vim.cmd.PetsNew(c)
-        end)
+        names:gsub(".", function(c) vim.cmd.PetsNew(c) end)
       end, {})
     end,
-    config = function(_, opts)
-      require("pets").setup(opts)
-    end,
+    config = function(_, opts) require("pets").setup(opts) end,
     dependencies = { "MunifTanjim/nui.nvim", "edluffy/hologram.nvim" },
     cmd = {
       "PetsNew",

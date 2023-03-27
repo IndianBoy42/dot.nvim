@@ -27,9 +27,7 @@ return {
       local K = require("kitty").setup {
         -- from_current_win = "tab",
         target_providers = {
-          function(T)
-            T.helloworld = { desc = "Hello world", cmd = "echo hello world" }
-          end,
+          function(T) T.helloworld = { desc = "Hello world", cmd = "echo hello world" } end,
           "just",
           "cargo",
         },
@@ -46,7 +44,7 @@ return {
       -- vim.keymap.set("n", "<leader>tK", KT.run, { desc = "Kitty Run" })
       -- vim.keymap.set("n", "", require("kitty").send_cell, { buffer = 0 })
     end,
-    cmd = { "Kitty", "KittyOverlay" },
+    -- cmd = { "Kitty", "KittyOverlay" },
     keys = {
       {
         "<leader>ok",

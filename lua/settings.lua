@@ -9,9 +9,7 @@ return function()
   cmd "set iskeyword+=-"
   cmd "set sessionoptions+=globals"
   cmd "set whichwrap+=<,>,[,],h,l"
-  if vim.g.nvui then
-    cmd "NvuiFrameless v:false"
-  end
+  if vim.g.nvui then cmd "NvuiFrameless v:false" end
   if O.transparent_window then
     cmd "au ColorScheme * hi Normal ctermbg=none guibg=none"
     cmd "au ColorScheme * hi SignColumn ctermbg=none guibg=none"
@@ -32,9 +30,7 @@ return function()
   else
     map("n", O.local_leader_key, "<NOP>")
     vim.g.maplocalleader = O.local_leader_key
-    map("n", O.local_leader_key, function()
-      require("which-key").show(",", { mode = "n" })
-    end)
+    map("n", O.local_leader_key, function() require("which-key").show(",", { mode = "n" }) end)
   end
 
   ---  SETTINGS  ---
@@ -101,21 +97,17 @@ return function()
 
   -- opt.undodir = CACHE_PATH .. "/undo" -- set an undo directory
   local undodir = "/tmp/.undodir_" .. vim.env.USER
-  if not vim.fn.isdirectory(undodir) then
-    vim.fn.mkdir(undodir, "", 0700)
-  end
+  if not vim.fn.isdirectory(undodir) then vim.fn.mkdir(undodir, "", 0700) end
   opt.undodir = undodir
   opt.undofile = true -- enable persistent undo
 
   local _general_settings = require("utils").augroup "_general_settings"
-  _general_settings.TextYankPost(function()
-    vim.highlight.on_yank { higroup = "Search", timeout = 200 }
-  end)
+  _general_settings.TextYankPost(function() vim.highlight.on_yank { higroup = "Search", timeout = 200 } end)
 
   local formatoptions = ""
   formatoptions = formatoptions .. "formatoptions-=c"
   -- formatoptions = formatoptions .. "formatoptions-=r"
-  formatoptions = formatoptions .. "formatoptions-=o"
+  -- formatoptions = formatoptions .. "formatoptions-=o"
   _general_settings.BufWinEnter("setlocal " .. formatoptions)
   _general_settings.BufNewFile("setlocal " .. formatoptions)
   _general_settings.BufRead = function()
@@ -162,8 +154,7 @@ return function()
   require("utils").set_guifont(O.fontsize, "FiraCode Nerd Font")
 
   if vim.g.kitty_scrollback then
-    opt.signcolumn = "no"
-    -- TODO: more stuff?
+    opt.signcolumn = "no" -- TODO: more stuff?
     -- opt.virtualedit = "all"
   end
 end
