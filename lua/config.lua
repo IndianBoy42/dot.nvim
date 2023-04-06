@@ -99,7 +99,8 @@ local O = {
   goto_previous = "[",
   -- The below is used for most hint based navigation/selection (hop, hint_textobjects)
   -- hint_labels = "fdsahjklgvcxznmbyuiorewqtp",
-  hint_labels = "hjklfdsanmevcxzwuio",
+  hint_labels = "hjklfdsag;nm,.ervcxzbuioyptwq",
+  -- hint_labels = "hjklfdsagnmervcxzbuioyptwq",
   database = { save_location = "~/.config/nvim/.db", auto_execute = 1 },
 }
 vim.cmd('let &titleold="' .. _G.TERMINAL .. '"')

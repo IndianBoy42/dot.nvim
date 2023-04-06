@@ -2,7 +2,42 @@ local M = {
   "nvim-lualine/lualine.nvim",
   event = "VeryLazy",
   dependencies = {
-    "SmiteshP/nvim-gps",
+    {
+      "SmiteshP/nvim-navic",
+      opts = {
+        lsp = {
+          auto_attach = true,
+        },
+        icons = {
+          File = " ",
+          Module = " ",
+          Namespace = " ",
+          Package = " ",
+          Class = " ",
+          Method = " ",
+          Property = " ",
+          Field = " ",
+          Constructor = " ",
+          Enum = " ",
+          Interface = " ",
+          Function = " ",
+          Variable = " ",
+          Constant = " ",
+          String = " ",
+          Number = " ",
+          Boolean = " ",
+          Array = " ",
+          Object = " ",
+          Key = " ",
+          Null = " ",
+          EnumMember = " ",
+          Struct = " ",
+          Event = " ",
+          Operator = " ",
+          TypeParameter = " ",
+        },
+      },
+    },
     "marko-cerovac/material.nvim",
     {
       "roobert/statusline-action-hints.nvim",
@@ -16,19 +51,6 @@ local M = {
   },
 }
 M.config = function()
-  local gps = require "nvim-gps"
-  gps.setup {
-    icons = {
-      ["class-name"] = " ", -- Classes and class-like objects
-      ["function-name"] = " ", -- Functions
-      ["method-name"] = " ", -- Methods (functions inside class-like objects)
-    },
-    -- Disable any languages individually over here
-    -- Any language not disabled here is enabled by default
-    languages = {},
-    separator = " > ",
-  }
-
   local diagnostics = {
     "diagnostics",
     sources = { "nvim_diagnostic" }, -- nvim is the new more general
@@ -54,8 +76,8 @@ M.config = function()
     symbols = { added = "+", modified = "~", removed = "-" }, -- changes diff symbols
   }
 
-  local gps_statusline = { gps.get_location, cond = gps.is_available }
-  local ts_statusline = require("nvim-treesitter").statusline
+  local navic = require "nvim-navic"
+  local navic_st = { function() return navic.get_location() end, cond = function() return navic.is_available() end }
 
   local function get_lsp_clients()
     local msg = "LSP Inactive"
@@ -92,9 +114,16 @@ M.config = function()
   end
 
   local function noice(name)
-    local i = require("noice").api.status[name]
-    return { i.get_hl, cond = i.has }
+    local ok, m = pcall(require, "noice")
+    if not ok then return end
+    local i = m.api.status[name]
+    return { function() return i.get_hl() end, cond = function() return i.has() end }
   end
+
+  local luasnip_st = {
+    function() return require("luasnip").choice_active() and "LS Choice Active" or "Not LS Choice" end,
+    cond = function() return true end,
+  }
 
   vim.api.nvim_create_autocmd({ "User" }, {
     pattern = "visual_multi_start",
@@ -125,7 +154,7 @@ M.config = function()
       lualine_a = { "mode" },
       lualine_b = {
         filename,
-        gps_statusline, --[[ require("statusline-action-hints").statusline ]]
+        navic_st, --[[ require("statusline-action-hints").statusline ]]
       },
       -- lualine_c = { ts_statusline },
       lualine_c = { noice "ruler", noice "command", noice "mode", noice "search" },

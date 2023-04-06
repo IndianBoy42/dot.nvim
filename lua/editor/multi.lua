@@ -8,7 +8,6 @@ return {
       ["Find Under"] = "<M-n>",
       ["Find Next"] = "<M-n>",
       ["Find Prev"] = "<M-S-n>",
-      ["Select All"] = ldr .. "A",
       ["Find Subword Under"] = "<M-n>",
       ["Add Cursor Down"] = "<M-j>",
       ["Add Cursor Up"] = "<M-k>",
@@ -17,15 +16,16 @@ return {
       ["Skip Region"] = "n",
       ["Remove Region"] = "N",
       ["Visual Cursors"] = ldr .. ldr,
-      ["Visual Add"] = ldr .. "v",
-      ["Visual All"] = ldr .. "a",
+      ["Visual Add"] = "<M-v>",
+      ["Visual Subtract"] = "S",
       ["Visual Regex"] = "/",
-      ["Add Cursor At Pos"] = ldr .. ldr,
+      ["Add Cursor At Pos"] = "<M-h>",
       ["Find Operator"] = "m",
-      -- ["Visual Find"] = "<M-f>",
       ["Undo"] = "u",
       ["Redo"] = "<C-r>",
       ["Reselect Last"] = ldr .. ldr,
+      ["Toggle Mappings"] = "<M-l>",
+      ["Transpose"] = ")",
     }
 
     local theme = "codedark"
@@ -39,11 +39,12 @@ return {
     vim.cmd.VMTheme(vim.g.VM_theme)
     local ldr = vim.g.VM_leader
     local map = vim.keymap.set
-    local feedkeys_ = vim.api.nvim_feedkeys
+    local nvim_feedkeys = vim.api.nvim_feedkeys
     local termcode = vim.api.nvim_replace_termcodes
+    local function t(keys) return termcode(keys, true, true, true) end
     local function feedkeys(keys, o)
       if o == nil then o = "m" end
-      feedkeys_(termcode(keys, true, true, true), o, false)
+      nvim_feedkeys(t(keys), o, false)
     end
     local function wrap_vm(prefix, vm, affix)
       prefix = prefix or ""
@@ -54,14 +55,14 @@ return {
         -- Defer to avoid `<Plug>(VM-Hls)`
         vim.defer_fn(function()
           if type(affix) == "function" then affix = affix() end
-          feedkeys(affix, "n")
-        end, 100)
+          feedkeys(affix, "m")
+        end, 200)
       end
     end
     -- map("x", "I", wrap_vm(nil, "Visual-Add", "i"), { remap = true })
     map("x", "I", wrap_vm(nil, "Visual-Add", "i"), { remap = true })
     map("x", "A", wrap_vm(nil, "Visual-Add", "a"), { remap = true })
-    local c_v = termcode("<C-v>", true, true, true)
+    local c_v = t "<C-v>"
     map("x", "c", function()
       if vim.api.nvim_get_mode().mode == c_v then
         wrap_vm(nil, "Visual-Add", "c")()
@@ -73,19 +74,33 @@ return {
 
     map("x", "<C-v>", "<Plug>(VM-Visual-Add)")
 
-    local operatorfunc_keys = require("utils").operatorfunc_keys
     -- Multi select object
-    local find_under_operator = operatorfunc_keys("multiselect", vim.g.VM_maps["Find Under"])
+    local find_under_operator = utils.operatorfunc_keys("multiselect", "<Plug>(VM-Find-Under)")
     map("n", "<M-v>", find_under_operator, {})
     map("n", ldr .. "n", find_under_operator, { desc = "Find Under" })
     -- Multi select all
-    local select_all_operator = operatorfunc_keys("multiselect_all", vim.g.VM_maps["Select All"])
+    local select_all_operator = utils.operatorfunc_keys("multiselect_all", "<Plug>(VM-Select-All)")
     map("n", "<M-S-v>", select_all_operator, {})
     map("n", ldr .. "<S-v>", select_all_operator, {})
 
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "visual_multi_mappings",
+      callback = function() end,
+    })
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "visual_multi_start",
+      callback = function() end,
+    })
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "visual_multi_end",
+      callback = function() end,
+    })
+
     -- map("n", "co", wrap_vm(nil, "Find-Under", "<Plug>(VM-Find-Operator)"), {})
-    -- map("n", "co", operatorfunc_keys("find_occurences", "<esc><M-n>mgv"), {})
-    -- map("x", "<C-v>", function()      -- vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufNewFile" }, { command = "VMTheme " .. theme })
+    -- map("n", "co", utils.operatorfunc_keys("find_occurences", "<esc><M-n>mgv"), {})
+    -- vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufNewFile" }, { command = "VMTheme " .. theme })
+
+    -- TODO: https://docs.helix-editor.com/keymap.html#selection-manipulation
   end,
   event = { "BufWinEnter", "BufEnter" },
 }

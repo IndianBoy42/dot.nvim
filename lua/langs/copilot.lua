@@ -1,4 +1,4 @@
-local source = "codeium"
+local source = "copilot"
 return {
   {
     "hrsh7th/nvim-cmp",
@@ -21,10 +21,34 @@ return {
       },
     },
     opts = function(_, opts)
-      local cmp = require "cmp"
-      opts.sources = cmp.config.sources(vim.list_extend({
-        { name = source },
-      }, opts.sources))
+      opts.sources = vim.list_extend({
+        {
+          name = source,
+          group_index = 2,
+          max_item_count = 3,
+        },
+      }, opts.sources)
+      if source == "copilot" then
+        local cmp = require "cmp"
+        opts.sorting = {
+          priority_weight = 2,
+          comparators = {
+            require("copilot_cmp.comparators").prioritize,
+
+            -- Below is the default comparitor list and order for nvim-cmp
+            cmp.config.compare.offset,
+            -- cmp.config.compare.scopes, --this is commented in nvim-cmp too
+            cmp.config.compare.exact,
+            cmp.config.compare.score,
+            cmp.config.compare.recently_used,
+            cmp.config.compare.locality,
+            cmp.config.compare.kind,
+            cmp.config.compare.sort_text,
+            cmp.config.compare.length,
+            cmp.config.compare.order,
+          },
+        }
+      end
     end,
   },
   {
@@ -42,13 +66,21 @@ return {
           --   },
           -- },
           suggestion = { enabled = false },
-          panel = { enabled = false },
+          panel = {
+            enabled = true,
+            jump_prev = "<C-n>",
+            jump_next = "<C-p>",
+            accept = "<CR>",
+            refresh = "<C-r>",
+            open = "<M-CR>",
+          },
         },
         config = function(_, opts)
           require("copilot").setup(opts)
           -- TODO: telescope or virtual_lines display
           -- https://github.com/zbirenbaum/copilot.lua/blob/master/lua/copilot/api.lua
         end,
+        keys = { { "<leader>np", "i<cmd>Copilot panel<cr>" } },
       },
     },
   },

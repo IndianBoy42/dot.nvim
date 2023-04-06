@@ -1,3 +1,26 @@
+local custom_surroundings = function()
+  local ts_input = require("mini.surround").gen_spec.input.treesitter
+  local tsi = function(id) return ts_input { outer = id .. ".outer", inner = id .. ".inner" } end
+
+  return {
+    -- With Spaces
+    [")"] = { output = { left = "(", right = ")" } },
+    ["}"] = { output = { left = "{", right = "}" } },
+    ["]"] = { output = { left = "[", right = "]" } },
+
+    c = { input = tsi "@call" },
+    f = { input = tsi "@function" },
+    B = { input = { "%b{}", "^.%s*().-()%s*.$" }, output = { left = "{ ", right = " }" } },
+
+    -- TODO: jupyter cells
+    -- o = {
+    --   input = ts_input {
+    --     outer = { "@block.outer", "@conditional.outer", "@loop.outer" },
+    --     inner = { "@block.inner", "@conditional.inner", "@loop.inner" },
+    --   },
+    -- },
+  }
+end
 local M = {
   {
     "abecodes/tabout.nvim",
@@ -138,7 +161,7 @@ local M = {
     end,
     opts = function()
       return {
-        custom_surroundings = require("plugins.navedit.ai").custom_surroundings(),
+        custom_surroundings = custom_surroundings(),
         mappings = {
           add = "ys", -- Add surrounding in Normal and Visual modes
           vadd = "s", -- Add surrounding in Normal and Visual modes
@@ -166,7 +189,7 @@ local M = {
       map("x", "'", opts.mappings.vadd .. [[']], { remap = true, silent = true })
 
       -- Make special mapping for "add surrounding for line"
-      vim.api.nvim_set_keymap("n", "yss", "ys_", { noremap = false })
+      map("n", "yss", "ys_", { remap = true, silent = true })
     end,
   },
   -- require("plugins.pairs.sandwich").spec,

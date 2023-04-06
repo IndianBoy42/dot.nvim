@@ -83,30 +83,22 @@ return {
     local lspwith = vim.lsp.with
     vim.diagnostic.config(require("langs").diagnostic_config)
     handlers["textDocument/codeLens"] = lspwith(vim.lsp.codelens.on_codelens, require("langs").codelens_config)
-    -- handlers["textDocument/hover"] = lspwith(handlers.hover, {
-    --   border = opts.border,
-    -- })
-    -- handlers["textDocument/signatureHelp"] = lspwith(handlers.signature_help, {
-    --   border = opts.border,
-    --   focusable = false,
-    -- })
 
-    -- symbols for autocomplete
-    lsp.protocol.CompletionItemKind = {}
-
-    -- Lsp autocommands
-    require("utils").define_augroups {
-      _general_lsp = {
-        { "FileType", "lspinfo", "nnoremap <silent> <buffer> q :q<CR>" },
-        { "FileType", "lspinfo", "nnoremap <buffer> I :LspInstall " },
-      },
-      -- _codelens_refesh = {
-      --   { "BufEnter,CursorHold,InsertLeave", "*", "lua vim.lsp.codelens.refresh()" },
-      -- },
-      -- _lsp_hover = {
-      --   { "CursorHold, CursorHoldI", "*", "lua vim.lsp.buf.hover()" },
-      -- },
-    }
+    if false then
+      local auto_hover = vim.api.nvim_create_augroup("auto_hover", {})
+      vim.api.nvim_create_autocmd({ "CursorHold" }, {
+        group = auto_hover,
+        callback = function()
+          if vim.b.cursor_hold_hover then return end
+          vim.lsp.buf.hover()
+          vim.b.cursor_hold_hover = true
+        end,
+      })
+      vim.api.nvim_create_autocmd({ "CursorMoved" }, {
+        group = auto_hover,
+        callback = function() vim.b.cursor_hold_hover = false end,
+      })
+    end
 
     -- https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/plugins/lsp/init.lua
     local servers = opts.servers
@@ -116,11 +108,9 @@ return {
     lsp_sel_rng.update_capabilities(capabilities)
     utils.lsp.cb_on_attach(function(client, bufnr)
       local mapl = vim.keymap.setl
-      mapl("n", "vv", lsp_sel_rng.trigger)
-      mapl("v", "vv", lsp_sel_rng.expand)
-      -- autocmd CursorHold  <buffer> lua vim.lsp.buf.document_highlight()
-      -- autocmd CursorHoldI <buffer> lua vim.lsp.buf.document_highlight()
-      -- autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
+      mapl("n", "<C-,>", "v<C-,>", { remap = true, desc = "LSP Selection Range" }) -- TODO: bind to M-, only if has capability
+      mapl("v", "<C-,>", lsp_sel_rng.expand, { desc = "LSP Selection Range" })
+
       if client.server_capabilities.documentHighlight then
         local id = vim.api.nvim_create_augroup("document_highlight", { clear = false })
         vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {

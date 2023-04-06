@@ -13,11 +13,11 @@ local M = {
       -- map("i", "<C-h>", "<Plug>luasnip-expand-snippet", { silent = true })
       -- map("s", "<C-h>", "<Plug>luasnip-expand-snippet", { silent = true })
 
-      local feedkeys_ = vim.api.nvim_feedkeys
+      local nvim_feedkeys = vim.api.nvim_feedkeys
       local termcode = vim.api.nvim_replace_termcodes
       local feedkeys = function(keys, o)
         if o == nil then o = "m" end
-        feedkeys_(termcode(keys, true, true, true), o, false)
+        nvim_feedkeys(termcode(keys, true, true, true), o, false)
       end
       local luasnip = require "luasnip"
       local cj = function()
@@ -27,22 +27,28 @@ local M = {
           feedkeys "<Plug>(Tabout)"
         end
       end
-      map("i", "<C-j>", cj, { silent = true })
-      map("s", "<C-j>", cj, { silent = true })
-      map("i", "<C-u>", require "luasnip.extras.select_choice", { silent = true })
-      map("i", "<C-k>", "<Plug>luasnip-jump-prev", { silent = true })
-      map("s", "<C-k>", "<Plug>luasnip-jump-prev", { silent = true })
-      map("i", "<M-j>", "<Plug>luasnip-next-choice", { silent = true })
+      local ck = function()
+        if luasnip.expand_or_jumpable() then
+          feedkeys "<Plug>luasnip-jump-prev"
+        else
+          feedkeys "<Plug>(TaboutBack)"
+        end
+      end
+
+      map("i", "<M-n>", cj, { silent = true })
+      map("s", "<M-n>", cj, { silent = true })
+      map("i", "<M-p>", ck, { silent = true })
+      map("s", "<M-p>", ck, { silent = true })
+      -- map("i", "<C-u>", require "luasnip.extras.select_choice", { silent = true })
+      -- map("i", "<M-n>", "<Plug>luasnip-next-choice", { silent = true })
       map("s", "<M-j>", "<Plug>luasnip-next-choice", { silent = true })
-      map("i", "<M-k>", "<Plug>luasnip-prev-choice", { silent = true })
+      -- map("i", "<M-p>", "<Plug>luasnip-prev-choice", { silent = true })
       map("s", "<M-k>", "<Plug>luasnip-prev-choice", { silent = true })
-      map("i", "<C-y>", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
-      map("s", "<C-y>", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
-      local operatorfunc_keys = require("utils").operatorfunc_keys
-      map("n", "<M-s>", operatorfunc_keys("luasnip_select", "<TAB>"), { silent = true })
+      -- map("i", "<C-y>", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
+      map("s", "<M-h>", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
+
+      map("n", "<M-s>", utils.operatorfunc_keys("luasnip_select", "<TAB>"), { silent = true })
       for _, v in ipairs { "a", "b", "c" } do
-        -- vnoremap <c-f>a  "ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>
-        -- inoremap <c-f>a  <cmd>lua require('luasnip.extras.otf').on_the_fly("a")<cr>
         map(
           "v",
           "<C-f>" .. v,
@@ -147,7 +153,14 @@ local M = {
       end, { nargs = "?" })
     end,
   },
-  { import = "plugins.snippets.docs" },
+  {
+    "danymat/neogen",
+    cmd = "Neogen",
+    opts = {
+      enabled = true,
+      snippet_engine = "luasnip",
+    },
+  },
   {
     "ziontee113/SnippetGenie",
     opts = {

@@ -117,7 +117,7 @@ return function()
   _general_settings.Filetype.qf = "set nobuflisted"
 
   -- Default autocommands
-  -- TODO: Reorganize this
+  -- TODO: Reorganize this into lua api
   require("utils").define_augroups {
     _buffer_bindings = { { "FileType", "dashboard", "nnoremap <silent> <buffer> q :q<CR>" } },
     _terminal_insert = { { "BufEnter", "term://*", "startinsert" }, { "BufLeave", "term://*", "stopinsert" } },
@@ -151,10 +151,33 @@ return function()
   vim.g.neovide_window_floating_opacity = 0
   vim.g.neovide_floating_blur = 0
   vim.g.neovide_window_floating_blur = 0
-  require("utils").set_guifont(O.fontsize, "FiraCode Nerd Font")
+  -- require("utils").set_guifont(O.fontsize, "FiraCode Nerd Font")
+  require("utils").set_guifont(O.fontsize, "Iosevka Term SS05 Md Ex")
 
   if vim.g.kitty_scrollback then
     opt.signcolumn = "no" -- TODO: more stuff?
     -- opt.virtualedit = "all"
   end
+
+  do
+    local timer = nil
+    vim.api.nvim_create_autocmd("RecordingEnter", {
+      callback = function()
+        timer = vim.defer_fn(function()
+          timer = nil
+          vim.notify("You've been recording that macro for a loooong time", vim.log.levels.WARN)
+        end, 5000)
+      end,
+    })
+    vim.api.nvim_create_autocmd("RecordingLeave", {
+      callback = function()
+        timer = vim.defer_fn(function()
+          timer:stop()
+          timer = nil
+        end, 5000)
+      end,
+    })
+  end
+
+  utils.write_on_idle("noau_write_idle", 1000)
 end

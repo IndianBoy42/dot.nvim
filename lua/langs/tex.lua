@@ -1,3 +1,12 @@
+local function au_unconceal(level)
+  vim.opt_local.conceallevel = level
+  utils.define_augroups {
+    _lightspeed_unconceal = {
+      { "User", "LightspeedEnter", "setlocal conceallevel=0" },
+      { "User", "LightspeedExit", "setlocal conceallevel=" .. level },
+    },
+  }
+end
 local surroundings = function(ms)
   local ui = ms.user_input
   return {
@@ -494,7 +503,7 @@ return {
     map("i", "<C-b>", "<cmd>normal ysiwmb<cr>", { silent = true })
     map("i", "<C-t>", "<cmd>normal ysiwmi<cr>", { silent = true })
 
-    require("plugins.navedit.utils").au_unconceal(conf.conceal)
+    au_unconceal(conf.conceal)
     -- vim.opt_local.background = "light"
     if conf.theme then
       vim.cmd(conf.theme)
@@ -507,41 +516,7 @@ return {
     end
     if conf.fontsize then utils.set_guifont(conf.fontsize) end
 
-    -- require("lv-utils").define_augroups {
-    --   _general_lsp = {
-    --     { "CursorHold,CursorHoldI", "<buffer>", "lua vim.lsp.buf.formatting()" },
-    --     { "CursorMoved,TextChanged,InsertEnter", "<buffer>", "lua vim.lsp.buf.cancel_formatting()" },
-    --   },
-    -- }
-
-    -- require("langs.complete").autocomplete(false)
-    require("langs.complete").sources {
-      {
-        { name = "luasnip" },
-        { name = "nvim_lsp" },
-        { name = "copilot" },
-      },
-      {
-        { name = "buffer" },
-        { name = "spell" },
-        { name = "omni" },
-      },
-    }
-
-    local cmp = require "cmp"
-    cmp.setup.buffer {
-      mapping = {
-        ["<CR>"] = cmp.mapping {
-          i = function(fallback) return fallback() end,
-        }, -- clear mapping
-        ["<TAB>"] = cmp.mapping {
-          i = require("langs.complete").supertab(cmp.confirm),
-        },
-      },
-    }
-
-    -- require("luasnip").add_snippets("tex", require("plugins.snippets.tex").snippets)
-    -- require("luasnip").add_snippets("tex", require("plugins.snippets.tex").autosnippets, { type = "autosnippets" })
+    -- TODO: cursorhold autoformat (but longer time)
 
     -- TODO: mini.surround
     -- require("plugins.pairs.sandwich").add_local_recipes(sandwich_recipes)

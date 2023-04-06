@@ -1,1 +1,1 @@
-require("lua.plugins.git.fugitive").in_fugitive_menu()
+require("plugins.git.fugitive").in_fugitive_menu()

@@ -26,7 +26,7 @@ local function window_hydra_setup()
  _p_: pick buffer
 ]]
 
-  Hydra {
+  return Hydra {
     name = "Windows",
     hint = window_hint,
     config = {
@@ -103,9 +103,10 @@ return {
   "anuvyklack/windows.nvim",
   dependencies = {
     "anuvyklack/middleclass",
-    { "mrjones2014/smart-splits.nvim", opts = {
-      cursor_follows_swapped_bufs = false,
-    } },
+    {
+      "mrjones2014/smart-splits.nvim",
+      opts = { cursor_follows_swapped_bufs = false },
+    },
     {
       "beauwilliams/focus.nvim",
       opts = {
@@ -118,12 +119,12 @@ return {
         winhighlight = false,
       },
       keys = function()
-        -- stylua: ignore
+        -- TODO: smart-splits for kitty integration?
         return {
-          { "<C-h>", function() require 'focus'.split_command('h') end, mode = { "n", "t" }, desc = "Move/Split" },
-          { "<C-j>", function() require 'focus'.split_command('j') end, mode = { "n", "t" }, desc = "Move/Split" },
-          { "<C-k>", function() require 'focus'.split_command('k') end, mode = { "n", "t" }, desc = "Move/Split" },
-          { "<C-l>", function() require 'focus'.split_command('l') end, mode = { "n", "t" }, desc = "Move/Split" },
+          { "<C-h>", function() require("focus").split_command "h" end, mode = { "n", "t" }, desc = "Move/Split" },
+          { "<C-j>", function() require("focus").split_command "j" end, mode = { "n", "t" }, desc = "Move/Split" },
+          { "<C-k>", function() require("focus").split_command "k" end, mode = { "n", "t" }, desc = "Move/Split" },
+          { "<C-l>", function() require("focus").split_command "l" end, mode = { "n", "t" }, desc = "Move/Split" },
         }
       end,
     },
@@ -146,7 +147,8 @@ return {
   },
   config = function(_, opts)
     require("windows").setup(opts)
-    window_hydra_setup()
+    local hydra = window_hydra_setup()
+    vim.keymap.set("n", "<leader>w", function() hydra:activate() end, { desc = "Windowman" })
   end,
   event = "VeryLazy",
 }

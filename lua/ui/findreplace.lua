@@ -267,4 +267,46 @@ return {
       end
     end,
   },
+  {
+    "cshuaimin/ssr.nvim",
+    -- Calling setup is optional.
+    opts = {
+      border = "rounded",
+      min_width = 50,
+      min_height = 5,
+      max_width = 120,
+      max_height = 25,
+      keymaps = {
+        close = "q",
+        next_match = "n",
+        prev_match = "N",
+        replace_confirm = "<cr>",
+        replace_all = "<localleader><cr>",
+      },
+    },
+    keys = {
+      {
+        "<leader>rr",
+        function() require("ssr").open() end,
+        mode = { "n", "v" },
+        desc = "Treesitter SSR",
+      },
+    },
+  },
+  {
+    "smjonas/inc-rename.nvim",
+    cmd = "IncRename",
+    keys = {
+      {
+        "<leader>rn",
+        function()
+          require "inc_rename"
+          return ":IncRename " .. vim.fn.expand "<cword>"
+        end,
+        expr = true,
+        desc = "Rename",
+      },
+    },
+    config = true,
+  },
 }

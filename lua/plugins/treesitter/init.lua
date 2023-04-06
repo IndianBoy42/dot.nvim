@@ -16,9 +16,13 @@ local M = {
       -- "nvim-treesitter/nvim-treesitter-refactor",
       {
         "andymass/vim-matchup",
-        setup = function()
+        init = function()
           -- may set any options here
           vim.g.matchup_matchparen_offscreen = { method = "popup" }
+          vim.g.matchup_transmute_enabled = 1
+          -- TODO: nmap <silent> <F7> <plug>(matchup-hi-surround)
+          -- let g:matchup_matchparen_deferred = 1
+          -- let g:matchup_matchparen_hi_surround_always = 1
         end,
       },
     },
@@ -115,8 +119,8 @@ local M = {
         enable = true,
         keymaps = {
           init_selection = "<M-,>",
-          node_incremental = "<leader>,",
-          node_decremental = "<M-,>",
+          node_incremental = "<M-,>",
+          node_decremental = "<M-S-,>",
           scope_incremental = "grc",
         },
       },
@@ -150,6 +154,7 @@ local M = {
     "nvim-treesitter/playground",
     cmd = { "TSPlaygroundToggle", "TSHighlightCapturesUnderCursor" },
   },
+  { "JoosepAlviste/nvim-ts-context-commentstring" },
 }
 
 return M

@@ -204,7 +204,7 @@ end
 -- the font used in graphical neovim applications
 function M.set_guifont(size, font)
   if font == nil then font = vim.g.guifontface end
-  vim.opt.guifont = font .. ":h" .. size
+  vim.opt.guifont = { font, ":h" .. size }
   vim.g.guifontface = font
   vim.g.guifontsize = size
 end
@@ -215,10 +215,15 @@ function M.mod_guifont(diff, font)
   print(vim.opt.guifont._value)
 end
 
-vim.cmd [[
-  command! FontUp lua require("utils").mod_guifont(1)
-  command! FontDown lua require("utils").mod_guifont(-1)
-]]
+if vim.g.neovide then
+  vim.g.neovide_scale_factor = 1.0
+  local change_scale_factor = function(delta) vim.g.neovide_scale_factor = vim.g.neovide_scale_factor * delta end
+  vim.api.nvim_create_user_command("FontUp", function() change_scale_factor(1.25) end, { nargs = "?" })
+  vim.api.nvim_create_user_command("FontDown", function() change_scale_factor(1 / 1.25) end, { nargs = "?" })
+else
+  vim.api.nvim_create_user_command("FontUp", function() M.mod_guifont(1) end, { nargs = "?" })
+  vim.api.nvim_create_user_command("FontDown", function() M.mod_guifont(-1) end, { nargs = "?" })
+end
 
 -- TODO: Could use select mode for this like luasnip?
 
@@ -501,13 +506,15 @@ function M.setproxy(of)
 end
 
 M.lsp = require "utils.lsp"
+M.telescope = require "utils.telescope"
+M.ui = require "utils.ui"
 
 function M.partial(func, ...)
-  local args = { ... }
+  local n_args, args = select("#", ...), { ... }
   return function(...)
     local allArgs = {}
     local n = 1
-    for i = 1, #args do
+    for i = 1, n_args do
       if args[i] == nil then
         allArgs[i] = select(n, ...)
         n = n + 1
@@ -564,6 +571,47 @@ function M.swap_buf_to_win(win)
   vim.api.nvim_win_set_buf(win, vim.api.nvim_get_current_buf())
   vim.api.nvim_win_set_buf(win, o)
   vim.api.nvim_set_current_win(win)
+end
+
+function M.write_on_idle(grpname, timeout)
+  if true then return end
+  local callback = function(args) vim.cmd "update" end
+  local timer = nil
+  local function timer_cancel()
+    if not not timer then
+      timer:stop()
+      timer = nil
+      return true
+    end
+    return false
+  end
+  local grp = type(grpname) == "string" and vim.api.nvim_create_augroup(grpname, {}) or grpname
+  vim.api.nvim_create_autocmd({
+    "InsertLeave",
+    -- "CursorHold",
+    -- "TextChanged",
+  }, {
+    group = grp,
+    callback = function(args)
+      timer_cancel()
+      timer = vim.defer_fn(function()
+        timer = nil
+        vim.api.nvim_buf_call(args.buf, function() callback(args) end)
+      end, timeout)
+    end,
+  })
+  vim.api.nvim_create_autocmd({ "CursorMoved", "InsertEnter", "CmdlineEnter", "BufLeave", "BufWritePre" }, {
+    group = grp,
+    callback = timer_cancel,
+  })
+end
+-- Function to check if a floating dialog exists and if not
+-- then check for diagnostics under the cursor
+function M.if_no_float()
+  for _, winid in pairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if vim.api.nvim_win_get_config(winid).zindex then return false end
+  end
+  return true
 end
 
 return M

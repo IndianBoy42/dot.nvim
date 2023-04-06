@@ -1,6 +1,6 @@
 local diagnostic_config_all = {
   _virtual_text = function(ns, bufnr)
-    local highest = require("utils.lsp").get_highest_diag(ns, bufnr)
+    local highest = utils.lsp.get_highest_diag(ns, bufnr)
     return {
       spacing = 4,
       prefix = "",

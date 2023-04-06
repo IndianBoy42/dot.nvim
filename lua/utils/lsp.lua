@@ -22,78 +22,6 @@ local error_hlgroup = "ErrorMsg"
 -- the second line to it.
 local short_line_limit = 20
 
--- Prints the first diagnostic for the current line.
--- Bind to CursorMoved to update live: cmd [[autocmd CursorMoved * :lua require("utils.lsp").echo_diagnostic()]]
-function M.echo_diagnostic()
-  if echo_timer then echo_timer:stop() end
-
-  echo_timer = vim.defer_fn(function()
-    local line = vfn.line "." - 1
-    local bufnr = api.nvim_win_get_buf(0)
-
-    if last_echo[1] and last_echo[2] == bufnr and last_echo[3] == line then return end
-
-    local ldiags = diags.get_line_diagnostics(bufnr, line, { severity_limit = "Warning" })
-
-    if #ldiags == 0 then
-      -- If we previously echo'd a message, clear it out by echoing an empty
-      -- message.
-      if last_echo[1] then
-        last_echo = { false, -1, -1 }
-
-        vim.cmd 'echo ""'
-      end
-
-      return
-    end
-
-    last_echo = { true, bufnr, line }
-
-    local diag = ldiags[1]
-    local width = api.nvim_get_option "columns" - 15
-    local lines = vim.split(diag.message, "\n")
-    local message = lines[1]
-    local lineindex = 2
-
-    if width == 0 then
-      if #lines > 1 and #message <= short_line_limit then message = message .. " " .. lines[lineindex] end
-    else
-      while #message < width do
-        message = message .. " " .. lines[lineindex]
-        lineindex = lineindex + 1
-      end
-    end
-
-    if width > 0 and #message >= width then message = message:sub(1, width) .. "..." end
-
-    local kind = "warning"
-    local hlgroup = warning_hlgroup
-
-    if diag.severity == lsp.protocol.DiagnosticSeverity.Error then
-      kind = "error"
-      hlgroup = error_hlgroup
-    end
-
-    local chunks = {
-      { kind .. ": ", hlgroup },
-      { message },
-    }
-
-    api.nvim_echo(chunks, false, {})
-  end, echo_timeout)
-end
-
-function M.simple_echo_diagnostic()
-  local line_diagnostics = diags.get_line_diagnostics()
-  if vim.tbl_isempty(line_diagnostics) then
-    cmd [[echo ""]]
-    return
-  end
-  for _, diagnostic in ipairs(line_diagnostics) do
-    cmd("echo '" .. diagnostic.message .. "'")
-  end
-end
-
 local getmark = api.nvim_buf_get_mark
 local feedkeys = api.nvim_feedkeys
 local termcodes = vim.api.nvim_replace_termcodes
@@ -177,11 +105,6 @@ function M.view_location_split(name, split_cmd)
   end
 end
 
-vim.api.nvim_create_autocmd("BufReadPost", {
-  callback = function()
-    if vim.b.lsp_diagnostics_hide == nil then vim.b.lsp_diagnostics_hide = false end
-  end,
-})
 function M.toggle_diagnostics(b)
   if vim.diagnostic.is_disabled(b) then
     diags.enable(b or 0)
@@ -245,9 +168,15 @@ local popup_diagnostics_opts = function()
     scope = "line",
   }
 end
-function M.diag_line() diags.open_float(vim.tbl_deep_extend("keep", { scope = "line" }, popup_diagnostics_opts())) end
-function M.diag_cursor() diags.open_float(vim.tbl_deep_extend("keep", { scope = "cursor" }, popup_diagnostics_opts())) end
-function M.diag_buffer() diags.open_float(vim.tbl_deep_extend("keep", { scope = "buffer" }, popup_diagnostics_opts())) end
+function M.diag_line(opts)
+  diags.open_float(vim.tbl_deep_extend("keep", opts, { scope = "line" }, popup_diagnostics_opts()))
+end
+function M.diag_cursor(opts)
+  diags.open_float(vim.tbl_deep_extend("keep", opts, { scope = "cursor" }, popup_diagnostics_opts()))
+end
+function M.diag_buffer(opts)
+  diags.open_float(vim.tbl_deep_extend("keep", opts, { scope = "buffer" }, popup_diagnostics_opts()))
+end
 
 function M.get_highest_diag(ns, bufnr)
   local diag_list = vim.diagnostic.get(bufnr, { namespace = ns })
@@ -332,7 +261,7 @@ M.rename = (function()
   end
 
   return function()
-    require("plugins.ui.input").inline_text_input {
+    utils.ui.inline_text_input {
       border = O.lsp.rename_border,
       -- enter = do_rename,
       enter = vim.lsp.buf.rename,

@@ -86,10 +86,9 @@ return {
     },
     ---@param opts cmp.ConfigSchema
     opts = function(_, opts)
-      local cmp = require "cmp"
-      opts.sources = cmp.config.sources(vim.list_extend(opts.sources, {
-        { name = "crates" },
-      }))
+      opts.sources = vim.list_extend(opts.sources, {
+        { name = "crates", group_index = 1 },
+      })
     end,
   },
   -- correctly setup mason lsp / dap extensions
@@ -125,7 +124,6 @@ return {
             dap = {
               adapter = require("rust-tools.dap").get_codelldb_adapter(codelldb_path, liblldb_path),
             },
-            on_initialized = function() end,
             tools = {
               hover_actions = {
                 auto_focus = true,
@@ -193,9 +191,7 @@ return {
                   name = "Move Item",
                   hint = false,
                   config = { color = "pink" },
-                  mode = {
-                    "n",
-                  },
+                  mode = { "n" },
                   heads = {
                     {
                       "j",
@@ -238,6 +234,7 @@ return {
                   -- Add clippy lints for Rust.
                   checkOnSave = true,
                   check = {
+                    enable = true,
                     command = "clippy",
                     features = "all",
                   },
@@ -248,17 +245,20 @@ return {
                   procMacro = {
                     enable = true,
                   },
-                  -- experimental = {
-                  --   enable = true,
-                  -- },
+                  diagnostics = {
+                    experimental = {
+                      enable = false,
+                    },
+                  },
                   hover = {
                     actions = {
                       references = { enable = true },
                     },
                   },
-                  inlayHints = {
-                    expressionAdjustmentHints = { enable = true },
-                  },
+                  workspace = { symbol = { search = { kind = "all_symbols" } } },
+                  -- inlayHints = {
+                  --   expressionAdjustmentHints = { enable = true },
+                  -- },
                   rustfmt = {
                     rangeFormatting = { enable = true },
                   },

@@ -220,7 +220,7 @@ end
 function M.grep_visual()
   require("telescope.builtin").grep_string {
     path_display = { "shorten_path" },
-    search = require("utils").get_visual_selection(),
+    search = utils.get_visual_selection(),
   }
 end
 
@@ -293,7 +293,7 @@ end
 
 function M.live_grep_all()
   require("telescope.builtin").find_files {
-    find_command = M.with_rg(),
+    find_command = M.with_rg {},
   }
 end
 

@@ -4,10 +4,9 @@ return {
   --   dependencies = {},
   --   ---@param opts cmp.ConfigSchema
   --   opts = function(_, opts)
-  --     local cmp = require "cmp"
-  --     opts.sources = cmp.config.sources(vim.list_extend(opts.sources, {
-  --       { name = "jupyter" },
-  --     }))
+  --     opts.sources = vim.list_extend(opts.sources, {
+  --       { name = "jupyter", group_index = 2 },
+  --     })
   --   end,
   -- },
   {
@@ -27,37 +26,38 @@ return {
     opts = {},
   },
 
-  require("langs").mason_ensure_installed { "pyright", "ruff-lsp" },
+  require("langs").mason_ensure_installed { "python-lsp-server" },
   {
     "neovim/nvim-lspconfig",
     opts = {
       servers = {
-        pyright = {
-          handlers = {
-            ["textDocument/publishDiagnostics"] = function() end,
-          },
-          on_attach = function(client, _) client.server_capabilities.codeActionProvider = false end,
-          settings = {
-            pyright = {
-              disableOrganizeImports = true,
-            },
-            python = {
-              analysis = {
-                autoSearchPaths = true,
-                typeCheckingMode = "basic",
-                useLibraryCodeForTypes = true,
-              },
-            },
-          },
-        },
-        ["ruff_lsp"] = {
-          on_attach = function(client, _) client.server_capabilities.hoverProvider = false end,
-          init_options = {
-            settings = {
-              args = {},
-            },
-          },
-        },
+        pylsp = {},
+        -- pyright = {
+        --   handlers = {
+        --     ["textDocument/publishDiagnostics"] = function() end,
+        --   },
+        --   on_attach = function(client, _) client.server_capabilities.codeActionProvider = false end,
+        --   settings = {
+        --     pyright = {
+        --       disableOrganizeImports = true,
+        --     },
+        --     python = {
+        --       analysis = {
+        --         autoSearchPaths = true,
+        --         typeCheckingMode = "basic",
+        --         useLibraryCodeForTypes = true,
+        --       },
+        --     },
+        --   },
+        -- },
+        -- ["ruff_lsp"] = {
+        --   on_attach = function(client, _) client.server_capabilities.hoverProvider = false end,
+        --   init_options = {
+        --     settings = {
+        --       args = {},
+        --     },
+        --   },
+        -- },
       },
     },
   },

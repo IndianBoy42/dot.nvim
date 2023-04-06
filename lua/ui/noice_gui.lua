@@ -1,5 +1,6 @@
 return {
   "folke/noice.nvim",
+  cond = not vim.g.neovide,
   event = "VeryLazy",
   dependencies = { "MunifTanjim/nui.nvim" },
   config = function()
@@ -150,7 +151,6 @@ return {
       end,
     })
   end,
-  -- stylua: ignore
   keys = {
     {
       "<S-Enter>",
@@ -161,57 +161,29 @@ return {
       desc = "Redirect Cmdline",
     },
     -- { "<C-Enter>",   function() require("noice").redirect(vim.fn.getcmdline()) end,                  mode = "c",                 desc = "Redirect Cmdline" },
-    {
-      "<leader>sm",
-      function()
-        require("noice").cmd "telescope"
-      end,
-      desc = "Noice Telescope",
-    },
-    {
-      "<leader>snl",
-      function()
-        require("noice").cmd "last"
-      end,
-      desc = "Noice Last Message",
-    },
-    {
-      "<leader>snh",
-      function()
-        require("noice").cmd "history"
-      end,
-      desc = "Noice History",
-    },
-    {
-      "<leader>sna",
-      function()
-        require("noice").cmd "all"
-      end,
-      desc = "Noice All",
-    },
+    { "<leader>sm", function() require("noice").cmd "telescope" end, desc = "Noice Telescope" },
+    { "<leader>snl", function() require("noice").cmd "last" end, desc = "Noice Last Message" },
+    { "<leader>snh", function() require("noice").cmd "history" end, desc = "Noice History" },
+    { "<leader>sna", function() require("noice").cmd "all" end, desc = "Noice All" },
     {
       "<c-f>",
       function()
-        if not require("noice.lsp").scroll(4) then
-          return "<c-f>"
-        end
+        if not require("noice.lsp").scroll(4) then return "<c-f>" end
       end,
       silent = true,
       expr = true,
       desc = "Scroll forward",
-      mode = { "i", "n", "s" },
+      mode = { "n" },
     },
     {
       "<c-b>",
       function()
-        if not require("noice.lsp").scroll(-4) then
-          return "<c-b>"
-        end
+        if not require("noice.lsp").scroll(-4) then return "<c-b>" end
       end,
       silent = true,
       expr = true,
       desc = "Scroll backward",
-      mode = { "i", "n", "s" },
+      mode = { "n" },
     },
   },
 }

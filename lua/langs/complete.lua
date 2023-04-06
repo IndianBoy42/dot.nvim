@@ -1,13 +1,3 @@
-local default_sources = {
-  { name = "luasnip" },
-  { name = "nvim_lsp" },
-  -- { name = "buffer" },
-  { name = "path" },
-  -- { name = "latex_symbols" },
-  { name = "calc" },
-  -- { name = "cmp_tabnine" },
-}
-
 local M = {
   "hrsh7th/nvim-cmp",
   event = { "InsertEnter", "CmdLineEnter" },
@@ -24,40 +14,78 @@ local M = {
     "petertriho/cmp-git",
     "dmitmel/cmp-cmdline-history",
     "saadparwaiz1/cmp_luasnip",
+    "hrsh7th/cmp-nvim-lsp-document-symbol",
+    "amarakon/nvim-cmp-lua-latex-symbols",
+    { "tzachar/cmp-fuzzy-buffer", dependencies = { "tzachar/fuzzy.nvim" } },
   },
+}
+M.default_sources = {
+  { name = "luasnip", group_index = 2 },
+  { name = "nvim_lsp", group_index = 2 },
+  -- { name = "buffer" , group_index = 2},
+  { name = "path", group_index = 2 },
+  -- { name = "latex_symbols" , group_index = 2},
+  { name = "calc", group_index = 2 },
+  -- { name = "cmp_tabnine" , group_index = 2},
 }
 M.config = function(_, opts)
   local cmp = require "cmp"
   cmp.setup(opts)
 
+  require("cmp").setup.filetype({ "tex", "plaintex" }, {
+    sources = {
+      { name = "lua-latex-symbols" },
+    },
+  })
+
+  local compare = require "cmp.config.compare"
+
   -- `/` cmdline setup.
   cmp.setup.cmdline("/", {
     -- mapping = cmp.mapping.preset.cmdline(),
-    sources = {
-      { name = "buffer" },
+    sources = cmp.config.sources {
+      { name = "fuzzy_buffer" },
+      -- { name = "nvim_lsp_document_symbol" },
+      -- { name = "buffer" },
+      { name = "cmdline_history" },
+    },
+    sorting = {
+      priority_weight = 2,
+      comparators = {
+        require "cmp_fuzzy_buffer.compare",
+        compare.offset,
+        compare.exact,
+        compare.score,
+        compare.recently_used,
+        compare.kind,
+        compare.sort_text,
+        compare.length,
+        compare.order,
+      },
     },
   }) -- `:` cmdline setup.
   cmp.setup.cmdline(":", {
     -- mapping = cmp.mapping.preset.cmdline(),
-    sources = cmp.config.sources({
-      { name = "path" },
-    }, {
-      {
+    sources = cmp.config.sources(
+      -- { name = "path" },
+      { {
         name = "cmdline",
         option = {
           ignore_cmds = { "Man", "!" },
         },
-      },
-    }),
+      } },
+      { {
+        name = "cmdline_history",
+      } }
+    ),
   })
 end
 
+local function t(str) return vim.api.nvim_replace_termcodes(str, true, true, true) end
+local feedkeys = vim.api.nvim_feedkeys
+
 function M.supertab(when_cmp_visible)
   local cmp = require "cmp"
-
-  local function t(str) return vim.api.nvim_replace_termcodes(str, true, true, true) end
-
-  local feedkeys = vim.api.nvim_feedkeys
   local function check_back_space()
     local col = vim.fn.col "." - 1
     return col == 0 or vim.fn.getline("."):sub(col, col):match "%s" ~= nil
@@ -96,7 +124,7 @@ M.opts = function()
   }
 
   local function double_mapping(invisible, visible)
-    return cmp.mapping(function()
+    return function()
       if cmp.visible() then
         visible()
       else
@@ -106,12 +134,114 @@ M.opts = function()
       "i",
       "s",
       "c",
-    })
+    }
   end
 
   local function autocomplete() cmp.complete { reason = cmp.ContextReason.Auto } end
 
-  local function complete_or(mapping) return double_mapping(autocomplete, mapping) end
+  local function complete_or(mapping) return double_mapping(cmp.complete, mapping) end
+  local function next_item()
+    if require("luasnip").choice_active() then
+      feedkeys(t "<Plug>luasnip-next-choice", "", false)
+    elseif cmp.visible() then
+      cmp.select_next_item { behavior = cmp.SelectBehavior.Select }
+    else
+      autocomplete()
+    end
+  end
+
+  local function prev_item()
+    if require("luasnip").choice_active() then
+      feedkeys(t "<Plug>luasnip-prev-choice", "", false)
+    elseif cmp.visible() then
+      cmp.select_prev_item { behavior = cmp.SelectBehavior.Select }
+    else
+      autocomplete()
+    end
+  end
+  local maps = {
+
+    ["<M-d>"] = cmp.mapping {
+      c = cmp.mapping.scroll_docs(-4),
+      i = function()
+        if not require("noice.lsp").scroll(-4) then cmp.scroll_docs(-4) end
+      end,
+      s = function()
+        if not require("noice.lsp").scroll(-4) then cmp.scroll_docs(-4) end
+      end,
+    },
+    ["<M-u>"] = cmp.mapping {
+      c = cmp.mapping.scroll_docs(4),
+      i = function()
+        if not require("noice.lsp").scroll(4) then cmp.scroll_docs(4) end
+      end,
+      s = function()
+        if not require("noice.lsp").scroll(4) then cmp.scroll_docs(4) end
+      end,
+    },
+    ["<M-k>"] = cmp.mapping {
+      i = prev_item,
+      c = complete_or(cmp.select_prev_item),
+    },
+    ["<M-j>"] = cmp.mapping {
+      i = next_item,
+      c = complete_or(cmp.select_next_item),
+    },
+    ["<Down>"] = cmp.mapping {
+      i = next_item,
+      -- c = cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Insert },
+    },
+    ["<Up>"] = cmp.mapping {
+      i = prev_item,
+      -- c = cmp.mapping.select_prev_item { behavior = cmp.SelectBehavior.Insert },
+    },
+    -- ["<M-l>"] = complete_or(function() cmp.confirm(cmdline_confirm) end),
+    ["<M-l>"] = cmp.mapping {
+      i = function()
+        if cmp.visible() then
+          cmp.confirm(confirmopts)
+        elseif require("luasnip").choice_active() then
+          require("plugins.snippets.luasnips_choices").popup_close()
+        else
+          cmp.complete()
+        end
+      end,
+      c = complete_or(cmp.mapping.confirm(cmdline_confirm)),
+    },
+    ["<M-h>"] = cmp.mapping {
+      i = function()
+        if cmp.visible() then cmp.close() end
+        if require("luasnip").choice_active() then require("plugins.snippets.luasnips_choices").popup_close() end
+      end,
+      c = cmp.mapping.close(),
+    },
+    ["<CR>"] = cmp.mapping {
+      -- i = cmp.mapping.confirm(confirmopts),
+      -- c = cmp.mapping.confirm(cmdline_confirm),
+    },
+    ["<Tab>"] = cmp.mapping {
+      c = cmp.mapping.confirm(cmdline_confirm),
+      -- c = cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Insert },
+      -- i = M.supertab(cmp.select_next_item),
+      i = M.supertab(cmp.mapping.confirm(confirmopts)),
+    },
+    ["<S-TAB>"] = cmp.mapping {
+      c = function()
+        if cmp.visible() then
+          cmp.select_prev_item { behavior = cmp.SelectBehavior.Insert }
+        else
+          cmp.complete()
+        end
+      end,
+      i = M.supertab(cmp.select_prev_item),
+    },
+  }
+  maps["<C-j>"] = maps["<M-j>"]
+  maps["<C-k>"] = maps["<M-k>"]
+  maps["<C-d>"] = maps["<M-d>"]
+  maps["<C-u>"] = maps["<M-u>"]
+  maps["<C-h>"] = maps["<M-h>"]
+  maps["<C-l>"] = maps["<M-l>"]
 
   return {
     snippet = {
@@ -122,7 +252,7 @@ M.opts = function()
       -- autocomplete = true,
     },
     preselect = cmp.PreselectMode.None,
-    -- confirmation = { default_behavior = cmp.ConfirmBehavior.Replace },
+    confirmation = { default_behavior = cmp.ConfirmBehavior.Replace },
     -- experimental = { ghost_text = true },
 
     window = {
@@ -135,57 +265,8 @@ M.opts = function()
         min_height = 1,
       },
     },
-    -- TODO: better mapping setup for enter, nextitem and close window
-    mapping = {
-      ["<C-d>"] = cmp.mapping(cmp.mapping.scroll_docs(-4), { "i", "c" }),
-      ["<C-u>"] = cmp.mapping(cmp.mapping.scroll_docs(4), { "i", "c" }),
-      -- ["<C-p>"] = cmp.mapping.select_prev_item(),
-      -- ["<C-n>"] = cmp.mapping.select_next_item(),
-      ["<C-p>"] = complete_or(cmp.select_prev_item),
-      ["<C-n>"] = complete_or(cmp.select_next_item),
-      ["<Down>"] = cmp.mapping {
-        i = cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Select },
-        c = cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Insert },
-      },
-      ["<Up>"] = cmp.mapping {
-        i = cmp.mapping.select_prev_item { behavior = cmp.SelectBehavior.Select },
-        c = cmp.mapping.select_prev_item { behavior = cmp.SelectBehavior.Insert },
-      },
-      ["<M-l>"] = complete_or(function() cmp.confirm(cmdline_confirm) end),
-      ["<C-space>"] = cmp.mapping {
-        i = function() cmp.complete() end,
-      },
-      -- TODO: overload this with Luasnip close choice node
-      ["<M-h>"] = cmp.mapping(cmp.mapping.close(), { "i", "c" }),
-      -- ["<Esc>"] = cmp.mapping(cp.mapping.close(), { "c" }),
-      -- ["<Esc>"] = cmp.mapping(cmp.mapping.close(), { "i", "c" }),
-      -- ["<Left>"] = cmp.mapping.close(confirmopts),
-      -- ["<Right>"] = cmp.mapping {
-      --   c = cmp.mapping.confirm(cmdline_confirm),
-      -- },
-      ["<CR>"] = cmp.mapping {
-        -- i = cmp.mapping.confirm(confirmopts),
-        i = cmp.mapping.confirm(cmdline_confirm),
-        -- c = cmp.mapping.confirm(cmdline_confirm),
-      },
-      ["<Tab>"] = cmp.mapping {
-        c = cmp.mapping.confirm(cmdline_confirm),
-        -- i = cmp.mapping.confirm(confirmopts),
-        i = M.supertab(cmp.select_next_item),
-      },
-      ["<S-TAB>"] = cmp.mapping {
-        c = function()
-          if cmp.visible() then
-            cmp.select_prev_item { behavior = cmp.SelectBehavior.Insert }
-          else
-            autocomplete()
-          end
-        end,
-        i = M.supertab(cmp.select_prev_item),
-      },
-    },
-    -- You should specify your *installed* sources.
-    sources = cmp.config.sources(default_sources),
+    mapping = maps,
+    sources = M.default_sources,
   }
 end
 
@@ -193,11 +274,7 @@ function M.autocomplete(enable) require("cmp").setup.buffer { completion = { aut
 
 function M.sources(list)
   local cmp = require "cmp"
-  cmp.setup.buffer { sources = cmp.config.sources(unpack(list)) }
-end
-
-function M.add_sources(highprio, lowprio)
-  M.sources(vim.list_extend(vim.list_extend({ highprio }, default_sources), { lowprio }))
+  cmp.setup.buffer { sources = list }
 end
 
 return M

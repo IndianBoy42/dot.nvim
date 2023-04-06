@@ -153,10 +153,18 @@ local telescope = {
           -- the default case_mode is "smart_case"
         },
         "cmake",
-        extensions = {
-          hop = {
-            keys = { "a", "s", "d", "f", "h", "j", "k", "l" },
-          },
+        hop = {
+          keys = { "a", "s", "d", "f", "h", "j", "k", "l" },
+        },
+        advanced_git_search = {
+          -- fugitive or diffview
+          diff_plugin = "diffview",
+          -- customize git in previewer
+          -- e.g. flags such as { "--no-pager" }, or { "-c", "delta.side-by-side=false" }
+          git_flags = {},
+          -- customize git diff in previewer
+          -- e.g. flags such as { "--raw" }
+          git_diff_flags = {},
         },
       },
     }

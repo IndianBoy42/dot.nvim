@@ -119,9 +119,7 @@ any_node = function(j, k, with_fmt)
     sn(nil, dyn_node(k)),
     sn(nil, i(1, "node")),
   }
-  if with_fmt then
-    nodes = { fmt_node(), unpack(nodes) }
-  end
+  if with_fmt then nodes = { fmt_node(), unpack(nodes) } end
   return c(j, nodes)
 end
 local function snip_node()
@@ -322,7 +320,7 @@ end,]],
       c(1, { i(1, "nvim_create_user_command"), i(1, "nvim_buf_create_user_command") }),
       i(2, "Command"),
       c(4, {
-        sn(nil, fmt([[function(args) {} end)]], { i(1) })),
+        sn(nil, fmt([[function(args) {} end]], { i(1) })),
         sn(nil, fmt([["{}"]], { i(1) })),
       }),
       c(3, {
@@ -330,11 +328,11 @@ end,]],
           nil,
           fmt([[nargs = {}]], {
             c(1, {
-              i(1, "*"),
-              i(1, "?"),
-              i(1, "+"),
-              i(1, "0"),
-              i(1, "1"),
+              i(1, '"*"'),
+              i(1, '"?"'),
+              i(1, '"+"'),
+              i(1, '"0"'),
+              i(1, '"1"'),
             }),
           })
         ),

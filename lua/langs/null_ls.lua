@@ -46,8 +46,8 @@ return {
         formatters.prettierd,
         -- formatters.rustfmt,
         formatters.shfmt,
-        formatters.black, -- yapf, autopep8
-        formatters.isort,
+        -- formatters.black, -- yapf, autopep8
+        -- formatters.isort,
         -- formatters.clang_format,
         -- formatters.uncrustify,
         formatters.cmake_format,
