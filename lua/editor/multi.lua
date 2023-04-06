@@ -75,11 +75,11 @@ return {
     map("x", "<C-v>", "<Plug>(VM-Visual-Add)")
 
     -- Multi select object
-    local find_under_operator = utils.operatorfunc_keys("multiselect", "<Plug>(VM-Find-Under)")
+    local find_under_operator = utils.operatorfunc_keys "<Plug>(VM-Find-Under)"
     map("n", "<M-v>", find_under_operator, {})
     map("n", ldr .. "n", find_under_operator, { desc = "Find Under" })
     -- Multi select all
-    local select_all_operator = utils.operatorfunc_keys("multiselect_all", "<Plug>(VM-Select-All)")
+    local select_all_operator = utils.operatorfunc_keys "<Plug>(VM-Select-All)"
     map("n", "<M-S-v>", select_all_operator, {})
     map("n", ldr .. "<S-v>", select_all_operator, {})
 
@@ -97,7 +97,7 @@ return {
     })
 
     -- map("n", "co", wrap_vm(nil, "Find-Under", "<Plug>(VM-Find-Operator)"), {})
-    -- map("n", "co", utils.operatorfunc_keys("find_occurences", "<esc><M-n>mgv"), {})
+    -- map("n", "co", utils.operatorfunc_keys("<esc><M-n>mgv"), {})
     -- vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufNewFile" }, { command = "VMTheme " .. theme })
 
     -- TODO: https://docs.helix-editor.com/keymap.html#selection-manipulation

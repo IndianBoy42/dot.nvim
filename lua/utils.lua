@@ -116,6 +116,16 @@ function OpenQuickFixList()
 endfunction
 ]]
 
+M.set_opfunc = vim.fn[vim.api.nvim_exec(
+  [[
+func s:set_opfunc(val)
+    let &opfunc = a:val
+endfunc
+echon get(function('s:set_opfunc'), 'name')
+]],
+  true
+)]
+
 -- TODO: improve this
 function M.operatorfunc_helper_select(lines)
   local start_row, start_col = unpack(vim.api.nvim_buf_get_mark(0, "["))
@@ -136,66 +146,65 @@ end
 
 function M.post_operatorfunc(old_func) vim.go.operatorfunc = old_func end
 
-_G.lv_utils_operatorfuncs = {}
 -- wrapper for making operators easily
-function M.operatorfunc_scaffold(name, operatorfunc)
+function M.operatorfunc_scaffold(operatorfunc)
   local old_func = vim.go.operatorfunc
 
-  _G.lv_utils_operatorfuncs[name] = function()
+  local wrapped = function()
     operatorfunc()
 
     M.post_operatorfunc(old_func)
   end
 
   return function()
-    vim.go.operatorfunc = "v:lua.lv_utils_operatorfuncs." .. name
+    M.set_opfunc(wrapped)
     feedkeys("g@", "n", false)
   end
 end
 
 -- keys linewise
-function M.operatorfuncV_keys(name, verbkeys)
-  return M.operatorfunc_scaffold(name, function()
+function M.operatorfuncV_keys(verbkeys)
+  return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(true)
     feedkeys(t(verbkeys), "m", false)
   end)
 end
 
 -- keys charwise
-function M.operatorfunc_keys(name, verbkeys)
-  return M.operatorfunc_scaffold(name, function()
+function M.operatorfunc_keys(verbkeys)
+  return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(false)
     feedkeys(t(verbkeys), "m", false)
   end)
 end
 
 -- cmd linewise
-function M.operatorfunc_Vcmd(name, verbkeys)
-  return M.operatorfunc_scaffold(name, function()
+function M.operatorfunc_Vcmd(verbkeys)
+  return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(true)
     vim.cmd(verbkeys)
   end)
 end
 
 -- cmd charwise
-function M.operatorfunc_cmd(name, verbkeys)
-  return M.operatorfunc_scaffold(name, function()
+function M.operatorfunc_cmd(verbkeys)
+  return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(false)
     vim.cmd(verbkeys)
   end)
 end
 
 -- fn linewise
-function M.operatorfunc_Vfn(name, func)
-  return M.operatorfunc_scaffold(name, function()
+function M.operatorfunc_Vfn(func)
+  return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(true)
     func()
   end)
 end
 
 -- fn charwise
-function M.operatorfunc_fn(name, func)
-  return M.operatorfunc_scaffold(name, function()
+function M.operatorfunc_fn(func)
+  return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(false)
     func()
   end)

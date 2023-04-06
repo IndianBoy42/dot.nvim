@@ -453,9 +453,9 @@ function M.setup()
 
   -- Search for the current selection
   map("x", "*", srchrpt '"zy/<C-R>z<cr>', nore) -- Search for the current selection
-  map("n", "<leader>*", operatorfunc_keys("searchbwd_for", "*"), { desc = "Search (op)" }) -- Search textobject
+  map("n", "<leader>*", operatorfunc_keys "*", { desc = "Search (op)" }) -- Search textobject
   map("x", "#", srchrpt '"zy?<C-R>z<cr>', nore) -- Backwards
-  map("n", "<leader>#", operatorfunc_keys("search_for", "#"), { desc = "^Search (op)" })
+  map("n", "<leader>#", operatorfunc_keys "#", { desc = "^Search (op)" })
 
   -- Search for last edited text
   map("n", 'g"', [[/\V<C-r>"<CR>]], { desc = "Search for last cdy" })
@@ -555,10 +555,10 @@ function M.setup()
 
   map("x", "gy", function()
     feedkeys('"zy' .. "mz" .. "`<" .. '"zP' .. "`[V`]", "n")
-    feedkeys("gc", "m")
+    feedkeys("<C-c>", "m")
     feedkeys("`z", "m")
   end, { desc = "copy and comment" })
-  map("n", "gy", operatorfuncV_keys("comment_copy", "gy"), sile)
+  map("n", "gy", operatorfuncV_keys "gy", sile)
   -- map("n", "gyy", "Vgy", sile)
 
   -- Swap the mark jump keys
@@ -998,7 +998,7 @@ function M.setup()
     },
     m = "Move",
     -- c = {
-    --   operatorfunc_keys("change_all", "<leader>c"),
+    --   operatorfunc_keys("<leader>c"),
     --   "Change all",
     -- },
   }

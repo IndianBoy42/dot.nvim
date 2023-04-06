@@ -47,7 +47,7 @@ local M = {
       -- map("i", "<C-y>", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
       map("s", "<M-h>", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
 
-      map("n", "<M-s>", utils.operatorfunc_keys("luasnip_select", "<TAB>"), { silent = true })
+      map("n", "<M-s>", utils.operatorfunc_keys "<TAB>", { silent = true })
       for _, v in ipairs { "a", "b", "c" } do
         map(
           "v",

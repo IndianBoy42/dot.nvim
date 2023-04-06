@@ -193,7 +193,7 @@ M.repeatable = function(ch, desc, fwdbwd, _opts)
     config = {
       color = "red",
       invoke_on_body = false,
-      timeout = 2000, -- millis
+      timeout = 5000, -- millis
       hint = {
         border = "rounded",
         type = "window",
@@ -217,33 +217,50 @@ M.repeatable = function(ch, desc, fwdbwd, _opts)
   end
   if _opts.sel then
   end
-  local prev_pre, next_pre = O.goto_prev, O.goto_next
+  local prev_pre, next_pre = O.goto_previous, O.goto_next
   if _opts.body == false then
     prev_pre, next_pre = nil, nil
     _opts.body = nil
   elseif type(_opts.body) == "table" then
     prev_pre, next_pre = unpack(_opts.body)
   end
-  utils.dump(_opts)
+
+  local cfg = {
+    on_enter = function() mappings.register_nN_repeat { fwd, bwd } end,
+    on_key = function() vim.wait(50) end,
+  }
+
+  local hydra_fwd, hydra_bwd
+  local extra = {
+    prev_pre and {
+      prev_pre,
+      function() hydra_bwd:activate() end,
+      { desc = "bwd", private = true, exit_before = true },
+    },
+    next_pre and {
+      next_pre,
+      function() hydra_fwd:activate() end,
+      { desc = "fwd", private = true, exit_before = true },
+    },
+  }
 
   -- TODO: use the opposite prefix to sticky reverse direction
-  local hydra_fwd, hydra_bwd
   hydra_fwd = require "hydra"(vim.tbl_deep_extend("keep", _opts, {
     body = next_pre,
-    on_enter = function() mappings.register_nN_repeat { fwd, bwd } end,
+    config = cfg,
     heads = {
       { c_ch, bwd, { desc = "opposite", private = true } },
       { ch, fwd, { desc = desc } },
-      prev_pre and { prev_pre, prev_pre .. ch, { desc = "opposite", private = true, exit_before = true } },
+      unpack(extra),
     },
   }, opts))
   hydra_bwd = require "hydra"(vim.tbl_deep_extend("keep", _opts, {
     body = prev_pre,
-    on_enter = function() mappings.register_nN_repeat { fwd, bwd } end,
+    config = cfg,
     heads = {
       { c_ch, fwd, { desc = "opposite", private = true } },
       { ch, bwd, { desc = desc } },
-      next_pre and { next_pre, next_pre .. ch, { desc = "opposite", private = true, exit_before = true } },
+      unpack(extra),
     },
   }, opts))
   return hydra_fwd, hydra_bwd
