@@ -11,5 +11,10 @@ return {
     event = "InsertEnter",
   },
   "anuvyklack/hydra.nvim",
+  {
+    "anuvyklack/keymap-amend.nvim",
+    config = function() vim.keymap.amend = require "keymap-amend" end,
+    lazy = false,
+  },
 }
 -- TODO: legendary.nvim

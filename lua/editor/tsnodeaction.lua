@@ -1,9 +1,10 @@
+-- TODO: actually implement something
 return {
   "ckolkey/ts-node-action",
   dependencies = { "nvim-treesitter" },
   cmd = "NodeAction",
   keys = {
-    { "<leader>ea", "<cmd>NodeAction<cr>", desc = "TS Node Action" },
+    -- { "<leader>ea", "<cmd>NodeAction<cr>", desc = "TS Node Action" },
   },
   config = function()
     local helpers = require "ts-node-action.helpers"

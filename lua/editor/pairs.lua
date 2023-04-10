@@ -1,3 +1,13 @@
+local surround_mappings = {
+  add = "ys", -- Add surrounding in Normal and Visual modes
+  vadd = "z", -- Add surrounding in Normal and Visual modes
+  delete = "ds", -- Delete surrounding
+  find = "]s", -- Find surrounding (to the right)
+  find_left = "[s", -- Find surrounding (to the left)
+  highlight = "<leader>vs", -- Highlight surrounding
+  replace = "cs", -- Replace surrounding
+  update_n_lines = "gzn", -- Update `n_lines`
+}
 local custom_surroundings = function()
   local ts_input = require("mini.surround").gen_spec.input.treesitter
   local tsi = function(id) return ts_input { outer = id .. ".outer", inner = id .. ".inner" } end
@@ -144,17 +154,15 @@ local M = {
     "echasnovski/mini.surround",
     keys = function(_, keys)
       -- Populate the keys based on the user's options
-      local plugin = require("lazy.core.config").spec.plugins["mini.surround"]
-      local opts = require("lazy.core.plugin").values(plugin, "opts", false)
       local mappings = {
-        { opts.mappings.add, desc = "Add surrounding" },
-        { opts.mappings.vadd, desc = "Add surrounding", mode = { "v" } },
-        { opts.mappings.delete, desc = "Delete surrounding" },
-        { opts.mappings.find, desc = "Find right surrounding" },
-        { opts.mappings.find_left, desc = "Find left surrounding" },
-        { opts.mappings.highlight, desc = "Highlight surrounding" },
-        { opts.mappings.replace, desc = "Replace surrounding" },
-        { opts.mappings.update_n_lines, desc = "Update `MiniSurround.config.n_lines`" },
+        { surround_mappings.add, desc = "Add surrounding" },
+        { surround_mappings.vadd, desc = "Add surrounding", mode = { "v" } },
+        { surround_mappings.delete, desc = "Delete surrounding" },
+        { surround_mappings.find, desc = "Find right surrounding" },
+        { surround_mappings.find_left, desc = "Find left surrounding" },
+        { surround_mappings.highlight, desc = "Highlight surrounding" },
+        { surround_mappings.replace, desc = "Replace surrounding" },
+        { surround_mappings.update_n_lines, desc = "Update `MiniSurround.config.n_lines`" },
       }
       mappings = vim.tbl_filter(function(m) return m[1] and #m[1] > 0 end, mappings)
       return vim.list_extend(mappings, keys)
@@ -162,17 +170,7 @@ local M = {
     opts = function()
       return {
         custom_surroundings = custom_surroundings(),
-        mappings = {
-          add = "ys", -- Add surrounding in Normal and Visual modes
-          vadd = "s", -- Add surrounding in Normal and Visual modes
-          delete = "ds", -- Delete surrounding
-          -- TODO: make repeatable?
-          find = "]s", -- Find surrounding (to the right)
-          find_left = "[s", -- Find surrounding (to the left)
-          highlight = "gzh", -- Highlight surrounding
-          replace = "cs", -- Replace surrounding
-          update_n_lines = "gzn", -- Update `n_lines`
-        },
+        mappings = surround_mappings,
         n_lines = 9999,
       }
     end,

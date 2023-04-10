@@ -114,11 +114,10 @@ return {
           --     custom_textobjects =
           -- }
 
-          local inlay_hints_enabled = true
           local rust_tools_executor = nil
-          local inlay_hints = vim.tbl_extend("keep", {
-            auto = inlay_hints_enabled,
-          }, require("langs").inlay_hint_opts)
+          local inlay_hints = vim.deepcopy(require("langs").inlay_hints)
+          local inlay_hints_enabled = inlay_hints.auto and inlay_hints.by_tools
+          inlay_hints.auto = inlay_hints_enabled
 
           local rust_tools_opts = vim.tbl_deep_extend("force", opts, {
             dap = {

@@ -42,8 +42,8 @@ local O = {
   hl_search = true,
   inc_subs = "split",
   transparent_window = false,
-  leader_key = "space",
-  local_leader_key = ",",
+  leader_key = "<space>",
+  local_leader_key = "<bs>",
   signcolumn = "number", -- "yes" for always
   notify = {
     timeout = 2000, -- 5000 default
@@ -97,12 +97,31 @@ local O = {
   python_interp = CONFIG_PATH .. "/.venv/bin/python3.9", -- TODO: make a venv for this
   goto_next = "]",
   goto_previous = "[",
+  goto_next_outer = "]]",
+  goto_previous_outer = "[[",
+  goto_next_end = ")",
+  goto_previous_end = "(",
+  goto_next_outer_end = "))",
+  goto_previous_outer_end = "((",
+  select = ",",
+  select_outer = "<M-,>",
+  select_less = "<C-,>",
+  select_next = "}",
+  select_previous = "{",
+  select_next_outer = "}}",
+  select_previous_outer = "}}",
   -- The below is used for most hint based navigation/selection (hop, hint_textobjects)
   -- hint_labels = "fdsahjklgvcxznmbyuiorewqtp",
   hint_labels = "hjklfdsag;nm,.ervcxzbuioyptwq",
   -- hint_labels = "hjklfdsagnmervcxzbuioyptwq",
   database = { save_location = "~/.config/nvim/.db", auto_execute = 1 },
 }
+
+O.hint_labels_array = {}
+O.hint_labels:gsub(".", function(c) vim.list_extend(O.hint_labels_array, { c }) end)
 vim.cmd('let &titleold="' .. _G.TERMINAL .. '"')
 
-return O
+return setmetatable(O, {
+  __index = O,
+  __newindex = function(t, k, v) error("attempt to update a read-only table", 2) end,
+})

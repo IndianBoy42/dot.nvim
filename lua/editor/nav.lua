@@ -1,32 +1,31 @@
-local function paranormal(targets)
-  -- Get the :normal sequence to be executed.
-  local input = vim.fn.input "normal! "
-  if #input < 1 then return end
-
-  local ns = vim.api.nvim_create_namespace ""
-
-  -- Set an extmark as an anchor for each target, so that we can also execute
-  -- commands that modify the positions of other targets (insert/change/delete).
-  for _, target in ipairs(targets) do
-    local line, col = unpack(target.pos)
-    id = vim.api.nvim_buf_set_extmark(0, ns, line - 1, col - 1, {})
-    target.extmark_id = id
-  end
-
-  -- Jump to each extmark (anchored to the "moving" targets), and execute the
-  -- command sequence.
-  for _, target in ipairs(targets) do
-    local id = target.extmark_id
-    local pos = vim.api.nvim_buf_get_extmark_by_id(0, ns, id, {})
-    vim.fn.cursor(pos[1] + 1, pos[2] + 1)
-    vim.cmd("normal! " .. input)
-  end
-
-  -- Clean up the extmarks.
-  vim.api.nvim_buf_clear_namespace(0, ns, 0, -1)
-end
-
 local paranormal_map = function()
+  local function paranormal(targets)
+    -- Get the :normal sequence to be executed.
+    local input = vim.fn.input "normal! "
+    if #input < 1 then return end
+
+    local ns = vim.api.nvim_create_namespace ""
+
+    -- Set an extmark as an anchor for each target, so that we can also execute
+    -- commands that modify the positions of other targets (insert/change/delete).
+    for _, target in ipairs(targets) do
+      local line, col = unpack(target.pos)
+      id = vim.api.nvim_buf_set_extmark(0, ns, line - 1, col - 1, {})
+      target.extmark_id = id
+    end
+
+    -- Jump to each extmark (anchored to the "moving" targets), and execute the
+    -- command sequence.
+    for _, target in ipairs(targets) do
+      local id = target.extmark_id
+      local pos = vim.api.nvim_buf_get_extmark_by_id(0, ns, id, {})
+      vim.fn.cursor(pos[1] + 1, pos[2] + 1)
+      vim.cmd("normal! " .. input)
+    end
+
+    -- Clean up the extmarks.
+    vim.api.nvim_buf_clear_namespace(0, ns, 0, -1)
+  end
   require("leap").leap {
     target_windows = { vim.fn.win_getid() },
     action = paranormal,
@@ -45,6 +44,41 @@ local hop_fn = setmetatable({}, {
     })
   end,
 })
+
+local function leap_to_line()
+  local function get_line_starts(winid)
+    local wininfo = vim.fn.getwininfo(winid)[1]
+    local cur_line = vim.fn.line "."
+
+    -- Get targets.
+    local targets = {}
+    local lnum = wininfo.topline
+    while lnum <= wininfo.botline do
+      local fold_end = vim.fn.foldclosedend(lnum)
+      -- Skip folded ranges.
+      if fold_end ~= -1 then
+        lnum = fold_end + 1
+      else
+        if lnum ~= cur_line then table.insert(targets, { pos = { lnum, 1 } }) end
+        lnum = lnum + 1
+      end
+    end
+    -- Sort them by vertical screen distance from cursor.
+    local cur_screen_row = vim.fn.screenpos(winid, cur_line, 1)["row"]
+    local function screen_rows_from_cur(t)
+      local t_screen_row = vim.fn.screenpos(winid, t.pos[1], t.pos[2])["row"]
+      return math.abs(cur_screen_row - t_screen_row)
+    end
+    table.sort(targets, function(t1, t2) return screen_rows_from_cur(t1) < screen_rows_from_cur(t2) end)
+
+    if #targets >= 1 then return targets end
+  end
+  winid = vim.api.nvim_get_current_win()
+  require("leap").leap {
+    target_windows = { winid },
+    targets = get_line_starts(winid),
+  }
+end
 
 local hops = function()
   return {
@@ -70,7 +104,7 @@ local hops = function()
     { "d", hop_fn.hint_diagnostics(), "LSP Diagnostics" },
     {
       "k",
-      hop_fn.ts.hint_textobjects {
+      hop_fn.ts.hint_textobjects({}, {
         captures = {
           "@function",
           "@block",
@@ -78,25 +112,25 @@ local hops = function()
           "@conditional",
           "@loop",
         },
-      },
+      }),
       "Blocks",
     },
     {
       "j",
-      hop_fn.ts.hint_textobjects {
+      hop_fn.ts.hint_textobjects({}, {
         captures = {
           "@parameter",
           "@statement",
-          "@assignment",
+          -- "@assignment",
           "@call",
         },
-      },
+      }),
       "Expressions",
     },
   }
 end
 return {
-  {
+  { -- TODO: move from hop to leap
     "phaazon/hop.nvim",
     dependencies = { "IndianBoy42/hop-extensions" },
     event = "VeryLazy",
@@ -112,7 +146,7 @@ return {
       local keys = { hop_pattern }
       for _, rhs_ in ipairs(hops()) do
         local lhs, rhs, desc = unpack(rhs_)
-        table.insert(keys, { "<leader>h" .. lhs, rhs, desc = desc })
+        table.insert(keys, { "<leader>h" .. lhs, rhs, desc = desc, mode = { "n", "x", "o" } })
       end
       return keys
     end,
@@ -130,39 +164,31 @@ return {
       --   desc = "Leap",
       -- },
       { "s", "<Plug>(leap-forward-to)", mode = "n", desc = "Leap" },
-      -- { "tt", "<Plug>(leap-forward-till)", mode = "n", desc = "Leap" },
+      { "s", "<Plug>(leap-forward-till)", mode = { "x", "o" }, desc = "Leap" },
       { "S", "<Plug>(leap-backward-to)", mode = "n", desc = "Leap" },
-      -- { "TT", "<Plug>(leap-backward-till)", mode = "n", desc = "Leap" },
-      {
-        "z",
-        function()
-          local current_window = vim.fn.win_getid()
-          require("leap").leap { target_windows = { current_window } }
-        end,
-        mode = "x",
-        desc = "Leap",
-      },
-      {
-        "z",
-        function()
-          local current_window = vim.fn.win_getid()
-          require("leap").leap { target_windows = { current_window } }
-        end,
-        mode = "o",
-        desc = "Leap",
-      },
+      { "S", "<Plug>(leap-backward-till)", mode = { "x", "o" }, desc = "Leap" },
+      -- {
+      --   "z",
+      --   function()
+      --     local current_window = vim.fn.win_getid()
+      --     require("leap").leap { target_windows = { current_window } }
+      --   end,
+      --   mode = { "x", "o" },
+      --   desc = "Leap",
+      -- },
     },
     config = function() end,
   },
   {
-    "rlane/pounce.nvim",
+    "IndianBoy42/pounce.nvim",
     keys = {
       {
         "<leader>hf",
         -- "<cmd>Pounce<cr>",
         function()
           mappings.register_nN_repeat { "<cmd>PounceRepeat<cr>", "<cmd>PounceRepeat<cr>" }
-          vim.cmd.Pounce()
+          -- vim.cmd.Pounce()
+          require("pounce").pounce()
         end,
         desc = "Fuzzy",
       },
@@ -201,11 +227,13 @@ return {
       -- "ThePrimeagen/harpoon", -- Optional: provides the "harpoon" query item
     },
     opts = {
-      portal = {
-        window_options = {
-          border = "none",
-        },
+      window_options = {
+        border = "none",
+        relative = "cursor",
+        height = 5,
       },
+      select_first = true,
+      labels = O.hint_labels_array,
     },
     cmd = "Portal",
     keys = {
@@ -213,6 +241,16 @@ return {
       { "]o", function() require("portal.builtin").jumplist.tunnel_backward() end, desc = "portal fwd" },
       { "<C-o>", function() require("portal.builtin").jumplist.tunnel_backward() end, desc = "portal bwd" },
       -- TODO: use other queries?
+    },
+  },
+  {
+    "chrisgrieser/nvim-spider",
+    enabled = false,
+    keys = {
+      { "w", "<cmd>lua require('spider').motion('w')<CR>", desc = "Spider-w", mode = { "n", "o", "x" } },
+      { "e", "<cmd>lua require('spider').motion('e')<CR>", desc = "Spider-e", mode = { "n", "o", "x" } },
+      { "b", "<cmd>lua require('spider').motion('b')<CR>", desc = "Spider-b", mode = { "n", "o", "x" } },
+      { "ge", "<cmd>lua require('spider').motion('ge')<CR>", desc = "Spider-ge", mode = { "n", "o", "x" } },
     },
   },
 }

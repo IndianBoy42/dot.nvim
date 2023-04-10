@@ -17,21 +17,16 @@ return function()
 
   -- Set leader keys
   local map = vim.keymap.set
-  if O.leader_key == " " or O.leader_key == "space" then
-    map("n", "<Space>", "<NOP>")
-    vim.g.mapleader = " "
-  else
-    map("n", O.leader_key, "<NOP>")
-    vim.g.mapleader = O.leader_key
-  end
-  if O.local_leader_key == " " or O.local_leader_key == "space" then
-    map("n", "<Space>", "<NOP>")
-    vim.g.maplocalleader = " "
-  else
-    map("n", O.local_leader_key, "<NOP>")
-    vim.g.maplocalleader = O.local_leader_key
-    map("n", O.local_leader_key, function() require("which-key").show(",", { mode = "n" }) end)
-  end
+  local function t(k) return vim.api.nvim_replace_termcodes(k, true, true, true) end
+  map("n", O.leader_key, "<NOP>")
+  vim.g.mapleader = t(O.leader_key)
+  map("n", O.local_leader_key, "<NOP>")
+  vim.g.maplocalleader = t(O.local_leader_key)
+  map(
+    { "n", "x", "o" },
+    O.local_leader_key,
+    function() require("which-key").show(vim.g.maplocalleader, { mode = "n" }) end
+  )
 
   ---  SETTINGS  ---
   -- https://github.com/tpope/vim-sensible/blob/master/plugin/sensible.vim
@@ -50,6 +45,7 @@ return function()
   opt.hlsearch = O.hl_search -- highlight all matches on previous search pattern
   opt.ignorecase = O.ignore_case -- ignore case in search patterns
   opt.mouse = "nvhr" -- allow the mouse to be used in neovim
+  opt.mousemoveevent = true
   opt.pumheight = 10 -- pop up menu height
   opt.showmode = false -- we don't need to see things like -- INSERT -- anymore
   opt.showtabline = 2 -- always show tabs
@@ -114,7 +110,7 @@ return function()
     vim.cmd("setlocal " .. formatoptions)
     vim.cmd "set hlsearch"
   end
-  _general_settings.Filetype.qf = "set nobuflisted"
+  -- _general_settings.Filetype.qf = "set nobuflisted"
 
   -- Default autocommands
   -- TODO: Reorganize this into lua api

@@ -22,9 +22,7 @@ local function window_hydra_setup()
  _h_ ^ ^ _l_  _H_ _r_ _L_   _<C-h>_ _<C-l>_   _v_: vertically   _m_: prev
  ^ ^ _j_ ^ ^  ^ ^ _J_ ^ ^   ^   _<C-j>_   ^   _c_, _q_: close ^ _C_, _Q_: close
  focus^^^^^^  window^^^^^^  ^_=_: equalize^   _z_: maximize     _P_: list
- ^ ^ ^ ^ ^ ^  ^ ^ ^ ^ ^ ^   ^^ ^          ^   _o_: remain only  _O_: remain only
- _p_: pick buffer
-]]
+ _p_: pick buffer ^^^^^^^^^^_w_: pick win ^^  _o_: remain only  _O_: remain only ]]
 
   return Hydra {
     name = "Windows",
@@ -35,6 +33,7 @@ local function window_hydra_setup()
         border = "rounded",
         offset = -1,
       },
+      timeout = 2000,
     },
     mode = "n",
     body = prefix,
@@ -76,7 +75,11 @@ local function window_hydra_setup()
       { "v", pcmd("vsplit", "E36") },
       { "<C-v>", pcmd("vsplit", "E36"), { desc = false } },
 
-      { "w", "<C-w>w", { exit = true, desc = false } },
+      {
+        "w",
+        require("ui.win_pick").pick_or_create,
+        { exit = true, desc = "Pick window" },
+      },
       { "<C-w>", "<C-w>w", { exit = true, desc = false } },
 
       { "z", cmd "WindowsMaximize", { exit = true, desc = "maximize" } },

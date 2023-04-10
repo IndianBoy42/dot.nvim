@@ -117,6 +117,7 @@ return {
   { --tzachar/local-highlight.nvim
     "tzachar/local-highlight.nvim",
     opts = {
+      disable_file_types = { "tex" },
       -- hlgroup = "Underlined",
       -- hlgroup = "Search",
     },

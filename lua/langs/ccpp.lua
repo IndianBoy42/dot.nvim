@@ -65,11 +65,13 @@ return {
       },
       setup = {
         clangd = function(_, opts)
+          local inlay_hints = require("langs").inlay_hints
+          local inlay_hints_enabled = inlay_hints.auto or inlay_hints.by_tools
           require("clangd_extensions").setup {
             server = opts,
             extensions = {
-              autoSetHints = require("langs").inlay_hint_opts.auto,
-              inlay_hints = require("langs").inlay_hint_opts,
+              autoSetHints = inlay_hints_enabled,
+              inlay_hints = inlay_hints,
               ast = {
                 --These require codicons (https://github.com/microsoft/vscode-codicons)
                 role_icons = {

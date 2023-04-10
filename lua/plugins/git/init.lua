@@ -4,7 +4,7 @@ return {
     cond = false,
     init = function() vim.g.gitblame_enabled = 0 end,
     cmd = "GitBlameToggle",
-    keys = { "<leader>gL", "<cmd>GitBlameToggle<cr>", desc = "Blame Toggle" },
+    -- keys = { "<leader>gL", "<cmd>GitBlameToggle<cr>", desc = "Blame Toggle" },
   },
   {
     "ruifm/gitlinker.nvim",
@@ -148,6 +148,7 @@ return {
             { "<Enter>", function() vim.cmd "tab G" end, { exit = true, desc = "Fugitive" } },
             { "<spc>", ":tab G ", { exit = true, desc = false } },
             { "q", nil, { exit = true, nowait = true, desc = "exit" } },
+            { "<esc>", nil, { exit = true, nowait = true, desc = "exit" } },
           },
         }
         local repeatable = mappings.repeatable

@@ -46,11 +46,9 @@ M.register_nN_repeat = register_nN_repeat
 -- Helper functions
 local cmd = utils.cmd
 local luareq = cmd.require
-local gitsigns_fn = luareq "gitsigns"
-local telescope_fn = require "utils.telescope"
+local telescope_fn = utils.telescope
 local focus_fn = luareq "focus"
 local lspbuf = vim.lsp.buf
-local lsputil = utils.lsp
 local operatorfunc_scaffold = utils.operatorfunc_scaffold
 local operatorfunc_keys = utils.operatorfunc_keys
 local operatorfuncV_keys = utils.operatorfuncV_keys
@@ -246,7 +244,7 @@ function M.setup()
 
   -- Tab switch buffer
   map("n", "<tab>", cmd "b#", nore)
-  map("n", "<S-tab>", cmd "bnext", nore)
+  map("n", "<S-tab>", "<leader>bl", { remap = true })
 
   -- Preserve register on pasting in visual mode
   -- TODO: use the correct register
@@ -352,14 +350,14 @@ function M.setup()
   repeatable("l", "Loclist", loclist_looping, {})
 
   -- Diagnostics jumps
-  -- local diag_nN = make_nN_pair { lsputil.diag_next, lsputil.diag_prev }
+  -- local diag_nN = make_nN_pair { utils.lsp.diag_next, utils.lsp.diag_prev }
   -- map("n", pre_goto_next .. "d", diag_nN[1], nore)
   -- map("n", pre_goto_prev .. "d", diag_nN[2], nore)
-  -- local error_nN = make_nN_pair { lsputil.error_next, lsputil.error_prev }
+  -- local error_nN = make_nN_pair { utils.lsp.error_next, utils.lsp.error_prev }
   -- map("n", pre_goto_next .. "e", error_nN[1], nore)
   -- map("n", pre_goto_prev .. "e", error_nN[2], nore)
-  repeatable("d", "Diags", { lsputil.diag_next, lsputil.diag_prev }, {})
-  repeatable("e", "Error", { lsputil.error_next, lsputil.error_prev }, {})
+  repeatable("d", "Diags", { utils.lsp.diag_next, utils.lsp.diag_prev }, {})
+  repeatable("e", "Error", { utils.lsp.error_next, utils.lsp.error_prev }, {})
 
   local on_list_gen = function(pair)
     local on_list_next = {
@@ -367,9 +365,7 @@ function M.setup()
       on_list = function(options)
         vim.fn.setqflist({}, " ", options)
         if #options.items > 1 then register_nN_repeat(pair) end
-        -- vim.cmd.cfirst()
         pair[1]()
-        -- require("portal.builtin").quickfix.tunnel_forward()
       end,
     }
     local on_list_prev = {
@@ -377,24 +373,31 @@ function M.setup()
       on_list = function(options)
         vim.fn.setqflist({}, " ", options)
         if #options.items > 1 then register_nN_repeat(pair) end
-        -- vim.cmd.clast()
         pair[2]()
-        -- require("portal.builtin").quickfix.tunnel_backward()
       end,
     }
     return on_list_next, on_list_prev
   end
-  local on_list_hydra = function(n, p)
-    return on_list_gen { function() n:activate() end, function() p:activate() end }
+  local on_list_hydra = function(n, p, move)
+    return on_list_gen {
+      function()
+        n:activate()
+        if move and move[1] then move[1]() end
+      end,
+      function()
+        p:activate()
+        if move and move[2] then move[2]() end
+      end,
+    }
   end
   local on_list_next, on_list_prev = on_list_gen(quickfix_looping)
 
   local ref_n, ref_p = repeatable("r", "Reference", quickfix_looping, { body = false })
-  ref_list_next, ref_list_prev = on_list_hydra(ref_n, ref_p)
+  local ref_list_next, ref_list_prev = on_list_hydra(ref_n, ref_p, quickfix_looping)
   map("n", pre_goto_next .. "r", function() vim.lsp.buf.references(nil, ref_list_next) end, { desc = "Reference" })
   map("n", pre_goto_prev .. "r", function() vim.lsp.buf.references(nil, ref_list_prev) end, { desc = "Reference" })
   local impl_n, impl_p = repeatable("i", "Implementation", quickfix_looping, { body = false })
-  impl_list_next, impl_list_prev = on_list_hydra(impl_n, impl_p)
+  local impl_list_next, impl_list_prev = on_list_hydra(impl_n, impl_p, quickfix_looping)
   map("n", pre_goto_next .. "i", function() vim.lsp.buf.implementation(impl_list_next) end, { desc = "Implementation" })
   map("n", pre_goto_prev .. "i", function() vim.lsp.buf.implementation(impl_list_prev) end, { desc = "Implementation" })
 
@@ -444,9 +447,12 @@ function M.setup()
 
   map("n", "zz", "za", { desc = "Fold" })
   map("n", "zo", "zO", { desc = "Open under cursor" })
-  map("n", "zm", "zM", { desc = "Open one fold" })
-  map("n", "zO", "zo", { desc = "Close under cursor" })
+  map("n", "zm", "zM", { desc = "Close under cursor" })
+  map("n", "zr", "zR", { desc = "Close under cursor" })
+  map("n", "zO", "zo", { desc = "Open one fold" })
   map("n", "zM", "zm", { desc = "Close one fold" })
+  map("n", "zR", "zr", { desc = "Close under cursor" })
+
   map("n", "==", "zz", { desc = "Center this Line" })
   map("n", "=_", "zb", { desc = "Bottom this Line" })
   map("n", "=^", "zt", { desc = "Top this Line" })
@@ -493,42 +499,45 @@ function M.setup()
   -- map("n", "xp", "<Plug>TransposeCharacters", {})
 
   -- Go Back
-  if false then
+  if true then
     require "hydra" {
       name = "Jumplist",
       body = "g",
       mode = "n",
-      -- FIXME: glitchy because it doesn't redraw
       config = {
         on_key = function()
           -- Preserve animation
-          vim.wait(200, function()
+          vim.wait(50, function()
             vim.cmd "redraw!"
             return false
           end, 30, false)
         end,
       },
       heads = {
-        {
-          "b",
-          function()
-            feedkeys("<c-o>", "n")
-            -- vim.cmd.normal { "<c-o>", bang = true }
-            -- vim.cmd.redraw { bang = true }
-          end,
-          { desc = "Go Back" },
-        },
-        {
-          "f",
-          function()
-            feedkeys("<c-i>", "n")
-            -- vim.cmd.normal { "<c-i>", bang = true }
-            -- vim.cmd.redraw { bang = true }
-          end,
-          { desc = "Go Forward" },
-        },
-        { "q", nil, { exit = true } },
-        { "<ESC>", nil, { exit = true } },
+        { "b", function() feedkeys("<c-o>", "n") end, { desc = "Go Back" } },
+        { "f", function() feedkeys("<c-i>", "n") end, { desc = "Go Forward" } },
+        -- { "q", nil, { exit = true } },
+        -- { "<ESC>", nil, { exit = true } },
+      },
+    }
+    require "hydra" {
+      name = "Changelist",
+      body = "g",
+      mode = "n",
+      config = {
+        on_key = function()
+          -- Preserve animation
+          vim.wait(50, function()
+            vim.cmd "redraw!"
+            return false
+          end, 30, false)
+        end,
+      },
+      heads = {
+        { ";", function() feedkeys("g;", "n") end, { desc = "Go Back" } },
+        { ",", function() feedkeys("g,", "n") end, { desc = "Go Forward" } },
+        -- { "q", nil, { exit = true } },
+        -- { "<ESC>", nil, { exit = true } },
       },
     }
   else
@@ -576,49 +585,12 @@ function M.setup()
   map({ "n", "x" }, ";", ":", {})
   -- map('c', ';', "<cr>", sile)
 
-  -- Add semicolon
+  -- Add semicolon TODO: make this smarter
   -- map("i", ";;", "<esc>mzA;`z", nore)
   map("i", "<M-;>", "<C-o>A;", nore)
 
   map("i", "<M-r>", "<C-r>", nore)
   map("i", "<M-BS>", "<C-g>u<C-w>", nore)
-
-  -- lsp keys
-  local telescope_cursor = function(name)
-    return function() return telescope_fn[name](require("telescope.themes").get_cursor()) end
-  end
-  -- TODO: highlight these items like when using `/` search
-
-  map("n", "gd", telescope_cursor "lsp_definitions", { desc = "Goto Definition" })
-  map("n", "gd", function() vim.lsp.buf.definition(on_list_next) end, { desc = "Definition" })
-  map("n", "gtd", function() vim.lsp.buf.type_definition(on_list_next) end, { desc = "Type Definition" })
-  map("n", "gD", lspbuf.declaration, { desc = "Goto Declaration" })
-  map("n", "gK", vim.lsp.codelens.run, { desc = "Codelens" })
-  -- Preview variants
-  local lsp_split_command = "FocusSplitNicely"
-  -- map("n", "gsd", lsputil.view_location_split("definition", lsp_split_command), { desc = "Split definition" })
-  -- map("n", "gsD", lsputil.view_location_split("declaration", lsp_split_command), { desc = "Split declaration" })
-  -- map("n", "gsr", lsputil.view_location_split("references", lsp_split_command), { desc = "Split references" })
-  -- map("n", "gsi", lsputil.view_location_split("implementation", lsp_split_command), { desc = "Split implementation" })
-  map("n", "gpd", lsputil.preview_location_at "definition", { desc = "Peek definition" })
-  map("n", "gpD", lsputil.preview_location_at "declaration", { desc = "Peek declaration" })
-  -- map("n", "gpr", lsputil.preview_location_at "references", { desc = "Peek references" })
-  -- map("n", "gpi", lsputil.preview_location_at "implementation", { desc = "Peek implementation" })
-  map("n", "gpr", telescope_fn.lsp_references, { desc = "Peek references" })
-  map("n", "gpi", telescope_fn.lsp_implementations, { desc = "Peek implementation" })
-  map("n", "gpe", lsputil.diag_line, sile)
-  -- Hover
-  -- map("n", "K", lspbuf.hover, sile)
-  map("n", "gh", lspbuf.hover, { desc = "LSP Hover" })
-  map("i", "<M-h>", lspbuf.hover, { desc = "LSP Hover" })
-  map("i", "<M-s>", lspbuf.signature_help, { desc = "Signature Help" })
-  local do_code_action = telescope_fn.code_actions_previewed
-  map({ "n", "x" }, "K", do_code_action, { desc = "Do Code Action" })
-
-  -- Formatting keymaps
-  map("n", "gq", lsputil.format_range_operator, { desc = "Format Range" })
-  map("x", "gq", lsputil.format, { desc = "Format Range" })
-  map("n", "gf", function() lsputil.format { async = true } end, { desc = "Format Async" })
 
   -- TODO: Use more standard regex syntax
   -- map("n", "/", "/\v", nore)
@@ -635,6 +607,10 @@ function M.setup()
   -- Reselect visual block wise
   map("n", "g<C-v>", "'<C-v>'>", nore)
   map("x", "g<C-v>", "<esc>g<C-v>", sile)
+
+  -- stuff
+  map({ "n", "x", "o" }, "<c-e>", "ge", sile)
+  map({ "n", "x", "o" }, "<c-s-e>", "gE", sile)
 
   -- Use reselect as an operator
   op_from "gv"
@@ -675,18 +651,19 @@ function M.setup()
   -- Keymaps for easier access to 'ci' and 'di'
   local function quick_inside(key, no_v)
     map("o", key, "i" .. key, { remap = true })
-    map("o", "<M-" .. key .. ">", "a" .. key, { remap = true })
     if not no_v then
       -- TODO: weirdly buggy with mini.surround
       -- map("x", key, "i" .. key, { remap = true })
-      -- map("x", "<M-" .. key .. ">", "a" .. key, { remap = true })
     end
-    -- map("n", "<M-" .. key .. ">", "vi" .. key, {remap=true})
-    -- map("n", "<C-M-" .. key .. ">", "va" .. key, {remap=true})
+    map("n", "<M-" .. key .. ">", "vi" .. key, { remap = true })
   end
 
   local function quick_around(key)
     map("o", key, "a" .. key, { remap = true })
+    if not no_v then
+      -- TODO: weirdly buggy with mini.surround
+      map("x", key, "i" .. key, { remap = true })
+    end
     map("n", "<M-" .. key .. ">", "va" .. key, { remap = true })
   end
 
@@ -706,9 +683,7 @@ function M.setup()
   quick_inside "<"
   quick_inside ">"
   quick_inside "q"
-  -- map("n", "r", '"_ci', {})
-  -- map("n", "x", '"_d', {})
-  -- map("n", "X", "x", nore)
+  -- map("n", ",", "viw")
 
   -- "better" end and beginning of line
   map("o", "H", "^", { remap = true })
@@ -746,17 +721,15 @@ function M.setup()
   map("t", "<ESC>", "<ESC>", nore)
   map("t", "<ESC><ESC>", [[<C-\><C-n>]], nore)
 
-  local ldr_swap = "a"
   -- Leader shortcut for ][ jumping and )( swapping
   map("n", "<leader>j", pre_goto_next, { remap = true, desc = "Jump next (])" })
   map("n", "<leader>k", pre_goto_prev, { remap = true, desc = "Jump prev ([)" })
-  map("n", ")", "<leader>h", { remap = true, desc = "Hop" })
-  map("n", "(", "<leader>a", { remap = true, desc = "Hop" })
+  -- map("n", "<leader>h", ")", { remap = true, desc = "Hop" })
 
   map({ "n", "x", "o" }, "<leader><leader>", "<localleader>", { remap = true, desc = "<localleader>" })
-  map({ "n", "x", "o" }, "<BS>", "<localleader>", { remap = true, desc = "<localleader>" })
+  -- map({ "n", "x", "o" }, "<BS>", "<localleader>", { remap = true, desc = "<localleader>" })
 
-  map({ "n", "x", "o" }, "<cr>", "<cmd>wa<cr>", { desc = "Write" })
+  map({ "n", "x", "o" }, "<cr><cr>", "<cmd>wa<cr>", { desc = "Write" })
 
   -- Open new line with a count
   map("n", "o", function()
@@ -766,6 +739,79 @@ function M.setup()
       feedkeys "<CR>"
     end
   end, nore)
+
+  local go_to_buffer_abs = false
+  local hydra_peek = require "hydra" {
+    name = "Peek Buffers",
+    body = "<leader>B",
+    config = {
+      color = "red",
+      on_enter = function() vim.g.hydra_peek_buffer = vim.api.nvim_get_current_buf() end,
+      on_exit = function() vim.api.nvim_set_current_buf(vim.g.hydra_peek_buffer) end,
+    },
+    heads = {
+      { "1", function() require("bufferline").go_to_buffer(1, go_to_buffer_abs) end, { desc = "to 1" } },
+      { "2", function() require("bufferline").go_to_buffer(2, go_to_buffer_abs) end, { desc = "to 2" } },
+      { "3", function() require("bufferline").go_to_buffer(3, go_to_buffer_abs) end, { desc = "to 3" } },
+      { "4", function() require("bufferline").go_to_buffer(4, go_to_buffer_abs) end, { desc = "to 4" } },
+      { "5", function() require("bufferline").go_to_buffer(5, go_to_buffer_abs) end, { desc = "to 5" } },
+      { "6", function() require("bufferline").go_to_buffer(6, go_to_buffer_abs) end, { desc = "to 6" } },
+      { "7", function() require("bufferline").go_to_buffer(7, go_to_buffer_abs) end, { desc = "to 7" } },
+      { "8", function() require("bufferline").go_to_buffer(8, go_to_buffer_abs) end, { desc = "to 8" } },
+      { "9", function() require("bufferline").go_to_buffer(9, go_to_buffer_abs) end, { desc = "to 9" } },
+      { "h", cmd "BufferLineCycleNext", { desc = "Next" } },
+      { "l", cmd "BufferLineCyclePrev", { desc = "Prev" } },
+    },
+  }
+  require "hydra" {
+    name = "Buffers",
+    config = {
+      on_key = function()
+        vim.wait(200, function()
+          vim.cmd.redraw()
+          return true
+        end, 30, false)
+      end,
+      color = "red",
+    },
+    body = "<leader>b",
+    heads = {
+      { "c", cmd "Bdelete!", { desc = "Close" } },
+      { "C", cmd "Bdelete!", { desc = "Close Win" } },
+      { "p", cmd "BufferLineTogglePin", { desc = "Pin" } },
+      { "P", function() hydra_peek:activate() end, { desc = "Peek", exit_before = true } },
+      { "n", cmd "enew", { desc = "New" } },
+      { "<tab>", "<tab>", { desc = "last" } },
+      { "1", function() require("bufferline").go_to_buffer(1, go_to_buffer_abs) end, { desc = "to 1" } },
+      { "2", function() require("bufferline").go_to_buffer(2, go_to_buffer_abs) end, { desc = "to 2" } },
+      { "3", function() require("bufferline").go_to_buffer(3, go_to_buffer_abs) end, { desc = "to 3" } },
+      { "4", function() require("bufferline").go_to_buffer(4, go_to_buffer_abs) end, { desc = "to 4" } },
+      { "5", function() require("bufferline").go_to_buffer(5, go_to_buffer_abs) end, { desc = "to 5" } },
+      { "6", function() require("bufferline").go_to_buffer(6, go_to_buffer_abs) end, { desc = "to 6" } },
+      { "7", function() require("bufferline").go_to_buffer(7, go_to_buffer_abs) end, { desc = "to 7" } },
+      { "8", function() require("bufferline").go_to_buffer(8, go_to_buffer_abs) end, { desc = "to 8" } },
+      { "9", function() require("bufferline").go_to_buffer(9, go_to_buffer_abs) end, { desc = "to 9" } },
+      { "<C-1>", function() require("bufferline").move_to(1) end, { desc = "to 1" } },
+      { "<C-2>", function() require("bufferline").move_to(2) end, { desc = "to 2" } },
+      { "<C-3>", function() require("bufferline").move_to(3) end, { desc = "to 3" } },
+      { "<C-4>", function() require("bufferline").move_to(4) end, { desc = "to 4" } },
+      { "<C-5>", function() require("bufferline").move_to(5) end, { desc = "to 5" } },
+      { "<C-6>", function() require("bufferline").move_to(6) end, { desc = "to 6" } },
+      { "<C-7>", function() require("bufferline").move_to(7) end, { desc = "to 7" } },
+      { "<C-8>", function() require("bufferline").move_to(8) end, { desc = "to 8" } },
+      { "<C-9>", function() require("bufferline").move_to(9) end, { desc = "to 9" } },
+      { "l", cmd "BufferLineCycleNext", { desc = "Next" } },
+      { "h", cmd "BufferLineCyclePrev", { desc = "Prev" } },
+      { "j", cmd "BufferLineMoveNext", { desc = "Move Next" } },
+      { "k", cmd "BufferLineMovePrev", { desc = "Move Prev" } },
+      { "D", cmd "BufferLineSortByDirectory", { desc = "sort directory" } },
+      { "E", cmd "BufferLineSortByExtension", { desc = "sort language" } },
+      { "<C-h>", cmd "BufferLineCloseLeft", { desc = "close left" } },
+      { "<C-l>", cmd "BufferLineCloseRight", { desc = "close right" } },
+      { "<C-c>", (cmd "BufferLineCloseLeft") .. (cmd "BufferLineCloseRight"), { desc = "close others" } },
+      { "<ESC>", nil, { exit = true, nowait = true, desc = "exit" } },
+    },
+  }
 
   local leaderOpts = {
     mode = "n", -- NORMAL mode
@@ -786,9 +832,6 @@ function M.setup()
     nowait = false, -- use `nowait` when creating keymaps
   }
 
-  -- TODO: create entire treesitter section
-
-  -- TODO: support vim-sandwich in the which-key menus
   local leaderMappings = {
     [";"] = { telescope_fn.commands, "Srch Commands" },
     -- [";"] = { cmd "Dashboard", "Dashboard" },
@@ -798,12 +841,6 @@ function M.setup()
     f = { telescope_fn.smart_open, "Smart Open File" },
     F = { telescope_fn.find_all_files, "Find all Files" },
     h = { name = "Hops" },
-    [ldr_swap] = {
-      name = "Swap next ())",
-      [ldr_swap] = { cmd "ISwapWith", "ISwapWith" },
-      i = { cmd "ISwap", "ISwap" },
-      n = { cmd "ISwapNodeWith", "I. With" },
-    },
     ["<CR>"] = {
       function()
         if vim.api.nvim_buf_get_name(0) == "" then
@@ -833,8 +870,13 @@ function M.setup()
       "Write (noau)",
     }, -- w = { cmd "noau up", "Write" },
     q = { "<C-W>q", "Quit" },
-    Q = { "<cmd>qa<cr>", "Quit All" },
-    e = "Edit",
+    ["<C-Q>"] = { "<cmd>qa<cr>", "Quit All" },
+    Q = { function() return pcall(vim.cmd.tabclose) or pcall(vim.cmd.quitall) end, "Quit Tab" },
+    e = {
+      name = "Edit",
+      a = { cmd "ISwapWith", "ISwapWith" },
+      i = { cmd "ISwap", "ISwap" },
+    },
     o = {
       name = "Open window",
       -- s = { focus_fn.split_nicely, "Nice split" },
@@ -869,28 +911,8 @@ function M.setup()
       H = { cmd "ToggleHiLightComments", "Comment Highlights" },
       -- TODO: Toggle comment visibility
     },
-    b = {
-      name = "Buffers",
-      s = { telescope_fn.curbuf, "Fuzzy Search" },
-      w = { cmd "w", "Write" },
-      W = { cmd "wa", "Write All" },
-      c = { cmd "Bdelete!", "Close" },
-      C = { cmd "bdelete!", "Close+Win" },
-      N = { cmd "tabnew", "New" },
-      n = { cmd "enew", "New" },
-      -- W = {cmd "BufferWipeout", "wipeout buffer"},
-      -- e = {
-      --     cmd "BufferCloseAllButCurrent",
-      --     "close all but current buffer"
-      -- },
-      h = { cmd "BufferLineCloseLeft", "close all buffers to the left" },
-      l = { cmd "BufferLineCloseRight", "close all BufferLines to the right" },
-      D = { cmd "BufferLineSortByDirectory", "sort BufferLines automatically by directory" },
-      L = { cmd "BufferLineSortByExtension", "sort BufferLines automatically by language" },
-    },
-    g = {
-      name = "Git",
-    },
+    b = { name = "Buffers", d = { cmd "Bdelete!", "Delete" } },
+    g = { name = "Git" },
     I = {
       name = "Info",
       L = { cmd "LspInfo", "LSP" },
@@ -902,34 +924,36 @@ function M.setup()
     l = {
       name = "LSP",
       h = { lspbuf.hover, "Hover (gh)" },
-      a = { do_code_action, "Code Action (K)" },
+      a = { telescope_fn.code_actions_previewed, "Code Action (K)" },
       k = { vim.lsp.codelens.run, "Run Code Lens (gK)" },
       t = { lspbuf.type_definition, "Type Definition" },
-      f = { lsputil.format, "Format" },
+      f = { utils.lsp.format, "Format" },
       r = { telescope_fn.lsp_references, "References" },
       i = { telescope_fn.lsp_implementations, "Implementations" },
       d = { telescope_fn.lsp_definitions, "Definitions of" },
-      c = {
+      c = { lspbuf.signature_help, "Signature Help" },
+      C = {
         name = "Calls",
         i = { lspbuf.incoming_calls, "Incoming" },
         o = { lspbuf.outgoing_calls, "Outgoing" },
       },
-      z = {
+      F = { utils.lsp.format_range_operator, "Format Range" },
+      s = {
         name = "View in Split",
         d = {
-          lsputil.view_location_split("definition", "FocusSplitNicely"),
+          utils.lsp.view_location_pick("definition", "FocusSplitNicely"),
           "Split Definition",
         },
         D = {
-          lsputil.view_location_split("declaration", "FocusSplitNicely"),
+          utils.lsp.view_location_pick("declaration", "FocusSplitNicely"),
           "Split Declaration",
         },
         r = {
-          lsputil.view_location_split("references", "FocusSplitNicely"),
+          utils.lsp.view_location_pick("references", "FocusSplitNicely"),
           "Split References",
         },
         s = {
-          lsputil.view_location_split("implementation", "FocusSplitNicely"),
+          utils.lsp.view_location_pick("implementation", "FocusSplitNicely"),
           "Split Implementation",
         },
       },
@@ -952,6 +976,7 @@ function M.setup()
       T = { telescope_fn.live_grep_all, "Text (ALL)" },
       -- b = { telescope_fn.curbuf, "Current Buffer" },
       b = { telescope_fn.buffers, "Buffers" },
+      i = { telescope_fn.curbuf, "in Buffer" },
       k = { telescope_fn.keymaps, "Keymappings" },
       c = { telescope_fn.commands, "Commands" },
       n = { telescope_fn.treesitter, "Treesitter Nodes" },
@@ -969,7 +994,7 @@ function M.setup()
     },
     r = {
       name = "Replace/Refactor",
-      -- n = { lsputil.rename, "Rename" }, -- Use IncRename
+      -- n = { utils.lsp.rename, "Rename" }, -- Use IncRename
       -- ["*"] = { [["zyiw:%s/<C-R>z//g<Left><Left>]], "Curr word" },
       ["/"] = { [[:%s/<C-R>///g<Left><Left>]], "Last search" },
       ["+"] = { [[:%s/<C-R>+//g<Left><Left>]], "Last yank" },
@@ -993,8 +1018,8 @@ function M.setup()
     },
     d = {
       name = "Diagnostics",
-      T = { lsputil.toggle_diagnostics, "Toggle Diags" },
-      l = { lsputil.diag_line, "Line Diagnostics" },
+      T = { utils.lsp.toggle_diagnostics, "Toggle Diags" },
+      l = { utils.lsp.diag_line, "Line Diagnostics" },
     },
     m = "Move",
     -- c = {
@@ -1006,7 +1031,7 @@ function M.setup()
   local vLeaderMappings = {
     -- ["/"] = { cmd "CommentToggle", "Comment" },
     l = {
-      d = { lsputil.range_diagnostics, "Range Diagnostics" },
+      d = { utils.lsp.range_diagnostics, "Range Diagnostics" },
       a = { telescope_fn.code_actions_previewed, "Code Actions" },
     },
     c = {
@@ -1159,6 +1184,47 @@ function M.vlocalleader(maps, opts)
 end
 
 M.repeatable = require("keymappings.jump_mode").repeatable
+
+M.attach_lsp = function(client, bufnr)
+  local map = function(mode, lhs, rhs, opts)
+    if bufnr then opts.buffer = bufnr end
+    vim.keymap.set(mode, lhs, rhs, opts)
+  end
+  if client.server_capabilities.selectionRange then
+    local lsp_sel_rng = require "lsp-selection-range"
+    map("n", O.select, "v" .. O.select, { remap = true, desc = "LSP Selection Range" })
+    map("n", O.select, "v" .. O.select_outer, { remap = true, desc = "LSP Selection Range" })
+    map("v", O.select, lsp_sel_rng.expand, { desc = "LSP Selection Range" })
+    map("v", O.select_outer, O.select .. O.select, { remap = true, desc = "LSP Selection Range" }) -- TODO: use folding range
+  end
+  if client.server_capabilities.rangeFormatting then
+    map("n", "gq", utils.lsp.format_range_operator, { desc = "Format Range" })
+    map("x", "gq", utils.lsp.format, { desc = "Format Range" })
+  end
+
+  local telescope_cursor = function(name)
+    return function() return telescope_fn[name](require("telescope.themes").get_cursor()) end
+  end
+
+  map("n", "gd", telescope_cursor "lsp_definitions", { desc = "Goto Definition" })
+  -- map("n", "gd", vim.lsp.buf.definition, { desc = "Definition" })
+  map("n", "gtd", vim.lsp.buf.type_definition, { desc = "Type Definition" })
+  map("n", "gD", lspbuf.declaration, { desc = "Goto Declaration" })
+  map("n", "gK", vim.lsp.codelens.run, { desc = "Codelens" })
+  -- Preview variants
+  map("n", "gpd", utils.lsp.preview_location_at "definition", { desc = "Peek definition" })
+  map("n", "gpD", utils.lsp.preview_location_at "declaration", { desc = "Peek declaration" })
+  map("n", "gpr", telescope_fn.lsp_references, { desc = "Peek references" })
+  map("n", "gpi", telescope_fn.lsp_implementations, { desc = "Peek implementation" })
+  map("n", "gpe", utils.lsp.diag_line, sile)
+  -- Hover
+  -- map("n", "K", lspbuf.hover, sile)
+  map("n", "gh", utils.lsp.hover, { desc = "LSP Hover" })
+  map({ "n", "x" }, "K", telescope_fn.code_actions_previewed, { remap = true, desc = "Do Code Action" })
+
+  -- Formatting keymaps
+  map("n", "gf", function() utils.lsp.format { async = true } end, { desc = "Format Async" })
+end
 
 return setmetatable(M, {
   __call = function(tbl, ...) return map(unpack(...)) end,

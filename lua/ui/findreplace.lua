@@ -44,7 +44,7 @@ return {
           mode = "n",
           desc = "Replace EOL",
         },
-        { "r", substitute "visual", mode = "x", desc = "Replace" },
+        { "r", substitute("visual", { yank_substituted_text = true }), mode = "x", desc = "Replace" },
         {
           "<leader>c",
           substitute_range "operator",
@@ -53,7 +53,7 @@ return {
         },
         {
           "<leader>C",
-          substitute_range("operator", { motion2 = "iG" }),
+          substitute_range("operator", { motion2 = "ie" }),
           mode = "n",
           desc = "All (motion) in file",
         },
@@ -67,7 +67,7 @@ return {
         {
           "<leader>rw",
           -- substitute_range("operator", { motion1 = "iw" }),
-          substitute_range("word", { motion2 = "iG" }),
+          substitute_range("word", { motion2 = "ie" }),
           mode = "n",
           desc = "All iw in file",
         },
@@ -79,7 +79,7 @@ return {
         },
         {
           "<leader>C",
-          substitute_range("visual", { motion2 = "iG" }),
+          substitute_range("visual", { motion2 = "ie" }),
           mode = "x",
           desc = "All (sel) in file",
         },

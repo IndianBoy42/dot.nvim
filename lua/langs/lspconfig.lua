@@ -22,23 +22,6 @@ return {
     "williamboman/mason-lspconfig.nvim",
   },
   opts = {
-    border = "rounded",
-    rename_border = "none",
-    -- Automatically format on save
-    autoformat = true,
-    -- options for vim.lsp.buf.format
-    -- `bufnr` and `filter` is handled by the LazyVim formatter,
-    -- but can be also overridden when specified
-    format = {
-      formatting_options = nil,
-      timeout_ms = nil,
-    },
-    codeLens = {
-      virtual_text = { spacing = 0, prefix = "" },
-      signs = true,
-      underline = true,
-      severity_sort = true,
-    },
     -- LSP Server Settings
     ---@type lspconfig.options
     servers = {
@@ -83,6 +66,13 @@ return {
     local lspwith = vim.lsp.with
     vim.diagnostic.config(require("langs").diagnostic_config)
     handlers["textDocument/codeLens"] = lspwith(vim.lsp.codelens.on_codelens, require("langs").codelens_config)
+    do
+      local current_definition_handler = vim.lsp.handlers["textDocument/definition"]
+      vim.lsp.handlers["textDocument/definition"] = function(err, result, ctx, config)
+        if not result then vim.notify "could not find definition" end
+        current_definition_handler(err, result, ctx, config)
+      end
+    end
 
     if false then
       local auto_hover = vim.api.nvim_create_augroup("auto_hover", {})
@@ -107,23 +97,9 @@ return {
     local lsp_sel_rng = require "lsp-selection-range"
     lsp_sel_rng.update_capabilities(capabilities)
     utils.lsp.cb_on_attach(function(client, bufnr)
-      local mapl = vim.keymap.setl
-      mapl("n", "<C-,>", "v<C-,>", { remap = true, desc = "LSP Selection Range" }) -- TODO: bind to M-, only if has capability
-      mapl("v", "<C-,>", lsp_sel_rng.expand, { desc = "LSP Selection Range" })
+      mappings.attach_lsp(client, bufnr)
 
-      if client.server_capabilities.documentHighlight then
-        local id = vim.api.nvim_create_augroup("document_highlight", { clear = false })
-        vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
-          buffer = bufnr,
-          group = id,
-          callback = function() vim.lsp.buf.document_highlight() end,
-        })
-        vim.api.nvim_create_autocmd({ "CursorMoved" }, {
-          buffer = bufnr,
-          group = id,
-          callback = function() vim.lsp.buf.clear_references() end,
-        })
-      end
+      utils.lsp.document_highlight(client, bufnr)
     end)
 
     local function setup(server)

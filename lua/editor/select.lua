@@ -17,34 +17,69 @@ local legend = {
   b = "Balanced ), ], }",
   c = "Call",
   f = "Function",
-  o = "Block, conditional, loop",
+  k = "Block",
   q = "Quote `, \", '",
   t = "Tag",
 }
 local jump_mappings = function()
   local ai = require "mini.ai"
-  local prev_pre = "["
-  local next_pre = "]"
   local make_nN_pair = mappings.make_nN_pair
-  -- TODO: collapse inner/outer/left/right into one keymap
-  local function mapall(desc, id, n, N)
+  local jump_mode = require "keymappings.jump_mode"
+  local function mapall(id, desc, n, N)
+    desc = desc or legend[id] or ""
     n = n or id
     N = N or n:upper()
-    local ia = "i"
-    -- map({ prev_pre, next_pre }, id, "left", { n, N }, "i", desc)
-    -- map({ prev_pre, next_pre }, id, "right", { n, N }, "i", desc)
-    local lf = function() ai.move_cursor("left", ia, id, { search_method = "cover_or_prev" }) end
-    local rf = function() ai.move_cursor("right", ia, id, { search_method = "cover_or_next" }) end
-    -- local nf, pf = unpack(make_nN_pair { rf, lf })
-    -- vim.keymap.set({ "n", "x", "o" }, prev_pre .. n, pf, { desc = desc })
-    -- vim.keymap.set({ "n", "x", "o" }, next_pre .. n, nf, { desc = desc })
-    mappings.repeatable(n, desc, { rf, lf }, {})
+    local move_cursor = function(...)
+      ai.move_cursor(...)
+            print(vim.fn.mode())
+      if vim.fn.mode():sub(1, 2) == "no" then -- operator pending
+        vim.cmd "norm! l"
+      end
+    end
+    local w = function() move_cursor("left", "i", id, { search_method = "next" }) end
+    local e = function() move_cursor("right", "i", id, { search_method = "cover_or_next" }) end
+    local b = function() move_cursor("left", "i", id, { search_method = "cover_or_prev" }) end
+    local ge = function() move_cursor("right", "i", id, { search_method = "prev" }) end
+    local W = function() move_cursor("left", "a", id, { search_method = "next" }) end
+    local E = function() move_cursor("right", "a", id, { search_method = "cover_or_next" }) end
+    local B = function() move_cursor("left", "a", id, { search_method = "cover_or_prev" }) end
+    local gE = function() move_cursor("right", "a", id, { search_method = "prev" }) end
+    local vi = function() ai.select_textobject("i", id, { search_method = "cover" }) end
+    local va = function() ai.select_textobject("a", id, { search_method = "cover" }) end
+    local vin = function() ai.select_textobject("i", id, { search_method = "next" }) end
+    local van = function() ai.select_textobject("a", id, { search_method = "next" }) end
+    local vip = function() ai.select_textobject("i", id, { search_method = "prev" }) end
+    local vap = function() ai.select_textobject("a", id, { search_method = "prev" }) end
+    jump_mode.repeatable(n, desc, { w, b, e, ge }, {})
+    jump_mode.repeatable(
+      n,
+      desc,
+      { W, B, E, gE },
+      { body = { O.goto_next_outer_end, O.goto_previous_outer_end, O.goto_next_outer_end, O.goto_previous_outer_end } }
+    )
+    jump_mode.move_by(
+      "<cr>" .. n,
+      jump_mode.move_by_suffixes,
+      { w, b, e, ge, W, B, E, gE, vi, va, vin, vip, van, vap },
+      desc,
+      require("which-key").register({ [n] = desc }, {})
+    )
   end
-  mapall("Function", "f", nil, nil)
-  mapall("Block", "o", nil, nil)
-  mapall("Arg", "a", nil, nil)
-  mapall("Call", "c", nil, nil)
-  mapall("Tag", "t", nil, nil)
+  mapall "f"
+  mapall "k"
+  mapall "a"
+  mapall "j"
+  mapall "c"
+  mapall "t"
+  require("which-key").register({}, {
+    mode = "n", -- NORMAL mode
+    prefix = "<CR>",
+    buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
+    silent = false,
+    -- silent = true, -- use `silent` when creating keymaps
+    noremap = true, -- use `noremap` when creating keymaps
+    nowait = false, -- use `nowait` when creating keymaps
+  })
 end
 local custom_textobjects = function(ai)
   local s = ai.gen_spec
@@ -52,9 +87,13 @@ local custom_textobjects = function(ai)
 
   return {
     ["/"] = ts({ a = "@comment.outer", i = "@comment.inner" }, {}),
-    o = ts({
-      a = { "@block.outer", "@conditional.outer", "@loop.outer" },
-      i = { "@block.inner", "@conditional.inner", "@loop.inner" },
+    k = ts({
+      a = { "@function.outer", "@block.outer", "@class.outer", "@conditional.outer", "@loop.outer" },
+      i = { "@function.inner", "@block.inner", "@class.inner", "@conditional.inner", "@loop.inner" },
+    }, {}),
+    j = ts({
+      a = { "@parameter.outer", "@statement.outer", "@call.outer" },
+      i = { "@parameter.inner", "@statement.inner", "@call.inner" },
     }, {}),
     -- a = ts({ a = "@parameter.outer", i = "@parameter.inner" }, {}),
     f = ts({ a = "@function.outer", i = "@function.inner" }, {}),
@@ -163,6 +202,16 @@ return {
         n_lines = 500,
         custom_textobjects = custom_textobjects(require "mini.ai"),
         search_method = "cover",
+        mappings = {
+          around = "a",
+          inside = "i",
+          around_next = O.select_next, -- TODO: select_first.lua and repeatable
+          inside_next = O.select_next_outer,
+          around_last = O.select_previous,
+          inside_last = O.select_previous_outer,
+          goto_left = "",
+          goto_right = "",
+        },
       }
     end,
     config = function(_, opts)
@@ -202,23 +251,17 @@ return {
   },
   {
     "ggandor/leap-ast.nvim",
-    -- keys = {
-    --   {
-    --     "",
-    --     function()
-    --       require("leap-ast").leap()
-    --     end,
-    --     mode = { "n", "x", "o" },
-    --   },
-    -- },
+    keys = {
+      -- {
+      --   "m",
+      --   function() require("leap-ast").leap() end,
+      --   mode = { "n", "x", "o" },
+      -- },
+    },
   },
-  {
+  { -- TODO:? remove for leap-ast once double sided labelling is implemented
     "mfussenegger/nvim-treehopper",
-    config = function()
-      local labels = {}
-      O.hint_labels:gsub(".", function(c) vim.list_extend(labels, { c }) end)
-      require("tsht").config.hint_keys = labels -- Requires https://github.com/mfussenegger/nvim-ts-hint-textobject/pull/2
-    end,
+    config = function() require("tsht").config.hint_keys = O.hint_labels_array end,
     -- event = { "BufReadPost", "BufNewFile" },
     keys = {
       { "m", [[:<C-U>lua require('tsht').nodes()<CR>]], mode = "o" },

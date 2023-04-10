@@ -20,14 +20,14 @@ local M = {
         nvim_feedkeys(termcode(keys, true, true, true), o, false)
       end
       local luasnip = require "luasnip"
-      local cj = function()
+      local jump_next = function()
         if luasnip.expand_or_jumpable() then
           feedkeys "<Plug>luasnip-jump-next"
         else
           feedkeys "<Plug>(Tabout)"
         end
       end
-      local ck = function()
+      local jump_prev = function()
         if luasnip.expand_or_jumpable() then
           feedkeys "<Plug>luasnip-jump-prev"
         else
@@ -35,10 +35,10 @@ local M = {
         end
       end
 
-      map("i", "<M-n>", cj, { silent = true })
-      map("s", "<M-n>", cj, { silent = true })
-      map("i", "<M-p>", ck, { silent = true })
-      map("s", "<M-p>", ck, { silent = true })
+      map("i", "<M-n>", jump_next, { silent = true })
+      map("s", "<M-n>", jump_next, { silent = true })
+      map("i", "<M-p>", jump_prev, { silent = true })
+      map("s", "<M-p>", jump_prev, { silent = true })
       -- map("i", "<C-u>", require "luasnip.extras.select_choice", { silent = true })
       -- map("i", "<M-n>", "<Plug>luasnip-next-choice", { silent = true })
       map("s", "<M-j>", "<Plug>luasnip-next-choice", { silent = true })

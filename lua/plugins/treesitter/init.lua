@@ -95,33 +95,13 @@ local M = {
         -- extended_mode = true, -- Highlight also non-parentheses delimiters, boolean or table: lang -> boolean
         -- max_file_lines = 1000, -- Do not enable for files with more than 1000 lines, int
       },
-      refactor = {
-        smart_rename = {
-          enable = true,
-          keymaps = {
-            smart_rename = "<leader>rt", -- TODO: use my mini window UI for this
-          },
-        },
-        highlight_definitions = { enable = false },
-        navigation = {
-          enable = false,
-          keymaps = {
-            goto_definition_lsp_fallback = "<F1>d",
-            goto_definition = "<leader>lnd",
-            list_definitions = "<leader>lnD",
-            -- list_definitions_toc = "gO",
-            goto_next_usage = "<leader>lnu",
-            goto_previous_usage = "<leader>lnU",
-          },
-        },
-      },
       incremental_selection = {
         enable = true,
         keymaps = {
-          init_selection = "<M-,>",
-          node_incremental = "<M-,>",
-          node_decremental = "<M-S-,>",
-          scope_incremental = "grc",
+          init_selection = O.select,
+          node_incremental = O.select,
+          node_decremental = O.select_less,
+          scope_incremental = O.select_outer,
         },
       },
     },

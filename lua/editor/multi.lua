@@ -25,8 +25,9 @@ return {
       ["Redo"] = "<C-r>",
       ["Reselect Last"] = ldr .. ldr,
       ["Toggle Mappings"] = "<M-l>",
-      ["Transpose"] = ")",
+      ["Transpose"] = "(",
     }
+    vim.g.VM_mouse_mappings = true
 
     local theme = "codedark"
     vim.g.VM_theme = theme

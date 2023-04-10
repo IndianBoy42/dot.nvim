@@ -122,7 +122,7 @@ return {
     },
     lazy = false,
     cmd = { "Navbuddy" },
-    keys = { { "<leader>ls", "<cmd>Navbuddy<cr>", "Nav Symbols" } },
+    keys = { { "<leader>ln", "<cmd>Navbuddy<cr>", "Nav Symbols" } },
   },
   { -- "aznhe21/actions-preview.nvim",
     "aznhe21/actions-preview.nvim",
@@ -134,7 +134,7 @@ return {
   },
   {
     "s1n7ax/nvim-window-picker",
-    main = "nvim-window",
+    main = "window-picker",
     -- FYI: local picked_window_id = require('window-picker').pick_window()
     opts = {},
   },
@@ -333,6 +333,6 @@ return {
   },
   -- TODO: https://github.com/DNLHC/glance.nvim
   -- TODO: https://github.com/lvimuser/lsp-inlayhints.nvim
-  -- TODO: { "lvimuser/lsp-inlayhints.nvim", event = "LspAttach", config = function() end },
+  { "lvimuser/lsp-inlayhints.nvim", event = { "BufReadPost", "BufNewFile" } },
   -- TODO: https://github.com/stevearc/qf_helper.nvim
 }

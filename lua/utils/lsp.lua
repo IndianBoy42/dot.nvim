@@ -105,6 +105,74 @@ function M.view_location_split(name, split_cmd)
   end
 end
 
+function M.view_location_pick_callback()
+  local util = vim.lsp.util
+  local log = vim.lsp.log
+
+  -- note, this handler style is for neovim 0.5.1/0.6, if on 0.5, call with function(_, method, result)
+  local function handler(_, result, ctx)
+    if result == nil or vim.tbl_isempty(result) then
+      local _ = log.info() and log.info(ctx.method, "No location found")
+      return nil
+    end
+
+    local res = result
+    if vim.tbl_islist(result) then
+      res = result[1]
+
+      if #result > 1 then
+        util.set_qflist(util.locations_to_items(result))
+        api.nvim_command "copen"
+        api.nvim_command "wincmd p"
+      end
+    end
+    require("ui.win_pick").pick_or_create(function(id)
+      vim.api.nvim_set_current_win(id)
+      vim.lsp.util.jump_to_location(res, nil, false)
+    end)
+  end
+
+  return handler
+end
+
+-- TODO: generalized view_location_in (existing windows, new tabs, etc)
+function M.view_location_pick(name)
+  local cb = M.view_location_pick_callback()
+  return function()
+    local params = lsp.util.make_position_params()
+    return lsp.buf_request(0, "textDocument/" .. name, params, cb)
+  end
+end
+
+local hover_hydra
+-- Easily repeatable hover
+function M.hover(hover, k)
+  hover = hover or vim.lsp.buf.hover
+  k = k or "h"
+  if not hover_hydra then
+    hover_hydra = require "hydra" {
+      mode = { "n", "x" },
+      hint = false,
+      body = nil,
+      heads = {
+        { "h", hover, { desc = "LSP Hover" } },
+        {
+          "<esc>",
+          function()
+            hover() -- TODO: how to do this better?
+            vim.api.nvim_win_close(0, true)
+          end,
+          { desc = "Close", exit = true, private = true },
+        },
+      },
+    }
+  end
+  return function()
+    hover()
+    hover_hydra:activate()
+  end
+end
+
 function M.toggle_diagnostics(b)
   if vim.diagnostic.is_disabled(b) then
     diags.enable(b or 0)
@@ -169,13 +237,13 @@ local popup_diagnostics_opts = function()
   }
 end
 function M.diag_line(opts)
-  diags.open_float(vim.tbl_deep_extend("keep", opts, { scope = "line" }, popup_diagnostics_opts()))
+  diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "line" }, popup_diagnostics_opts()))
 end
 function M.diag_cursor(opts)
-  diags.open_float(vim.tbl_deep_extend("keep", opts, { scope = "cursor" }, popup_diagnostics_opts()))
+  diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "cursor" }, popup_diagnostics_opts()))
 end
 function M.diag_buffer(opts)
-  diags.open_float(vim.tbl_deep_extend("keep", opts, { scope = "buffer" }, popup_diagnostics_opts()))
+  diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "buffer" }, popup_diagnostics_opts()))
 end
 
 function M.get_highest_diag(ns, bufnr)
@@ -365,6 +433,22 @@ M.cb_on_attach = function(on_attach)
       on_attach(client, buffer)
     end,
   })
+end
+
+M.document_highlight = function(client, bufnr)
+  if client.server_capabilities.documentHighlight then
+    local id = vim.api.nvim_create_augroup("document_highlight", { clear = false })
+    vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+      buffer = bufnr,
+      group = id,
+      callback = function() vim.lsp.buf.document_highlight() end,
+    })
+    vim.api.nvim_create_autocmd({ "CursorMoved" }, {
+      buffer = bufnr,
+      group = id,
+      callback = function() vim.lsp.buf.clear_references() end,
+    })
+  end
 end
 
 -- TODO: `:h lsp-on-list-handler`

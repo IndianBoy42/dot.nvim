@@ -436,12 +436,12 @@ local function augroup_helper(tbl, name, clear)
       return setmetatable({}, {
         __index = function(tbl, pat)
           return function(opts)
-            wrapper(event, opts)
+            wrapper(event, opts, pat)
             return tbl
           end
         end,
         __newindex = function(tbl, pat, opts)
-          wrapper(event, opts)
+          wrapper(event, opts, pat)
           return tbl
         end,
         __call = function(tbl, opts)
@@ -513,10 +513,6 @@ function M.setproxy(of)
   setmetatable(new, mt)
   return new
 end
-
-M.lsp = require "utils.lsp"
-M.telescope = require "utils.telescope"
-M.ui = require "utils.ui"
 
 function M.partial(func, ...)
   local n_args, args = select("#", ...), { ... }
@@ -623,4 +619,17 @@ function M.if_no_float()
   return true
 end
 
-return M
+M.lsp = require "utils.lsp"
+M.telescope = require "utils.telescope"
+M.ui = require "utils.ui"
+
+return setmetatable(M, {
+  __index = function(_, key)
+    local ok, val = pcall(require, "utils" .. key)
+    if ok then
+      rawset(M, key, val)
+      return val
+    end
+    return nil
+  end,
+})
