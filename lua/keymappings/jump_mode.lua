@@ -10,175 +10,7 @@ local v = function(o)
   return o
 end
 
-local textobjs = {
-  "f", -- function
-  "o", -- block
-  "c", -- call
-  "a", -- arg
-  "b", -- parens, etc
-  "t", -- tag
-}
-local moves = {
-  "p", -- paragraph
-  "d", -- diags
-  "u", -- usages
-  "e", -- error
-  "T", -- tags
-  "q", -- quickfix
-  "l", -- loclist
-  "i", -- implementation
-}
 local lsp_lists = {}
-
-M.setup = function()
-  local Hydra = require "hydra"
-
-  local last = ""
-  local dir = "]"
-  local odir = function()
-    if dir == "[" then
-      return "]"
-    else
-      return "["
-    end
-  end
-
-  local hintfuncs = {
-    last = function() return last end,
-    dir = function() return dir end,
-  }
-  local hint = [[
-last: %{last} dir: %{dir}
-]]
-
-  local feedkeys = vim.api.nvim_feedkeys
-  local termcodes = vim.api.nvim_replace_termcodes
-  local function t(k) return termcodes(k, true, true, true) end
-
-  local heads = {
-    {
-      "/",
-      function()
-        local last_ = last
-        last = "/"
-        if last_ == "/" then
-          return "n"
-        else
-          return "/"
-        end
-      end,
-      { expr = true, desc = "search" },
-    },
-    {
-      "h/",
-      function()
-        last = "/"
-        return "<leader>h/"
-      end,
-      { expr = true, desc = false },
-    },
-    {
-      "?",
-      function()
-        local last_ = last
-        last = "/"
-        if last_ == "/" then
-          return "N"
-        else
-          return "?"
-        end
-      end,
-      { expr = true, desc = "search" },
-    },
-    {
-      ",",
-      function()
-        -- TODO: do this more smart with mini.ai.find_textobject
-        -- dir = odir()
-        if dir == "]" then
-          feedkeys(t("vi" .. last .. "<esc>"), "m", false)
-        else
-          feedkeys(t("vi" .. last .. "o<esc>"), "m", false)
-        end
-      end,
-      { desc = "toggle" },
-    },
-    {
-      ".",
-      function()
-        -- dir = odir()
-        feedkeys(t("vi" .. last), "m", false)
-      end,
-      { desc = "toggle" },
-    },
-
-    -- TODO: Edits:
-    { "mc", "c", { desc = false } },
-
-    -- TODO: Selection:
-    {
-      "v",
-      function() feedkeys(t("vi" .. last), "m", false) end,
-      { desc = "visual" },
-    },
-
-    { "q", nil, { exit = true, nowait = true, desc = "exit" } },
-    { "<ESC>", nil, { exit = true, nowait = true, desc = "exit" } },
-  }
-  for _, ch in ipairs(textobjs) do
-    -- TODO: call the function directly rather than using feedkeys
-    table.insert(heads, {
-      ch,
-      function()
-        last = ch
-        dir = "["
-        feedkeys(t(dir .. last), "m", false)
-      end,
-      { desc = ch .. "↓" },
-    })
-    table.insert(heads, {
-      ch,
-      function()
-        last = ch
-        dir = "]"
-        feedkeys(t(dir .. last), "m", false)
-      end,
-      { desc = ch .. "↑" },
-    })
-  end
-  for _, ch in ipairs(moves) do
-    table.insert(heads, {
-      ch,
-      function()
-        last = ch
-        feedkeys(t(dir .. ch), "m", false)
-      end,
-      { desc = ch },
-    })
-  end
-
-  local hydra = Hydra {
-    heads = heads,
-    name = "Navigate/Select",
-    hint = hint,
-    body = "<leader>H", -- <leader>j, <leader>k
-    config = {
-      color = "pink",
-      invoke_on_body = true,
-      timeout = 2000, -- millis
-      hint = {
-        border = "rounded",
-        type = "window",
-        position = "top",
-        show_name = false,
-        funcs = hintfuncs,
-      },
-    },
-    mode = { "n" },
-  }
-
-  vim.api.nvim_create_user_command("NaviSel", function() hydra:activate() end, {})
-end
 
 M.repeatable = function(ch, desc, fwdbwd, _opts)
   local fwd, bwd, fwdend, bwdend = unpack(fwdbwd)
@@ -204,13 +36,15 @@ M.repeatable = function(ch, desc, fwdbwd, _opts)
     mode = { "n", "x", "o" },
   }
 
-  local c_ch = "<C-" .. ch .. ">"
-  local s_ch = ch:upper()
-  local cs_ch = "<C-S-" .. ch .. ">"
+  local c_ch, s_ch, cs_ch
   -- local c_ch = (ch:upper() == ch) and ch:lower() or ch:upper()
 
   if type(ch) == "table" then
-    ch, c_ch, s_ch, cs_ch = unpack(ch)
+    ch, s_ch, c_ch, cs_ch = unpack(ch)
+  else
+    c_ch = "<C-" .. ch .. ">"
+    s_ch = ch:upper()
+    cs_ch = "<C-S-" .. ch .. ">"
   end
   local prev_pre, next_pre, prev_end, next_end
   prev_pre, next_pre, prev_end, next_end = O.goto_previous, O.goto_next, O.goto_previous_end, O.goto_next_end
@@ -218,7 +52,7 @@ M.repeatable = function(ch, desc, fwdbwd, _opts)
     prev_pre, next_pre, prev_end, next_end = nil, nil, nil, nil
     _opts.body = nil
   elseif type(_opts.body) == "table" then
-    prev_pre, next_pre, prev_end, next_end = unpack(_opts.body)
+    next_pre, prev_pre, next_end, prev_end = unpack(_opts.body)
     _opts.body = nil
   end
   if not fwdend then next_end = nil end
@@ -278,7 +112,7 @@ M.repeatable = function(ch, desc, fwdbwd, _opts)
   return hydra_fwd, hydra_bwd, hydra_fwd_end, hydra_bwd_end
 end
 
-M.word_suffixes = { "w", "b", "e", "ge", "W", "B", "E", "gE", "v", ",", "n", "N", "f", "F" }
+M.word_suffixes = { "w", "b", "e", "ge", "W", "B", "E", "gE", "v", "&", "n", "N", "f", "F" }
 M.move_by_descs = M.word_suffixes
 M.move_by_suffixes = M.word_suffixes
 M.word_suffixes2 = { "w", "b", "e", "<C-e>", "W", "B", "E", "<C-S-e>" }
@@ -354,13 +188,15 @@ M.move_by = function(prefix, suffixes, actions, desc, o)
     heads = vim.tbl_map(function(x)
       local a = x[2]
       x[2] = function()
-        vim.cmd("normal! v")
+        vim.cmd "normal! v"
         a()
       end
       return x
     end, heads),
     mode = "o",
   }, opts))
+
+  require("which-key").register({ [prefix] = desc }, {})
 
   return hydras
 end

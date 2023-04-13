@@ -17,15 +17,14 @@ return {
       ["Remove Region"] = "N",
       ["Visual Cursors"] = ldr .. ldr,
       ["Visual Add"] = "<M-v>",
-      ["Visual Subtract"] = "S",
       ["Visual Regex"] = "/",
-      ["Add Cursor At Pos"] = "<M-h>",
+      ["Add Cursor At Pos"] = "+",
       ["Find Operator"] = "m",
       ["Undo"] = "u",
       ["Redo"] = "<C-r>",
       ["Reselect Last"] = ldr .. ldr,
-      ["Toggle Mappings"] = "<M-l>",
-      ["Transpose"] = "(",
+      ["Toggle Mappings"] = "-",
+      ["Transpose"] = "<M-r>",
     }
     vim.g.VM_mouse_mappings = true
 
@@ -73,7 +72,13 @@ return {
       end
     end, { expr = true, remap = false })
 
-    map("x", "<C-v>", "<Plug>(VM-Visual-Add)")
+    map("x", "<C-v>", function()
+      if vim.api.nvim_get_mode().mode == c_v then
+        return "<Plug>(VM-Visual-Add)"
+      else
+        return "<Plug>(VM-Visual-Cursors)"
+      end
+    end, { expr = true })
 
     -- Multi select object
     local find_under_operator = utils.operatorfunc_keys "<Plug>(VM-Find-Under)"

@@ -5,7 +5,8 @@ local function select_pick_window(prompt_bufnr)
 
   local picker = action_state.get_current_picker(prompt_bufnr)
   picker.get_selection_window = function(picker, entry)
-    local picked_window_id = require("window-picker").pick_window() or vim.api.nvim_get_current_win()
+    local fallback = vim.api.nvim_get_current_win
+    local picked_window_id = require("ui.win_pick").pick_or_create() or fallback()
     -- Unbind after using so next instance of the picker acts normally
     picker.get_selection_window = nil
     return picked_window_id
@@ -36,40 +37,30 @@ local telescope = {
     },
     "LukasPietzschmann/telescope-tabs",
     "benfowler/telescope-luasnip.nvim",
+    "debugloop/telescope-undo.nvim",
   },
   cmd = "Telescope",
-  config = function()
-    -- https://github.com/ibhagwan/nvim-lua/blob/main/lua/plugin/telescope.lua
-    local sorters = require "telescope.sorters"
-    local actions = require "telescope.actions"
-    -- local action_layout = require "telescope.actions.layout"
-    -- local functions = require "utils.telescope"
-    -- Global remapping
-    ------------------------------
-    TelescopeMapArgs = TelescopeMapArgs or {}
-    local map_ = vim.keymap.set
-    local map_b = vim.keymap.setl
-    local map_options = {
-      noremap = true,
-      silent = true,
-    }
+  opts = function()
+    -- local actions = setmetatable({}, {
+    --   __index = function(t, k)
+    --     return function(...) return require("telescope.actions")[k](...) end
+    --   end,
+    -- })
+    local actions = utils.lazy_require "telescope.actions"
+    local action_layout = utils.lazy_require "telescope.actions.layout"
 
     local with_rg = require("utils.telescope").with_rg
     local rg = with_rg { ignore = true, hidden = true }
     -- M.shell_cmd.fd = vim.list_extend(vim.deepcopy(M.shell_cmd.rg), { "--files" })
     local fd = with_rg { ignore = true, hidden = true, files = true }
 
-    local telescope = require "telescope"
-    telescope.setup {
+    return {
       defaults = {
         find_command = fd,
         vimgrep_arguments = rg,
         prompt_prefix = " ",
         selection_caret = " ",
-        entry_prefix = "  ",
         initial_mode = "insert",
-        selection_strategy = "reset",
-        sorting_strategy = "descending",
         layout_strategy = "flex",
         layout_config = {
           width = 0.75,
@@ -103,40 +94,48 @@ local telescope = {
         buffer_previewer_maker = require("telescope.previewers").buffer_previewer_maker,
         mappings = {
           i = {
-            -- ["<M-p>"] = action_layout.toggle_preview,
+            ["<C-p>"] = action_layout.toggle_preview,
             ["<Esc>"] = actions.close,
 
-            ["<C-h>"] = telescope.extensions.hop.hop,
+            ["<C-h>"] = function(...) return require("telescope").extensions.hop.hop(...) end,
             ["<C-x>"] = actions.delete_buffer,
             ["<C-s>"] = actions.select_horizontal,
             ["<C-v>"] = actions.select_vertical,
             ["<C-t>"] = actions.select_tab,
             ["<C-j>"] = actions.move_selection_next,
             ["<C-k>"] = actions.move_selection_previous,
-            ["<CR>"] = actions.select_default + actions.center,
+            ["<CR>"] = actions.select_default,
             ["<C-up>"] = actions.preview_scrolling_up,
             ["<C-down>"] = actions.preview_scrolling_down,
-            ["<M-q>"] = actions.send_to_qflist + actions.open_qflist,
-            ["<C-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
+            ["<M-q>"] = function(...)
+              actions.send_to_qflist(...)
+              actions.open_qflist(...)
+            end,
+            ["<C-q>"] = function(...)
+              actions.send_selected_to_qflist(...)
+              actions.open_qflist(...)
+            end,
             -- ["<C-y>"] = functions.set_prompt_to_entry_value,
-            ["<M-CR>"] = select_pick_window,
+            ["<C-cr>"] = select_pick_window,
+            ["<M-cr>"] = select_pick_window,
           },
           n = {
             -- ["<M-p>"] = action_layout.toggle_preview,
             ["j"] = actions.move_selection_next,
             ["k"] = actions.move_selection_previous,
-            ["<C-x>"] = actions.delete_buffer,
-            ["<C-s>"] = actions.select_horizontal,
-            ["<C-v>"] = actions.select_vertical,
-            ["<C-t>"] = actions.select_tab,
-            ["<S-up>"] = actions.preview_scrolling_up,
-            ["<S-down>"] = actions.preview_scrolling_down,
+            ["<localleader>x"] = actions.delete_buffer,
+            ["<localleader>s"] = actions.select_horizontal,
+            ["<localleader>v"] = actions.select_vertical,
+            ["<localleader>t"] = actions.select_tab,
+            ["<CR>"] = actions.select_default,
             ["<C-up>"] = actions.preview_scrolling_up,
             ["<C-down>"] = actions.preview_scrolling_down,
-            ["<C-q>"] = actions.send_to_qflist,
-            ["<M-q>"] = actions.send_to_qflist + actions.open_qflist,
+            ["<localleader>q"] = function(...)
+              actions.send_selected_to_qflist(...)
+              actions.open_qflist(...)
+            end,
             ["<C-c>"] = actions.close,
-            ["<M-CR>"] = select_pick_window,
+            ["<localleader>n"] = select_pick_window,
           },
         },
       },
@@ -153,9 +152,7 @@ local telescope = {
           -- the default case_mode is "smart_case"
         },
         "cmake",
-        hop = {
-          keys = { "a", "s", "d", "f", "h", "j", "k", "l" },
-        },
+        hop = { keys = O.hint_labels_array },
         advanced_git_search = {
           -- fugitive or diffview
           diff_plugin = "diffview",
@@ -166,16 +163,21 @@ local telescope = {
           -- e.g. flags such as { "--raw" }
           git_diff_flags = {},
         },
+        undo = {},
       },
     }
+  end,
+  config = function(_, opts)
+    local telescope = require "telescope"
+    telescope.setup(opts)
 
-    -- telescope.setup {}
     -- telescope.load_extension('fzy_native')
     telescope.load_extension "fzf"
     telescope.load_extension "hop"
     telescope.load_extension "smart_open"
     telescope.load_extension "frecency"
     telescope.load_extension "luasnip"
+    -- telescope.load_extension "undo"
     -- telescope.load_extension('project')
   end,
 }

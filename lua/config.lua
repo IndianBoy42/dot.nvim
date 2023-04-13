@@ -11,10 +11,6 @@ local O = {
   format_on_save_timeout = 1000,
   auto_close_tree = false,
   fold_columns = "0",
-  theme = "Nebulous",
-  -- theme = "Material",
-  lighttheme = "Paper", -- Paper is good but incompatible with notify.nvim
-  -- lighttheme = "Zenbones",
   fontsize = 10,
   bigfontsize = 13,
   auto_complete = true,
@@ -42,47 +38,13 @@ local O = {
   hl_search = true,
   inc_subs = "split",
   transparent_window = false,
-  leader_key = "<space>",
-  local_leader_key = "<bs>",
   signcolumn = "number", -- "yes" for always
   notify = {
     timeout = 2000, -- 5000 default
     background_colo_r = "#FFFFFF",
     stages = "fade_in_slide_out",
   },
-  breakpoint_sign = { text = "🛑", texthl = "LspDiagnosticsSignError", linehl = "", numhl = "" },
   input_border = "rounded",
-  lsp = {
-    document_highlight = true,
-    autoecho_line_diagnostics = false,
-    live_codelens = true,
-    -- none, single, double, rounded, solid, shadow, array(fullcustom)
-    border = "rounded",
-    rename_border = "none",
-    diagnostics = {
-      virtual_text = { spacing = 4, prefix = "", severity_limit = "Warning" },
-      -- virtual_text = false,
-      signs = true,
-      underline = true,
-      severity_sort = true,
-      update_in_insert = true,
-    },
-    codeLens = {
-      virtual_text = { spacing = 0, prefix = "" },
-      signs = true,
-      underline = true,
-      severity_sort = true,
-    },
-    flags = {
-      debounce_text_changes = 150,
-    },
-    parameter_hints_prefix = "« ",
-    -- default: "<-"
-    -- parameter_hints_prefix = "❰❰ ",
-    other_hints_prefix = "∈ ",
-    -- default: "=>"
-    -- other_hints_prefix = ":: ",
-  },
   filetypes = {
     extension = {
       kbd = "kmonad",
@@ -95,30 +57,39 @@ local O = {
     },
   },
   python_interp = CONFIG_PATH .. "/.venv/bin/python3.9", -- TODO: make a venv for this
+
+  leader_key = "<space>",
+  local_leader_key = "<bs>",
+  goto_prefix = "<cr>",
   goto_next = "]",
   goto_previous = "[",
   goto_next_outer = "]]",
   goto_previous_outer = "[[",
-  goto_next_end = ")",
-  goto_previous_end = "(",
-  goto_next_outer_end = "))",
-  goto_previous_outer_end = "((",
-  select = ",",
-  select_outer = "<M-,>",
-  select_less = "<C-,>",
+  goto_next_end = "<leader>]", -- ")",
+  goto_previous_end = "<leader>[", -- "(",
+  goto_next_outer_end = "<leader>]]", -- "))",
+  goto_previous_outer_end = "<leader>[[", -- "((",
+  select = "&",
+  select_outer = "<M-&>",
+  select_less = "<C-&>",
   select_next = "}",
   select_previous = "{",
   select_next_outer = "}}",
   select_previous_outer = "}}",
+  select_mode = "!",
+  -- # ?
   -- The below is used for most hint based navigation/selection (hop, hint_textobjects)
   -- hint_labels = "fdsahjklgvcxznmbyuiorewqtp",
   hint_labels = "hjklfdsag;nm,.ervcxzbuioyptwq",
+
   -- hint_labels = "hjklfdsagnmervcxzbuioyptwq",
   database = { save_location = "~/.config/nvim/.db", auto_execute = 1 },
 }
 
 O.hint_labels_array = {}
-O.hint_labels:gsub(".", function(c) vim.list_extend(O.hint_labels_array, { c }) end)
+for c in O.hint_labels:gmatch "." do
+  vim.list_extend(O.hint_labels_array, { c })
+end
 vim.cmd('let &titleold="' .. _G.TERMINAL .. '"')
 
 return setmetatable(O, {

@@ -17,6 +17,7 @@ local legend = {
   b = "Balanced ), ], }",
   c = "Call",
   f = "Function",
+  j = "Expression",
   k = "Block",
   q = "Quote `, \", '",
   t = "Tag",
@@ -25,17 +26,10 @@ local jump_mappings = function()
   local ai = require "mini.ai"
   local make_nN_pair = mappings.make_nN_pair
   local jump_mode = require "keymappings.jump_mode"
-  local function mapall(id, desc, n, N)
+  local function mapall(id, desc, sym)
     desc = desc or legend[id] or ""
-    n = n or id
-    N = N or n:upper()
-    local move_cursor = function(...)
-      ai.move_cursor(...)
-            print(vim.fn.mode())
-      if vim.fn.mode():sub(1, 2) == "no" then -- operator pending
-        vim.cmd "norm! l"
-      end
-    end
+    id = id or id
+    local move_cursor = ai.move_cursor
     local w = function() move_cursor("left", "i", id, { search_method = "next" }) end
     local e = function() move_cursor("right", "i", id, { search_method = "cover_or_next" }) end
     local b = function() move_cursor("left", "i", id, { search_method = "cover_or_prev" }) end
@@ -50,30 +44,36 @@ local jump_mappings = function()
     local van = function() ai.select_textobject("a", id, { search_method = "next" }) end
     local vip = function() ai.select_textobject("i", id, { search_method = "prev" }) end
     local vap = function() ai.select_textobject("a", id, { search_method = "prev" }) end
-    jump_mode.repeatable(n, desc, { w, b, e, ge }, {})
+    jump_mode.repeatable(id, desc, { w, b, e, ge }, {})
     jump_mode.repeatable(
-      n,
+      id,
       desc,
       { W, B, E, gE },
-      { body = { O.goto_next_outer_end, O.goto_previous_outer_end, O.goto_next_outer_end, O.goto_previous_outer_end } }
+      { body = { O.goto_next_outer, O.goto_previous_outer, O.goto_next_outer_end, O.goto_previous_outer_end } }
     )
-    jump_mode.move_by(
-      "<cr>" .. n,
+    local hydra = jump_mode.move_by(
+      O.goto_prefix .. id,
       jump_mode.move_by_suffixes,
       { w, b, e, ge, W, B, E, gE, vi, va, vin, vip, van, vap },
       desc,
-      require("which-key").register({ [n] = desc }, {})
+      require("which-key").register({ [id] = desc }, {})
     )
+    if sym then
+      vim.keymap.set({ "n", "x" }, sym, function() return hydra[1]:activate() end, { desc = desc })
+      vim.keymap.set("o", sym, function() return hydra[2]:activate() end, { desc = desc })
+    end
   end
-  mapall "f"
-  mapall "k"
-  mapall "a"
-  mapall "j"
-  mapall "c"
+  mapall("f", nil, "|")
+  mapall("k", nil, "=")
+  mapall("a", nil, ",")
+  mapall("j", nil, "_")
   mapall "t"
+  mapall("b", nil, ")")
+  -- mapall "p" -- TODO: paragraph movements
+  -- TODO: subword movements
   require("which-key").register({}, {
     mode = "n", -- NORMAL mode
-    prefix = "<CR>",
+    prefix = O.goto_prefix,
     buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
     silent = false,
     -- silent = true, -- use `silent` when creating keymaps
@@ -86,7 +86,6 @@ local custom_textobjects = function(ai)
   local ts = s.treesitter
 
   return {
-    ["/"] = ts({ a = "@comment.outer", i = "@comment.inner" }, {}),
     k = ts({
       a = { "@function.outer", "@block.outer", "@class.outer", "@conditional.outer", "@loop.outer" },
       i = { "@function.inner", "@block.inner", "@class.inner", "@conditional.inner", "@loop.inner" },
@@ -100,6 +99,7 @@ local custom_textobjects = function(ai)
     -- C = ts({ a = "@class.outer", i = "@class.inner" }, {}),
     c = ts({ a = "@call.outer", i = "@call.inner" }, {}),
     -- c = s.function_call(),
+    -- line textobject
     L = function(ai_type)
       local line_num = vim.fn.line "."
       local line = vim.fn.getline(line_num)
@@ -117,6 +117,7 @@ local custom_textobjects = function(ai)
       end
       return { from = { line = line_num, col = from_col }, to = { line = line_num, col = to_col } }
     end,
+    e = function(ai_type) return { from = { line = line_num, col = from_col }, to = { line = line_num, col = to_col } } end,
     B = { "%b{}", "^.%s*().-()%s*.$" },
     -- B = function(ai_type)
     --   local n_lines = vim.fn.line "$"

@@ -74,6 +74,7 @@ return {
             refresh = "<C-r>",
             open = "<M-CR>",
           },
+          filetypes = { TelescopePrompt = false },
         },
         config = function(_, opts)
           require("copilot").setup(opts)

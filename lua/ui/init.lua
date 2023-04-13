@@ -92,26 +92,6 @@ return {
       show_help = true, -- show help message on the command line when the popup is visible
     },
   },
-  { -- "rcarriga/nvim-notify",
-    "rcarriga/nvim-notify",
-    keys = {
-      {
-        "<leader>un",
-        function() require("notify").dismiss { silent = true, pending = true } end,
-        desc = "Delete all Notifications",
-      },
-    },
-    opts = {
-      timeout = 3000,
-      stages = "fade_in_slide_out",
-      max_height = function() return math.floor(vim.o.lines * 0.75) end,
-      max_width = function() return math.floor(vim.o.columns * 0.75) end,
-    },
-    init = function()
-      -- when noice is not enabled, install notify on VeryLazy
-      if utils.have_plugin "noice.nvim" then utils.on_very_lazy(function() vim.notify = require "notify" end) end
-    end,
-  },
   { -- "SmiteshP/nvim-navbuddy",
     "SmiteshP/nvim-navbuddy",
     dependencies = {
@@ -302,7 +282,9 @@ return {
         local names = "abcdefghijklmnopqrstuvwxyz"
 
         local chars = {}
-        names:gsub(".", function(c) vim.cmd.PetsNew(c) end)
+        for c in names:gmatch "." do
+          vim.cmd.PetsNew(c)
+        end
       end, {})
     end,
     config = function(_, opts) require("pets").setup(opts) end,
@@ -321,14 +303,14 @@ return {
   { --tamton-aquib/duck.nvim
     "tamton-aquib/duck.nvim",
     keys = {
-      {
-        "gzD",
-        function()
-          -- 🦆 ඞ  🦀 🐈 🐎 🦖 🐤
-          require("duck").hatch("🦆", "10")
-        end,
-        desc = "hatch a duck",
-      },
+      -- {
+      --   "gzD",
+      --   function()
+      --     -- 🦆 ඞ  🦀 🐈 🐎 🦖 🐤
+      --     require("duck").hatch("🦆", "10")
+      --   end,
+      --   desc = "hatch a duck",
+      -- },
     },
   },
   -- TODO: https://github.com/DNLHC/glance.nvim

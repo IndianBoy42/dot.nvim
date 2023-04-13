@@ -528,7 +528,7 @@ return {
     -- vim.b.miniai_config = {
     --   custom_textobjects
     -- }
-    vim.keymap.set("n", "<leader>lr", "<F8>", { remap = true, desc = "Add \\left\\right" })
+    map("n", "<leader>lr", "<F8>", { remap = true, desc = "Add \\left\\right" })
     -- vim.keymap.set("n", "<leader>es", "<F8>", { remap = true, desc = "Toggle \\left\\right" })
 
     -- Localleader

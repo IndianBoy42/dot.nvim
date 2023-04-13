@@ -87,9 +87,14 @@ return function()
   opt.sidescroll = 1
   opt.sidescrolloff = 10
   opt.listchars = { extends = ">", precedes = "<", trail = "_" }
-  opt.background = vim.env.NVIM_THEME_BG or "dark"
   vim.g.python3_host_prog = O.python_interp
   opt.confirm = true
+
+  if vim.env.NVIM_VERBOSE ~= nil then
+    -- opt.verbosefile = "$HOME/.cache/nvim/verbose.log"
+    vim.cmd [[set verbosefile=~/.cache/nvim/verbose.log]]
+    opt.verbose = 15
+  end
 
   -- opt.undodir = CACHE_PATH .. "/undo" -- set an undo directory
   local undodir = "/tmp/.undodir_" .. vim.env.USER

@@ -37,6 +37,7 @@ function M.N_repeat()
 end
 
 local function register_nN_repeat(nN)
+  nN = nN or { nil, nil }
   custom_n_repeat = nN[1]
   custom_N_repeat = nN[2]
 end
@@ -126,7 +127,7 @@ function M.setup()
     vim.cmd [[autocmd UILeave * if v:event.chan ==# 0 | call chansend(v:stderr, "\x1b[<1u") | endif]]
   end
 
-  -- Free keys for reference
+  -- Free keys for reference : ? #
   map("n", "<C-p>", "<NOP>", {})
   -- map("n", "<C-o>", "<NOP>", {})
 
@@ -142,12 +143,16 @@ function M.setup()
 
   map("n", "/", srchrpt "/", nore)
   map("x", "g/", "/", nore)
-  map("n", "?", srchrpt "?", nore)
-  map("n", "*", srchrpt("viw*", "m"), nore) -- Swap g* and *
-  map("n", "#", srchrpt("viw#", "m"), nore)
+  map("n", "<C-/>", srchrpt "?", nore) -- TODO: this could be used for something else
+  -- map("n", "*", srchrpt("viw*", "m"), nore) -- Swap g* and *
+  -- map("n", "<C-*>", srchrpt("viw#", "m"), nore) -- TODO: this could be used for something else
+  map("n", "*", srchrpt "g*", nore) -- Swap g* and *
+  map("n", "<C-*>", srchrpt "g*", nore) -- TODO: this could be used for something else
   map("n", "g*", srchrpt "*", { desc = "Search cword whole" })
-  map("n", "g#", srchrpt "#", { desc = "Search cword whole" })
+  map("n", "g<C-*>", srchrpt "#", { desc = "Search cword whole" })
   map("n", "g.", [[/\V<C-r>"<CR>]] .. "cgn<C-a><ESC>", { desc = "Repeat change" }) -- Repeat the recent edit with cgn
+
+  map("n", "?", "<leader>s", { remap = true, desc = "Leader Search" })
 
   -- Command mode typos of wq
   --   vim.cmd [[
@@ -169,7 +174,6 @@ function M.setup()
   --     cnoreabbrev Qa qa
   --     cnoreabbrev Qall qall
   -- ]]
-  map("c", "<C-v>", "'<,'>")
 
   vim.o.mousetime = 0
   -- map("n", "<2-ScrollWheelUp>", "<nop>", sile)
@@ -188,10 +192,10 @@ function M.setup()
   map("n", "<C-+>", cmd "FontUp", sile)
 
   -- More convenient incr/decr
-  map("n", "+", "<C-a>", sile) -- recursive so we get dial.nvim
-  map("n", "-", "<C-x>", sile)
-  map("x", "+", "g<C-a>", sile)
-  map("x", "-", "g<C-x>", sile)
+  -- map("n", "+", "<C-a>", sile) -- recursive so we get dial.nvim
+  -- map("n", "-", "<C-x>", sile)
+  -- map("x", "+", "g<C-a>", sile)
+  -- map("x", "-", "g<C-x>", sile)
 
   map("t", "<Esc>", [[<C-\><C-n>]], nore)
   -- map("n", "<C-w><C-q>", function()
@@ -356,7 +360,14 @@ function M.setup()
   -- local error_nN = make_nN_pair { utils.lsp.error_next, utils.lsp.error_prev }
   -- map("n", pre_goto_next .. "e", error_nN[1], nore)
   -- map("n", pre_goto_prev .. "e", error_nN[2], nore)
-  repeatable("d", "Diags", { utils.lsp.diag_next, utils.lsp.diag_prev }, {})
+  repeatable(
+    { "d", "D", "e", "E" },
+    "Diags",
+    { utils.lsp.diag_next, utils.lsp.diag_prev, utils.lsp.error_next, utils.lsp.error_prev },
+    {
+      body = { O.goto_next, O.goto_previous, O.goto_next_outer, O.goto_previous_outer },
+    }
+  )
   repeatable("e", "Error", { utils.lsp.error_next, utils.lsp.error_prev }, {})
 
   local on_list_gen = function(pair)
@@ -426,7 +437,7 @@ function M.setup()
       body = body,
       on_enter = function() vim.cmd.UndotreeShow() end,
       on_exit = function() vim.cmd.UndotreeHide() end,
-      config = { invoke_on_body = true },
+      config = {},
       heads = {
         { "u", "u", { desc = false } },
         { "<C-r>", "<C-r>", { desc = false } },
@@ -446,21 +457,13 @@ function M.setup()
   map("n", "<c-w>d", cmd "bdelete!", nore)
 
   map("n", "zz", "za", { desc = "Fold" })
-  map("n", "zo", "zO", { desc = "Open under cursor" })
   map("n", "zm", "zM", { desc = "Close under cursor" })
   map("n", "zr", "zR", { desc = "Close under cursor" })
-  map("n", "zO", "zo", { desc = "Open one fold" })
   map("n", "zM", "zm", { desc = "Close one fold" })
   map("n", "zR", "zr", { desc = "Close under cursor" })
 
-  map("n", "==", "zz", { desc = "Center this Line" })
-  map("n", "=_", "zb", { desc = "Bottom this Line" })
-  map("n", "=^", "zt", { desc = "Top this Line" })
-
-  -- Search for the current selection
-  map("x", "*", srchrpt '"zy/<C-R>z<cr>', nore) -- Search for the current selection
-  map("n", "<leader>*", operatorfunc_keys "*", { desc = "Search (op)" }) -- Search textobject
-  map("x", "#", srchrpt '"zy?<C-R>z<cr>', nore) -- Backwards
+  -- Search textobject
+  map("n", "<leader>*", operatorfunc_keys "*", { desc = "Search (op)" })
   map("n", "<leader>#", operatorfunc_keys "#", { desc = "^Search (op)" })
 
   -- Search for last edited text
@@ -484,8 +487,10 @@ function M.setup()
   -- Double Escape key clears search and spelling highlights
   map("n", "<ESC>", function()
     vim.cmd "nohls"
+    local ok, _ = pcall(vim.cmd, "FzClear")
     vim.o.spell = false
-    require("notify").dismiss { silent = true }
+    local ok, notify = pcall(require, "notify")
+    if ok then notify.dismiss { silent = true } end
   end, sile)
 
   -- Map `cp` to `xp` (transpose two adjacent chars)
@@ -672,17 +677,17 @@ function M.setup()
   -- quick_inside("p", true)
   -- quick_inside "b"
   -- quick_inside "B"
-  quick_inside "["
-  quick_around "]"
-  quick_inside "("
-  quick_around ")"
-  quick_inside "{"
-  quick_around "}"
-  quick_inside '"'
-  quick_inside "'"
-  quick_inside "<"
-  quick_inside ">"
-  quick_inside "q"
+  -- quick_inside "["
+  -- quick_around "]"
+  -- quick_inside "("
+  -- quick_around ")"
+  -- quick_inside "{"
+  -- quick_around "}"
+  -- quick_inside '"'
+  -- quick_inside "'"
+  -- quick_inside "<"
+  -- quick_inside ">"
+  -- quick_inside "q"
   -- map("n", ",", "viw")
 
   -- "better" end and beginning of line
@@ -729,7 +734,8 @@ function M.setup()
   map({ "n", "x", "o" }, "<leader><leader>", "<localleader>", { remap = true, desc = "<localleader>" })
   -- map({ "n", "x", "o" }, "<BS>", "<localleader>", { remap = true, desc = "<localleader>" })
 
-  map({ "n", "x", "o" }, "<cr><cr>", "<cmd>wa<cr>", { desc = "Write" })
+  map({ "n", "x" }, "<localleader><localleader>", "<cmd>wa<cr>", { desc = "Write" })
+  map({ "n", "x" }, "<cr><cr>", "<cmd>wa<cr>", { desc = "Write" })
 
   -- Open new line with a count
   map("n", "o", function()
@@ -976,10 +982,11 @@ function M.setup()
       T = { telescope_fn.live_grep_all, "Text (ALL)" },
       -- b = { telescope_fn.curbuf, "Current Buffer" },
       b = { telescope_fn.buffers, "Buffers" },
-      i = { telescope_fn.curbuf, "in Buffer" },
+      -- i = { telescope_fn.curbuf, "in Buffer" },
       k = { telescope_fn.keymaps, "Keymappings" },
       c = { telescope_fn.commands, "Commands" },
-      n = { telescope_fn.treesitter, "Treesitter Nodes" },
+      N = { telescope_fn.treesitter, "Treesitter Nodes" },
+      u = { cmd "Telescope undo", "Telescope Undo" },
       o = { cmd "TodoTelescope", "TODOs search" },
       q = { telescope_fn.quickfix, "Quickfix" },
       ["*"] = { telescope_fn.grep_string, "Curr word" },
@@ -987,8 +994,8 @@ function M.setup()
       -- ["."] = { [[:%s/<C-R>.//g<Left><Left>]], "Last insert" },
       p = { cmd "SearchSession", "Sessions" },
       m = { telescope_fn.marks, "Marks" },
-      ["<CR>"] = { ":Telescope ", "Telescope ..." },
-      B = { telescope_fn.builtin, "Telescopes" },
+      _ = { ":Telescope ", "Telescope ..." },
+      ["<CR>"] = { telescope_fn.builtin, "Telescopes" },
       ["+"] = { [[/<C-R>+<cr>]], "Last yank" },
       ["."] = { [[/<C-R>.<cr>]], "Last insert" },
     },
@@ -1128,8 +1135,54 @@ function M.setup()
     })
   end
 
-  require("keymappings.jump_mode").setup()
   require("keymappings.scroll_mode").setup()
+  local prev_fold = function()
+    local c = vim.api.nvim_win_get_cursor(0)
+    vim.cmd "norm! [z"
+    local nc = vim.api.nvim_win_get_cursor(0)
+    if c[1] == nc[1] and c[2] == nc[2] then
+      vim.cmd "norm! zk[z"
+    end
+  end
+  local hydra = require "hydra" {
+    name = "Folds",
+    hint = "z, o, c, O, C",
+    config = {
+      color = "pink",
+      invoke_on_body = false,
+      hint = {
+        border = "rounded",
+        offset = -1,
+      },
+    },
+    mode = "n",
+    body = "z",
+    heads = {
+      { "z", utils.lazy_require("fold-cycle").toggle_all, { desc = "Toggle" } },
+      { "o", utils.lazy_require("fold-cycle").open, { desc = "Open" } },
+      { "c", utils.lazy_require("fold-cycle").close, { desc = "Close" } },
+      { "O", utils.lazy_require("fold-cycle").open_all, { desc = "Open all" } },
+      { "C", utils.lazy_require("fold-cycle").close_all, { desc = "Close all" } },
+      { O.goto_next, "<cmd>norm! zj<cr>", { desc = "Next" } },
+      { O.goto_previous, "<cmd>norm! zk<cr>", { desc = "Prev" } },
+      { "j", "<cmd>norm! zj<cr>", { desc = "Next", private = true } },
+      { "]", "<cmd>norm! zj<cr>", { desc = "Next" } },
+      -- { "k", "<cmd>norm! zk<cr>", { desc = "Prev" } },
+      { "k", prev_fold, { desc = "Prev", private = true } },
+      { "[", prev_fold, { desc = "Prev" } },
+    },
+  }
+  require("keymappings.jump_mode").repeatable("z", "Folds", {
+    "<cmd>norm! zj<cr>",
+    "<cmd>norm! zk<cr>",
+    "<cmd>norm! ]z<cr>",
+    "<cmd>norm! [z<cr>",
+  }, {})
+
+  vim.keymap.set("n", O.select_next, "v" .. O.select_next, { remap = true })
+  vim.keymap.set("n", O.select_next_outer, "v" .. O.select_next_outer, { remap = true })
+  vim.keymap.set("n", O.select_previous, "v" .. O.select_previous, { remap = true })
+  vim.keymap.set("n", O.select_previous_outer, "v" .. O.select_previous_outer, { remap = true })
 
   -- FIXME: duplicate entries for some of the operators
 end
@@ -1203,6 +1256,7 @@ M.attach_lsp = function(client, bufnr)
   end
 
   local telescope_cursor = function(name)
+    -- TODO: make this bigger
     return function() return telescope_fn[name](require("telescope.themes").get_cursor()) end
   end
 
@@ -1211,7 +1265,7 @@ M.attach_lsp = function(client, bufnr)
   map("n", "gtd", vim.lsp.buf.type_definition, { desc = "Type Definition" })
   map("n", "gD", lspbuf.declaration, { desc = "Goto Declaration" })
   map("n", "gK", vim.lsp.codelens.run, { desc = "Codelens" })
-  -- Preview variants
+  -- Preview variants -- TODO: preview and then open new window
   map("n", "gpd", utils.lsp.preview_location_at "definition", { desc = "Peek definition" })
   map("n", "gpD", utils.lsp.preview_location_at "declaration", { desc = "Peek declaration" })
   map("n", "gpr", telescope_fn.lsp_references, { desc = "Peek references" })

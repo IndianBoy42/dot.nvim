@@ -6,7 +6,7 @@ local surround_mappings = {
   find_left = "[s", -- Find surrounding (to the left)
   highlight = "<leader>vs", -- Highlight surrounding
   replace = "cs", -- Replace surrounding
-  update_n_lines = "gzn", -- Update `n_lines`
+  update_n_lines = "<leader>T<leader>n", -- Update `n_lines`
 }
 local custom_surroundings = function()
   local ts_input = require("mini.surround").gen_spec.input.treesitter
@@ -153,7 +153,6 @@ local M = {
   {
     "echasnovski/mini.surround",
     keys = function(_, keys)
-      -- Populate the keys based on the user's options
       local mappings = {
         { surround_mappings.add, desc = "Add surrounding" },
         { surround_mappings.vadd, desc = "Add surrounding", mode = { "v" } },
@@ -180,11 +179,11 @@ local M = {
       local map = vim.keymap.set
       vim.api.nvim_del_keymap("x", opts.mappings.add)
       map("x", opts.mappings.vadd, [[:<C-u>lua MiniSurround.add('visual')<CR>]], { noremap = true, silent = true })
-      map("x", "(", opts.mappings.vadd .. [[(]], { remap = true, silent = true })
-      map("x", "{", opts.mappings.vadd .. [[{]], { remap = true, silent = true })
-      map("x", "[", opts.mappings.vadd .. [[[]], { remap = true, silent = true })
-      map("x", '"', opts.mappings.vadd .. [["]], { remap = true, silent = true })
-      map("x", "'", opts.mappings.vadd .. [[']], { remap = true, silent = true })
+      -- map("x", "(", opts.mappings.vadd .. [[(]], { remap = true, silent = true })
+      -- map("x", "{", opts.mappings.vadd .. [[{]], { remap = true, silent = true })
+      -- map("x", "[", opts.mappings.vadd .. [[[]], { remap = true, silent = true })
+      -- map("x", '"', opts.mappings.vadd .. [["]], { remap = true, silent = true })
+      -- map("x", "'", opts.mappings.vadd .. [[']], { remap = true, silent = true })
 
       -- Make special mapping for "add surrounding for line"
       map("n", "yss", "ys_", { remap = true, silent = true })

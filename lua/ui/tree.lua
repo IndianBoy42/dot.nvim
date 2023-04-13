@@ -44,11 +44,10 @@ local function on_attach(bufnr)
     ["o"] = { "<Nop>", "Nop" },
     ["O"] = { "<Nop>", "Nop" },
 
-    ["<CR>"] = { api.node.open.edit, "Open" },
-    ["l"] = { api.node.open.no_window_picker, "Open" },
+    ["<CR>"] = { api.node.open.no_window_picker, "Open" },
+    ["l"] = { api.node.open.edit, "Open" },
     ["<Tab>"] = { api.node.open.preview, "Open Preview" },
     ["h"] = { api.node.navigate.parent_close, "Close Directory" },
-    ["<BS>"] = { api.node.navigate.parent_close, "Close Directory" },
 
     ["<localleader>P"] = { api.marks.bulk.move, "Move Bookmarked" },
     ["m"] = { api.marks.toggle, "Toggle Bookmark" },
@@ -110,6 +109,13 @@ M.opts = {
   },
   diagnostics = {
     enable = true,
+  },
+  actions = {
+    open_file = {
+      window_picker = {
+        picker = function() return require("ui.win_pick").pick_or_create() end,
+      },
+    },
   },
   -- renderer = { icons = { glyphs = require("circles").get_nvimtree_glyphs() } },
 }

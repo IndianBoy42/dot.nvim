@@ -199,14 +199,14 @@ M.opts = function()
     ["<M-l>"] = cmp.mapping {
       i = function()
         if cmp.visible() then
-          cmp.confirm(confirmopts)
+          cmp.confirm(confirmopts, function() return "<m-l>" end)
         elseif require("luasnip").choice_active() then
           require("plugins.snippets.luasnips_choices").popup_close()
         else
           cmp.complete()
         end
       end,
-      c = complete_or(cmp.mapping.confirm(cmdline_confirm)),
+      c = complete_or(cmp.mapping.confirm(cmdline_confirm, function() return "<m-l>" end)),
     },
     ["<M-h>"] = cmp.mapping {
       i = function()
@@ -215,15 +215,11 @@ M.opts = function()
       end,
       c = cmp.mapping.close(),
     },
-    ["<CR>"] = cmp.mapping {
-      -- i = cmp.mapping.confirm(confirmopts),
-      -- c = cmp.mapping.confirm(cmdline_confirm),
-    },
     ["<Tab>"] = cmp.mapping {
-      c = cmp.mapping.confirm(cmdline_confirm),
+      c = cmp.mapping.confirm(cmdline_confirm, function() return "<tab>" end),
       -- c = cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Insert },
       -- i = M.supertab(cmp.select_next_item),
-      i = M.supertab(cmp.mapping.confirm(confirmopts)),
+      i = M.supertab(cmp.mapping.confirm(confirmopts, function() return "<tab>" end)),
     },
     ["<S-TAB>"] = cmp.mapping {
       c = function()

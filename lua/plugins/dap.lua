@@ -66,6 +66,7 @@ local function dap_signs()
   -- vim.fn.sign_define("DapLogPoint", { text = filled, texthl = "", linehl = "", numhl = "" })
   -- vim.fn.sign_define("DapStopped", { text = filled, texthl = "", linehl = "", numhl = "" })
 
+  -- 🛑
   vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "DiagnosticInfo" })
   vim.fn.sign_define("DapBreakpointCondition", { text = "", texthl = "DiagnosticInfo" })
   vim.fn.sign_define("DapBreakpointRejected", { text = "", texthl = "DiagnosticError" })

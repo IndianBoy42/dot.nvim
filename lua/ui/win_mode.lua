@@ -77,7 +77,9 @@ local function window_hydra_setup()
 
       {
         "w",
-        require("ui.win_pick").pick_or_create,
+        function()
+           require("ui.win_pick").pick_or_create(vim.api.nvim_set_current_win)
+        end,
         { exit = true, desc = "Pick window" },
       },
       { "<C-w>", "<C-w>w", { exit = true, desc = false } },

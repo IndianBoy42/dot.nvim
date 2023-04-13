@@ -1,3 +1,16 @@
+local keymaps = function(table)
+  local maps = {}
+  for k, v in pairs(table) do
+    if type(v) == "table" then
+      for _, v2 in ipairs(v) do
+        maps[v2] = k
+      end
+    else
+      maps[v] = k
+    end
+  end
+  return maps
+end
 return {
   "stevearc/oil.nvim",
   lazy = false, -- So that i can do `nvim .` or `nvim <some_directory>`
@@ -15,39 +28,23 @@ return {
   --   })
   -- end,
   opts = {
-    columns = {
-      "icon",
-      "permissions",
-      "size",
-      "mtime",
+    columns = { "icon", "permissions", "size", "mtime" },
+    keymaps = keymaps {
+      ["actions.show_help"] = "g?",
+      ["actions.select"] = { "<CR>", "<localleader><localleader>", "<M-l>" },
+      ["actions.select_vsplit"] = { "<C-s>", "<localleader>s" },
+      ["actions.select_split"] = { "<C-h>", "<localleader>h" },
+      ["actions.select_tab"] = { "<C-t>", "<localleader>t" },
+      ["actions.preview"] = { "<C-p>", "<localleader>p" },
+      ["actions.close"] = { "<C-c>", "<localleader>c" },
+      ["actions.refresh"] = { "<C-r>", "<localleader>r" },
+      ["actions.parent"] = { "-", "<localleader>-" },
+      ["actions.open_cwd"] = { "_", "<localleader>." },
+      ["actions.cd"] = { "`", "<localleader>d" },
+      ["actions.tcd"] = { "~", "<localleader>~" },
+      ["actions.toggle_hidden"] = "<localleader>H",
     },
-    keymaps = {
-      ["g?"] = "actions.show_help",
-      ["<CR>"] = "actions.select",
-      ["<C-s>"] = "actions.select_vsplit",
-      ["<C-h>"] = "actions.select_split",
-      ["<C-t>"] = "actions.select_tab",
-      ["<C-p>"] = "actions.preview",
-      ["<C-c>"] = "actions.close",
-      ["<C-l>"] = "actions.refresh",
-      ["-"] = "actions.parent",
-      ["_"] = "actions.open_cwd",
-      ["`"] = "actions.cd",
-      ["~"] = "actions.tcd",
-      ["g."] = "actions.toggle_hidden",
-      ["<localleader><localleader>"] = "actions.select",
-      ["<localleader>s"] = "actions.select_vsplit",
-      ["<localleader>h"] = "actions.select_split",
-      ["<localleader>t"] = "actions.select_tab",
-      ["<localleader>p"] = "actions.preview",
-      ["<localleader>c"] = "actions.close",
-      ["<localleader>l"] = "actions.refresh",
-      ["<localleader>P"] = "actions.parent",
-      ["<localleader>."] = "actions.open_cwd",
-      ["<localleader>cd"] = "actions.cd",
-      ["<localleader>~"] = "actions.tcd",
-      ["<localleader>H"] = "actions.toggle_hidden",
-    },
+    view_options = { show_hidden = true },
   },
   -- event = "BufEnter",
   -- cmd = "Oil",

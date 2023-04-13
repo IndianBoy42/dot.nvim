@@ -109,11 +109,6 @@ return {
           local liblldb_path = vim.fn.has "mac" == 1 and extension_path .. "lldb/lib/liblldb.dylib"
             or extension_path .. "lldb/lib/liblldb.so"
 
-          -- TODO:
-          -- vim.b.miniai_config = {
-          --     custom_textobjects =
-          -- }
-
           local rust_tools_executor = nil
           local inlay_hints = vim.deepcopy(require("langs").inlay_hints)
           local inlay_hints_enabled = inlay_hints.auto and inlay_hints.by_tools

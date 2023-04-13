@@ -32,6 +32,22 @@ return {
   {
     "folke/trouble.nvim",
     cmd = "TroubleToggle",
+    dependencies = {
+      -- {
+      --   "nvim-telescope/telescope.nvim",
+      --   opts = function()
+      --     local trouble = utils.lazy_require "trouble.providers.telescope"
+      --     return {
+      --       defaults = {
+      --         mappings = {
+      --           i = { ["<localleader>T"] = trouble.open_with_trouble },
+      --           n = { ["<localleader>T"] = trouble.open_with_trouble },
+      --         },
+      --       },
+      --     }
+      --   end,
+      -- },
+    },
     keys = {
       { "<leader>dS", "<cmd>TroubleToggle<cr>", desc = "Trouble Sidebar" },
       { "<leader>dd", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "Document" },
@@ -56,17 +72,6 @@ return {
       )
 
       require("trouble").setup(opts)
-
-      local trouble = require "trouble.providers.telescope"
-      local telescope = require "telescope"
-      telescope.setup {
-        defaults = {
-          mappings = {
-            i = { ["<c-t>"] = trouble.open_with_trouble },
-            n = { ["<c-t>"] = trouble.open_with_trouble },
-          },
-        },
-      }
     end,
   },
   -- "ldelossa/litee-calltree.nvim"

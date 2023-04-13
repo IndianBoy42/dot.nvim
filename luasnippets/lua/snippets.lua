@@ -160,13 +160,16 @@ local snippets = {
     fmta(
       [[local <> = {}
 local <> = {}
+M = setmetatable(<>, <>)
 <>.<>
-return setmetatable(<>, <>)]],
+return M]],
       {
         i(1, "M"),
         l("meta_" .. l._1, { 1 }),
         l(l._1, { 1 }),
         -- i(2, "field"),
+        l(l._1, { 1 }),
+        l("meta_" .. l._1, { 1 }),
         c(2, {
           sn(
             nil,
@@ -190,8 +193,6 @@ return setmetatable(<>, <>)]],
             )
           ),
         }),
-        l(l._1, { 1 }),
-        l("meta_" .. l._1, { 1 }),
       }
     )
     -- {

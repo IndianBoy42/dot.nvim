@@ -1,4 +1,9 @@
-local theme_choice = vim.env.NVIM_THEME or "onedark_darker"
+local bg = vim.env.NVIM_THEME_BG or "dark"
+vim.opt.background = bg
+local theme_choice = ({
+  dark = vim.env.NVIM_THEME or "onedark_darker",
+  light = vim.env.NVIM_LIGHT_THEME or "zenbones_zenwritten", -- tokyobones
+})[bg]
 -- local theme_choice = "tokyodark"
 -- local theme_choice = "tokyonight_night"
 -- local theme_choice = "nebulous_night"
@@ -23,13 +28,13 @@ local config_colorscheme = function(name, cscheme, cb)
   end
 end
 
-vim.cmd [[
-com! CheckHighlightUnderCursor echo {l,c,n ->
-        \   'hi<'    . synIDattr(synID(l, c, 1), n)             . '> '
-        \  .'trans<' . synIDattr(synID(l, c, 0), n)             . '> '
-        \  .'lo<'    . synIDattr(synIDtrans(synID(l, c, 1)), n) . '> '
-        \ }(line("."), col("."), "name")
-]]
+local enhance_cscheme = function(name, cb)
+  vim.api.nvim_create_autocmd("ColorScheme", {
+    callback = function(args)
+      if args.match == name then cb(args) end
+    end,
+  })
+end
 
 local function get_hl(name) return vim.api.nvim_get_hl_by_name(name, true) end
 
@@ -77,57 +82,6 @@ vim.api.nvim_create_user_command("ToggleHiLightComments", function()
   end
 end, {})
 
-vim.api.nvim_create_autocmd("ColorScheme", {
-  callback = function(args)
-    if args.match == "onedark" then
-      -- -- Hide all semantic highlights
-      -- for _, group in ipairs(vim.fn.getcompletion("@lsp", "highlight")) do
-      --   vim.api.nvim_set_hl(0, group, {})
-      -- end
-      local maps = {
-        ["@lsp.type.class"] = { link = "Structure" },
-        ["@lsp.type.decorator"] = { link = "Function" },
-        -- ["@lsp.type.enum"] = { link = "Structure" },
-        ["@lsp.type.enumMember"] = { link = "Constant" },
-        ["@lsp.type.function"] = { link = "Function" },
-        -- ["@lsp.type.interface"] = { link = "Structure" },
-        ["@lsp.type.macro"] = { link = "Macro" },
-        ["@lsp.type.method"] = { link = "Function" },
-        -- ["@lsp.type.namespace"] = { link = "Structure" },
-        -- ["@lsp.type.parameter"] = { link = "Identifier" },
-        -- ["@lsp.type.property"] = { link = "Identifier" },
-        ["@lsp.type.struct"] = { link = "Structure" },
-        ["@lsp.type.type"] = { link = "Type" },
-        ["@lsp.type.typeParameter"] = { link = "TypeDef" },
-        -- ["@lsp.type.variable"] = { link = "Identifier" },
-        -- Above this is builtins
-        -- Below are custom definition
-        ["@lsp.type.comment"] = { link = "@comment" },
-        ["@lsp.type.enum"] = { link = "@type" },
-        ["@lsp.type.interface"] = { link = "Identifier" },
-        ["@lsp.type.keyword"] = { link = "@keyword" },
-        ["@lsp.type.namespace"] = { link = "@namespace" },
-        ["@lsp.type.parameter"] = { link = "@parameter" },
-        ["@lsp.type.property"] = { link = "@field" },
-        ["@lsp.type.variable"] = {}, -- use treesitter styles for regular variables
-        ["@lsp.typemod.method.defaultLibrary"] = { link = "@function.builtin" },
-        ["@lsp.typemod.function.defaultLibrary"] = { link = "@function.builtin" },
-        ["@lsp.typemod.operator.injected"] = { link = "@operator" },
-        ["@lsp.typemod.string.injected"] = { link = "@string" },
-        ["@lsp.typemod.variable.defaultLibrary"] = { link = "@variable.builtin" },
-        ["@lsp.typemod.variable.injected"] = { link = "@variable" },
-        -- Below are language customs
-        ["@lsp.type.enumMember.rust"] = { link = "@type" },
-        ["@lsp.mod.mutable.rust"] = { bg = get_hl("DiagnosticVirtualTextHint").background },
-        ["@lsp.mod.reference.rust"] = { bg = get_hl("DiagnosticVirtualTextInfo").background },
-      }
-      for k, v in pairs(maps) do
-        vim.api.nvim_set_hl(0, k, v)
-      end
-    end
-  end,
-})
-
 return {
   -- Colorschemes
   { -- "navarasu/onedark.nvim",
@@ -152,6 +106,50 @@ return {
         bg3 = "#30363f",
       },
     },
+    init = function()
+      enhance_cscheme("onedark", function()
+        local maps = {
+          ["@lsp.type.class"] = { link = "Structure" },
+          ["@lsp.type.decorator"] = { link = "Function" },
+          -- ["@lsp.type.enum"] = { link = "Structure" },
+          ["@lsp.type.enumMember"] = { link = "Constant" },
+          ["@lsp.type.function"] = { link = "Function" },
+          -- ["@lsp.type.interface"] = { link = "Structure" },
+          ["@lsp.type.macro"] = { link = "Macro" },
+          ["@lsp.type.method"] = { link = "Function" },
+          -- ["@lsp.type.namespace"] = { link = "Structure" },
+          -- ["@lsp.type.parameter"] = { link = "Identifier" },
+          -- ["@lsp.type.property"] = { link = "Identifier" },
+          ["@lsp.type.struct"] = { link = "Structure" },
+          ["@lsp.type.type"] = { link = "Type" },
+          ["@lsp.type.typeParameter"] = { link = "TypeDef" },
+          -- ["@lsp.type.variable"] = { link = "Identifier" },
+          -- Above this is builtins
+          -- Below are custom definition
+          ["@lsp.type.comment"] = { link = "@comment" },
+          ["@lsp.type.enum"] = { link = "@type" },
+          ["@lsp.type.interface"] = { link = "Identifier" },
+          ["@lsp.type.keyword"] = { link = "@keyword" },
+          ["@lsp.type.namespace"] = { link = "@namespace" },
+          ["@lsp.type.parameter"] = { link = "@parameter" },
+          ["@lsp.type.property"] = { link = "@field" },
+          ["@lsp.type.variable"] = {}, -- use treesitter styles for regular variables
+          ["@lsp.typemod.method.defaultLibrary"] = { link = "@function.builtin" },
+          ["@lsp.typemod.function.defaultLibrary"] = { link = "@function.builtin" },
+          ["@lsp.typemod.operator.injected"] = { link = "@operator" },
+          ["@lsp.typemod.string.injected"] = { link = "@string" },
+          ["@lsp.typemod.variable.defaultLibrary"] = { link = "@variable.builtin" },
+          ["@lsp.typemod.variable.injected"] = { link = "@variable" },
+          -- Below are language customs
+          ["@lsp.type.enumMember.rust"] = { link = "@type" },
+          ["@lsp.mod.mutable.rust"] = { bg = get_hl("DiagnosticVirtualTextHint").background },
+          ["@lsp.mod.reference.rust"] = { bg = get_hl("DiagnosticVirtualTextInfo").background },
+        }
+        for k, v in pairs(maps) do
+          vim.api.nvim_set_hl(0, k, v)
+        end
+      end)
+    end,
     config = config_colorscheme("onedark", "onedark"),
   },
   { -- "olimorris/onedarkpro.nvim",
@@ -598,5 +596,19 @@ return {
     priority = 1000,
     opts = { colors = { bg = nebulous_bg } },
     config = config_colorscheme("dracula", "dracula"),
+  },
+  {
+
+    "mcchrish/zenbones.nvim",
+    init = function()
+      vim.g.bones_compat = 1
+      vim.g[sub_theme("zenbones", "zenwritten")] = {
+        lightness = "bright",
+        darkness = "stark",
+      }
+    end,
+    lazy = not is_active_theme "zenbones",
+    priority = 1000,
+    config = function() vim.cmd.colorscheme(sub_theme("zenbones", "zenwritten")) end,
   },
 }

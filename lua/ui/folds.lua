@@ -1,3 +1,14 @@
+local function jump_closed_fold(dir)
+  local cmd = "norm! z" .. dir
+  local view = vim.fn.winsaveview()
+  local l0, l, open = 0, view.lnum, true
+  while l ~= l0 and open do
+    vim.api.nvim_command(cmd)
+    l0, l = l, vim.fn.line "."
+    open = vim.fn.foldclosed(l) < 0
+  end
+  if open then vim.fn.winrestview(view) end
+end
 return {
   { -- "anuvyklack/pretty-fold.nvim",
     "anuvyklack/pretty-fold.nvim",
@@ -9,6 +20,12 @@ return {
       },
       fill_char = " ",
     },
+  },
+  {
+    "jghauser/fold-cycle.nvim",
+    opts = {},
+    config = function(_, opts) require("fold-cycle").setup(opts) end,
+    keys = {},
   },
   { -- "kevinhwang91/nvim-ufo",
     -- TODO: figure out why this is so janky

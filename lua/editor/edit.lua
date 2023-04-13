@@ -64,18 +64,31 @@ return {
       require "hydra" {
         name = "Move Item",
         hint = false,
-        config = { color = "pink" },
+        config = {},
         mode = { "n" },
         body = "<leader>em",
         heads = {
-          { "h", "<M-h>", { mode = "x" } },
-          { "j", "<M-j>", { mode = "x" } },
-          { "k", "<M-k>", { mode = "x" } },
-          { "l", "<M-l>", { mode = "x" } },
-          { "h", "<C-M-h>", { mode = "n" } },
-          { "j", "<C-M-j>", { mode = "n" } },
-          { "k", "<C-M-k>", { mode = "n" } },
-          { "l", "<C-M-l>", { mode = "n" } },
+          { "h", utils.partial(MiniMove.move_selection, "left"), {} },
+          { "j", utils.partial(MiniMove.move_selection, "down"), {} },
+          { "k", utils.partial(MiniMove.move_selection, "up"), {} },
+          { "l", utils.partial(MiniMove.move_selection, "right"), {} },
+          { "h", utils.partial(MiniMove.move_line, "left"), {} },
+          { "j", utils.partial(MiniMove.move_line, "down"), {} },
+          { "k", utils.partial(MiniMove.move_line, "up"), {} },
+          { "l", utils.partial(MiniMove.move_line, "right"), {} },
+        },
+      }
+      require "hydra" {
+        name = "Move Item",
+        hint = false,
+        config = {},
+        mode = { "x" },
+        body = "<leader>em",
+        heads = {
+          { "h", utils.partial(MiniMove.move_selection, "left"), {} },
+          { "j", utils.partial(MiniMove.move_selection, "down"), {} },
+          { "k", utils.partial(MiniMove.move_selection, "up"), {} },
+          { "l", utils.partial(MiniMove.move_selection, "right"), {} },
         },
       }
     end,
@@ -131,7 +144,7 @@ return {
       mappings = {
         comment = "<c-c>",
         comment_line = "<c-c><c-c>",
-        textobject = "<c-c>",
+        textobject = "i/",
       },
 
       -- Hook functions to be executed at certain stage of commenting
