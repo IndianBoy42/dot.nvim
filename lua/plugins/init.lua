@@ -115,6 +115,7 @@ return {
       "CEShowTooltip",
       "CEGotoLabel",
     },
+    opts = {},
   },
   -- TODO: https://github.com/chrisgrieser/nvim-recorder
 }

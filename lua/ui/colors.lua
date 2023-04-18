@@ -96,7 +96,12 @@ return {
     cmd = { "TodoTrouble", "TodoTelescope" },
     keys = {
       {
-        "<leader>do",
+        "<leader>oT",
+        "<cmd>TodoTrouble<cr>",
+        desc = "TODOs sidebar",
+      },
+      {
+        "<leader>sT",
         "<cmd>TodoTrouble<cr>",
         desc = "TODOs sidebar",
       },

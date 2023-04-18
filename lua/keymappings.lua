@@ -462,7 +462,6 @@ function M.setup()
 
   -- Search textobject
   map("n", "<leader>*", operatorfunc_keys "*", { desc = "Search (op)" })
-  map("n", "<leader>#", operatorfunc_keys "#", { desc = "^Search (op)" })
 
   -- Search for last edited text
   map("n", 'g"', [[/\V<C-r>"<CR>]], { desc = "Search for last cdy" })
@@ -893,6 +892,8 @@ function M.setup()
     e = {
       name = "Edit",
       i = "ISwap",
+      m = "Move",
+      c = "TextCase",
     },
     o = {
       name = "Open window",
@@ -906,7 +907,8 @@ function M.setup()
       e = { cmd "!open '%:p:h'", "Open File Explorer" },
       M = { vim.g.goneovim and cmd "GonvimMiniMap" or cmd "MinimapToggle", "Minimap" },
       d = { cmd "DiffviewOpen", "Diffview" },
-      h = { cmd "DiffviewFileHistory", "File History" },
+      H = { cmd "DiffviewFileHistory", "File History" },
+      h = { cmd "NoiceHistory", "Noice History" },
       g = { cmd "!smerge '%:p:h'", "Sublime Merge" },
     },
     t = { name = "Terminals" },
@@ -930,13 +932,13 @@ function M.setup()
     },
     b = { name = "Buffers", d = { cmd "Bdelete!", "Delete" } },
     g = { name = "Git" },
-    I = {
+    i = {
       name = "Info",
-      L = { cmd "LspInfo", "LSP" },
-      N = { cmd "NullLsInfo", "Null-ls" },
-      I = { cmd "Mason", "LspInstall" },
-      T = { cmd "TSConfigInfo", "Treesitter" },
-      P = { cmd "Lazy", "Lazy plugins" },
+      l = { cmd "LspInfo", "LSP" },
+      n = { cmd "NullLsInfo", "Null-ls" },
+      i = { cmd "Mason", "LspInstall" },
+      t = { cmd "TSConfigInfo", "Treesitter" },
+      p = { cmd "Lazy", "Lazy plugins" },
     },
     l = {
       name = "LSP",
@@ -1022,6 +1024,7 @@ function M.setup()
       s = { [[:%s///g<Left><Left><Left>]], "In File" },
       i = "Inside",
       r = "Spectre",
+      c = "TextCase",
     },
     n = {
       name = "Generate",
@@ -1035,6 +1038,10 @@ function M.setup()
       name = "Diagnostics",
       tl = { utils.lsp.toggle_diagnostics, "Toggle Diags" },
       l = { utils.lsp.diag_line, "Line Diagnostics" },
+    },
+    u = {
+      name = "Clear",
+      h = { cmd "nohlsearch", "Search Highlight" },
     },
     -- c = {
     --   operatorfunc_keys("<leader>c"),
@@ -1066,7 +1073,6 @@ function M.setup()
     --   [["z<M-y>:%s/<C-r>z//g<Left><Left>]],
     --   "Change all",
     -- },
-    s = { 'ygvc<CR><C-r>"<CR><ESC>', "Add newlines around" },
     D = {
       name = "Debug",
     },

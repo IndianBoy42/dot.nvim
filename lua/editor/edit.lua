@@ -48,6 +48,7 @@ return {
     dependencies = { "nvim-treesitter" },
     opts = {
       use_default_keymaps = false,
+      max_join_length = 9999999,
     },
     keys = {
       { "gs", function() require("treesj").toggle() end, desc = "SplitJoin" },

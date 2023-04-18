@@ -2,7 +2,7 @@ local prefix = "<C-w>"
 local function window_hydra_setup()
   local Hydra = require "hydra"
   local splits = require "smart-splits"
-  local splits_api = require "smart-splits"
+  local splits_api = require "smart-splits.api"
   local function smart_splits(name, ...)
     local args = { ... }
     return function() splits[name](unpack(args)) end
@@ -243,26 +243,24 @@ local function window_hydra_setup()
   }
 end
 return {
+  { "anuvyklack/middleclass" },
   {
-    "anuvyklack/middleclass",
-    {
-      "mrjones2014/smart-splits.nvim",
-      opts = {
-        cursor_follows_swapped_bufs = false,
-        at_edge = "split",
-      },
-      keys = function()
-        local smart_splits = function(fn, opts)
-          return function() require("smart-splits")[fn](opts) end
-        end
-        return {
-          { "<C-h>", smart_splits "move_cursor_left", mode = { "n", "t" }, desc = "Move/Split" },
-          { "<C-j>", smart_splits "move_cursor_down", mode = { "n", "t" }, desc = "Move/Split" },
-          { "<C-k>", smart_splits "move_cursor_up", mode = { "n", "t" }, desc = "Move/Split" },
-          { "<C-l>", smart_splits "move_cursor_right", mode = { "n", "t" }, desc = "Move/Split" },
-        }
-      end,
+    "mrjones2014/smart-splits.nvim",
+    opts = {
+      cursor_follows_swapped_bufs = false,
+      at_edge = "split",
     },
+    keys = function()
+      local smart_splits = function(fn, opts)
+        return function() require("smart-splits")[fn](opts) end
+      end
+      return {
+        { "<C-h>", smart_splits "move_cursor_left", mode = { "n", "t" }, desc = "Move/Split" },
+        { "<C-j>", smart_splits "move_cursor_down", mode = { "n", "t" }, desc = "Move/Split" },
+        { "<C-k>", smart_splits "move_cursor_up", mode = { "n", "t" }, desc = "Move/Split" },
+        { "<C-l>", smart_splits "move_cursor_right", mode = { "n", "t" }, desc = "Move/Split" },
+      }
+    end,
   },
   {
     "anuvyklack/windows.nvim",
