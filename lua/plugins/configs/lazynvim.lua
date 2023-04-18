@@ -6,6 +6,14 @@ return {
   defaults = {
     lazy = true,
     config = true,
+    -- TODO:
+    -- cond = function(plugin)
+    --   if os.getenv "NVIM" ~= nil then
+    --     if plugin[1] ~= "willothy/flatten.nvim" then return false end
+    --     return true
+    --   end
+    --   return true
+    -- end,
   },
   install = {
     colorscheme = { "nebulous", "torte" },

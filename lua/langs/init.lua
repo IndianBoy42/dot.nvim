@@ -79,6 +79,7 @@ local plugins = {
   -- TODO: https://github.com/codethread/qmk.nvim
   {
     "lvimuser/lsp-inlayhints.nvim",
+    event = { "BufReadPost", "BufNewFile" },
     cond = not configs.inlay_hints.by_tools,
     config = function()
       require("lsp-inlayhints").setup {

@@ -9,6 +9,14 @@ local preamble = [[
 
     return snippets, autosnippets
     ]]
+local stylua_toml = [[column_width = 120
+line_endings = "Unix"
+indent_type = "Spaces"
+indent_width = 2
+quote_style = "AutoPreferDouble"
+call_parentheses = "None"
+collapse_simple_statement = "Always"
+]]
 
 local last_lua_module_section = function(args) --{{{
   local text = args[1][1] or ""
@@ -132,6 +140,7 @@ end
 
 local snippets = {
   s("luasnippets_preamble", t(vim.split(preamble, "\n"))),
+  s("stylua_toml", t(vim.split(stylua_toml, "\n"))),
   s(
     "snip",
     fmt("s('{}', {})", {
@@ -168,8 +177,8 @@ return M]],
         l("meta_" .. l._1, { 1 }),
         l(l._1, { 1 }),
         -- i(2, "field"),
-        l(l._1, { 1 }),
         l("meta_" .. l._1, { 1 }),
+        l(l._1, { 1 }),
         c(2, {
           sn(
             nil,
@@ -436,6 +445,8 @@ end
       }
     )
   ),
+  s("bufnr", t "local bufnr = vim.api.nvim_get_current_buf()"),
+  s("winnr", t "local winnr = vim.api.nvim_get_current_win()"),
 }
 local autosnippets = {
   s("!=", t "~="),

@@ -126,4 +126,32 @@ return {
 
   -- }
   -- https://github.com/lpoto/telescope-tasks.nvim
+  {
+    "t-troebst/perfanno.nvim",
+    opts = {},
+  },
+  {
+    "andrewferrier/debugprint.nvim",
+    opts = {},
+    -- TODO: use a hydra?
+    keys = { "g?P", "g?p", "g?o", "g?O", { "g?v", mode = { "n", "x" } }, { "g?V", mode = { "n", "x" } }, "g?o", "g?O" },
+  },
+  {
+    "rafcamlet/nvim-luapad",
+    opts = {},
+    cmd = { "Luapad", "LuaRun", "LuaAttach", "LuaDetach", "LuaEval" },
+    config = function(_, opts)
+      require("luapad").setup(opts)
+      local cmd = function(name, fn, opts)
+        vim.api.nvim_create_user_command(
+          name,
+          function(args) require("luapad")[fn](type(opts) == "function" and opts(args) or opts) end,
+          { nargs = "*" }
+        )
+      end
+      cmd("LuaAttach", "attach", {})
+      cmd("LuaDetach", "detach", {})
+      vim.api.nvim_create_user_command("LuaEval", function(args) require("luapad.state").current():eval() end, {})
+    end,
+  },
 }

@@ -1,35 +1,5 @@
 return {
   {
-    "stevearc/aerial.nvim",
-    cmd = { "AerialToggle", "AerialOpen" },
-    keys = {
-      { "<leader>os", "<cmd>AerialToggle<cr>", desc = "Aerial Outline" },
-    },
-    opts = {},
-  },
-  { --
-    "simrat39/symbols-outline.nvim",
-    opts = {
-      highlight_hovered_item = true,
-      show_guides = true,
-      auto_preview = true,
-      position = "right",
-      keymaps = {
-        close = "<Esc>",
-        goto_location = "<Cr>",
-        focus_location = "o",
-        hover_symbol = "<localleader>h",
-        rename_symbol = "<localleader>r",
-        code_actions = "<localleader>a",
-      },
-      lsp_blacklist = {},
-    },
-    cmd = "SymbolsOutline",
-    keys = {
-      { "<leader>oS", "<cmd>SymbolsOutline<cr>", desc = "Symbols Outline" },
-    },
-  },
-  {
     "folke/trouble.nvim",
     cmd = "TroubleToggle",
     dependencies = {
@@ -48,22 +18,32 @@ return {
       --   end,
       -- },
     },
-    keys = {
-      { "<leader>dS", "<cmd>TroubleToggle<cr>", desc = "Trouble Sidebar" },
-      { "<leader>dd", "<cmd>TroubleToggle document_diagnostics<cr>", desc = "Document" },
-      { "<leader>dD", "<cmd>TroubleToggle workspace_diagnostics<cr>", desc = "Workspace" },
-      { "<leader>dr", "<cmd>TroubleToggle lsp_references<cr>", desc = "References" },
-      { "<leader>ds", "<cmd>TroubleToggle lsp_definitions<cr>", desc = "Definitions" },
-      { "<leader>dq", "<cmd>TroubleToggle quickfix<cr>", desc = "Quick Fixes" },
-      -- { "<leader>dL", "<cmd>TroubleToggle loclist<cr>", desc = "Location List" },
-      -- { "<leader>do", "<cmd>TroubleToggle todo<cr>", desc = "TODOs" },
-    },
     opts = {
       -- your configuration comes here
       -- or leave it empty to use the default settings
       position = "right",
-      auto_preview = false,
-      hover = "h",
+      auto_preview = true,
+      action_keys = { -- key mappings for actions in the trouble list
+        -- map to {} to remove a mapping, for example:
+        -- close = {},
+        close = "q", -- close the list
+        cancel = "<esc>", -- cancel the preview and get back to your last window / buffer / cursor
+        refresh = "r", -- manually refresh
+        jump = { "<cr>", "<tab>" }, -- jump to the diagnostic or open / close folds
+        open_split = { "<c-x>" }, -- open buffer in new split
+        open_vsplit = { "<c-v>" }, -- open buffer in new vsplit
+        open_tab = { "<c-t>" }, -- open buffer in new tab
+        jump_close = { "o" }, -- jump to the diagnostic and close the list
+        toggle_mode = "m", -- toggle between "workspace" and "document" diagnostics mode
+        toggle_preview = "P", -- toggle auto_preview
+        hover = "H", -- opens a small popup with the full multiline message
+        preview = "p", -- preview the diagnostic location
+        close_folds = { "zm", "h" }, -- close all folds
+        open_folds = { "zr", "l" }, -- open all folds
+        toggle_fold = { "zZ", "zz" }, -- toggle fold of current file
+        previous = "k", -- previous item
+        next = "j", -- next item
+      },
     },
     config = function(_, opts)
       vim.api.nvim_create_autocmd(
@@ -75,19 +55,26 @@ return {
     end,
   },
   -- "ldelossa/litee-calltree.nvim"
-  -- "stevearc/aerial.nvim/"
-  { "liuchengxu/vista.vim", cmd = "Vista" },
-  {
-    "GustavoKatel/sidebar.nvim",
+  { --
+    "simrat39/symbols-outline.nvim",
     opts = {
-      open = false,
-      sections = {
-        "datetime",
-        "git-status",
-        "lsp-diagnostics",
-        "todos",
+      highlight_hovered_item = true,
+      show_guides = true,
+      auto_preview = true,
+      position = "right",
+      keymaps = {
+        close = "<C-q>",
+        toggle_preview = "P",
+        focus_location = "o",
+        hover_symbol = "H",
+        rename_symbol = "R",
+        code_actions = "K",
+        fold_reset = "zR",
+        fold_all = "zm",
+        unfold_all = "zr",
       },
+      lsp_blacklist = {},
     },
-    cmd = "SidebarNvimToggle",
+    cmd = "SymbolsOutline",
   },
 }

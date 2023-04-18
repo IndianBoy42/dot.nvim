@@ -77,6 +77,8 @@ local O = {
   select_next_outer = "}}",
   select_previous_outer = "}}",
   select_mode = "!",
+  swap_next = "",
+  swap_prev = "",
   -- # ?
   -- The below is used for most hint based navigation/selection (hop, hint_textobjects)
   -- hint_labels = "fdsahjklgvcxznmbyuiorewqtp",

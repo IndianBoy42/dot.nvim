@@ -16,7 +16,7 @@ return {
         pattern = "python",
         callback = function()
           require("langs.complete").add_sources { { name = "jupyter" } }
-          vim.keymap.set("n", "gh", "<cmd>JupyterInspect<cr>", { buffer = 0 })
+          vim.keymap.set("n", "H", "<cmd>JupyterInspect<cr>", { buffer = 0 })
         end,
         group = vim.api.nvim_create_augroup("jupyter_kernel_setup", {}),
       })

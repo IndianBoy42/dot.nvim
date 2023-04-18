@@ -13,8 +13,34 @@ return {
     "mizlan/iswap.nvim",
     opts = {
       autoswap = true,
+      move_cursor = true,
     },
-    cmd = { "ISwap", "ISwapWith", "ISwapNode", "ISwapNodeWith" },
+    cmd = { "ISwap", "ISwapWith", "ISwapNode", "ISwapNodeWith", "ISwapWithLeft", "ISwapWithRight" },
+    keys = {
+      { "<leader>ei" },
+      { "<leader>ea", "<cmd>ISwapWith<cr>", desc = "ISwap" },
+    },
+    config = function(_, opts)
+      require("iswap").setup(opts)
+      require "hydra" {
+        name = "ISwap",
+        hint = "",
+        config = {
+          color = "red",
+          invoke_on_body = false,
+          hint = {
+            border = "rounded",
+            offset = -1,
+          },
+        },
+        mode = "n",
+        body = "<leader>ei",
+        heads = {
+          { "j", "<cmd>ISwapWithRight<cr>", { desc = "Right" } },
+          { "k", "<cmd>ISwapWithLeft<cr>", { desc = "Left" } },
+        },
+      }
+    end,
   },
   {
     -- "bennypowers/splitjoin.nvim",
@@ -25,6 +51,7 @@ return {
     },
     keys = {
       { "gs", function() require("treesj").toggle() end, desc = "SplitJoin" },
+      { "<C-s>", function() require("treesj").toggle() end, desc = "SplitJoin", mode = "i" },
       { "<leader>es", function() require("treesj").split() end, desc = "Split" },
       { "<leader>ej", function() require("treesj").join() end, desc = "Join" },
     },
@@ -162,37 +189,53 @@ return {
       else
         local hydra = require "hydra"
 
-        local head = function(key, operator_name, desc)
+        local head = function(key, func, operator_name, desc)
           return {
             key,
-            function() require("textcase").operator(operator_name) end,
+            function() require("textcase")[func](operator_name) end,
             { desc = desc },
           }
         end
 
-        hydra {
-          config = {
-            exit = true,
-          },
-          name = "Change case",
-          mode = "n",
-          body = "gyc",
-          heads = {
-            head("_", "to_snake_case", "snake_case"),
-            head("-", "to_dash_case", "dash-case"),
-            head("C", "to_constant_case", "CONSTANT_CASE"),
-            head(".", "to_dot_case", "dot.case"),
-            head("c", "to_camel_case", "camelCase"),
-            head("t", "to_title_case", "Title Case"),
-            head("/", "to_path_case", "path/case"),
-            head("s", "to_phrase_case", "Sentence case"),
-            head("m", "to_pascal_case", "MixedCase"),
+        local heads = function(op)
+          return {
+            head("_", op, "to_snake_case", "snake_case"),
+            head("-", op, "to_dash_case", "dash-case"),
+            head("C", op, "to_constant_case", "CONSTANT_CASE"),
+            head(".", op, "to_dot_case", "dot.case"),
+            head("c", op, "to_camel_case", "camelCase"),
+            head("t", op, "to_title_case", "Title Case"),
+            head("/", op, "to_path_case", "path/case"),
+            head("s", op, "to_phrase_case", "Sentence case"),
+            head("m", op, "to_pascal_case", "MixedCase"),
 
             { "<Esc>", nil, { exit = true } },
-          },
+          }
+        end
+
+        hydra {
+          config = { invoke_on_body = true },
+          name = "Change case",
+          mode = "n",
+          body = "<leader>ec",
+          heads = heads "quick_replace",
+        }
+        hydra {
+          config = { invoke_on_body = true },
+          name = "Change case LSP rename",
+          mode = "n",
+          body = "<leader>rc",
+          heads = heads "lsp_rename",
+        }
+        hydra {
+          config = { invoke_on_body = true },
+          name = "Change case",
+          mode = "x",
+          body = "<leader>rc",
+          heads = heads "visual",
         }
       end
     end,
-    keys = "gyc",
+    keys = { { "<leader>ec" }, { "<leader>rc", mode = { "x", "n" } } },
   },
 }

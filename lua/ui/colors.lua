@@ -133,6 +133,7 @@ return {
   {
     "nullchilly/fsread.nvim",
     cmd = { "FSRead", "FSClear", "FSToggle" },
-    keys = { { "<leader>Tf", "<cmd>FSToggle<cr>", "Flow State Read" } },
+    keys = { { "<leader>Tf", "<cmd>FSToggle<cr>", desc = "Flow State Read" } },
   },
+  -- TODO: https://github.com/Pocco81/high-str.nvim
 }

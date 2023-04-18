@@ -171,8 +171,8 @@ return {
                   s = { ":RustSSR  ==>> <Left><Left><Left><Left><Left><Left>", "Structural S&R" },
                 }
                 local map = vim.keymap.setl
-                map("x", "gh", "<cmd>RustHoverRange<CR>", { desc = "Hover Range" })
-                map("n", "gh", "<cmd>RustHoverActions<CR>", { desc = "Hover Actions" })
+                map("x", "H", "<cmd>RustHoverRange<CR>", { desc = "Hover Range" })
+                map("n", "H", "<cmd>RustHoverActions<CR>", { desc = "Hover Actions" })
                 map("n", "gj", "<cmd>RustJoinLines<CR>", { desc = "Join Lines" })
 
                 local move_item = function(dir)
@@ -278,7 +278,7 @@ return {
 
           local taplo_on_attach = function(client, buffer)
             if is_cargo() then
-              vim.keymap.set("n", "gh", show_popup, { buffer = buffer })
+              vim.keymap.set("n", "H", show_popup, { buffer = buffer })
               local crates = require "crates"
               mappings.localleader {
                 t = { crates.toggle, "Toggle" },

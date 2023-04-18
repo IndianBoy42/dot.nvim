@@ -58,6 +58,18 @@ return {
           desc = "All (motion) in file",
         },
         {
+          "<leader>c",
+          substitute_range("visual", {}),
+          mode = "x",
+          desc = "All (sel) in (motion)",
+        },
+        {
+          "<leader>C",
+          substitute_range("visual", { motion2 = "ie" }),
+          mode = "x",
+          desc = "All (sel) in file",
+        },
+        {
           "co",
           -- substitute_range("operator", { motion1 = "iw" }),
           substitute_range "word",
@@ -70,18 +82,6 @@ return {
           substitute_range("word", { motion2 = "ie" }),
           mode = "n",
           desc = "All iw in file",
-        },
-        {
-          "<leader>c",
-          substitute_range("visual", {}),
-          mode = "x",
-          desc = "All (sel) in (motion)",
-        },
-        {
-          "<leader>C",
-          substitute_range("visual", { motion2 = "ie" }),
-          mode = "x",
-          desc = "All (sel) in file",
         },
         { "cx", exchange "operator", mode = "n", desc = "Exchange" },
         { "cxx", exchange "line", mode = "n", desc = "Exchange Line" },

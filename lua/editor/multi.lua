@@ -16,7 +16,7 @@ return {
       ["Skip Region"] = "n",
       ["Remove Region"] = "N",
       ["Visual Cursors"] = ldr .. ldr,
-      ["Visual Add"] = "<M-v>",
+      ["Visual Add"] = "+",
       ["Visual Regex"] = "/",
       ["Add Cursor At Pos"] = "+",
       ["Find Operator"] = "m",
@@ -25,6 +25,7 @@ return {
       ["Reselect Last"] = ldr .. ldr,
       ["Toggle Mappings"] = "-",
       ["Transpose"] = "<M-r>",
+      ["Surround"] = "z",
     }
     vim.g.VM_mouse_mappings = true
 

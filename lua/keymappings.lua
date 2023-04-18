@@ -197,7 +197,6 @@ function M.setup()
   -- map("x", "+", "g<C-a>", sile)
   -- map("x", "-", "g<C-x>", sile)
 
-  map("t", "<Esc>", [[<C-\><C-n>]], nore)
   -- map("n", "<C-w><C-q>", function()
   --   for _, win in ipairs(vim.api.nvim_list_wins()) do
   --     local config = vim.api.nvim_win_get_config(win)
@@ -296,7 +295,6 @@ function M.setup()
 
   -- Charwise visual select line
   map("x", "v", "^og_", nore)
-  map("x", "V", "0o$", nore)
 
   -- move along visual lines, not numbered ones
   -- without interferring with {count}<down|up>
@@ -485,13 +483,22 @@ function M.setup()
   map("x", "gN", "<esc>NNgN", nore) -- current/prev
 
   -- Double Escape key clears search and spelling highlights
-  map("n", "<ESC>", function()
-    vim.cmd "nohls"
-    local ok, _ = pcall(vim.cmd, "FzClear")
+  -- FIXME: why do you delete yourself??
+  map("n", "<esc>", function()
+    local ok, _ = pcall(function() return vim.cmd "FzClear" end)
+    vim.cmd "nohlsearch"
     vim.o.spell = false
     local ok, notify = pcall(require, "notify")
     if ok then notify.dismiss { silent = true } end
   end, sile)
+  -- vim.on_key(function()
+  --   vim.cmd "nohls"
+  --   local ok, _ = pcall(function() return vim.cmd "FzClear" end)
+  --   vim.cmd "nohlsearch"
+  --   vim.o.spell = false
+  --   local ok, notify = pcall(require, "notify")
+  --   if ok then notify.dismiss { silent = true } end
+  -- end)
 
   -- Map `cp` to `xp` (transpose two adjacent chars)
   -- as a **repeatable action** with `.`
@@ -556,24 +563,29 @@ function M.setup()
   -- map("n", "gco", "o-<esc>gccA<BS>", sile)
 
   -- Select last pasted
-  map("n", "gp", "`[v`]", { desc = "Select Last Paste" })
-  map("x", "gp", "<esc>gp", { desc = "Select Last Paste" })
-  map("n", "gP", "`[V`]", { desc = "SelLine Last Paste" })
-  map("x", "gP", "<esc>gP", { desc = "SelLine Last Paste" })
-  map("n", "g<C-p>", "`[<C-v>`]", { desc = "SelBlock Last Paste" })
-  map("x", "g<C-p>", "<esc>g<C-p>", { desc = "SelBlock Last Paste" })
+  map("n", "gp", "v`[o`]", { desc = "Select Last Paste" })
+  map("x", "gp", "`[o`]", { desc = "Select Last Paste" })
+  map("n", "gP", "V`[o`]", { desc = "SelLine Last Paste" })
+  map("x", "gP", "<esc>gP", { remap = true, desc = "SelLine Last Paste" })
+  map("n", "g<C-p>", "<C-v>`[o`]", { desc = "SelBlock Last Paste" })
+  map("x", "g<C-p>", "<esc>g<C-p>", { remap = true, desc = "SelBlock Last Paste" })
   -- Use reselect as an operator
   op_from "gp"
   op_from "gP"
   op_from "g<C-p>"
 
   map("x", "gy", function()
+    -- Remember the original position
+    feedkeys('"zy', "n")
+    -- Duplicate above and reselect original
     feedkeys('"zy' .. "mz" .. "`<" .. '"zP' .. "`[V`]", "n")
+    -- Comment it
     feedkeys("<C-c>", "m")
+    -- Go back to the original position
     feedkeys("`z", "m")
   end, { desc = "copy and comment" })
   map("n", "gy", operatorfuncV_keys "gy", sile)
-  -- map("n", "gyy", "Vgy", sile)
+  map("n", "gyy", "Vgy", sile)
 
   -- Swap the mark jump keys
   map("n", "'", "`", nore)
@@ -691,12 +703,12 @@ function M.setup()
   -- map("n", ",", "viw")
 
   -- "better" end and beginning of line
-  map("o", "H", "^", { remap = true })
-  map("o", "L", "$", { remap = true })
-  map("x", "H", "^", { remap = true })
-  map("x", "L", "g_", { remap = true })
-  map("n", "H", [[col('.') == match(getline('.'),'\S')+1 ? '0' : '^']], norexpr)
-  map("n", "L", "$", { remap = true })
+  -- map("o", "H", "^", { remap = true })
+  -- map("o", "L", "$", { remap = true })
+  -- map("x", "H", "^", { remap = true })
+  -- map("x", "L", "g_", { remap = true })
+  -- map("n", "H", [[col('.') == match(getline('.'),'\S')+1 ? '0' : '^']], norexpr)
+  -- map("n", "L", "$", { remap = true })
 
   -- map("n", "m-/", "")
 
@@ -880,24 +892,22 @@ function M.setup()
     Q = { function() return pcall(vim.cmd.tabclose) or pcall(vim.cmd.quitall) end, "Quit Tab" },
     e = {
       name = "Edit",
-      a = { cmd "ISwapWith", "ISwapWith" },
-      i = { cmd "ISwap", "ISwap" },
+      i = "ISwap",
     },
     o = {
       name = "Open window",
-      -- s = { focus_fn.split_nicely, "Nice split" },
-      o = { cmd "SidebarNvimToggle", "Sidebar.nvim" },
       f = { cmd "NvimTreeToggle", "File Sidebar" },
       u = { cmd "UndotreeToggle", "Undo tree" },
-      r = { cmd "Oil", "File Browser" },
+      o = { cmd "Oil", "File Browser" },
+      s = { cmd "SymbolsOutline", "Outline" },
+      t = { cmd "TroubleToggle", "Trouble" },
+      n = { cmd "Navbuddy", "Navbuddy" },
       q = { utils.quickfix_toggle, "Quick fixes" },
-      E = { cmd "!open '%:p:h'", "Open File Explorer" },
-      v = { cmd "Vista nvim_lsp", "Vista" },
-      -- ["v"] = {cmd "Vista", "Vista"},
+      e = { cmd "!open '%:p:h'", "Open File Explorer" },
       M = { vim.g.goneovim and cmd "GonvimMiniMap" or cmd "MinimapToggle", "Minimap" },
       d = { cmd "DiffviewOpen", "Diffview" },
       h = { cmd "DiffviewFileHistory", "File History" },
-      m = { cmd "!smerge '%:p:h'", "Sublime Merge" },
+      g = { cmd "!smerge '%:p:h'", "Sublime Merge" },
     },
     t = { name = "Terminals" },
     x = { name = "Run" },
@@ -907,13 +917,14 @@ function M.setup()
       name = "Toggle Opts",
       w = { cmd "setlocal wrap!", "Wrap" },
       s = { cmd "setlocal spell!", "Spellcheck" },
-      C = { cmd "setlocal cursorcolumn!", "Cursor column" },
+      c = { name = "Cursor" },
+      cc = { cmd "setlocal cursorcolumn!", "Cursor column" },
       n = { cmd "setlocal number!", "Number column" },
       g = { cmd "setlocal signcolumn!", "Cursor column" },
-      l = { cmd "setlocal cursorline!", "Cursor line" },
+      cl = { cmd "setlocal cursorline!", "Cursor line" },
       h = { cmd "setlocal hlsearch", "hlsearch" },
       b = { cmd "set buflisted", "buflisted" },
-      c = { utils.conceal_toggle, "Conceal" },
+      l = { utils.conceal_toggle, "Conceal" },
       H = { cmd "ToggleHiLightComments", "Comment Highlights" },
       -- TODO: Toggle comment visibility
     },
@@ -929,7 +940,7 @@ function M.setup()
     },
     l = {
       name = "LSP",
-      h = { lspbuf.hover, "Hover (gh)" },
+      h = { lspbuf.hover, "Hover (H)" },
       a = { telescope_fn.code_actions_previewed, "Code Action (K)" },
       k = { vim.lsp.codelens.run, "Run Code Lens (gK)" },
       t = { lspbuf.type_definition, "Type Definition" },
@@ -943,25 +954,27 @@ function M.setup()
         i = { lspbuf.incoming_calls, "Incoming" },
         o = { lspbuf.outgoing_calls, "Outgoing" },
       },
-      F = { utils.lsp.format_range_operator, "Format Range" },
       s = {
-        name = "View in Split",
-        d = {
-          utils.lsp.view_location_pick("definition", "FocusSplitNicely"),
-          "Split Definition",
-        },
-        D = {
-          utils.lsp.view_location_pick("declaration", "FocusSplitNicely"),
-          "Split Declaration",
-        },
-        r = {
-          utils.lsp.view_location_pick("references", "FocusSplitNicely"),
-          "Split References",
-        },
-        s = {
-          utils.lsp.view_location_pick("implementation", "FocusSplitNicely"),
-          "Split Implementation",
-        },
+        name = "View in Split", -- TODO: peek before pick
+        d = { utils.lsp.view_location_pick "definition", " Definition" },
+        D = { utils.lsp.view_location_pick "declaration", " Declaration" },
+        r = { utils.lsp.view_location_pick "references", " References" },
+        i = { utils.lsp.view_location_pick "implementation", " Implementation" },
+      },
+      p = {
+        name = "Peek in Float",
+        d = { utils.lsp.preview_location_at "definition", "Definition" },
+        D = { utils.lsp.preview_location_at "declaration", "Declaration" },
+        r = { telescope_fn.lsp_references, "References" },
+        i = { telescope_fn.lsp_implementations, "Implementation" },
+        e = { utils.lsp.diag_line, "Diagnostics" },
+      },
+      b = {
+        name = "Sidebar",
+        e = { cmd "TroubleToggle workspace_diagnostics", "Diagnostics" },
+        r = { cmd "TroubleToggle lsp_references", "References" },
+        d = { cmd "TroubleToggle lsp_definitions", "Definitions" },
+        q = { cmd "TroubleToggle quickfix", "Quick Fixes" },
       },
     },
     s = {
@@ -971,9 +984,9 @@ function M.setup()
       f = { telescope_fn.find_files, "Find File" },
       -- c = { telescope_fn.colorscheme, "Colorscheme" },
       s = { telescope_fn.lsp_document_symbols, "Document Symbols" },
-      S = { telescope_fn.lsp_dynamic_workspace_symbols, "Workspace Symbols" },
+      l = { telescope_fn.lsp_dynamic_workspace_symbols, "Workspace Symbols" },
       d = { telescope_fn.diagnostics, "Document Diagnostics" },
-      D = { telescope_fn.workspace_diagnostics, "Workspace Diagnostics" },
+      w = { telescope_fn.workspace_diagnostics, "Workspace Diagnostics" },
       h = { telescope_fn.help_tags, "Find Help" },
       j = { telescope_fn.jumplist, "Jump List" },
       M = { telescope_fn.man_pages, "Man Pages" },
@@ -1008,12 +1021,7 @@ function M.setup()
       ["."] = { [[:%s/<C-R>.//g<Left><Left>]], "Last insert" },
       s = { [[:%s///g<Left><Left><Left>]], "In File" },
       i = "Inside",
-      r = {
-        name = "Spectre",
-      },
-    },
-    c = {
-      name = "Change/Substitute",
+      r = "Spectre",
     },
     n = {
       name = "Generate",
@@ -1025,10 +1033,9 @@ function M.setup()
     },
     d = {
       name = "Diagnostics",
-      T = { utils.lsp.toggle_diagnostics, "Toggle Diags" },
+      tl = { utils.lsp.toggle_diagnostics, "Toggle Diags" },
       l = { utils.lsp.diag_line, "Line Diagnostics" },
     },
-    m = "Move",
     -- c = {
     --   operatorfunc_keys("<leader>c"),
     --   "Change all",
@@ -1136,48 +1143,7 @@ function M.setup()
   end
 
   require("keymappings.scroll_mode").setup()
-  local prev_fold = function()
-    local c = vim.api.nvim_win_get_cursor(0)
-    vim.cmd "norm! [z"
-    local nc = vim.api.nvim_win_get_cursor(0)
-    if c[1] == nc[1] and c[2] == nc[2] then
-      vim.cmd "norm! zk[z"
-    end
-  end
-  local hydra = require "hydra" {
-    name = "Folds",
-    hint = "z, o, c, O, C",
-    config = {
-      color = "pink",
-      invoke_on_body = false,
-      hint = {
-        border = "rounded",
-        offset = -1,
-      },
-    },
-    mode = "n",
-    body = "z",
-    heads = {
-      { "z", utils.lazy_require("fold-cycle").toggle_all, { desc = "Toggle" } },
-      { "o", utils.lazy_require("fold-cycle").open, { desc = "Open" } },
-      { "c", utils.lazy_require("fold-cycle").close, { desc = "Close" } },
-      { "O", utils.lazy_require("fold-cycle").open_all, { desc = "Open all" } },
-      { "C", utils.lazy_require("fold-cycle").close_all, { desc = "Close all" } },
-      { O.goto_next, "<cmd>norm! zj<cr>", { desc = "Next" } },
-      { O.goto_previous, "<cmd>norm! zk<cr>", { desc = "Prev" } },
-      { "j", "<cmd>norm! zj<cr>", { desc = "Next", private = true } },
-      { "]", "<cmd>norm! zj<cr>", { desc = "Next" } },
-      -- { "k", "<cmd>norm! zk<cr>", { desc = "Prev" } },
-      { "k", prev_fold, { desc = "Prev", private = true } },
-      { "[", prev_fold, { desc = "Prev" } },
-    },
-  }
-  require("keymappings.jump_mode").repeatable("z", "Folds", {
-    "<cmd>norm! zj<cr>",
-    "<cmd>norm! zk<cr>",
-    "<cmd>norm! ]z<cr>",
-    "<cmd>norm! [z<cr>",
-  }, {})
+  require("keymappings.fold_mode").setup()
 
   vim.keymap.set("n", O.select_next, "v" .. O.select_next, { remap = true })
   vim.keymap.set("n", O.select_next_outer, "v" .. O.select_next_outer, { remap = true })
@@ -1262,18 +1228,17 @@ M.attach_lsp = function(client, bufnr)
 
   map("n", "gd", telescope_cursor "lsp_definitions", { desc = "Goto Definition" })
   -- map("n", "gd", vim.lsp.buf.definition, { desc = "Definition" })
-  map("n", "gtd", vim.lsp.buf.type_definition, { desc = "Type Definition" })
   map("n", "gD", lspbuf.declaration, { desc = "Goto Declaration" })
   map("n", "gK", vim.lsp.codelens.run, { desc = "Codelens" })
   -- Preview variants -- TODO: preview and then open new window
-  map("n", "gpd", utils.lsp.preview_location_at "definition", { desc = "Peek definition" })
+  map("n", "gpd", utils.lsp.preview_location_at "definition", { desc = "Peek definition" }) -- TODO: replace with glance.nvim?
   map("n", "gpD", utils.lsp.preview_location_at "declaration", { desc = "Peek declaration" })
   map("n", "gpr", telescope_fn.lsp_references, { desc = "Peek references" })
   map("n", "gpi", telescope_fn.lsp_implementations, { desc = "Peek implementation" })
-  map("n", "gpe", utils.lsp.diag_line, sile)
+  map("n", "gpe", utils.lsp.diag_line, { desc = "Diags" })
   -- Hover
   -- map("n", "K", lspbuf.hover, sile)
-  map("n", "gh", utils.lsp.hover, { desc = "LSP Hover" })
+  map("n", "H", utils.lsp.hover, { desc = "LSP Hover" })
   map({ "n", "x" }, "K", telescope_fn.code_actions_previewed, { remap = true, desc = "Do Code Action" })
 
   -- Formatting keymaps

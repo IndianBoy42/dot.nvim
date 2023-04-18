@@ -16,7 +16,10 @@ local M = {
     "saadparwaiz1/cmp_luasnip",
     "hrsh7th/cmp-nvim-lsp-document-symbol",
     "amarakon/nvim-cmp-lua-latex-symbols",
-    { "tzachar/cmp-fuzzy-buffer", dependencies = { "tzachar/fuzzy.nvim" } },
+    {
+      "tzachar/cmp-fuzzy-buffer",
+      -- dependencies = { "tzachar/fuzzy.nvim" },
+    },
   },
 }
 M.default_sources = {
@@ -249,7 +252,7 @@ M.opts = function()
     },
     preselect = cmp.PreselectMode.None,
     confirmation = { default_behavior = cmp.ConfirmBehavior.Replace },
-    -- experimental = { ghost_text = true },
+    experimental = { ghost_text = true },
 
     window = {
       documentation = cmp.config.window.bordered {

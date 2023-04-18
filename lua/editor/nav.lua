@@ -82,10 +82,8 @@ end
 
 local hops = function()
   return {
-    -- {["/"] , prefix .. "hint_patterns({}, vim.fn.getreg('/'))<cr>", "Last Search" },
-    -- {"g" , exts"hint_localsgd", "Go to Definition of" },
-    { "/", "<cmd>HopPattern<cr>", "Search" },
-    { "?", hop_fn.hint_patterns_from({}, { reg = "/" }), "Last Search" },
+    { "?", "<cmd>HopPattern<cr>", "Search" },
+    { "/", hop_fn.hint_patterns_from({}, { reg = "/" }), "Last Search" },
     -- { "w", exts "hint_words", "Words" },
     { "L", hop_fn.hint_lines_skip_whitespace(), "Lines" },
     { "v", hop_fn.hint_vertical(), "Lines Column" },
@@ -131,9 +129,10 @@ local hops = function()
 end
 return {
   { -- TODO: move from hop to leap
-    "phaazon/hop.nvim",
-    dependencies = { "IndianBoy42/hop-extensions" },
-    event = "VeryLazy",
+    "IndianBoy42/hop-extensions",
+    dev = true,
+    dependencies = { "phaazon/hop.nvim" },
+    -- event = "VeryLazy",
     opts = {
       keys = O.hint_labels,
     },

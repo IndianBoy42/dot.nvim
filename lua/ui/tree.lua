@@ -57,7 +57,7 @@ local function on_attach(bufnr)
     ["."] = { api.node.run.cmd, "Run Command" },
     ["<C-CR>"] = { api.node.run.system, "Run System" },
 
-    ["gh"] = { api.node.show_info_popup, "Info" },
+    ["H"] = { api.node.show_info_popup, "Info" },
     ["<localleader>r"] = { api.fs.rename_sub, "Rename: Omit Filename" },
     ["<localleader>e"] = { api.node.open.replace_tree_buffer, "Open: In Place" },
     ["<localleader>t"] = { api.node.open.tab, "Open: New Tab" },

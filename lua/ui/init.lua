@@ -102,7 +102,6 @@ return {
     },
     lazy = false,
     cmd = { "Navbuddy" },
-    keys = { { "<leader>ln", "<cmd>Navbuddy<cr>", "Nav Symbols" } },
   },
   { -- "aznhe21/actions-preview.nvim",
     "aznhe21/actions-preview.nvim",
@@ -112,18 +111,32 @@ return {
       }
     end,
   },
-  {
-    "s1n7ax/nvim-window-picker",
-    main = "window-picker",
-    -- FYI: local picked_window_id = require('window-picker').pick_window()
-    opts = {},
-  },
   -- TODO: try https://github.com/goolord/alpha-nvim (new dashboard plugin)
   -- TODO: dressing.nvim
   { -- "j-hui/fidget.nvim",
     "j-hui/fidget.nvim",
     opts = {},
     event = "VeryLazy",
+  },
+  {
+    "smjonas/live-command.nvim",
+    opts = {
+      commands = {
+        Norm = { cmd = "norm" },
+        Glive = { cmd = "g" },
+        Dlive = { cmd = "d" },
+        Qlive = {
+          cmd = "norm",
+          -- This will transform ":5Qlive a" into ":norm 5@a"
+          args = function(opts)
+            local reg = opts.fargs and opts.fargs[1] or "q"
+            local count = opts.fargs and opts.fargs[2] or (opts.count == -1 and "" or opts.count)
+            return count .. "@" .. reg
+          end,
+          range = "",
+        },
+      },
+    },
   },
   -- {
   --   "ray-x/lsp_signature.nvim",
@@ -162,7 +175,7 @@ return {
     keys = function()
       return {
         {
-          "<leader>dL",
+          "<leader>dtl",
           function()
             local enabled = vim.diagnostic.config().virtual_lines
             if enabled then
@@ -314,7 +327,5 @@ return {
     },
   },
   -- TODO: https://github.com/DNLHC/glance.nvim
-  -- TODO: https://github.com/lvimuser/lsp-inlayhints.nvim
-  { "lvimuser/lsp-inlayhints.nvim", event = { "BufReadPost", "BufNewFile" } },
   -- TODO: https://github.com/stevearc/qf_helper.nvim
 }

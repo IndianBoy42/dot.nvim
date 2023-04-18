@@ -148,28 +148,32 @@ local hover_hydra
 -- Easily repeatable hover
 function M.hover(hover, k)
   hover = hover or vim.lsp.buf.hover
-  k = k or "h"
-  if not hover_hydra then
-    hover_hydra = require "hydra" {
-      mode = { "n", "x" },
-      hint = false,
-      body = nil,
-      heads = {
-        { "h", hover, { desc = "LSP Hover" } },
-        {
-          "<esc>",
-          function()
-            hover() -- TODO: how to do this better?
-            vim.api.nvim_win_close(0, true)
-          end,
-          { desc = "Close", exit = true, private = true },
+  if false then
+    k = k or "h"
+    if not hover_hydra then
+      hover_hydra = require "hydra" {
+        mode = { "n", "x" },
+        hint = false,
+        body = nil,
+        heads = {
+          { "h", hover, { desc = "LSP Hover" } },
+          {
+            "<esc>",
+            function()
+              hover() -- TODO: how to do this better?
+              vim.api.nvim_win_close(0, true)
+            end,
+            { desc = "Close", exit = true, private = true },
+          },
         },
-      },
-    }
-  end
-  return function()
+      }
+    end
+    return function()
+      hover()
+      hover_hydra:activate()
+    end
+  else
     hover()
-    hover_hydra:activate()
   end
 end
 
