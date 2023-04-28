@@ -611,4 +611,5 @@ return {
     priority = 1000,
     config = function() vim.cmd.colorscheme(sub_theme("zenbones", "zenwritten")) end,
   },
+  -- TODO: https://github.com/AstroNvim/astrotheme
 }

@@ -1,6 +1,6 @@
 local surround_mappings = {
   add = "ys", -- Add surrounding in Normal and Visual modes
-  vadd = "z", -- Add surrounding in Normal and Visual modes
+  vadd = "s", -- Add surrounding in Normal and Visual modes
   delete = "ds", -- Delete surrounding
   find = "]s", -- Find surrounding (to the right)
   find_left = "[s", -- Find surrounding (to the left)
@@ -18,6 +18,7 @@ local custom_surroundings = function()
     ["}"] = { output = { left = "{", right = "}" } },
     ["]"] = { output = { left = "[", right = "]" } },
 
+    -- TODO: output
     c = { input = tsi "@call" },
     f = { input = tsi "@function" },
     B = { input = { "%b{}", "^.%s*().-()%s*.$" }, output = { left = "{ ", right = " }" } },

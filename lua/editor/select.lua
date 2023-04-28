@@ -24,20 +24,18 @@ local legend = {
 }
 local jump_mappings = function()
   local ai = require "mini.ai"
-  local make_nN_pair = mappings.make_nN_pair
   local jump_mode = require "keymappings.jump_mode"
   local function mapall(id, desc, sym)
     desc = desc or legend[id] or ""
     id = id or id
-    local move_cursor = ai.move_cursor
-    local w = function() move_cursor("left", "i", id, { search_method = "next" }) end
-    local e = function() move_cursor("right", "i", id, { search_method = "cover_or_next" }) end
-    local b = function() move_cursor("left", "i", id, { search_method = "cover_or_prev" }) end
-    local ge = function() move_cursor("right", "i", id, { search_method = "prev" }) end
-    local W = function() move_cursor("left", "a", id, { search_method = "next" }) end
-    local E = function() move_cursor("right", "a", id, { search_method = "cover_or_next" }) end
-    local B = function() move_cursor("left", "a", id, { search_method = "cover_or_prev" }) end
-    local gE = function() move_cursor("right", "a", id, { search_method = "prev" }) end
+    local w = function() ai.move_cursor("left", "i", id, { search_method = "next" }) end
+    local e = function() ai.move_cursor("right", "i", id, { search_method = "cover_or_next" }) end
+    local b = function() ai.move_cursor("left", "i", id, { search_method = "cover_or_prev" }) end
+    local ge = function() ai.move_cursor("right", "i", id, { search_method = "prev" }) end
+    local W = function() ai.move_cursor("left", "a", id, { search_method = "next" }) end
+    local E = function() ai.move_cursor("right", "a", id, { search_method = "cover_or_next" }) end
+    local B = function() ai.move_cursor("left", "a", id, { search_method = "cover_or_prev" }) end
+    local gE = function() ai.move_cursor("right", "a", id, { search_method = "prev" }) end
     local vi = function() ai.select_textobject("i", id, { search_method = "cover" }) end
     local va = function() ai.select_textobject("a", id, { search_method = "cover" }) end
     local vin = function() ai.select_textobject("i", id, { search_method = "next" }) end
@@ -51,35 +49,54 @@ local jump_mappings = function()
       { W, B, E, gE },
       { body = { O.goto_next_outer, O.goto_previous_outer, O.goto_next_outer_end, O.goto_previous_outer_end } }
     )
+
     local hydra = jump_mode.move_by(
       O.goto_prefix .. id,
       jump_mode.move_by_suffixes,
       { w, b, e, ge, W, B, E, gE, vi, va, vin, vip, van, vap },
-      desc,
-      require("which-key").register({ [id] = desc }, {})
+      desc
     )
+    -- require("which-key").register({ [O.goto_prefix .. id] = desc }, {})
     if sym then
-      vim.keymap.set({ "n", "x" }, sym, function() return hydra[1]:activate() end, { desc = desc })
-      vim.keymap.set("o", sym, function() return hydra[2]:activate() end, { desc = desc })
+      vim.keymap.set("n", sym, function() return hydra[1]:activate() end, { desc = desc })
+      for _, suffix in ipairs(jump_mode.move_by_suffixes) do
+        vim.keymap.set("o", sym .. suffix, O.goto_prefix .. id .. suffix, { remap = true, desc = desc })
+        vim.keymap.set("x", sym .. suffix, O.goto_prefix .. id .. suffix, { remap = true, desc = desc })
+      end
+      -- require("which-key").register({ [sym] = { name = desc } }, { mode = "o" })
+      -- require("which-key").register({ [sym] = { name = desc } }, { mode = "x" })
     end
   end
   mapall("f", nil, "|")
   mapall("k", nil, "=")
   mapall("a", nil, ",")
   mapall("j", nil, "_")
-  mapall "t"
   mapall("b", nil, ")")
+  mapall("q", nil)
+  -- mapall "t"
   -- mapall "p" -- TODO: paragraph movements
   -- TODO: subword movements
-  require("which-key").register({}, {
-    mode = "n", -- NORMAL mode
-    prefix = O.goto_prefix,
-    buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
-    silent = false,
-    -- silent = true, -- use `silent` when creating keymaps
-    noremap = true, -- use `noremap` when creating keymaps
-    nowait = false, -- use `nowait` when creating keymaps
-  })
+
+  for _, m in ipairs { "n", "x", "o" } do
+    require("which-key").register({
+      [O.goto_prefix] = {
+        name = "Nav mode",
+        f = legend.f,
+        k = legend.k,
+        a = legend.a,
+        j = legend.j,
+        q = legend.q,
+        b = legend.b,
+      },
+      ["|"] = legend.f,
+      ["="] = legend.k,
+      [","] = legend.a,
+      ["_"] = legend.j,
+      [")"] = legend.b,
+    }, {
+      mode = m, -- NORMAL mode
+    })
+  end
 end
 local custom_textobjects = function(ai)
   local s = ai.gen_spec
@@ -117,7 +134,7 @@ local custom_textobjects = function(ai)
       end
       return { from = { line = line_num, col = from_col }, to = { line = line_num, col = to_col } }
     end,
-    e = function(ai_type) return { from = { line = line_num, col = from_col }, to = { line = line_num, col = to_col } } end,
+    E = function(ai_type) return { from = { line = line_num, col = from_col }, to = { line = line_num, col = to_col } } end,
     B = { "%b{}", "^.%s*().-()%s*.$" },
     -- B = function(ai_type)
     --   local n_lines = vim.fn.line "$"

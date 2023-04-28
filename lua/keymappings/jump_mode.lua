@@ -1,23 +1,12 @@
 local M = {}
 
--- Helper to choose the mode of a keymap
-local n = function(o)
-  o[3].mode = "n"
-  return o
-end
-local v = function(o)
-  o[3].mode = "s"
-  return o
-end
-
-local lsp_lists = {}
+local feedkeys = vim.api.nvim_feedkeys
+local termcodes = vim.api.nvim_replace_termcodes
+local function t(k) return termcodes(k, true, true, true) end
+local function f(k, mode) return feedkeys(t(k), mode or "m", false) end
 
 M.repeatable = function(ch, desc, fwdbwd, _opts)
   local fwd, bwd, fwdend, bwdend = unpack(fwdbwd)
-  local feedkeys = vim.api.nvim_feedkeys
-  local termcodes = vim.api.nvim_replace_termcodes
-  local function t(k) return termcodes(k, true, true, true) end
-  local function f(k, mode) return feedkeys(t(k), mode or "m", false) end
 
   _opts = _opts or {}
   local opts = {
@@ -30,7 +19,7 @@ M.repeatable = function(ch, desc, fwdbwd, _opts)
         border = "rounded",
         type = "window",
         position = "top",
-        show_name = false,
+        show_name = true,
       },
     },
     mode = { "n", "x", "o" },
@@ -112,7 +101,8 @@ M.repeatable = function(ch, desc, fwdbwd, _opts)
   return hydra_fwd, hydra_bwd, hydra_fwd_end, hydra_bwd_end
 end
 
-M.word_suffixes = { "w", "b", "e", "ge", "W", "B", "E", "gE", "v", "&", "n", "N", "f", "F" }
+-- M.word_suffixes = { "w", "b", "e", "ge", "W", "B", "E", "gE", "v", "&", "n", "N", "f", "F" }
+M.word_suffixes = { "w", "b", "e", "ge", "W", "B", "E", "gE", "vi", "va", "vj", "vk", "vh", "vl" }
 M.move_by_descs = M.word_suffixes
 M.move_by_suffixes = M.word_suffixes
 M.word_suffixes2 = { "w", "b", "e", "<C-e>", "W", "B", "E", "<C-S-e>" }
@@ -133,16 +123,12 @@ M.sym_suffixes = {
   "a" .. O.select_next,
   "a" .. O.select_previous,
 }
+
 -- TODO: more of this, better selection mappings for repeats
 M.move_by = function(prefix, suffixes, actions, desc, o)
   o = o or {}
 
   local descs = o.descs or M.move_by_descs
-
-  local feedkeys = vim.api.nvim_feedkeys
-  local termcodes = vim.api.nvim_replace_termcodes
-  local function t(k) return termcodes(k, true, true, true) end
-  local function f(k, mode) return feedkeys(t(k), mode or "m", false) end
   local opts = {
     name = desc,
     config = {
@@ -153,38 +139,33 @@ M.move_by = function(prefix, suffixes, actions, desc, o)
         border = "rounded",
         type = "window",
         position = "top",
-        show_name = false,
+        show_name = true,
       },
+      on_enter = function() mappings.register_nN_repeat(actions) end,
+      on_key = function() vim.wait(50) end,
     },
     mode = { "n", "x" },
-    -- FIXME: problem with operator mode mappings
-  }
-
-  local cfg = {
-    on_enter = function() mappings.register_nN_repeat(actions) end,
-    on_key = function() vim.wait(50) end,
   }
 
   local hydras = {}
   if #prefix == 0 or prefix == false then prefix = nil end
   local heads = {}
-  for j, k in ipairs(suffixes) do
-    heads[#heads + 1] = {
-      k,
+  for j, suffix in ipairs(suffixes) do
+    heads[j] = {
+      suffix,
       actions[j],
       { desc = descs[j], private = false },
     }
   end
+  local Hydra = require "hydra"
 
-  hydras[1] = require "hydra"(vim.tbl_deep_extend("keep", {
+  hydras[1] = Hydra(vim.tbl_extend("keep", {
     body = (#prefix > 0) and prefix,
-    config = cfg,
     heads = heads,
   }, opts))
 
-  hydras[2] = require "hydra"(vim.tbl_deep_extend("keep", {
+  hydras[2] = Hydra(vim.tbl_extend("keep", {
     body = (#prefix > 0) and prefix,
-    config = cfg,
     heads = vim.tbl_map(function(x)
       local a = x[2]
       x[2] = function()
@@ -195,8 +176,6 @@ M.move_by = function(prefix, suffixes, actions, desc, o)
     end, heads),
     mode = "o",
   }, opts))
-
-  require("which-key").register({ [prefix] = desc }, {})
 
   return hydras
 end

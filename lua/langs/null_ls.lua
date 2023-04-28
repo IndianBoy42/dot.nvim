@@ -63,7 +63,7 @@ return {
         -- diagnostics.luacheck, -- lua linter
         -- diagnostics.eslint,
         -- diagnostics.hadolint,
-        diagnostics.cppcheck,
+        -- diagnostics.cppcheck,
         -- diagnostics.flake8,
         -- diagnostics.pylint,
         -- diagnostics.hadolint,
@@ -74,7 +74,7 @@ return {
         -- -- diagnostics.misspell,
         diagnostics.markdownlint,
         diagnostics.yamllint,
-        diagnostics.gccdiag,
+        -- diagnostics.gccdiag,
 
         -- Code Actions
         -- code_actions.gitsigns, -- TODO: reenable when I can lower the priority

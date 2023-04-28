@@ -30,16 +30,11 @@ M.default_sources = {
   -- { name = "latex_symbols" , group_index = 2},
   { name = "calc", group_index = 2 },
   -- { name = "cmp_tabnine" , group_index = 2},
+  { name = "lua-latex-symbols", group_index = 2 },
 }
 M.config = function(_, opts)
   local cmp = require "cmp"
   cmp.setup(opts)
-
-  require("cmp").setup.filetype({ "tex", "plaintex" }, {
-    sources = {
-      { name = "lua-latex-symbols" },
-    },
-  })
 
   local compare = require "cmp.config.compare"
 

@@ -115,4 +115,19 @@ return function()
     opt.signcolumn = "no" -- TODO: more stuff?
     -- opt.virtualedit = "all"
   end
+
+  vim.filetype.add {
+    extension = {
+      ["sublime-keymap"] = "json",
+      ["sublime-commands"] = "json",
+      ["sublime-settings"] = "json",
+      kbd = "kmonad",
+      -- fish = "fish",
+      just = "just",
+    },
+    filename = {
+      Justfile = "just",
+      justfile = "just",
+    },
+  }
 end

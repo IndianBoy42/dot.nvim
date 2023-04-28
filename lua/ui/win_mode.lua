@@ -247,8 +247,31 @@ return {
   {
     "mrjones2014/smart-splits.nvim",
     opts = {
-      cursor_follows_swapped_bufs = false,
-      at_edge = "split",
+      cursor_follows_swapped_bufs = true,
+      -- at_edge = "split",
+      at_edge = function(ctx)
+        -- {
+        --    mux = {
+        --      type:'tmux'|'wezterm'|'kitty'
+        --      current_pane_id():number,
+        --      is_in_session(): boolean
+        --      current_pane_is_zoomed():boolean,
+        --      -- following methods return a boolean to indicate success or failure
+        --      current_pane_at_edge(direction:'left'|'right'|'up'|'down'):boolean
+        --      next_pane(direction:'left'|'right'|'up'|'down'):boolean
+        --      resize_pane(direction:'left'|'right'|'up'|'down'):boolean
+        --    },
+        --    direction = 'left'|'right'|'up'|'down',
+        --    split(), -- utility function to split current Neovim pane in the current direction
+        -- }
+        if ctx.direction == "left" then
+          vim.cmd.NvimTreeFocus()
+        -- elseif ctx.direction == "right" then
+        --   vim.cmd.Trouble()
+        else
+          ctx.split()
+        end
+      end,
     },
     keys = function()
       local smart_splits = function(fn, opts)

@@ -7,5 +7,6 @@ return {
     ft = "markdown",
   },
   { "ellisonleao/glow.nvim", config = true, cmd = "Glow" },
+  -- TODO: https://github.com/toppair/peek.nvim
   { "dkarter/bullets.vim" },
 }

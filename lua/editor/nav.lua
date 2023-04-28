@@ -10,8 +10,7 @@ local paranormal_map = function()
     -- commands that modify the positions of other targets (insert/change/delete).
     for _, target in ipairs(targets) do
       local line, col = unpack(target.pos)
-      id = vim.api.nvim_buf_set_extmark(0, ns, line - 1, col - 1, {})
-      target.extmark_id = id
+      target.extmark_id = vim.api.nvim_buf_set_extmark(0, ns, line - 1, col - 1, {})
     end
 
     -- Jump to each extmark (anchored to the "moving" targets), and execute the
@@ -73,7 +72,7 @@ local function leap_to_line()
 
     if #targets >= 1 then return targets end
   end
-  winid = vim.api.nvim_get_current_win()
+  local winid = vim.api.nvim_get_current_win()
   require("leap").leap {
     target_windows = { winid },
     targets = get_line_starts(winid),
@@ -163,9 +162,11 @@ return {
       --   desc = "Leap",
       -- },
       { "s", "<Plug>(leap-forward-to)", mode = "n", desc = "Leap" },
-      { "s", "<Plug>(leap-forward-till)", mode = { "x", "o" }, desc = "Leap" },
+      { "x", "<Plug>(leap-forward-to)", mode = { "x", "o" }, desc = "Leap" },
+      { "z", "<Plug>(leap-forward-till)", mode = { "x", "o" }, desc = "Leap" },
       { "S", "<Plug>(leap-backward-to)", mode = "n", desc = "Leap" },
-      { "S", "<Plug>(leap-backward-till)", mode = { "x", "o" }, desc = "Leap" },
+      { "X", "<Plug>(leap-backward-to)", mode = { "x", "o" }, desc = "Leap" },
+      { "Z", "<Plug>(leap-backward-till)", mode = { "x", "o" }, desc = "Leap" },
       -- {
       --   "z",
       --   function()
@@ -212,12 +213,12 @@ return {
     -- },
     keys = function()
       local ret = {}
-      for _, key in ipairs { "f", "F", "t", "T" } do
-        ret[#ret + 1] = { key, mode = { "n", "x", "o" }, desc = key }
+      for i, key in ipairs { "f", "F", "t", "T" } do
+        ret[i] = { key, mode = { "n", "x", "o" }, desc = key }
       end
       return ret
     end,
-    opts = { labeled_modes = "nx" },
+    opts = { labeled_modes = "nxo" },
   },
   {
     "cbochs/portal.nvim",
@@ -227,7 +228,7 @@ return {
     },
     opts = {
       window_options = {
-        border = "none",
+        border = "rounded",
         relative = "cursor",
         height = 5,
       },

@@ -45,14 +45,6 @@ return {
         next = "j", -- next item
       },
     },
-    config = function(_, opts)
-      vim.api.nvim_create_autocmd(
-        { "CursorMoved", "InsertLeave", "BufEnter", "BufWinEnter", "TabEnter", "BufWritePost" },
-        { command = "TroubleRefresh" }
-      )
-
-      require("trouble").setup(opts)
-    end,
   },
   -- "ldelossa/litee-calltree.nvim"
   { --

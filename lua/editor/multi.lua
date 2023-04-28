@@ -2,7 +2,8 @@ return {
   "mg979/vim-visual-multi",
   init = function()
     vim.g.VM_maps = nil
-    local ldr = "\\"
+    -- local ldr = "\\"
+    local ldr = "<del>"
     vim.g.VM_leader = ldr
     vim.g.VM_maps = {
       ["Find Under"] = "<M-n>",

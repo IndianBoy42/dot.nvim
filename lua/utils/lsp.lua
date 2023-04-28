@@ -112,7 +112,7 @@ function M.view_location_pick_callback()
   -- note, this handler style is for neovim 0.5.1/0.6, if on 0.5, call with function(_, method, result)
   local function handler(_, result, ctx)
     if result == nil or vim.tbl_isempty(result) then
-      local _ = log.info() and log.info(ctx.method, "No location found")
+      -- local _ = log.info and log.info(ctx.method, "No location found")
       return nil
     end
 
@@ -392,7 +392,7 @@ end)()
 -- M.rename = M.renamer.keymap
 
 function M.format(opts)
-  opts = opts or {}
+  opts = opts or { async = true }
   local buf = vim.api.nvim_get_current_buf()
   local ft = vim.bo[buf].filetype
   local have_nls = #require("null-ls.sources").get_available(ft, "NULL_LS_FORMATTING") > 0
@@ -440,7 +440,7 @@ M.cb_on_attach = function(on_attach)
 end
 
 M.document_highlight = function(client, bufnr)
-  if client.server_capabilities.documentHighlight then
+  if client.server_capabilities.documentHighlightProvider then
     local id = vim.api.nvim_create_augroup("document_highlight", { clear = false })
     vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
       buffer = bufnr,

@@ -118,4 +118,20 @@ return {
     opts = {},
   },
   -- TODO: https://github.com/chrisgrieser/nvim-recorder
+  {
+    "rmagatti/gx-extended.nvim",
+    opts = {
+      extensions = {
+        {
+          patterns = { "Cargo.toml" },
+          match_to_url = function(line_string)
+            local resource_name = string.match(line_string, "^([%S]+) =")
+            local url = "https://lib.rs/crates/" .. resource_name
+
+            return url
+          end,
+        },
+      },
+    },
+  },
 }

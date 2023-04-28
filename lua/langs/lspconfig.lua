@@ -9,6 +9,9 @@ return {
       cmd = "Mason",
       opts = {
         ensure_installed = {},
+        ui = {
+          border = "rounded",
+        },
       },
       config = function(_, opts)
         require("mason").setup(opts)
@@ -20,6 +23,7 @@ return {
       end,
     },
     "williamboman/mason-lspconfig.nvim",
+    "joechrisellis/lsp-format-modifications.nvim",
   },
   opts = {
     -- LSP Server Settings
@@ -41,24 +45,20 @@ return {
     },
   },
   config = function(_, opts)
+    -- vim.lsp.set_log_level(vim.log.levels.DEBUG)
+    require("lspconfig.ui.windows").default_options.border = "rounded"
+
     -- TODO: Refactor this to a loop and opts
+    local signs = {
+      { "LspDiagnosticsSignError", "" },
+      { "LspDiagnosticsSignWarning", "" },
+      { "LspDiagnosticsSignHint", "" },
+      { "LspDiagnosticsSignInformation", "" },
+    }
     local sign_define = vim.fn.sign_define
-    sign_define(
-      "LspDiagnosticsSignError",
-      { texthl = "LspDiagnosticsSignError", text = "", numhl = "LspDiagnosticsSignError" }
-    )
-    sign_define(
-      "LspDiagnosticsSignWarning",
-      { texthl = "LspDiagnosticsSignWarning", text = "", numhl = "LspDiagnosticsSignWarning" }
-    )
-    sign_define(
-      "LspDiagnosticsSignHint",
-      { texthl = "LspDiagnosticsSignHint", text = "", numhl = "LspDiagnosticsSignHint" }
-    )
-    sign_define(
-      "LspDiagnosticsSignInformation",
-      { texthl = "LspDiagnosticsSignInformation", text = "", numhl = "LspDiagnosticsSignInformation" }
-    )
+    for _, sign in ipairs(signs) do
+      sign_define(sign[1], { texthl = sign[1], text = sign[2], numhl = sign[1] })
+    end
 
     -- Handlers
     local lsp = vim.lsp
@@ -96,10 +96,16 @@ return {
 
     local lsp_sel_rng = require "lsp-selection-range"
     lsp_sel_rng.update_capabilities(capabilities)
+
     utils.lsp.cb_on_attach(function(client, bufnr)
       mappings.attach_lsp(client, bufnr)
 
       utils.lsp.document_highlight(client, bufnr)
+
+      if client.server_capabilities.documentRangeFormattingProvider then
+        local lsp_format_modifications = require "lsp-format-modifications"
+        lsp_format_modifications.attach(client, bufnr, { format_on_save = false })
+      end
     end)
 
     local function setup(server)

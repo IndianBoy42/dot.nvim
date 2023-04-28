@@ -7,6 +7,7 @@ local M = {
         config = function() require("luasnip.loaders.from_vscode").lazy_load() end,
       },
     },
+    event = { "InsertEnter" },
     config = function()
       local map = vim.keymap.set
       --  "<Plug>luasnip-expand-or-jump"
@@ -151,6 +152,9 @@ local M = {
           edit = function(f) vim.cmd(args .. " " .. f) end,
         }
       end, { nargs = "?" })
+            vim.api.nvim_create_user_command("ReloadSnippets", function(args) 
+      require("luasnip.loaders.from_lua").lazy_load { paths = _G.CONFIG_PATH .. "/luasnippets" }
+            end, {})
     end,
   },
   {

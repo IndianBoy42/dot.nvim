@@ -25,7 +25,7 @@ return {
     end,
     config = function()
       local K = require("kitty").setup {
-        -- from_current_win = "tab",
+        from_current_win = vim.g.kitty_from_current_win,
         target_providers = {
           function(T) T.helloworld = { desc = "Hello world", cmd = "echo hello world" } end,
           "just",
@@ -38,10 +38,10 @@ return {
       require("rust-tools").config.options.tools.executor = K.rust_tools_executor()
 
       local p = utils.partial
-      vim.keymap.set("n", "<leader>tk", p(K.run), { desc = "Kitty Run" })
-      vim.keymap.set("n", "<leader>tt", p(K.make), { desc = "Kitty Make" })
-      vim.keymap.set("n", "<leader>t<CR>", p(K.make, "last"), { desc = "Kitty ReMake" })
-      -- vim.keymap.set("n", "<leader>tK", KT.run, { desc = "Kitty Run" })
+      vim.keymap.set("n", "<leader>mk", K.run, { desc = "Kitty Run" })
+      vim.keymap.set("n", "<leader>mm", K.make, { desc = "Kitty Make" })
+      vim.keymap.set("n", "<leader>m<CR>", p(K.make, "last"), { desc = "Kitty ReMake" })
+      -- vim.keymap.set("n", "<leader>mK", KT.run, { desc = "Kitty Run" })
       -- vim.keymap.set("n", "", require("kitty").send_cell, { buffer = 0 })
     end,
     -- cmd = { "Kitty", "KittyOverlay" },
@@ -132,9 +132,26 @@ return {
   },
   {
     "andrewferrier/debugprint.nvim",
-    opts = {},
+    opts = { create_keymaps = false },
     -- TODO: use a hydra?
-    keys = { "g?P", "g?p", "g?o", "g?O", { "g?v", mode = { "n", "x" } }, { "g?V", mode = { "n", "x" } }, "g?o", "g?O" },
+    keys = {
+      { "<leader>dP", utils.lazy_require("debugprint").debugprint, desc = "DbgPrnt Line", expr = true },
+      { "<leader>dp", utils.lazy_require("debugprint").debugprint, desc = "DbgPrnt Line abv", expr = true },
+      {
+        "<leader>dv",
+        utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true }),
+        desc = "DbgPrnt Var",
+        mode = { "n", "x" },
+        expr = true,
+      },
+      {
+        "<leader>dV",
+        utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true }),
+        desc = "DbgPrnt Var abv",
+        mode = { "n", "x" },
+        expr = true,
+      },
+    },
   },
   {
     "rafcamlet/nvim-luapad",

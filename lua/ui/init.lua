@@ -28,31 +28,29 @@ vim.api.nvim_create_user_command("Test", test, {
   end,
 })
 
-vim.api.nvim_create_autocmd("User", {
-  pattern = "VeryLazy",
-  callback = function()
-    mappings.setup()
+-- vim.api.nvim_create_autocmd("User", {
+--   pattern = "VeryLazy",
+--   callback = function()
+--     -- TODO: https://github.com/stevearc/dressing.nvim
+--     vim.ui.input = function(opts, on_confirm)
+--       opts = opts or {}
+--       -- opts.completion
+--       -- opts.highlight
+--
+--       utils.ui.inline_text_input {
+--         prompt = opts.prompt,
+--         border = O.input_border,
+--         enter = on_confirm,
+--         initial = opts.default,
+--         at_begin = false,
+--         minwidth = 20,
+--         insert = true,
+--       }
+--     end
+--     -- require "commands"
+--   end,
+-- })
 
-    -- TODO: https://github.com/stevearc/dressing.nvim
-    vim.ui.select = require("utils.telescope").uiselect()
-    vim.ui.input = function(opts, on_confirm)
-      opts = opts or {}
-      -- opts.completion
-      -- opts.highlight
-
-      utils.ui.inline_text_input {
-        prompt = opts.prompt,
-        border = O.input_border,
-        enter = on_confirm,
-        initial = opts.default,
-        at_begin = false,
-        minwidth = 20,
-        insert = true,
-      }
-    end
-    -- require "commands"
-  end,
-})
 return {
   { -- "folke/which-key.nvim",
     "folke/which-key.nvim",
@@ -91,6 +89,10 @@ return {
       hidden = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "call", "lua", "^:", "^ ", "<Plug>" }, -- hide mapping boilerplate
       show_help = true, -- show help message on the command line when the popup is visible
     },
+    config = function(_, opts)
+      require("which-key").setup(opts)
+      mappings.setup()
+    end,
   },
   { -- "SmiteshP/nvim-navbuddy",
     "SmiteshP/nvim-navbuddy",
@@ -175,7 +177,7 @@ return {
     keys = function()
       return {
         {
-          "<leader>dtl",
+          "<leader>Tl",
           function()
             local enabled = vim.diagnostic.config().virtual_lines
             if enabled then

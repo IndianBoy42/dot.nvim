@@ -1,4 +1,4 @@
-local source = "copilot"
+local source = "codeium"
 return {
   {
     "hrsh7th/nvim-cmp",

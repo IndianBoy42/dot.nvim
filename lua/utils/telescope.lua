@@ -345,6 +345,10 @@ function M.uiselect(picker_opts, sorter_opts)
       :find()
   end
 end
+vim.ui.select = function(...)
+  vim.ui.select = require("utils.telescope").uiselect()
+  return vim.ui.select(...)
+end
 
 function M.file_browser()
   local opts
@@ -459,6 +463,16 @@ end
 return setmetatable(M, {
   __index = function(_, k)
     -- reloader()
+
+    --     return function (...)
+    --
+    -- local builtin = require("telescope.builtin")[k]
+    -- if builtin then
+    --   return builtin(...)
+    -- else
+    --   return require("telescope").extensions[k](...)
+    -- end
+    --     end
 
     local builtin = require("telescope.builtin")[k]
     if builtin then

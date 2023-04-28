@@ -46,8 +46,8 @@ local surroundings = function(ms)
       output = function() return { left = nil, right = nil } end,
     },
     ["$"] = {
-      input = function() return { "\\%(().-()\\%)" } end,
-      output = function() return { left = "(", right = ")" } end,
+      input = function() return { [[%\%(().-()%\%)]] } end,
+      output = function() return { left = "\\(", right = "\\)" } end,
     },
   }
 end
@@ -410,34 +410,6 @@ local conf = {
   conceal = 2,
   -- theme = O.lighttheme,
   fontsize = O.bigfontsize,
-  filetypes = { "tex", "bib" },
-  texlab = {
-    aux_directory = ".",
-    bibtex_formatter = "texlab",
-    build = {
-      executable = "tectonic",
-      args = {
-        -- Input
-        "%f",
-        -- Flags
-        "--synctex",
-        "--keep-logs",
-        "--keep-intermediates",
-        -- Options
-        -- OPTIONAL: If you want a custom out directory,
-        -- uncomment the following line.
-        --"--outdir out",
-      },
-      forwardSearchAfter = true,
-      onSave = false,
-    },
-    chktex = { on_edit = true, on_open_and_save = true },
-    diagnostics_delay = vim.opt.updatetime,
-    formatter_line_length = 80,
-    forward_search = { args = {}, executable = "" },
-    latexFormatter = "latexindent",
-    latexindent = { modify_line_breaks = false },
-  },
 }
 
 return {
@@ -454,9 +426,6 @@ return {
 
       vim.g.vimtex_compiler_method = "latexmk"
       vim.g.vimtex_compiler_generic = { cmd = "watchexec -e tex -- tectonic --synctex --keep-logs *.tex" }
-      vim.g.vimtex_compiler_tectonic = {
-        ["options"] = { "--synctex", "--keep-logs" },
-      }
       vim.g.vimtex_compiler_latexmk = {
         ["options"] = {
           "-shell-escape",
@@ -476,9 +445,35 @@ return {
     opts = {
       servers = {
         texlab = {
-          filetypes = conf.filetypes,
+          filetypes = { "tex", "bib" },
           settings = {
-            texlab = conf.texlab,
+            texlab = {
+              aux_directory = ".",
+              bibtex_formatter = "texlab",
+              build = {
+                executable = "tectonic",
+                args = {
+                  -- Input
+                  "%f",
+                  -- Flags
+                  "--synctex",
+                  "--keep-logs",
+                  "--keep-intermediates",
+                  -- Options
+                  -- OPTIONAL: If you want a custom out directory,
+                  -- uncomment the following line.
+                  --"--outdir out",
+                },
+                forwardSearchAfter = true,
+                onSave = false,
+              },
+              chktex = { on_edit = true, on_open_and_save = true },
+              diagnostics_delay = vim.opt.updatetime,
+              formatter_line_length = 80,
+              forward_search = { args = {}, executable = "" },
+              latexFormatter = "latexindent",
+              latexindent = { modify_line_breaks = false },
+            },
           },
           on_attach = function(client, bufnr) client.server_capabilities.semanticTokensProvider = nil end,
         },

@@ -80,7 +80,7 @@ M.hydra = function(bufnr)
       { "/", gitsigns.show, { exit = true, desc = "show base file" } }, -- show the base of the file
       { "o", utils.telescope.git_status, { desc = "Open" } },
       { "<Enter>", function() vim.cmd "tab G" end, { exit = true, desc = "Fugitive" } },
-      { "<spc>", ":tab G ", { exit = true, desc = false } },
+      { "<Space>", ":tab G ", { exit = true, desc = false } },
       { "q", nil, { exit = true, nowait = true, desc = "exit" } },
       { "<esc>", nil, { exit = true, nowait = true, desc = "exit" } },
     },

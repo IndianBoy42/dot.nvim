@@ -31,7 +31,7 @@ local function on_attach(bufnr)
     ["f"] = { api.live_filter.start, "Filter" },
     ["S"] = { api.tree.search_node, "Search" },
     ["L"] = { api.tree.expand_all, "Expand All" },
-    ["H"] = { api.tree.collapse_all, "Collapse All" },
+    ["hh"] = { api.tree.collapse_all, "Collapse All" },
     ["J"] = { "<Nop>", "Nop" },
     ["K"] = { api.node.navigate.parent, "Parent Directory" },
     ["w"] = { api.node.navigate.sibling.next, "Next Sibling" },
@@ -41,7 +41,7 @@ local function on_attach(bufnr)
     ["A"] = { "<Nop>", "Nop" },
     ["i"] = { "<Nop>", "Nop" },
     ["I"] = { "<Nop>", "Nop" },
-    ["o"] = { "<Nop>", "Nop" },
+    ["o"] = { api.fs.create, "Nop" },
     ["O"] = { "<Nop>", "Nop" },
 
     ["<CR>"] = { api.node.open.no_window_picker, "Open" },
@@ -86,6 +86,14 @@ local function on_attach(bufnr)
     ["<localleader>R"] = { api.tree.change_root_to_parent, "Change root to parent" },
 
     ["?"] = { api.tree.toggle_help, "Help" },
+    ["<C-l>"] = { api.tree.close, "Help" },
+    ["<C-h>"] = {
+      function()
+        api.tree.close()
+        vim.cmd.vsplit()
+      end,
+      "Help",
+    },
   }
 
   local map = function(l, r, d, ll)
@@ -106,6 +114,7 @@ M.opts = {
   view = {
     side = "left",
     width = 30,
+    quit_on_focus_loss = true,
   },
   diagnostics = {
     enable = true,
@@ -115,11 +124,15 @@ M.opts = {
       window_picker = {
         picker = function() return require("ui.win_pick").pick_or_create() end,
       },
+      quit_on_open = true,
     },
   },
   -- renderer = { icons = { glyphs = require("circles").get_nvimtree_glyphs() } },
 }
 M.config = function(_, opts)
+  -- This is to work around some jank in remember-me.nvim
+  vim.g.NvimTreeSetup = 0
+  vim.g.NvimTreeRequired = 0
   require("nvim-tree").setup(opts)
   vim.api.nvim_create_autocmd("VimLeavePre", {
     callback = function() vim.cmd.NvimTreeClose() end,

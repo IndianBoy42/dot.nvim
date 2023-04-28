@@ -45,17 +45,7 @@ local O = {
     stages = "fade_in_slide_out",
   },
   input_border = "rounded",
-  filetypes = {
-    extension = {
-      kbd = "kmonad",
-      fish = "fish",
-      just = "just",
-    },
-    literal = {
-      Justfile = "just",
-      justfile = "just",
-    },
-  },
+  filetypes = {},
   python_interp = CONFIG_PATH .. "/.venv/bin/python3.9", -- TODO: make a venv for this
 
   leader_key = "<space>",
@@ -79,7 +69,7 @@ local O = {
   select_mode = "!",
   swap_next = "",
   swap_prev = "",
-  -- # ?
+  -- ( # ? <del> <up/down/left/right>
   -- The below is used for most hint based navigation/selection (hop, hint_textobjects)
   -- hint_labels = "fdsahjklgvcxznmbyuiorewqtp",
   hint_labels = "hjklfdsag;nm,.ervcxzbuioyptwq",

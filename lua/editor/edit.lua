@@ -3,7 +3,7 @@ return {
     "ggandor/leap-spooky.nvim",
     opts = {
       affixes = {
-        remote = { window = "r", cross_window = "R" },
+        remote = { window = "R", cross_window = "r" },
         magnetic = { window = "<C-r>", cross_window = "<C-S-R>" },
       },
     },
@@ -170,9 +170,9 @@ return {
     main = "mini.comment",
     opts = {
       mappings = {
-        comment = "<c-c>",
-        comment_line = "<c-c><c-c>",
-        textobject = "i/",
+        comment = "#",
+        comment_line = "##",
+        textobject = "#",
       },
 
       -- Hook functions to be executed at certain stage of commenting

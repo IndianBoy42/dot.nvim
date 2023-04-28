@@ -309,4 +309,12 @@ return {
     },
     config = true,
   },
+  {
+    "AckslD/muren.nvim",
+    opts = {},
+    keys = {
+      { "<leader>rm", function() require("muren.api").toggle_ui() end, desc = "Multi Replace" },
+      { "<M-m>", "<cr><cmd>MurenUnique<cr>", mode = "c", desc = "Multi Replace" },
+    },
+  },
 }

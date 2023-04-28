@@ -33,8 +33,8 @@ return {
     cond = false,
     config = function()
       vim.o.foldcolumn = "0" -- '0' is not bad
-      vim.o.foldlevel = 9999 -- Using ufo provider need a large value, feel free to decrease the value
-      vim.o.foldlevelstart = 9999
+      vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
+      vim.o.foldlevelstart = 99
       vim.o.foldenable = true
 
       local handler = function(virtText, lnum, endLnum, width, truncate)
@@ -80,7 +80,7 @@ return {
       end)
       vim.keymap.set("n", "zR", function()
         vim.w.ufo_foldlevel = 5
-        ufo.closeFoldsWith(vim.w.ufo_foldlevel)
+        ufo.closeFoldsWith(vim.w.fo_foldlevel)
       end)
       vim.keymap.set("n", "zr", function()
         vim.w.ufo_foldlevel = vim.w.ufo_foldlevel + 1
