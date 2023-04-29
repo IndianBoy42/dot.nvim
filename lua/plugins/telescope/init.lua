@@ -118,6 +118,10 @@ local telescope = {
             -- ["<C-y>"] = functions.set_prompt_to_entry_value,
             ["<C-cr>"] = select_pick_window,
             ["<M-cr>"] = select_pick_window,
+            ["<Space>"] = function(...)
+              local feedkeys = vim.api.nvim_feedkeys
+              feedkeys(".*?", "n", false)
+            end,
           },
           n = {
             -- ["<M-p>"] = action_layout.toggle_preview,

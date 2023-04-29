@@ -28,9 +28,6 @@ return {
   {
     "famiu/bufdelete.nvim",
     cmd = { "Bdelete", "Bwipeout" },
-    keys = {
-      { "<leader>bc", "Bdelete!", desc = "Close" },
-    },
   },
   { "jghauser/mkdir.nvim", event = "BufWritePre" },
   { "lambdalisue/suda.vim", cmd = { "SudaWrite", "SudaRead" } },

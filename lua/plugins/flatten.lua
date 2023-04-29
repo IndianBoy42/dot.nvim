@@ -9,12 +9,12 @@ return {
     },
     -- Window options
     window = {
-      -- open = "current",
-      open = function(bufs, argv)
-        if vim.tbl_contains(argv, "-s") then
-        end
-        vim.api.nvim_win_set_buf(0, bufs[1])
-      end,
+      open = "current",
+      -- open = function(bufs, argv)
+      --   if vim.tbl_contains(argv, "-s") then
+      --   end
+      --   vim.api.nvim_win_set_buf(0, bufs[1])
+      -- end,
       focus = "first",
     },
     callbacks = {

@@ -21,6 +21,7 @@ local legend = {
   k = "Block",
   q = "Quote `, \", '",
   t = "Tag",
+  E = "Everything",
 }
 local jump_mappings = function()
   local ai = require "mini.ai"
@@ -134,7 +135,7 @@ local custom_textobjects = function(ai)
       end
       return { from = { line = line_num, col = from_col }, to = { line = line_num, col = to_col } }
     end,
-    E = function(ai_type) return { from = { line = line_num, col = from_col }, to = { line = line_num, col = to_col } } end,
+    E = function(ai_type) return { from = { line = 0, col = 0 }, to = { line = -1, col = -1 } } end,
     B = { "%b{}", "^.%s*().-()%s*.$" },
     -- B = function(ai_type)
     --   local n_lines = vim.fn.line "$"

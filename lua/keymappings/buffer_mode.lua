@@ -2,13 +2,18 @@ local cmd = utils.cmd
 local go_to_buffer_abs = false
 return {
   setup = function()
+    local hydra_peek_buffer = nil
+    local function switch_buffer(func)
+      if func then func() end
+      hydra_peek_buffer = vim.api.nvim_get_current_buf()
+    end
     local hydra_peek = require "hydra" {
       name = "Peek Buffers",
       body = "<leader>B",
       config = {
         color = "red",
-        on_enter = function() vim.g.hydra_peek_buffer = vim.api.nvim_get_current_buf() end,
-        on_exit = function() vim.api.nvim_set_current_buf(vim.g.hydra_peek_buffer) end,
+        on_enter = function() hydra_peek_buffer = vim.api.nvim_get_current_buf() end,
+        on_exit = function() vim.api.nvim_set_current_buf(hydra_peek_buffer) end,
       },
       heads = {
         { "1", function() require("bufferline").go_to(1, go_to_buffer_abs) end, { desc = "to 1" } },
@@ -26,6 +31,18 @@ return {
     }
     require "hydra" {
       name = "Buffers",
+      -- TODO:
+      hint = [[
+         ^ ^^S^^w^^i^^t^^c^^h^^ ^^ ^   ^ ^    Sort       ^ ^   Close
+      ---^-^^-^^-^^-^^-^^-^^-^^-^^-^-- ^-^-------------- ^-^--------------
+      <- _h_^ ^^P^^e^^e^^k^^ ^_l_^ ^-> _D_: by Directory _d_: This Buf
+      <- _j_^S^^w^^i^^t^^c^^h^_k_^ ^-> _E_: by Extension _c_: This+Win
+         _1__2__3__4__5__6__7__8__9_   _p_: Toggle Pin   _H_, _L_: Left/Right
+      <- _J_^ ^^M^^o^^v^^e^^ ^_K_^ ^-> ^ ^    Exit       
+      ^^^^^^^^^^^^^^^ _<tab>_: Last ^  ^-^-------------- _O_: Others
+      ^^^^^^^^^^^^^^^ _n_: New      ^  _<ESC>_: Peek     _U_: Unpinned
+      ^^^^^^^^^^^^^^^ _s_: Telescope^  _<CR>_: Switch    _G_: Group ]],
+
       config = {
         on_key = function()
           vim.wait(200, function()
@@ -34,49 +51,66 @@ return {
           end, 30, false)
         end,
         color = "red",
+        invoke_on_body = true,
         hint = {
           border = "rounded",
           type = "window",
-          position = "top",
+          position = "bottom",
           show_name = true,
         },
+        on_enter = function() hydra_peek_buffer = vim.api.nvim_get_current_buf() end,
+        on_exit = function() vim.api.nvim_set_current_buf(hydra_peek_buffer) end,
       },
       body = "<leader>b",
       heads = {
-        { "c", cmd "Bdelete!", { desc = "Close" } },
-        { "C", cmd "Bdelete!", { desc = "Close Win" } },
+        { "c", cmd "bdelete", { desc = "Close+Win" } },
+        { "d", cmd "Bdelete", { desc = "Delete" } },
         { "p", cmd "BufferLineTogglePin", { desc = "Pin" } },
-        { "P", function() hydra_peek:activate() end, { desc = "Peek", exit_before = true } },
-        { "n", cmd "enew", { desc = "New" } },
-        { "<tab>", "<tab>", { desc = "last" } },
-        { "1", function() require("bufferline").go_to(1, go_to_buffer_abs) end, { desc = "to 1" } },
-        { "2", function() require("bufferline").go_to(2, go_to_buffer_abs) end, { desc = "to 2" } },
-        { "3", function() require("bufferline").go_to(3, go_to_buffer_abs) end, { desc = "to 3" } },
-        { "4", function() require("bufferline").go_to(4, go_to_buffer_abs) end, { desc = "to 4" } },
-        { "5", function() require("bufferline").go_to(5, go_to_buffer_abs) end, { desc = "to 5" } },
-        { "6", function() require("bufferline").go_to(6, go_to_buffer_abs) end, { desc = "to 6" } },
-        { "7", function() require("bufferline").go_to(7, go_to_buffer_abs) end, { desc = "to 7" } },
-        { "8", function() require("bufferline").go_to(8, go_to_buffer_abs) end, { desc = "to 8" } },
-        { "9", function() require("bufferline").go_to(9, go_to_buffer_abs) end, { desc = "to 9" } },
-        { "<C-1>", function() require("bufferline").move_to(1) end, { desc = "to 1" } },
-        { "<C-2>", function() require("bufferline").move_to(2) end, { desc = "to 2" } },
-        { "<C-3>", function() require("bufferline").move_to(3) end, { desc = "to 3" } },
-        { "<C-4>", function() require("bufferline").move_to(4) end, { desc = "to 4" } },
-        { "<C-5>", function() require("bufferline").move_to(5) end, { desc = "to 5" } },
-        { "<C-6>", function() require("bufferline").move_to(6) end, { desc = "to 6" } },
-        { "<C-7>", function() require("bufferline").move_to(7) end, { desc = "to 7" } },
-        { "<C-8>", function() require("bufferline").move_to(8) end, { desc = "to 8" } },
-        { "<C-9>", function() require("bufferline").move_to(9) end, { desc = "to 9" } },
-        { "l", cmd "BufferLineCycleNext", { desc = "Next" } },
-        { "h", cmd "BufferLineCyclePrev", { desc = "Prev" } },
-        { "j", cmd "BufferLineMoveNext", { desc = "Move Next" } },
-        { "k", cmd "BufferLineMovePrev", { desc = "Move Prev" } },
+        -- { "P", function() hydra_peek:activate() end, { desc = "Peek", exit_before = true } },
+        { "n", cmd "enew", { desc = "New", exit_before = true } },
+        { "s", cmd "Telescope buffers", { desc = "Search" } },
+        { "<tab>", cmd "b#", { desc = "last" } },
+        { "<C-1>", function() require("bufferline").go_to(1, go_to_buffer_abs) end, { desc = false } },
+        { "<C-2>", function() require("bufferline").go_to(2, go_to_buffer_abs) end, { desc = false } },
+        { "<C-3>", function() require("bufferline").go_to(3, go_to_buffer_abs) end, { desc = false } },
+        { "<C-4>", function() require("bufferline").go_to(4, go_to_buffer_abs) end, { desc = false } },
+        { "<C-5>", function() require("bufferline").go_to(5, go_to_buffer_abs) end, { desc = false } },
+        { "<C-6>", function() require("bufferline").go_to(6, go_to_buffer_abs) end, { desc = false } },
+        { "<C-7>", function() require("bufferline").go_to(7, go_to_buffer_abs) end, { desc = false } },
+        { "<C-8>", function() require("bufferline").go_to(8, go_to_buffer_abs) end, { desc = false } },
+        { "<C-9>", function() require("bufferline").go_to(9, go_to_buffer_abs) end, { desc = false } },
+        { "1", function() require("bufferline").move_to(1) end, { desc = "to 1" } },
+        { "2", function() require("bufferline").move_to(2) end, { desc = "to 2" } },
+        { "3", function() require("bufferline").move_to(3) end, { desc = "to 3" } },
+        { "4", function() require("bufferline").move_to(4) end, { desc = "to 4" } },
+        { "5", function() require("bufferline").move_to(5) end, { desc = "to 5" } },
+        { "6", function() require("bufferline").move_to(6) end, { desc = "to 6" } },
+        { "7", function() require("bufferline").move_to(7) end, { desc = "to 7" } },
+        { "8", function() require("bufferline").move_to(8) end, { desc = "to 8" } },
+        { "9", function() require("bufferline").move_to(9) end, { desc = "to 9" } },
+        { "l", cmd "BufferLineCycleNext", { desc = "Peek Next" } },
+        { "h", cmd "BufferLineCyclePrev", { desc = "Peek Prev" } },
+        { "j", function() switch_buffer(vim.cmd.BufferLineCycleNext) end, { desc = "Next" } },
+        { "k", function() switch_buffer(vim.cmd.BufferLineCyclePrev) end, { desc = "Prev" } },
+        { "J", cmd "BufferLineMoveNext", { desc = "Move Next" } },
+        { "K", cmd "BufferLineMovePrev", { desc = "Move Prev" } },
         { "D", cmd "BufferLineSortByDirectory", { desc = "sort directory" } },
         { "E", cmd "BufferLineSortByExtension", { desc = "sort language" } },
-        { "<C-h>", cmd "BufferLineCloseLeft", { desc = "close left" } },
-        { "<C-l>", cmd "BufferLineCloseRight", { desc = "close right" } },
-        { "<C-c>", (cmd "BufferLineCloseLeft") .. (cmd "BufferLineCloseRight"), { desc = "close others" } },
+        { "H", cmd "BufferLineCloseLeft", { desc = "close left" } },
+        { "L", cmd "BufferLineCloseRight", { desc = "close right" } },
+        { "O", (cmd "BufferLineCloseLeft") .. (cmd "BufferLineCloseRight"), { desc = "close others" } },
+        { "G", cmd "BufferLineGroupClose", { desc = "close group" } },
+        {
+          "U",
+          function() require("bufferline").group_action("pinned", "close") end,
+          { desc = "close unpinned" },
+        },
         { "<ESC>", nil, { exit = true, nowait = true, desc = "exit" } },
+        {
+          "<CR>",
+          switch_buffer,
+          { exit = true, nowait = true, desc = "exit" },
+        },
       },
     }
 

@@ -247,6 +247,12 @@ function M.setup()
   map("n", "<tab>", cmd "b#", nore)
   map("n", "<S-tab>", "<leader>bl", { remap = true })
 
+  -- Move selection
+  map("x", "<C-h>", "", {})
+  map("x", "<C-j>", "", {})
+  map("x", "<C-k>", "", {})
+  map("x", "<C-l>", "", {})
+
   -- Preserve register on pasting in visual mode
   -- TODO: use the correct register
   map("x", "p", "pgvy", nore)
@@ -835,7 +841,12 @@ function M.setup()
       H = { cmd "ToggleHiLightComments", "Comment Highlights" },
       d = { utils.lsp.toggle_diagnostics, "Toggle Diags" },
     },
-    b = { name = "Buffers", d = { cmd "Bdelete!", "Delete" } },
+    -- b = {
+    --   name = "Buffers",
+    --   -- n = { cmd "enew", "New" },
+    --   -- s = { cmd "Telescope buffers", "Search" },
+    -- },
+        b = "+Buffers",
     g = { name = "Git" },
     i = {
       name = "Info",
@@ -891,9 +902,9 @@ function M.setup()
       f = { telescope_fn.find_files, "Find File" },
       -- c = { telescope_fn.colorscheme, "Colorscheme" },
       s = { telescope_fn.lsp_document_symbols, "Document Symbols" },
-      l = { telescope_fn.lsp_dynamic_workspace_symbols, "Workspace Symbols" },
+      w = { telescope_fn.lsp_dynamic_workspace_symbols, "Workspace Symbols" },
       d = { telescope_fn.diagnostics, "Document Diagnostics" },
-      w = { telescope_fn.workspace_diagnostics, "Workspace Diagnostics" },
+      D = { telescope_fn.workspace_diagnostics, "Workspace Diagnostics" },
       h = { telescope_fn.help_tags, "Find Help" },
       j = { telescope_fn.jumplist, "Jump List" },
       M = { telescope_fn.man_pages, "Man Pages" },

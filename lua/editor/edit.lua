@@ -75,7 +75,7 @@ return {
       { "<C-M-j>", mode = "n" },
       { "<C-M-k>", mode = "n" },
       { "<C-M-l>", mode = "n" },
-      { "<leader>em" },
+      { "<leader>em", mode = { "n", "x" } },
     },
     opts = {
       mappings = {
@@ -172,7 +172,7 @@ return {
       mappings = {
         comment = "#",
         comment_line = "##",
-        textobject = "#",
+        textobject = "i#",
       },
 
       -- Hook functions to be executed at certain stage of commenting

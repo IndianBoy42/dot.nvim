@@ -119,7 +119,7 @@ local function window_hydra_setup()
     { "b", cmd "Telescope buffers", { exit = true, desc = false } },
 
     { "c", pcmd("close", "E444") },
-    { "q", pcmd("close", "E444"), { desc = "close window" } },
+    { "q", cmd "bdelete", { desc = "close+buf" } },
     { "<C-c>", pcmd("close", "E444"), { desc = false } },
     { "<C-q>", pcmd("close", "E444"), { desc = false } },
 

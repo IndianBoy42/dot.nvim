@@ -53,7 +53,7 @@ return {
         },
         {
           "<leader>C",
-          substitute_range("operator", { motion2 = "ie" }),
+          substitute_range("operator", { motion2 = "iE" }),
           mode = "n",
           desc = "All (motion) in file",
         },
@@ -65,7 +65,7 @@ return {
         },
         {
           "<leader>C",
-          substitute_range("visual", { motion2 = "ie" }),
+          substitute_range("visual", { motion2 = "iE" }),
           mode = "x",
           desc = "All (sel) in file",
         },
@@ -79,7 +79,7 @@ return {
         {
           "<leader>rw",
           -- substitute_range("operator", { motion1 = "iw" }),
-          substitute_range("word", { motion2 = "ie" }),
+          substitute_range("word", { motion2 = "iE" }),
           mode = "n",
           desc = "All iw in file",
         },

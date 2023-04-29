@@ -218,7 +218,7 @@ return {
       end
       return ret
     end,
-    opts = { labeled_modes = "nxo" },
+    opts = { labeled_modes = "nx" },
   },
   {
     "cbochs/portal.nvim",
