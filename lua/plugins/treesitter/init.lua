@@ -12,7 +12,6 @@ local M = {
           require("lazy.core.loader").disable_rtp_plugin "nvim-treesitter-textobjects"
         end,
       },
-      "RRethy/nvim-treesitter-textsubjects",
       -- "nvim-treesitter/nvim-treesitter-refactor",
       {
         "andymass/vim-matchup",
@@ -24,6 +23,7 @@ local M = {
           -- let g:matchup_matchparen_deferred = 1
           -- let g:matchup_matchparen_hi_surround_always = 1
         end,
+        config = function() vim.keymap.del({ "n", "x", "o" }, "z%") end,
       },
     },
     opts = {
@@ -64,14 +64,6 @@ local M = {
       indent = { enable = { "javascriptreact" } },
       autotag = { enable = true },
       textobjects = {},
-      textsubjects = {
-        enable = true,
-        keymaps = {
-          ["<Up>"] = "textsubjects-smart",
-          ["."] = "textsubjects-container-outer",
-          ["<Down>"] = "textsubjects-container-inner",
-        },
-      },
       playground = {
         enable = true,
         disable = {},
@@ -134,7 +126,6 @@ local M = {
     "nvim-treesitter/playground",
     cmd = { "TSPlaygroundToggle", "TSHighlightCapturesUnderCursor" },
   },
-  { "JoosepAlviste/nvim-ts-context-commentstring" },
 }
 
 return M

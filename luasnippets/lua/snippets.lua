@@ -447,6 +447,10 @@ end
   ),
   s("bufnr", t "local bufnr = vim.api.nvim_get_current_buf()"),
   s("winnr", t "local winnr = vim.api.nvim_get_current_win()"),
+  s(
+    { trig = "([%w_]+)%+%+", regTrig = true, wordTrig = false },
+    fmt("{} = {} + 1", { l(l.CAPTURE1, {}), l(l.CAPTURE1, {}) })
+  ),
 }
 local autosnippets = {
   s("!=", t "~="),

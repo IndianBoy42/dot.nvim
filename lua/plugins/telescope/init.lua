@@ -1,19 +1,3 @@
-local function select_pick_window(prompt_bufnr)
-  -- Use nvim-window-picker to choose the window by dynamically attaching a function
-  local action_set = require "telescope.actions.set"
-  local action_state = require "telescope.actions.state"
-
-  local picker = action_state.get_current_picker(prompt_bufnr)
-  picker.get_selection_window = function(picker, entry)
-    local fallback = vim.api.nvim_get_current_win
-    local picked_window_id = require("ui.win_pick").pick_or_create() or fallback()
-    -- Unbind after using so next instance of the picker acts normally
-    picker.get_selection_window = nil
-    return picked_window_id
-  end
-
-  return action_set.edit(prompt_bufnr, "edit")
-end
 local telescope = {
   "nvim-telescope/telescope.nvim",
   dependencies = {
@@ -46,8 +30,9 @@ local telescope = {
     --     return function(...) return require("telescope.actions")[k](...) end
     --   end,
     -- })
-    local actions = utils.lazy_require "telescope.actions"
-    local action_layout = utils.lazy_require "telescope.actions.layout"
+    local actions = require "telescope.actions"
+    local action_layout = require "telescope.actions.layout"
+    local previewers = require "telescope.previewers"
 
     local with_rg = require("utils.telescope").with_rg
     local rg = with_rg { ignore = true, hidden = true }
@@ -75,23 +60,8 @@ local telescope = {
             flip_columns = 150,
           },
         },
-        -- file_sorter = sorters.get_fzy_sorter,
-        -- generic_sorter = sorters.get_fzy_sorter,
-        -- generic_sorter = sorters.get_generic_fuzzy_sorter,
-        file_ignore_patterns = {},
-        path_display = { "shorten_path" },
-        winblend = 0,
-        border = {},
-        borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
-        color_devicons = true,
-        use_less = true,
+        path_display = { "shorten" },
         set_env = { ["COLORTERM"] = "truecolor" }, -- default = nil,
-        file_previewer = require("telescope.previewers").vim_buffer_cat.new,
-        grep_previewer = require("telescope.previewers").vim_buffer_vimgrep.new,
-        qflist_previewer = require("telescope.previewers").vim_buffer_qflist.new,
-
-        -- Developer configurations: Not meant for general override
-        buffer_previewer_maker = require("telescope.previewers").buffer_previewer_maker,
         mappings = {
           i = {
             ["<C-p>"] = action_layout.toggle_preview,
@@ -107,21 +77,16 @@ local telescope = {
             ["<CR>"] = actions.select_default,
             ["<C-up>"] = actions.preview_scrolling_up,
             ["<C-down>"] = actions.preview_scrolling_down,
-            ["<M-q>"] = function(...)
+            ["<C-q>"] = function(...)
               actions.send_to_qflist(...)
               actions.open_qflist(...)
+              require("replacer").run()
             end,
-            ["<C-q>"] = function(...)
-              actions.send_selected_to_qflist(...)
-              actions.open_qflist(...)
-            end,
+            ["<C-l>"] = function(...) require("trouble.providers.telescope").open_with_trouble(...) end,
             -- ["<C-y>"] = functions.set_prompt_to_entry_value,
-            ["<C-cr>"] = select_pick_window,
-            ["<M-cr>"] = select_pick_window,
-            ["<Space>"] = function(...)
-              local feedkeys = vim.api.nvim_feedkeys
-              feedkeys(".*?", "n", false)
-            end,
+            ["<C-cr>"] = utils.telescope.select_pick_window,
+            ["<M-cr>"] = utils.telescope.select_pick_window,
+            -- ["<C-Space>"] = to fuzzy
           },
           n = {
             -- ["<M-p>"] = action_layout.toggle_preview,
@@ -139,8 +104,24 @@ local telescope = {
               actions.open_qflist(...)
             end,
             ["<C-c>"] = actions.close,
-            ["<localleader>n"] = select_pick_window,
+            ["<localleader>n"] = utils.telescope.select_pick_window,
           },
+        },
+      },
+      pickers = {
+        live_grep = {
+          on_input_filter_cb = function(prompt)
+            -- AND operator for live_grep like how fzf handles spaces with wildcards in rg
+            return { prompt = prompt:gsub("%s", ".*") }
+          end,
+        },
+        git_branches = {
+          attach_mappings = function(_, map)
+            map("i", "<c-x>", actions.git_delete_branch)
+            map("n", "<c-x>", actions.git_delete_branch)
+            map("i", "<c-y>", M.set_prompt_to_entry_value)
+            return true
+          end,
         },
       },
       extensions = {
@@ -150,7 +131,7 @@ local telescope = {
         },
         fzf = {
           fuzzy = true, -- false will only do exact matching
-          override_generic_sorter = false, -- override the generic sorter
+          override_generic_sorter = true, -- override the generic sorter
           override_file_sorter = true, -- override the file sorter
           case_mode = "smart_case", -- or "ignore_case" or "respect_case"
           -- the default case_mode is "smart_case"
@@ -187,6 +168,5 @@ local telescope = {
 }
 local M = {
   telescope,
-  "nvim-telescope/telescope-fzy-native.nvim",
 }
 return M

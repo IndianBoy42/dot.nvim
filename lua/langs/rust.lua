@@ -85,6 +85,21 @@ return {
             border = "rounded",
           },
         },
+        -- config = function(_, opts)
+        --   require("crates").setup(opts)
+        --   local sources = vim.deepcopy(require("langs.complete").default_sources)
+        --   sources[#sources + 1] = { name = "crates", group_index = 1 }
+        --   local setup = function()
+        --     require("cmp").setup.buffer {
+        --       sources = sources,
+        --     }
+        --   end
+        --   vim.api.nvim_create_autocmd("BufRead", {
+        --     pattern = "Cargo.toml",
+        --     callback = setup,
+        --   })
+        --   setup()
+        -- end,
       },
     },
     ---@param opts cmp.ConfigSchema
@@ -100,7 +115,9 @@ return {
 
   {
     "neovim/nvim-lspconfig",
-    dependencies = { "simrat39/rust-tools.nvim" },
+    dependencies = {
+      { "indianboy42/rust-tools.nvim", dev = true, branch = "fork" },
+    },
     opts = {
       setup = {
         rust_analyzer = function(_, opts)
@@ -145,7 +162,7 @@ return {
             server = {
               on_attach = function()
                 local rt = require "rust-tools"
-                require("utils.lsp").live_codelens()
+                -- require("utils.lsp").live_codelens()
 
                 local dap = require "dap"
                 dap.listeners.after.event_initialized.rust_tools = function()
@@ -222,8 +239,10 @@ return {
                   pd = { "<CMD>RustDebuggables<CR>", "Rust Debug" },
                 }
               end,
+              -- cmd = { "ra-multiplex", "--ra-mux-server", "rust-analyzer" },
               settings = {
                 ["rust-analyzer"] = {
+                  -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#rust_analyzer
                   -- https://rust-analyzer.github.io/manual.html#configuration
                   cargo = {
                     features = "all",
@@ -234,6 +253,9 @@ return {
                     enable = true,
                     command = "clippy",
                     features = "all",
+                    extraArgs = {
+                      { "--all-targets" },
+                    },
                   },
                   completion = {
                     snippets = snippets,
@@ -252,10 +274,16 @@ return {
                       references = { enable = true },
                     },
                   },
+                  -- imports = {},
                   workspace = { symbol = { search = { kind = "all_symbols" } } },
-                  -- inlayHints = {
-                  --   expressionAdjustmentHints = { enable = true },
-                  -- },
+                  inlayHints = {
+                    -- bindingModeHints = { enable = true },
+                    -- closureCaptureHints = { enable = true },
+                    -- closureReturnTypeHints = { enable = true },
+                    -- discriminantHints = { enable = true },
+                    -- expressionAdjustmentHints = { enable = true },
+                    -- lifetimeElisionHints = { enable = true },
+                  },
                   rustfmt = {
                     rangeFormatting = { enable = true },
                   },

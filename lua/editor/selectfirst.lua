@@ -16,25 +16,25 @@ return {
             ((string) @cap)
         ]],
         rust = [[
-    ;; query
+            ;; query
 
-    ((string_literal) @cap)
+            ((string_literal) @cap)
 
-    ; Identifiers
-    ((identifier) @cap)
-    ((field_identifier) @cap)
-    ((field_expression) @cap)
-    ((scoped_identifier) @cap)
-    ((unit_expression) @cap)
+            ; Identifiers
+            ((identifier) @cap)
+            ((field_identifier) @cap)
+            ((field_expression) @cap)
+            ((scoped_identifier) @cap)
+            ((unit_expression) @cap)
 
-    ; Types
-    ((reference_type) @cap)
-    ((primitive_type) @cap)
-    ((type_identifier) @cap)
-    ((generic_type) @cap)
+            ; Types
+            ((reference_type) @cap)
+            ((primitive_type) @cap)
+            ((type_identifier) @cap)
+            ((generic_type) @cap)
 
-    ; Calls
-    ((call_expression) @cap)
+            ; Calls
+            ((call_expression) @cap)
   ]],
       },
     },
@@ -48,6 +48,7 @@ return {
       end
 
       -- TODO: selection first hydra
+
       -- map("<C-A-k>", "select_node", "previous", {
       --   vertical_drill_jump = true,
       --   visual_mode = true, -- if you want Visual Mode instead of Select Mode
@@ -82,4 +83,5 @@ return {
     end,
   },
   -- TODO: https://github.com/drybalka/tree-climber.nvim
+  -- TODO: https://github.com/ziontee113/syntax-tree-surfer
 }

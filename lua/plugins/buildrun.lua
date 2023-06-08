@@ -5,7 +5,7 @@ return {
     init = function()
       vim.api.nvim_create_user_command("KittyAttach", function(args)
         require("kitty").setup({
-          create_new_win = vim.g.kitty_from_current_win or "window",
+          create_new_win = vim.g.kitty_from_current_win or "os-window",
           target_providers = {
             function(T) T.helloworld = { desc = "Hello world", cmd = "echo hello world" } end,
             "just",
@@ -87,8 +87,8 @@ return {
     "michaelb/sniprun",
     build = "bash ./install.sh 1",
     opts = {
-      selected_interpreters = { "Python3_fifo" },
-      repl_enable = { "Python3_fifo" },
+      -- selected_interpreters = { "Python3_fifo" },
+      -- repl_enable = { "Python3_fifo" },
 
       display = { "Terminal", "VirtualTextOk", "LongTempFloatingWindowErr", "NvimNotifyErr" },
       live_mode_toggle = "enable",
@@ -125,22 +125,6 @@ return {
   --     require("lv-terms").mdeval()
   --   end,
   -- }
-  {
-    "goerz/jupytext.vim",
-    build = "pipx install jupytext",
-    event = { "BufRead *.ipynb" },
-    init = function()
-      vim.g.jupytext_fmt = "md:markdown"
-      vim.g.jupytext_fmt = "py:percent"
-    end,
-  },
-  -- {
-  --   "untitled-ai/jupyter_ascending.vim",
-  --   build = "pipx install jupyter_ascending",
-  --   init = function()
-  --     vim.g.jupyter_ascending_default_mappings = false
-  --   end,
-  -- },
   -- use {
   --   "pianocomposer321/yabs.nvim",
   --   config = function()
@@ -159,18 +143,18 @@ return {
     opts = { create_keymaps = false },
     -- TODO: use a hydra?
     keys = {
-      { "<leader>dP", utils.lazy_require("debugprint").debugprint, desc = "DbgPrnt Line", expr = true },
-      { "<leader>dp", utils.lazy_require("debugprint").debugprint, desc = "DbgPrnt Line abv", expr = true },
+{ "<leader>dP", utils.lazy_require("debugprint").debugprint, desc = "DbgPrnt Line", expr = true },
+{ "<leader>dp", utils.lazy_require("debugprint").debugprint, desc = "DbgPrnt Line abv", expr = true },
       {
         "<leader>dv",
-        utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true }),
+utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true }),
         desc = "DbgPrnt Var",
         mode = { "n", "x" },
         expr = true,
       },
       {
         "<leader>dV",
-        utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true }),
+utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true }),
         desc = "DbgPrnt Var abv",
         mode = { "n", "x" },
         expr = true,

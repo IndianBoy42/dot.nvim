@@ -102,20 +102,6 @@ function M.conceal_toggle(n)
   end
 end
 
--- TODO: convert to lua
-vim.cmd [[
-augroup quickfix
-    autocmd!
-    autocmd QuickFixCmdPost [^l]* call OpenQuickFixList()
-augroup END
-
-function OpenQuickFixList()
-    vert cwindow
-    wincmd p
-    wincmd =
-endfunction
-]]
-
 M.set_opfunc = vim.fn[vim.api.nvim_exec(
   [[
 func s:set_opfunc(val)
@@ -398,21 +384,28 @@ function M.timeout_helper(timeout, callback)
   }
 end
 
-M.hold_jumplist = (function()
-  -- local setmark = vim.api.nvim_buf_set_mark
-  -- local getcurpos = vim.api.nvim_win_get_cursor
-  return M.timeout_helper(1000, function()
+-- Add position to jump list on cursorhold -- FIXME: slightly buggy
+do
+  local cbs = M.timeout_helper(1000, function()
     -- local row, col = unpack(getcurpos(0))
     -- setmark(0, "'", row, col)
     if vim.api.nvim_get_mode().mode == "n" then vim.cmd "normal! m'" end
     -- feedkeys("m'", "n", true)
   end)
-end)()
-M.hold_jumplist_aucmd = {
-  { "InsertEnter,CmdlineEnter", "*", "lua require'utils'.hold_jumplist.disable()" },
-  { "InsertLeave,CmdlineLeave", "*", "lua require'utils'.hold_jumplist.reenable()" },
-  { "CursorMoved", "*", "lua require'utils'.hold_jumplist.reset()" },
-}
+  local grp = vim.api.nvim_create_augroup("hold_jumplist", { clear = true })
+  vim.api.nvim_create_autocmd({ "InsertEnter", "CmdlineEnter" }, {
+    group = grp,
+    callback = cbs.disable,
+  })
+  vim.api.nvim_create_autocmd({ "InsertLeave", "CmdlineLeave" }, {
+    group = grp,
+    callback = cbs.reenable,
+  })
+  vim.api.nvim_create_autocmd({ "CursorMoved" }, {
+    group = grp,
+    callback = cbs.reset,
+  })
+end
 
 local function augroup_helper(tbl, name, clear)
   local grp = {
@@ -533,6 +526,7 @@ function M.partial(func, ...)
     return func(unpack(allArgs))
   end
 end
+P = M.partial
 
 local function lazy_require(moduleName)
   local meta = {}
@@ -558,8 +552,10 @@ local function lazy_require(moduleName)
   return setmetatable({ moduleName = moduleName }, meta)
 end
 M.lazy_require = lazy_require
+LazyRequire = lazy_require
 
-function M.partial_require(mod, name, ...) return M.partial(M.lazy_require(mod)[name], ...) end
+function M.partial_require(mod, name, ...) return M.partial(lazy_require(mod)[name], ...) end
+PR = M.partial_require
 
 function M.rotate_split(tabpage)
   tabpage = tabpage or vim.api.nvim_get_current_tabpage()

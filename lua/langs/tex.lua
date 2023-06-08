@@ -1,12 +1,3 @@
-local function au_unconceal(level)
-  vim.opt_local.conceallevel = level
-  utils.define_augroups {
-    _lightspeed_unconceal = {
-      { "User", "LightspeedEnter", "setlocal conceallevel=0" },
-      { "User", "LightspeedExit", "setlocal conceallevel=" .. level },
-    },
-  }
-end
 local surroundings = function(ms)
   local ui = ms.user_input
   return {
@@ -498,7 +489,7 @@ return {
     map("i", "<C-b>", "<cmd>normal ysiwmb<cr>", { silent = true })
     map("i", "<C-t>", "<cmd>normal ysiwmi<cr>", { silent = true })
 
-    au_unconceal(conf.conceal)
+    vim.opt_local.conceallevel = conf.conceal
     -- vim.opt_local.background = "light"
     if conf.theme then
       vim.cmd(conf.theme)

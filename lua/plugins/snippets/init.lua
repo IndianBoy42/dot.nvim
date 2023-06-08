@@ -40,6 +40,10 @@ local M = {
       map("s", "<M-n>", jump_next, { silent = true })
       map("i", "<M-p>", jump_prev, { silent = true })
       map("s", "<M-p>", jump_prev, { silent = true })
+      map("i", "<C-n>", jump_next, { silent = true })
+      map("s", "<C-n>", jump_next, { silent = true })
+      map("i", "<C-p>", jump_prev, { silent = true })
+      map("s", "<C-p>", jump_prev, { silent = true })
       -- map("i", "<C-u>", require "luasnip.extras.select_choice", { silent = true })
       -- map("i", "<M-n>", "<Plug>luasnip-next-choice", { silent = true })
       map("s", "<M-j>", "<Plug>luasnip-next-choice", { silent = true })
@@ -128,10 +132,21 @@ local M = {
         store_selection_keys = "<tab>",
 
         ext_opts = {
-          [types.choiceNode] = { active = { virt_text = { { "●", "GlyphPalette2" } } } },
-          [types.insertNode] = { active = { virt_text = { { "●", "GlyphPalette4" } } } },
+          [types.choiceNode] = {
+            active = { virt_text_pos = "inline", virt_text = { { "●", "GlyphPalette2" } } },
+            passive = { virt_text_pos = "inline", virt_text = { { "●", "GlyphPalette2" } } },
+          },
+          [types.insertNode] = {
+            active = { virt_text_pos = "inline", virt_text = { { "●", "GlyphPalette4" } } },
+            passive = { virt_text_pos = "inline", virt_text = { { "●", "GlyphPalette4" } } },
+          },
+          [types.snippet] = {
+            active = { virt_text_pos = "inline", virt_text = { { "●", "GlyphPalette4" } } },
+            passibe = { virt_text_pos = "inline", virt_text = { { "●", "GlyphPalette4" } } },
+          },
         },
 
+        -- https://github.com/L3MON4D3/LuaSnip/blob/master/lua/luasnip/config.lua#L22
         snip_env = {
           sel = sel,
           tnl = tnl,
@@ -139,6 +154,18 @@ local M = {
           nl = nl,
           reg = reg,
           dsel = dsel,
+          ins_generate = function(nodes)
+            return setmetatable(nodes or {}, {
+              __index = function(table, key)
+                local indx = tonumber(key)
+                if indx then
+                  local val = ls.i(indx)
+                  rawset(table, key, val)
+                  return val
+                end
+              end,
+            })
+          end,
         },
         -- parser_nested_assembler = require "lv-luasnips.nested",
       }
@@ -152,9 +179,11 @@ local M = {
           edit = function(f) vim.cmd(args .. " " .. f) end,
         }
       end, { nargs = "?" })
-            vim.api.nvim_create_user_command("ReloadSnippets", function(args) 
-      require("luasnip.loaders.from_lua").lazy_load { paths = _G.CONFIG_PATH .. "/luasnippets" }
-            end, {})
+      vim.api.nvim_create_user_command(
+        "ReloadSnippets",
+        function(args) require("luasnip.loaders.from_lua").lazy_load { paths = _G.CONFIG_PATH .. "/luasnippets" } end,
+        {}
+      )
     end,
   },
   {

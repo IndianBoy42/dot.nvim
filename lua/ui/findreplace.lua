@@ -53,7 +53,7 @@ return {
         },
         {
           "<leader>C",
-          substitute_range("operator", { motion2 = "iE" }),
+          substitute_range("operator", { range = "%" }),
           mode = "n",
           desc = "All (motion) in file",
         },
@@ -64,8 +64,14 @@ return {
           desc = "All (sel) in (motion)",
         },
         {
+          ":",
+          substitute_range("visual_range", { text1 = { last_search = true } }),
+          mode = { "x", "n" },
+          desc = "All (sel) in (motion)",
+        },
+        {
           "<leader>C",
-          substitute_range("visual", { motion2 = "iE" }),
+          substitute_range("visual", { range = "%" }),
           mode = "x",
           desc = "All (sel) in file",
         },
@@ -79,7 +85,7 @@ return {
         {
           "<leader>rw",
           -- substitute_range("operator", { motion1 = "iw" }),
-          substitute_range("word", { motion2 = "iE" }),
+          substitute_range("word", { range = "%" }),
           mode = "n",
           desc = "All iw in file",
         },
@@ -93,8 +99,12 @@ return {
   {
     "windwp/nvim-spectre",
     keys = {
-      { "<leader>rp", function() require("spectre").open() end, desc = "Project" },
-      { "<leader>rf", function() require("spectre").open_file_search { select_word = true } end, desc = "File" },
+      { "<leader>rp", function() require("spectre").open() end, desc = "Spectre Project" },
+      {
+        "<leader>rf",
+        function() require("spectre").open_file_search { select_word = true } end,
+        desc = "Spectre File",
+      },
       { "<leader>rr*", function() require("spectre").open_visual { select_word = true } end, desc = "cword" },
       {
         "<leader>rr/",
@@ -315,6 +325,12 @@ return {
     keys = {
       { "<leader>rm", function() require("muren.api").toggle_ui() end, desc = "Multi Replace" },
       { "<M-m>", "<cr><cmd>MurenUnique<cr>", mode = "c", desc = "Multi Replace" },
+    },
+  },
+  {
+    "gabrielpoca/replacer.nvim",
+    keys = {
+      { "<leader>rq", utils.lazy_require("replacer").run, desc = "Replace from quickfix" },
     },
   },
 }

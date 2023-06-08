@@ -7,9 +7,29 @@ function M.set_prompt_to_entry_value(prompt_bufnr)
   require("telescope.actions.state").get_current_picker(prompt_bufnr):reset_prompt(entry.ordinal)
 end
 
+M.from_qf_items = function(items, opts)
+  local opts = opts or {}
+  local conf = require("telescope.config").values
+  require("telescope.pickers")
+    .new(opts, {
+      prompt_title = "LSP References",
+      finder = require("telescope.finders").new_table {
+        results = items,
+        entry_maker = opts.entry_maker or require("telescope.make_entry").gen_from_quickfix(opts),
+      },
+      previewer = conf.qflist_previewer(opts),
+      sorter = conf.generic_sorter(opts),
+      push_cursor_on_edit = true,
+      push_tagstack_on_edit = true,
+    })
+    :find()
+end
+
+M.from_lsp_locations = function(items, opts, ctx) M.from_qf_items(vim.lsp.util.locations_to_items(result, oe), opts) end
+
 M.smart_open = function()
   require("telescope").extensions.smart_open.smart_open {
-    cwd_only = true,
+    -- cwd_only = true,
   }
 end
 
@@ -214,20 +234,6 @@ function M.grep_prompt()
   require("telescope.builtin").grep_string {
     path_display = { "shorten_path" },
     search = vim.fn.input "Grep String ❯ ",
-  }
-end
-
-function M.grep_visual()
-  require("telescope.builtin").grep_string {
-    path_display = { "shorten_path" },
-    search = utils.get_visual_selection(),
-  }
-end
-
-function M.grep_cWORD()
-  require("telescope.builtin").grep_string {
-    path_display = { "shorten_path" },
-    search = vim.fn.expand "<cWORD>",
   }
 end
 
@@ -458,6 +464,23 @@ function M.side_split_theme(opts)
   end
 
   return vim.tbl_deep_extend("force", theme_opts, opts)
+end
+
+function M.select_pick_window(prompt_bufnr)
+  -- Use nvim-window-picker to choose the window by dynamically attaching a function
+  local action_set = require "telescope.actions.set"
+  local action_state = require "telescope.actions.state"
+
+  local picker = action_state.get_current_picker(prompt_bufnr)
+  picker.get_selection_window = function(picker, entry)
+    local fallback = vim.api.nvim_get_current_win
+    local picked_window_id = require("ui.win_pick").pick_or_create() or fallback()
+    -- Unbind after using so next instance of the picker acts normally
+    picker.get_selection_window = nil
+    return picked_window_id
+  end
+
+  return action_set.edit(prompt_bufnr, "edit")
 end
 
 return setmetatable(M, {

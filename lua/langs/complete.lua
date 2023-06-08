@@ -139,20 +139,20 @@ M.opts = function()
 
   local function complete_or(mapping) return double_mapping(cmp.complete, mapping) end
   local function next_item()
-    if require("luasnip").choice_active() then
-      feedkeys(t "<Plug>luasnip-next-choice", "", false)
-    elseif cmp.visible() then
+    if cmp.visible() then
       cmp.select_next_item { behavior = cmp.SelectBehavior.Select }
+    elseif require("luasnip").choice_active() then
+      feedkeys(t "<Plug>luasnip-next-choice", "", false)
     else
       autocomplete()
     end
   end
 
   local function prev_item()
-    if require("luasnip").choice_active() then
-      feedkeys(t "<Plug>luasnip-prev-choice", "", false)
-    elseif cmp.visible() then
+    if cmp.visible() then
       cmp.select_prev_item { behavior = cmp.SelectBehavior.Select }
+    elseif require("luasnip").choice_active() then
+      feedkeys(t "<Plug>luasnip-prev-choice", "", false)
     else
       autocomplete()
     end
@@ -268,6 +268,7 @@ function M.autocomplete(enable) require("cmp").setup.buffer { completion = { aut
 
 function M.sources(list)
   local cmp = require "cmp"
+  if not list then return M.default_sources end
   cmp.setup.buffer { sources = list }
 end
 

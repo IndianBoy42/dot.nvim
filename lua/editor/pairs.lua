@@ -1,6 +1,7 @@
 local surround_mappings = {
   add = "ys", -- Add surrounding in Normal and Visual modes
   vadd = "s", -- Add surrounding in Normal and Visual modes
+  vadd2 = "S", -- Add surrounding in Normal and Visual modes
   delete = "ds", -- Delete surrounding
   find = "]s", -- Find surrounding (to the right)
   find_left = "[s", -- Find surrounding (to the left)
@@ -9,7 +10,8 @@ local surround_mappings = {
   update_n_lines = "<leader>T<leader>n", -- Update `n_lines`
 }
 local custom_surroundings = function()
-  local ts_input = require("mini.surround").gen_spec.input.treesitter
+  local ms = require "mini.surround"
+  local ts_input = ms.gen_spec.input.treesitter
   local tsi = function(id) return ts_input { outer = id .. ".outer", inner = id .. ".inner" } end
 
   return {
@@ -19,17 +21,24 @@ local custom_surroundings = function()
     ["]"] = { output = { left = "[", right = "]" } },
 
     -- TODO: output
-    c = { input = tsi "@call" },
+    c = {
+      input = tsi "@call",
+      output = function()
+        local fun_name = MiniSurround.user_input "Function name"
+        if fun_name == nil then return nil end
+        return { left = ("%s("):format(fun_name), right = ")" }
+      end,
+    },
     f = { input = tsi "@function" },
     B = { input = { "%b{}", "^.%s*().-()%s*.$" }, output = { left = "{ ", right = " }" } },
 
-    -- TODO: jupyter cells
     -- o = {
     --   input = ts_input {
     --     outer = { "@block.outer", "@conditional.outer", "@loop.outer" },
     --     inner = { "@block.inner", "@conditional.inner", "@loop.inner" },
     --   },
     -- },
+    -- TODO: jupyter cells
   }
 end
 local M = {
@@ -54,7 +63,6 @@ local M = {
     end,
   },
   -- TODO: Switch to this?
-  -- OR: kylechui/nvim-surround
   -- {
   --   "echasnovski/mini.pairs",
   --   event = "VeryLazy",
@@ -156,7 +164,8 @@ local M = {
     keys = function(_, keys)
       local mappings = {
         { surround_mappings.add, desc = "Add surrounding" },
-        { surround_mappings.vadd, desc = "Add surrounding", mode = { "v" } },
+        { surround_mappings.vadd, desc = "Add surrounding", mode = { "x" } },
+        { surround_mappings.vadd2, desc = "Add surrounding", mode = { "v" } },
         { surround_mappings.delete, desc = "Delete surrounding" },
         { surround_mappings.find, desc = "Find right surrounding" },
         { surround_mappings.find_left, desc = "Find left surrounding" },
@@ -180,6 +189,9 @@ local M = {
       local map = vim.keymap.set
       vim.api.nvim_del_keymap("x", opts.mappings.add)
       map("x", opts.mappings.vadd, [[:<C-u>lua MiniSurround.add('visual')<CR>]], { noremap = true, silent = true })
+      if opts.mappings.vadd2 then
+        map("x", "S", [[:<C-u>lua MiniSurround.add('visual')<CR>]], { noremap = true, silent = true })
+      end
       -- map("x", "(", opts.mappings.vadd .. [[(]], { remap = true, silent = true })
       -- map("x", "{", opts.mappings.vadd .. [[{]], { remap = true, silent = true })
       -- map("x", "[", opts.mappings.vadd .. [[[]], { remap = true, silent = true })

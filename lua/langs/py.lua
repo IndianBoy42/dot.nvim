@@ -15,8 +15,13 @@ return {
       vim.api.nvim_create_autocmd("Filetype", {
         pattern = "python",
         callback = function()
-          require("langs.complete").add_sources { { name = "jupyter" } }
+          local srcs = require("langs.complete").sources
+          srcs(vim.list_extend(srcs(), { name = "jupyter", group_index = 2 }))
           vim.keymap.set("n", "H", "<cmd>JupyterInspect<cr>", { buffer = 0 })
+          vim.keymap.set("n", "<localleader>i", "<cmd>JupyterInspect<cr>", { buffer = 0 })
+          vim.keymap.set("n", "<localleader>e", "<cmd>JupyterExecute<cr>", { buffer = 0 })
+          vim.keymap.set("x", "<localleader>e", ":JupyterExecute<cr>", { buffer = 0 })
+          vim.keymap.set("n", "<localleader>ja", "<cmd>JupyterAttach<cr>", { buffer = 0 })
         end,
         group = vim.api.nvim_create_augroup("jupyter_kernel_setup", {}),
       })
@@ -24,6 +29,26 @@ return {
     cmd = { "JupyterAttach", "JupyterInspect", "JupyterExecute" },
     build = ":UpdateRemotePlugins",
     opts = {},
+  },
+  -- {
+  --   "WhiteBlackGoose/magma-nvim-goose",
+  --   run = ":UpdateRemotePlugins",
+  -- },
+  -- {
+  --   "untitled-ai/jupyter_ascending.vim",
+  --   build = "pipx install jupyter_ascending",
+  --   init = function()
+  --     vim.g.jupyter_ascending_default_mappings = false
+  --   end,
+  -- },
+  {
+    "goerz/jupytext.vim",
+    build = "pipx install jupytext",
+    event = { "BufRead *.ipynb" },
+    init = function()
+      vim.g.jupytext_fmt = "md:markdown"
+      vim.g.jupytext_fmt = "py:percent"
+    end,
   },
 
   require("langs").mason_ensure_installed { "python-lsp-server" },

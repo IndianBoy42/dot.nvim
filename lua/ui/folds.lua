@@ -71,7 +71,6 @@ return {
         fold_virt_text_handler = handler,
       }
       vim.api.nvim_create_autocmd({ "WinNew", "VimEnter" }, {
-        pattern = "*",
         callback = function() vim.w.ufo_foldlevel = 1 end,
       })
       vim.keymap.set("n", "zM", function()

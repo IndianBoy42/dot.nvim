@@ -31,7 +31,7 @@ return {
       },
     },
   },
-  { "pwntester/octo.nvim", cmd = "Octo" },
+  { "pwntester/octo.nvim", cmd = "Octo", opts = {} },
   {
     "sindrets/diffview.nvim",
     config = function(_, opts)
@@ -70,7 +70,7 @@ return {
     event = { "BufReadPre", "BufNewFile" },
     -- keys = function()
     --   local repeatable = mappings.repeatable
-    --   local gs = utils.lazy_require "gitsigns"
+--   local gs = utils.lazy_require "gitsigns"
     --   repeatable("g", "Git Hunk", { vim.schedule_wrap(gs.next_hunk), vim.schedule_wrap(gs.prev_hunk) }, {
     --   local p = utils.partial
     --   return {

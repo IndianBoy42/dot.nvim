@@ -100,4 +100,5 @@ return {
       },
     },
   },
+  -- https://github.com/Civitasv/cmake-tools.nvim
 }

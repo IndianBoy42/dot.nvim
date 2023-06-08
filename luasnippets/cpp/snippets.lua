@@ -2,9 +2,9 @@
 
 -- Needed for fancy snippets
 local ts_utils_ok, ts_utils = pcall(require, "nvim-treesitter.ts_utils")
-if not ts_utils_ok then
-  return {}
-end
+if not ts_utils_ok then return {} end
+
+local query = vim.treesitter.query
 
 local cpp_classes = vim.treesitter.parse_query(
   "cpp",
@@ -23,9 +23,7 @@ local function list_classes(linenr)
   local bufnr = vim.api.nvim_get_current_buf()
 
   local root = ts_utils.get_root_for_position(linenr - 1, 0)
-  if not root then
-    return {}
-  end
+  if not root then return {} end
 
   local result = {}
 

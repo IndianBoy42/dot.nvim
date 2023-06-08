@@ -102,8 +102,23 @@ M.repeatable = function(ch, desc, fwdbwd, _opts)
 end
 
 -- M.word_suffixes = { "w", "b", "e", "ge", "W", "B", "E", "gE", "v", "&", "n", "N", "f", "F" }
-M.word_suffixes = { "w", "b", "e", "ge", "W", "B", "E", "gE", "vi", "va", "vj", "vk", "vh", "vl" }
-M.move_by_descs = M.word_suffixes
+M.word_suffixes = { "w", "b", "e", "ge", "W", "B", "E", "gE", "I", "A", "}", "{", "]", "[" }
+M.move_by_descs = {
+  "Next Begin",
+  "Prev Begin",
+  "Next End",
+  "Prev End",
+  "NEXT BEGIN",
+  "PREV BEGIN",
+  "NEXT END",
+  "PREV END",
+  "Sel In",
+  "Sel Ar",
+  "Sel In N",
+  "Sel In P",
+  "Sel Ar N",
+  "Sel Ar P",
+}
 M.move_by_suffixes = M.word_suffixes
 M.word_suffixes2 = { "w", "b", "e", "<C-e>", "W", "B", "E", "<C-S-e>" }
 M.hjkl_suffixes = { "l", "h", "j", "k", "L", "H", "J", "K", "v", ",", "n", "N", "f", "F" }
@@ -132,7 +147,7 @@ M.move_by = function(prefix, suffixes, actions, desc, o)
   local opts = {
     name = desc,
     config = {
-      color = "red",
+      color = "pink",
       invoke_on_body = false,
       -- timeout = 5000, -- millis
       hint = {
@@ -157,6 +172,25 @@ M.move_by = function(prefix, suffixes, actions, desc, o)
       { desc = descs[j], private = false },
     }
   end
+  vim.list_extend(heads, {
+    {
+      "n",
+      function()
+        actions[1]()
+        return "<Plug>(VM-Add-Cursor-At-Pos)"
+      end,
+      { desc = "Add Cursor", private = true, expr = true },
+    },
+    {
+      "N",
+      function()
+        actions[2]()
+        return "<Plug>(VM-Add-Cursor-At-Pos)"
+      end,
+      { desc = "Add Cursor", private = true, expr = true },
+    },
+  })
+
   local Hydra = require "hydra"
 
   hydras[1] = Hydra(vim.tbl_extend("keep", {
@@ -164,18 +198,29 @@ M.move_by = function(prefix, suffixes, actions, desc, o)
     heads = heads,
   }, opts))
 
-  hydras[2] = Hydra(vim.tbl_extend("keep", {
-    body = (#prefix > 0) and prefix,
-    heads = vim.tbl_map(function(x)
-      local a = x[2]
-      x[2] = function()
+  if #prefix > 0 then
+    for _, head in ipairs(heads) do
+      local a = head[2]
+      local f = function()
         vim.cmd "normal! v"
         a()
       end
-      return x
-    end, heads),
-    mode = "o",
-  }, opts))
+
+      vim.keymap.set("o", prefix .. head[1], f, { desc = head[3].desc })
+    end
+  end
+  -- hydras[2] = Hydra(vim.tbl_extend("keep", {
+  --   body = (#prefix > 0) and prefix,
+  --   heads = vim.tbl_map(function(x)
+  --     local a = x[2]
+  --     x[2] = function()
+  --       vim.cmd "normal! v"
+  --       a()
+  --     end
+  --     return x
+  --   end, heads),
+  --   mode = "o",
+  -- }, opts))
 
   return hydras
 end

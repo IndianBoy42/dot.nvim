@@ -3,7 +3,7 @@ return {
   init = function()
     vim.g.VM_maps = nil
     -- local ldr = "\\"
-    local ldr = "<del>"
+    local ldr = "<Del>" -- FIXME: a little buggy
     vim.g.VM_leader = ldr
     vim.g.VM_maps = {
       ["Find Under"] = "<M-n>",
@@ -17,17 +17,19 @@ return {
       ["Skip Region"] = "n",
       ["Remove Region"] = "N",
       ["Visual Cursors"] = ldr .. ldr,
-      ["Visual Add"] = "+",
+      -- ["Visual Add"] = "+",
+      -- ["Add Cursor At Pos"] = "+",
       ["Visual Regex"] = "/",
-      ["Add Cursor At Pos"] = "+",
       ["Find Operator"] = "m",
       ["Undo"] = "u",
       ["Redo"] = "<C-r>",
       ["Reselect Last"] = ldr .. ldr,
-      ["Toggle Mappings"] = "-",
-      ["Transpose"] = "<M-r>",
-      ["Surround"] = "z",
+      ["Transpose"] = "(",
+      ["Visual Subtract"] = "-",
+      ["Split Regions"] = "-",
+      ["Toggle Mappings"] = ldr .. ldr,
     }
+    if ldr == "<Del>" then vim.g.VM_maps["Del"] = "" end
     vim.g.VM_mouse_mappings = true
 
     local theme = "codedark"
@@ -54,14 +56,15 @@ return {
       if affix == nil then return first end
       return function()
         feedkeys(first, "m")
+        if type(affix) == "function" then affix = affix() end
         -- Defer to avoid `<Plug>(VM-Hls)`
-        vim.defer_fn(function()
-          if type(affix) == "function" then affix = affix() end
-          feedkeys(affix, "m")
-        end, 200)
+        vim.defer_fn(function() feedkeys(affix, "m") end, 200)
       end
     end
     -- map("x", "I", wrap_vm(nil, "Visual-Add", "i"), { remap = true })
+    map("x", "+", "<Plug>(VM-Visual-Add)<Plug>(VM-Disable-Mappings)", { remap = true })
+    map("x", "-", "<Plug>(VM-Visual-Add)<Plug>(VM-Split-Regions)", { remap = true })
+    map("n", "+", "<Plug>(VM-Add-Cursor-At-Pos)<Plug>(VM-Disable-Mappings)", { remap = true })
     map("x", "I", wrap_vm(nil, "Visual-Add", "i"), { remap = true })
     map("x", "A", wrap_vm(nil, "Visual-Add", "a"), { remap = true })
     local c_v = t "<C-v>"
@@ -83,17 +86,29 @@ return {
     end, { expr = true })
 
     -- Multi select object
-    local find_under_operator = utils.operatorfunc_keys "<Plug>(VM-Find-Under)"
-    map("n", "<M-v>", find_under_operator, {})
-    map("n", ldr .. "n", find_under_operator, { desc = "Find Under" })
+    local find_under_operator = utils.operatorfunc_keys "<Plug>(VM-Find-Subword-Under)"
+    map("n", "<M-v>", find_under_operator, { desc = "Find Under (op)" })
+    map("n", ldr .. "m", find_under_operator, { desc = "Find Under (op)" })
     -- Multi select all
     local select_all_operator = utils.operatorfunc_keys "<Plug>(VM-Select-All)"
-    map("n", "<M-S-v>", select_all_operator, {})
-    map("n", ldr .. "<S-v>", select_all_operator, {})
+    map("n", "<M-S-v>", select_all_operator, { desc = "Select all (op)" })
+    map("n", ldr .. "M", select_all_operator, { desc = "Select all (op)" })
+
+    -- map("n", ldr .. "n", "<Plug>(VM-Start-Regex-Search)<C-r>/<cr>", { desc = "Select all (op)" })
+    map(
+      "n",
+      ldr .. "n",
+      wrap_vm(nil, "Start-Regex-Search", function() return vim.fn.getreg "/" .. "<cr>" end),
+      { desc = "From last search" }
+    )
 
     vim.api.nvim_create_autocmd("User", {
       pattern = "visual_multi_mappings",
-      callback = function() end,
+      callback = function()
+        map("n", "<Plug>(VM-Del)", function() require("which-key").show(t "<del>", { mode = "n", auto = true }) end)
+        map("n", "<Plug>(VM-Motion-()", "<Plug>(VM-Transpose)")
+        map("n", "<Plug>(VM-Motion-))", "<Plug>(VM-Transpose)")
+      end,
     })
     vim.api.nvim_create_autocmd("User", {
       pattern = "visual_multi_start",
@@ -109,6 +124,9 @@ return {
     -- vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufNewFile" }, { command = "VMTheme " .. theme })
 
     -- TODO: https://docs.helix-editor.com/keymap.html#selection-manipulation
+    map("n", "<Plug>(VM-Disable-Mappings)", ":call b:VM_Selection.Maps.disable(1)<cr>", { silent = true })
+    map("n", "<Plug>(VM-Enable-Mappings)", ":call b:VM_Selection.Maps.enable()<cr>", { silent = true })
+    map("n", "<Plug>(VM-Motion-()", "<Plug>(VM-Transpose)")
   end,
   event = { "BufWinEnter", "BufEnter" },
 }

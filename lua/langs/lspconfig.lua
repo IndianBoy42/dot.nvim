@@ -23,7 +23,6 @@ return {
       end,
     },
     "williamboman/mason-lspconfig.nvim",
-    "joechrisellis/lsp-format-modifications.nvim",
   },
   opts = {
     -- LSP Server Settings
@@ -44,8 +43,22 @@ return {
       -- ["*"] = function(server, opts) end,
     },
   },
+  init = function()
+    -- https://github.com/neovim/neovim/pull/23500
+    local ok, wf = pcall(require, "vim.lsp._watchfiles")
+    if ok then
+      -- disable lsp watcher. Too slow on linux
+      wf._watchfunc = function()
+        return function() end
+      end
+    end
+  end,
   config = function(_, opts)
-    -- vim.lsp.set_log_level(vim.log.levels.DEBUG)
+    if vim.env.NVIM_LSP_LOG_DEBUG ~= "" then
+        vim.lsp.set_log_level(vim.log.levels.DEBUG)
+    require('vim.lsp.log').set_format_func(vim.inspect)
+    end
+
     require("lspconfig.ui.windows").default_options.border = "rounded"
 
     -- TODO: Refactor this to a loop and opts
@@ -101,11 +114,6 @@ return {
       mappings.attach_lsp(client, bufnr)
 
       utils.lsp.document_highlight(client, bufnr)
-
-      if client.server_capabilities.documentRangeFormattingProvider then
-        local lsp_format_modifications = require "lsp-format-modifications"
-        lsp_format_modifications.attach(client, bufnr, { format_on_save = false })
-      end
     end)
 
     local function setup(server)
@@ -140,6 +148,6 @@ return {
     require("mason-lspconfig").setup { ensure_installed = ensure_installed }
     require("mason-lspconfig").setup_handlers { setup }
 
-    if O.format_on_save then require("utils.lsp").format_on_save() end
+    require("utils.lsp").format_on_save(O.format_on_save)
   end,
 }

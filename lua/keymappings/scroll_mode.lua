@@ -35,7 +35,7 @@ M.setup = function()
   }
 
   local map = vim.keymap.set
-  map("n", "<leader>vh", "zz", { desc = "Center this Line" })
+  map("n", "<leader>vj", "zz", { desc = "Center this Line" })
   map("n", "<leader>v_", "zb", { desc = "Bottom this Line" })
   map("n", "<leader>v^", "zt", { desc = "Top this Line" })
 

@@ -28,6 +28,7 @@ return {
   {
     "famiu/bufdelete.nvim",
     cmd = { "Bdelete", "Bwipeout" },
+    init = function() vim.cmd.cnoreabbrev "bd Bdelete" end,
   },
   { "jghauser/mkdir.nvim", event = "BufWritePre" },
   { "lambdalisue/suda.vim", cmd = { "SudaWrite", "SudaRead" } },
@@ -131,4 +132,5 @@ return {
       },
     },
   },
+  { "runiq/neovim-throttle-debounce" },
 }

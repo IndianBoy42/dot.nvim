@@ -40,13 +40,13 @@ local O = {
   transparent_window = false,
   signcolumn = "number", -- "yes" for always
   notify = {
-    timeout = 2000, -- 5000 default
+    timeout = 4000, -- 5000 default
     background_colo_r = "#FFFFFF",
     stages = "fade_in_slide_out",
   },
   input_border = "rounded",
   filetypes = {},
-  python_interp = CONFIG_PATH .. "/.venv/bin/python3.9", -- TODO: make a venv for this
+  python_interp = CONFIG_PATH .. "/.venv/bin/python3", -- TODO: make a venv for this
 
   leader_key = "<space>",
   local_leader_key = "<bs>",
@@ -60,15 +60,16 @@ local O = {
   goto_next_outer_end = "<leader>]]", -- "))",
   goto_previous_outer_end = "<leader>[[", -- "((",
   select = "&",
-  select_outer = "<M-&>",
-  select_less = "<C-&>",
+  select_dynamic = "m", -- v
+  select_outer = "<M-S-7>", -- M-&
+  select_less = "<C-S-7>", -- C-&
   select_next = "}",
   select_previous = "{",
   select_next_outer = "}}",
   select_previous_outer = "}}",
   select_mode = "!",
-  swap_next = "",
-  swap_prev = "",
+  swap_next = ")",
+  swap_prev = "(",
   -- ( # ? <del> <up/down/left/right>
   -- The below is used for most hint based navigation/selection (hop, hint_textobjects)
   -- hint_labels = "fdsahjklgvcxznmbyuiorewqtp",
@@ -78,11 +79,18 @@ local O = {
   database = { save_location = "~/.config/nvim/.db", auto_execute = 1 },
 }
 
+O.goto_prev = O.goto_previous
+O.goto_prev_outer = O.goto_previous_outer
+O.goto_prev_end = O.goto_previous_end -- "(",
+O.goto_prev_outer_end = O.goto_previous_outer_end -- "((",
+O.select_prev = O.select_previous
+O.select_prev_outer = O.select_previous_outer
+
 O.hint_labels_array = {}
 for c in O.hint_labels:gmatch "." do
   vim.list_extend(O.hint_labels_array, { c })
 end
-vim.cmd('let &titleold="' .. _G.TERMINAL .. '"')
+vim.o.titleold = _G.TERMINAL
 
 return setmetatable(O, {
   __index = O,

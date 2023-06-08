@@ -2,6 +2,7 @@ local M = {
   "nvim-tree/nvim-tree.lua",
   cmd = { "NvimTreeOpen", "NvimTreeFocus", "NvimTreeToggle" },
   dependencies = {
+    { "antosha417/nvim-lsp-file-operations", opts = {} },
     "nvim-tree/nvim-web-devicons",
   },
 }
@@ -114,7 +115,6 @@ M.opts = {
   view = {
     side = "left",
     width = 30,
-    quit_on_focus_loss = true,
   },
   diagnostics = {
     enable = true,

@@ -1,4 +1,9 @@
 local testb = false
+local blah = {
+  { 2, 1, 6 },
+  { 3, 4, 6 },
+  { 3, 4, 6 },
+}
 local function test(args, ns, buf)
   if not testb then -- First iter
     vim.notify "hello"
@@ -140,27 +145,6 @@ return {
       },
     },
   },
-  -- {
-  --   "ray-x/lsp_signature.nvim",
-  --   opts = {
-  --     doc_lines = 2, -- will show two lines of comment/doc(if there are more than two lines in doc, will be truncated);
-  --     -- Apply indentation for wrapped lines
-  --     floating_window = true, -- show hint in a floating window, set to false for virtual text only mode
-  --     fix_pos = true, -- set to true, the floating window will not auto-close until finish all parameters
-  --     hint_enable = true, -- virtual hint enable
-  --     hint_prefix = "🐼 ", -- Panda for parameter
-  --     max_height = 12, -- max height of signature floating_window, if content is more than max_height, you can scroll down
-  --     max_width = 120, -- max_width of signature floating_window, line will be wrapped if exceed max_width
-  --     bind = true,
-  --     handler_opts = { border = "rounded" },
-  --     hint_scheme = "String",
-  --     hi_parameter = "Search",
-  --     toggle_key = "<C-S-space>", -- TODO: Can I add this to C-Space as well?
-  --     zindex = 1,
-  --     check_client_handlers = false,
-  --   },
-  --   event = { "BufReadPost", "BufNewFile" },
-  -- },
   { -- "kosayoda/nvim-lightbulb",
     "kosayoda/nvim-lightbulb",
     config = function()
@@ -330,4 +314,145 @@ return {
   },
   -- TODO: https://github.com/DNLHC/glance.nvim
   -- TODO: https://github.com/stevearc/qf_helper.nvim
+  { --lukas-reineke/indent-blankline.nvim
+    "lukas-reineke/indent-blankline.nvim",
+    event = { "BufReadPost", "BufNewFile" },
+    -- opts = {
+    --   setup = function()
+    --     vim.cmd [[highlight IndentBlanklineIndent1 guibg=#000000 gui=nocombine]]
+    --     vim.cmd [[highlight IndentBlanklineIndent2 guibg=#1a1a1a gui=nocombine]]
+    --   end,
+    --   char = "",
+    --   char_highlight_list = {
+    --     "IndentBlanklineIndent1",
+    --     "IndentBlanklineIndent2",
+    --   },
+    --   space_char_highlight_list = {
+    --     "IndentBlanklineIndent1",
+    --     "IndentBlanklineIndent2",
+    --   },
+    --   show_trailing_blankline_indent = false,
+    --   show_current_context = true,
+    --   show_current_context_start = false,
+    -- },
+    opts = {
+      setup = function()
+        -- vim.cmd [[highlight IndentBlanklineIndent6 guifg=#000000 gui=nocombine]]
+        -- vim.cmd [[highlight IndentBlanklineIndent5 guifg=#000000 gui=nocombine]]
+        -- vim.cmd [[highlight IndentBlanklineIndent4 guifg=#000000 gui=nocombine]]
+        -- vim.cmd [[highlight IndentBlanklineIndent3 guifg=#000000 gui=nocombine]]
+        -- vim.cmd [[highlight IndentBlanklineIndent2 guifg=#000000 gui=nocombine]]
+        -- vim.cmd [[highlight IndentBlanklineIndent1 guifg=#000000 gui=nocombine]]
+        -- vim.cmd [[highlight IndentBlanklineIndent5 guifg=#E06C75 gui=nocombine]]
+        -- vim.cmd [[highlight IndentBlanklineIndent4 guifg=#E5C07B gui=nocombine]]
+        -- vim.cmd [[highlight IndentBlanklineIndent3 guifg=#98C379 gui=nocombine]]
+        -- -- vim.cmd [[highlight IndentBlanklineIndent2 guifg=#56B6C2 gui=nocombine]]
+        -- vim.cmd [[highlight IndentBlanklineIndent2 guifg=#61AFEF gui=nocombine]]
+        -- vim.cmd [[highlight IndentBlanklineIndent1 guifg=#C678DD gui=nocombine]]
+        -- vim.cmd [[highlight IndentBlanklineIndent1 guibg=#1f1f1f gui=nocombine]]
+        -- vim.cmd [[highlight IndentBlanklineIndent2 guibg=#1a1a1a gui=nocombine]]
+      end,
+      char = "▏",
+      filetype_exclude = { "help", "terminal", "dashboard" },
+      buftype_exclude = { "terminal", "nofile" },
+      char_highlight = "LineNr",
+      show_trailing_blankline_indent = false,
+      -- show_first_indent_level = false,
+      space_char_blankline = " ",
+      show_current_context = true,
+      show_current_context_start = false,
+      char_highlight_list = {
+        "IndentBlanklineIndent1",
+        "IndentBlanklineIndent2",
+        "IndentBlanklineIndent3",
+        "IndentBlanklineIndent4",
+        "IndentBlanklineIndent5",
+        "IndentBlanklineIndent6",
+      },
+      -- space_char_highlight_list = {
+      --   "IndentBlanklineIndent1",
+      --   "IndentBlanklineIndent2",
+      -- },
+    },
+    config = function(_, opts)
+      opts.setup()
+      opts.setup = nil
+
+      -- vim.opt.list = true
+      -- vim.opt.listchars:append "space:⋅"
+      -- vim.opt.listchars:append "eol:↴"
+
+      require("indent_blankline").setup(opts)
+    end,
+  },
+  -- TODO: https://github.com/shellRaining/hlchunk.nvim
+  {
+    "IndianBoy42/blockman.nvim",
+    dev = true,
+    lazy = false,
+    dependencies = {
+      "edluffy/hologram.nvim",
+    },
+    opts = {},
+  },
+  {
+    "ray-x/lsp_signature.nvim",
+    config = false,
+    init = function()
+      local opts = {
+        bind = true,
+        hint_inline = function() return true end,
+        --     doc_lines = 2, -- will show two lines of comment/doc(if there are more than two lines in doc, will be truncated);
+        --     -- Apply indentation for wrapped lines
+        --     floating_window = true, -- show hint in a floating window, set to false for virtual text only mode
+        fix_pos = true, -- set to true, the floating window will not auto-close until finish all parameters
+        --     hint_enable = true, -- virtual hint enable
+        --     hint_prefix = "🐼 ", -- Panda for parameter
+        --     max_height = 12, -- max height of signature floating_window, if content is more than max_height, you can scroll down
+        --     max_width = 120, -- max_width of signature floating_window, line will be wrapped if exceed max_width
+        handler_opts = { border = "rounded" },
+        --     hint_scheme = "String",
+        --     hi_parameter = "Search",
+        toggle_key = "<C-S-space>", -- TODO: Can I add this to C-Space as well?
+        timer_interval = 100,
+        --     zindex = 1,
+        --     check_client_handlers = false,
+      }
+
+      utils.lsp.cb_on_attach(function(client, bufnr) require("lsp_signature").on_attach(opts, bufnr) end)
+    end,
+  },
+  -- TODO: { "amrbashir/nvim-docs-view" },
+  {
+    "tzachar/highlight-undo.nvim",
+    opts = {},
+  },
+  {
+    "Grazfather/blinker.nvim",
+    opts = {
+      count = 1,
+    },
+    init = function()
+      local lastwin = nil
+      local f, t
+      vim.api.nvim_create_autocmd({ "WinEnter", "FocusGained" }, {
+        group = vim.api.nvim_create_augroup("blinker", {}),
+        callback = function()
+          if not f then
+            f, t = require("throttle-debounce").throttle_trailing(
+              function() require("blinker").blink_cursorline() end,
+              1000,
+              true
+            )
+          end
+
+          local win = vim.api.nvim_get_current_win()
+          if lastwin ~= win then
+            lastwin = win
+            f()
+          end
+        end,
+      })
+    end,
+  },
 }

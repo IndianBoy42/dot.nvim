@@ -28,8 +28,4 @@ function M.config()
   }
 end
 
-M.keys = {
-  { "<leader>h<TAB>", "<cmd>BufferLinePick<cr>", desc = "Buffers/Tabs" },
-}
-
 return M

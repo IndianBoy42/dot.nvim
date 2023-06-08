@@ -1,33 +1,81 @@
 return {
   {
     "ggandor/leap-spooky.nvim",
-    opts = {
-      affixes = {
-        remote = { window = "R", cross_window = "r" },
-        magnetic = { window = "<C-r>", cross_window = "<C-S-R>" },
-      },
-    },
+    config = function()
+      require("leap-spooky").setup {
+        affixes = {
+          remote = { all_windows = "r" },
+          magnetic = {},
+        },
+        text_objects = (function()
+          local objs =
+            { "w", "W", "s", "p", "[", "]", "(", ")", "b", ">", "<", "t", "{", "}", "B", '"', "'", "`", "a", "f", "q" }
+          local tbl = {}
+          for _, v in ipairs(objs) do
+            for _, p in ipairs { "i", "a" } do
+              tbl[#tbl + 1] = p .. v
+            end
+          end
+          return tbl
+        end)(),
+        custom_actions = {
+          require("leap-spooky").yank_paste,
+          -- {
+          --
+          --   function(kwargs, mapping)
+          --
+          --               end,
+          -- },
+        },
+      }
+    end,
     event = "VeryLazy",
   },
-  { -- sibling-swap.nvim
+  { -- mizlan/iswap.nvim
     "mizlan/iswap.nvim",
     opts = {
       autoswap = true,
       move_cursor = true,
+      only_current_line = false,
+      debug = true,
+      flash_style = "simultaneous",
     },
-    cmd = { "ISwap", "ISwapWith", "ISwapNode", "ISwapNodeWith", "ISwapWithLeft", "ISwapWithRight" },
+    cmd = {
+      "ISwap",
+      "ISwapWith",
+      "ISwapWithLeft",
+      "ISwapWithRight",
+      "IMove",
+      "IMoveWith",
+      "IMoveWithLeft",
+      "IMoveWithRight",
+      "ISwapNode",
+      "ISwapNodeWith",
+    },
     keys = {
-      { "<leader>ei" },
-      { "<leader>ea", "<cmd>ISwapWith<cr>", desc = "ISwap" },
+      { "<leader>ei", desc = "ISwapIncr" },
+      { "<leader>ea", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "n" } },
+      { "<leader>ea", "<cmd>ISwap<cr>", desc = "ISwap", mode = { "x" } },
+      { "<leader>eA", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "x" } },
+      { "<leader>es", F 'require("iswap").iswap_node({ autoswap = false })', desc = "ISwapNode", mode = { "n", "x" } },
+      {
+        "<leader>eS",
+        F 'require("iswap").iswap_node_with({ autoswap = false })',
+        desc = "ISwapNode",
+        mode = { "n", "x" },
+      },
+      { "<leader>emm", "<cmd>IMoveWith<cr>", desc = "IMove", mode = { "n", "x" } },
+      { O.swap_prev, "<cmd>ISwapWithLeft<cr>", desc = "ISwap Left", mode = "n" },
+      { O.swap_next, "<cmd>ISwapWithRight<cr>", desc = "ISwap Right", mode = "n" },
     },
     config = function(_, opts)
       require("iswap").setup(opts)
       require "hydra" {
-        name = "ISwap",
+        name = "ISwapIncr",
         hint = "",
         config = {
-          color = "red",
-          invoke_on_body = false,
+          color = "pink",
+          invoke_on_body = true,
           hint = {
             border = "rounded",
             offset = -1,
@@ -36,8 +84,11 @@ return {
         mode = "n",
         body = "<leader>ei",
         heads = {
+          { "h", "<cmd>ISwapWithLeft<cr>", { desc = "Left" } },
           { "j", "<cmd>ISwapWithRight<cr>", { desc = "Right" } },
           { "k", "<cmd>ISwapWithLeft<cr>", { desc = "Left" } },
+          { "l", "<cmd>ISwapWithRight<cr>", { desc = "Right" } },
+          { "<esc>", "<esc>", { desc = "Exit", exit = true } },
         },
       }
     end,
@@ -51,9 +102,8 @@ return {
       max_join_length = 9999999,
     },
     keys = {
-      { "gs", function() require("treesj").toggle() end, desc = "SplitJoin" },
-      { "<C-s>", function() require("treesj").toggle() end, desc = "SplitJoin", mode = "i" },
-      { "<leader>es", function() require("treesj").split() end, desc = "Split" },
+      { "<C-s>", function() require("treesj").toggle() end, desc = "SplitJoin", mode = { "n", "i" } },
+      { "<leader>eJ", function() require("treesj").split() end, desc = "Split" },
       { "<leader>ej", function() require("treesj").join() end, desc = "Join" },
     },
   },
@@ -66,23 +116,31 @@ return {
   {
     "echasnovski/mini.move",
     main = "mini.move",
-    keys = {
-      { "<M-h>", mode = "x" },
-      { "<M-j>", mode = "x" },
-      { "<M-k>", mode = "x" },
-      { "<M-l>", mode = "x" },
-      { "<C-M-h>", mode = "n" },
-      { "<C-M-j>", mode = "n" },
-      { "<C-M-k>", mode = "n" },
-      { "<C-M-l>", mode = "n" },
-      { "<leader>em", mode = { "n", "x" } },
-    },
+    keys = function()
+      local keys = { "<M-h>", "<M-j>", "<M-k>", "<M-l>", "<C-M-h>", "<C-M-j>", "<C-M-k>", "<C-M-l>" }
+      keys = { "<Left>", "<Down>", "<Up>", "<Right>", "<Left>", "<Down>", "<Up>", "<Right>" }
+      return {
+        { keys[1], mode = "x" },
+        { keys[2], mode = "x" },
+        { keys[3], mode = "x" },
+        { keys[4], mode = "x" },
+        { keys[5], mode = "n" },
+        { keys[6], mode = "n" },
+        { keys[7], mode = "n" },
+        { keys[8], mode = "n" },
+        { "<leader>em", mode = { "n", "x" } },
+      }
+    end,
     opts = {
       mappings = {
-        line_left = "<C-M-h>",
-        line_right = "<C-M-l>",
-        line_down = "<C-M-j>",
-        line_up = "<C-M-k>",
+        left = "<Left>",
+        right = "<Right>",
+        down = "<Down>",
+        up = "<Up>",
+        line_left = "<Left>",
+        line_right = "<Right>",
+        line_down = "<Down>",
+        line_up = "<Up>",
       },
     },
     config = function(_, opts)
@@ -96,10 +154,6 @@ return {
         mode = { "n" },
         body = "<leader>em",
         heads = {
-          { "h", utils.partial(MiniMove.move_selection, "left"), {} },
-          { "j", utils.partial(MiniMove.move_selection, "down"), {} },
-          { "k", utils.partial(MiniMove.move_selection, "up"), {} },
-          { "l", utils.partial(MiniMove.move_selection, "right"), {} },
           { "h", utils.partial(MiniMove.move_line, "left"), {} },
           { "j", utils.partial(MiniMove.move_line, "down"), {} },
           { "k", utils.partial(MiniMove.move_line, "up"), {} },
@@ -150,10 +204,10 @@ return {
       local m = require "dial.map"
       vim.keymap.set("n", "<C-a>", m.inc_normal(), { desc = "inc" })
       vim.keymap.set("n", "<C-x>", m.dec_normal(), { desc = "dec" })
-      vim.keymap.set("v", "<C-a>", m.inc_visual(), { desc = "inc" })
-      vim.keymap.set("v", "<C-x>", m.dec_visual(), { desc = "dec" })
-      vim.keymap.set("v", "g<C-a>", m.inc_gvisual(), { desc = "inc" })
-      vim.keymap.set("v", "g<C-x>", m.dec_gvisual(), { desc = "dec" })
+      vim.keymap.set("v", "<C-a>", m.inc_visual() .. "gv", { desc = "inc" })
+      vim.keymap.set("v", "<C-x>", m.dec_visual() .. "gv", { desc = "dec" })
+      vim.keymap.set("v", "g<C-a>", m.inc_gvisual() .. "gv", { desc = "inc" })
+      vim.keymap.set("v", "g<C-x>", m.dec_gvisual() .. "gv", { desc = "dec" })
     end,
     keys = {
       "<C-a>",
@@ -176,9 +230,9 @@ return {
       },
 
       -- Hook functions to be executed at certain stage of commenting
-      hooks = {
-        pre = function() require("ts_context_commentstring.internal").update_commentstring {} end,
-      },
+      -- hooks = {
+      --   pre = function() require("ts_context_commentstring.internal").update_commentstring {} end,
+      -- },
     },
   },
   {

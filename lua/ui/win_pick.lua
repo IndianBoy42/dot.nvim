@@ -7,6 +7,7 @@ local M = {
     -- selection_chars = O.hint_labels,
     -- use_winbar = "smart",
     show_prompt = false,
+    hint = "floating-big-letter",
   },
   pick = function(cb, opts)
     local id = require("window-picker").pick_window(opts)

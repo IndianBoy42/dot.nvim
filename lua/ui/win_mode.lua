@@ -41,41 +41,7 @@ local function window_hydra_setup()
     { "K", smart_splits "swap_buf_up" },
     { "L", smart_splits "swap_buf_right" },
 
-    {
-      "r",
-      function()
-        local current = vim.api.nvim_get_current_win()
-        local w, h = vim.api.nvim_win_get_width(current), vim.api.nvim_win_get_height(current)
-        local th, tj, tk, tl =
-          vim.fn.win_getid(vim.fn.winnr "1h"),
-          vim.fn.win_getid(vim.fn.winnr "1j"),
-          vim.fn.win_getid(vim.fn.winnr "1k"),
-          vim.fn.win_getid(vim.fn.winnr "1l")
-        print(current, th, tj, tk, tl)
-        local vertical, rightbelow, target
-        if th ~= current and vim.api.nvim_win_get_height(th) == h then
-          vertical = false
-          rightbelow = false
-          target = th
-        elseif tl ~= current and vim.api.nvim_win_get_height(tl) == h then
-          vertical = false
-          rightbelow = true
-          target = tl
-        elseif tj ~= current and vim.api.nvim_win_get_width(tj) == w then
-          vertical = true
-          rightbelow = false
-          target = tj
-        elseif tk ~= current and vim.api.nvim_win_get_width(tk) == w then
-          vertical = true
-          rightbelow = true
-          target = tk
-        else
-          vim.notify("This shouldn't happen", vim.log.levels.ERROR)
-          return
-        end
-        vim.fn.win_splitmove(current, target, { vertical = vertical, rightbelow = rightbelow })
-      end,
-    }, -- Rotate
+    { "r", cmd "RotatePanesAnti" }, -- Rotate
 
     { "<C-h>", smart_splits("resize_left", 2) },
     { "<C-j>", smart_splits("resize_down", 2) },
@@ -139,107 +105,7 @@ local function window_hydra_setup()
     },
     mode = "n",
     body = prefix,
-    heads = {
-      { "h", smart_splits "move_cursor_left" },
-      { "j", smart_splits "move_cursor_down" },
-      { "k", smart_splits "move_cursor_up" },
-      { "l", smart_splits "move_cursor_right" },
-
-      -- { "<M-h>", smart_splits_api("move_to_edge", "left", false), { desc = false } },
-      -- { "<M-j>", smart_splits_api("move_to_edge", "down", false), { desc = false } },
-      -- { "<M-k>", smart_splits_api("move_to_edge", "up", false), { desc = false } },
-      -- { "<M-l>", smart_splits_api("move_to_edge", "right", false), { desc = false } },
-
-      { "H", smart_splits "swap_buf_left" },
-      { "J", smart_splits "swap_buf_down" },
-      { "K", smart_splits "swap_buf_up" },
-      { "L", smart_splits "swap_buf_right" },
-
-      {
-        "r",
-        function()
-          local current = vim.api.nvim_get_current_win()
-          local w, h = vim.api.nvim_win_get_width(current), vim.api.nvim_win_get_height(current)
-          local th, tj, tk, tl =
-            vim.fn.win_getid(vim.fn.winnr "1h"),
-            vim.fn.win_getid(vim.fn.winnr "1j"),
-            vim.fn.win_getid(vim.fn.winnr "1k"),
-            vim.fn.win_getid(vim.fn.winnr "1l")
-          print(current, th, tj, tk, tl)
-          local vertical, rightbelow, target
-          if th ~= current and vim.api.nvim_win_get_height(th) == h then
-            vertical = false
-            rightbelow = false
-            target = th
-          elseif tl ~= current and vim.api.nvim_win_get_height(tl) == h then
-            vertical = false
-            rightbelow = true
-            target = tl
-          elseif tj ~= current and vim.api.nvim_win_get_width(tj) == w then
-            vertical = true
-            rightbelow = false
-            target = tj
-          elseif tk ~= current and vim.api.nvim_win_get_width(tk) == w then
-            vertical = true
-            rightbelow = true
-            target = tk
-          else
-            vim.notify("This shouldn't happen", vim.log.levels.ERROR)
-            return
-          end
-          vim.fn.win_splitmove(current, target, { vertical = vertical, rightbelow = rightbelow })
-        end,
-      }, -- Rotate
-
-      -- TODO: open nvim-tree if we go left far enough
-      { "<C-h>", smart_splits("resize_left", 2) },
-      { "<C-j>", smart_splits("resize_down", 2) },
-      { "<C-k>", smart_splits("resize_up", 2) },
-      { "<C-l>", smart_splits("resize_right", 2) },
-      { "=", "<C-w>=", { desc = "equalize" } },
-
-      { "n", cmd "tabnew", { desc = "New Tab" } },
-      { "t", cmd "tabnext", { desc = "Next Tab" } },
-      { "m", cmd "tabprev", { desc = "Prev Tab" } },
-      { "C", cmd "tabclose", { desc = "Close Tab" } },
-      { "Q", cmd "tabclose", { desc = "Close Tab" } },
-      { "P", cmd "Telescope telescope-tabs list_tabs", { exit = true, desc = "List Tabs" } },
-      { "O", cmd "tabonly", { exit = true, desc = "Close Other Tabs" } },
-
-      { "s", pcmd("split", "E36") },
-      { "<C-s>", pcmd("split", "E36"), { desc = false } },
-      { "v", pcmd("vsplit", "E36") },
-      { "<C-v>", pcmd("vsplit", "E36"), { desc = false } },
-
-      {
-        "w",
-        function() require("ui.win_pick").pick_or_create(vim.api.nvim_set_current_win) end,
-        { exit = true, desc = "Pick window" },
-      },
-      {
-        "<C-w>",
-        function() require("ui.win_pick").pick_or_create(vim.api.nvim_set_current_win) end,
-        { exit = true, desc = false },
-      },
-
-      { "z", cmd "WindowsMaximize", { exit = true, desc = "maximize" } },
-      { "<C-z>", cmd "WindowsMaximize", { exit = true, desc = false } },
-      { "Z", cmd "WindowsMaximizeVertically", { exit = true, desc = "maximize" } },
-      { "<C-S-z>", cmd "WindowsMaximizeVertically", { exit = true, desc = false } },
-
-      { "o", "<C-w>o", { exit = true, desc = "remain only" } },
-      { "<C-o>", "<C-w>o", { exit = true, desc = false } },
-
-      { "p", cmd "BufferLinePick", { exit = true, desc = "choose buffer" } },
-      { "b", cmd "Telescope buffers", { exit = true, desc = false } },
-
-      { "c", pcmd("close", "E444") },
-      { "q", pcmd("close", "E444"), { desc = "close window" } },
-      { "<C-c>", pcmd("close", "E444"), { desc = false } },
-      { "<C-q>", pcmd("close", "E444"), { desc = false } },
-
-      { "<Esc>", nil, { exit = true, desc = false } },
-    },
+    heads = heads,
   }
 end
 return {
@@ -278,10 +144,10 @@ return {
         return function() require("smart-splits")[fn](opts) end
       end
       return {
-        { "<C-h>", smart_splits "move_cursor_left", mode = { "n", "t" }, desc = "Move/Split" },
-        { "<C-j>", smart_splits "move_cursor_down", mode = { "n", "t" }, desc = "Move/Split" },
-        { "<C-k>", smart_splits "move_cursor_up", mode = { "n", "t" }, desc = "Move/Split" },
-        { "<C-l>", smart_splits "move_cursor_right", mode = { "n", "t" }, desc = "Move/Split" },
+        { "<C-h>", smart_splits "move_cursor_left", mode = { "n", "t" }, desc = "Move/Split h" },
+        { "<C-j>", smart_splits "move_cursor_down", mode = { "n", "t" }, desc = "Move/Split j" },
+        { "<C-k>", smart_splits "move_cursor_up", mode = { "n", "t" }, desc = "Move/Split k" },
+        { "<C-l>", smart_splits "move_cursor_right", mode = { "n", "t" }, desc = "Move/Split l" },
       }
     end,
   },
@@ -310,5 +176,10 @@ return {
     end,
     event = "VeryLazy",
   },
-  { "IndianBoy42/ezlayout.nvim", dev = true, opts = {}, lazy = false },
+  {
+    "IndianBoy42/ezlayout.nvim",
+    dev = true,
+    opts = {},
+    cmd = { "RotatePanes", "RotatePanesAnti" },
+  },
 }

@@ -19,11 +19,13 @@ vim.opt.rtp:prepend(lazypath)
 --   return
 -- end
 
+F = loadstring
 _G.utils = require "utils"
 -- _G.O = utils.setproxy(require "config") -- TODO: Phase this out, intercept accesses and log it
 _G.O = require "config" -- TODO: Phase this out, intercept accesses and log it
 _G.mappings = require "keymappings"
 require "settings"()
-require "autocmds"()
+_G.Au = require "autocmds"
+Au.defaults()
 
 require("lazy").setup("plugins", require "plugins.configs.lazynvim")
