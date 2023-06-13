@@ -1,4 +1,6 @@
+local cmt_op = "#"
 return {
+  comment_operator = cmt_op,
   {
     "ggandor/leap-spooky.nvim",
     config = function()
@@ -47,24 +49,18 @@ return {
       "ISwapWithRight",
       "IMove",
       "IMoveWith",
-      "IMoveWithLeft",
-      "IMoveWithRight",
       "ISwapNode",
       "ISwapNodeWith",
     },
     keys = {
       { "<leader>ei", desc = "ISwapIncr" },
       { "<leader>ea", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "n" } },
+      { "cp", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "n" } },
       { "<leader>ea", "<cmd>ISwap<cr>", desc = "ISwap", mode = { "x" } },
       { "<leader>eA", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "x" } },
       { "<leader>es", F 'require("iswap").iswap_node({ autoswap = false })', desc = "ISwapNode", mode = { "n", "x" } },
-      {
-        "<leader>eS",
-        F 'require("iswap").iswap_node_with({ autoswap = false })',
-        desc = "ISwapNode",
-        mode = { "n", "x" },
-      },
-      { "<leader>emm", "<cmd>IMoveWith<cr>", desc = "IMove", mode = { "n", "x" } },
+      { "yp", F 'require("iswap").iswap_node({ autoswap = false })', desc = "ISwapNode", mode = { "n" } },
+      { "mm", "<cmd>IMoveWith<cr>", desc = "IMove", mode = { "n" } },
       { O.swap_prev, "<cmd>ISwapWithLeft<cr>", desc = "ISwap Left", mode = "n" },
       { O.swap_next, "<cmd>ISwapWithRight<cr>", desc = "ISwap Right", mode = "n" },
     },
@@ -128,7 +124,7 @@ return {
         { keys[6], mode = "n" },
         { keys[7], mode = "n" },
         { keys[8], mode = "n" },
-        { "<leader>em", mode = { "n", "x" } },
+        { "m", mode = { "n", "x" } },
       }
     end,
     opts = {
@@ -152,7 +148,7 @@ return {
         hint = false,
         config = {},
         mode = { "n" },
-        body = "<leader>em",
+        body = "m",
         heads = {
           { "h", utils.partial(MiniMove.move_line, "left"), {} },
           { "j", utils.partial(MiniMove.move_line, "down"), {} },
@@ -165,7 +161,7 @@ return {
         hint = false,
         config = {},
         mode = { "x" },
-        body = "<leader>em",
+        body = "m",
         heads = {
           { "h", utils.partial(MiniMove.move_selection, "left"), {} },
           { "j", utils.partial(MiniMove.move_selection, "down"), {} },
@@ -224,9 +220,9 @@ return {
     main = "mini.comment",
     opts = {
       mappings = {
-        comment = "#",
-        comment_line = "##",
-        textobject = "i#",
+        comment = cmt_op,
+        comment_line = cmt_op .. cmt_op,
+        textobject = "i" .. cmt_op,
       },
 
       -- Hook functions to be executed at certain stage of commenting
@@ -234,6 +230,22 @@ return {
       --   pre = function() require("ts_context_commentstring.internal").update_commentstring {} end,
       -- },
     },
+    config = function(_, opts)
+      require("mini.comment").setup(opts)
+
+      vim.keymap.set(
+        "x",
+        "<leader>" .. cmt_op,
+        '"zy'
+          .. "mz" -- Remember the original position
+          .. "`<" -- Go back to the original position
+          .. '"zP' -- Duplicate above
+          .. "`[V`]" -- reselect original
+          .. ":<C-u>lua MiniComment.operator('visual')<CR>" -- Comment it
+          .. "`z", -- Go back to the original position
+        { desc = "copy and comment" }
+      )
+    end,
   },
   {
     "johmsalas/text-case.nvim",
@@ -254,6 +266,8 @@ return {
 
         local heads = function(op)
           return {
+            head("U", op, "to_upper_case", "UPPERCASE"),
+            head("u", op, "to_lower_case", "lowercase"),
             head("_", op, "to_snake_case", "snake_case"),
             head("-", op, "to_dash_case", "dash-case"),
             head("C", op, "to_constant_case", "CONSTANT_CASE"),
@@ -291,6 +305,6 @@ return {
         }
       end
     end,
-    keys = { { "<leader>ec" }, { "<leader>rc", mode = { "x", "n" } } },
+    keys = { { "<leader>ec", desc = "Change case" }, { "<leader>rc", desc = "Rename case", mode = { "x", "n" } } },
   },
 }

@@ -90,9 +90,11 @@ return {
     map("n", "<M-v>", find_under_operator, { desc = "Find Under (op)" })
     map("n", ldr .. "m", find_under_operator, { desc = "Find Under (op)" })
     -- Multi select all
-    local select_all_operator = utils.operatorfunc_keys "<Plug>(VM-Select-All)"
+    local select_all_operator = utils.operatorfunc_keys "<Plug>(VM-Visual-Add)<Plug>(VM-Select-All)"
     map("n", "<M-S-v>", select_all_operator, { desc = "Select all (op)" })
     map("n", ldr .. "M", select_all_operator, { desc = "Select all (op)" })
+
+    map("n", "co", wrap_vm(nil, "Find-Under", "<Plug>(VM-Find-Operator)"), { remap = true })
 
     -- map("n", ldr .. "n", "<Plug>(VM-Start-Regex-Search)<C-r>/<cr>", { desc = "Select all (op)" })
     map(

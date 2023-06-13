@@ -401,8 +401,8 @@ function M.format(opts)
   }, opts))
 end
 
-M.format_on_save = function(mode)
-  vim.g.Format_on_save_mode = mode
+M.format_on_save = function(m)
+  vim.g.Format_on_save_mode = m
   -- TODO: only if client has formatting
   local id = vim.api.nvim_create_augroup("format_on_save", { clear = true })
   local cb = function()
@@ -449,7 +449,7 @@ vim.lsp.buf.cancel_formatting = function(bufnr)
   end)
 end
 
-M.cb_on_attach = function(on_attach, group)
+M.on_attach = function(on_attach, group)
   if type(group) == "string" then group = vim.api.create_augroup(group, { clear = true }) end
   vim.api.nvim_create_autocmd("LspAttach", {
     group = group,

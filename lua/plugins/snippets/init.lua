@@ -37,27 +37,25 @@ local M = {
       end
 
       map("i", "<M-n>", jump_next, { silent = true })
-      map("s", "<M-n>", jump_next, { silent = true })
-      map("i", "<M-p>", jump_prev, { silent = true })
-      map("s", "<M-p>", jump_prev, { silent = true })
+      map("s", "n", jump_next, { silent = true })
       map("i", "<C-n>", jump_next, { silent = true })
-      map("s", "<C-n>", jump_next, { silent = true })
+      map("i", "<M-p>", jump_prev, { silent = true })
+      map("s", "p", jump_prev, { silent = true })
       map("i", "<C-p>", jump_prev, { silent = true })
-      map("s", "<C-p>", jump_prev, { silent = true })
       -- map("i", "<C-u>", require "luasnip.extras.select_choice", { silent = true })
       -- map("i", "<M-n>", "<Plug>luasnip-next-choice", { silent = true })
-      map("s", "<M-j>", "<Plug>luasnip-next-choice", { silent = true })
+      map("s", "j", "<Plug>luasnip-next-choice", { silent = true })
       -- map("i", "<M-p>", "<Plug>luasnip-prev-choice", { silent = true })
-      map("s", "<M-k>", "<Plug>luasnip-prev-choice", { silent = true })
+      map("s", "k", "<Plug>luasnip-prev-choice", { silent = true })
       -- map("i", "<C-y>", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
-      map("s", "<M-h>", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
+      map("s", "h", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
 
       map("n", "<M-s>", utils.operatorfunc_keys "<TAB>", { silent = true })
       for _, v in ipairs { "a", "b", "c" } do
         map(
           "v",
           "<C-f>" .. v,
-          "\"ac<cmd>lua require('luasnip.extras.otf').on_the_fly()<cr>",
+          '"' .. v .. "<cmd>lua require('luasnip.extras.otf').on_the_fly('" .. v .. "')<cr>",
           { silent = true, desc = "On the fly: " .. v }
         )
 

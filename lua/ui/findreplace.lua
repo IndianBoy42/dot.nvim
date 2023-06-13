@@ -31,6 +31,7 @@ return {
       end
 
       return {
+        -- TODO: Could use 'yr' for this
         { "r", substitute "operator", mode = "n", desc = "Replace" },
         {
           "rr",
@@ -44,33 +45,36 @@ return {
           mode = "n",
           desc = "Replace EOL",
         },
-        { "r", substitute("visual", { yank_substituted_text = true }), mode = "x", desc = "Replace" },
+        -- { "r", substitute("visual", { yank_substituted_text = true }), mode = "x", desc = "Replace" },
+        -- TODO: fuck these, just use vim-visual-multi?
         {
-          "<leader>c",
+          "cr",
           substitute_range "operator",
           mode = "n",
           desc = "All (motion1) in (motion2)",
         },
         {
-          "<leader>C",
+          "cA",
           substitute_range("operator", { range = "%" }),
           mode = "n",
           desc = "All (motion) in file",
         },
         {
-          "<leader>c",
+          "r",
           substitute_range("visual", {}),
           mode = "x",
           desc = "All (sel) in (motion)",
         },
+        -- {
+        --   "cr",
+        --   substitute_range("visual_range", {
+        --     -- text1 = { last_search = true },
+        --   }),
+        --   mode = { "x", "n" },
+        --   desc = "All (motion) in (sel)",
+        -- },
         {
-          ":",
-          substitute_range("visual_range", { text1 = { last_search = true } }),
-          mode = { "x", "n" },
-          desc = "All (sel) in (motion)",
-        },
-        {
-          "<leader>C",
+          "<leader>c",
           substitute_range("visual", { range = "%" }),
           mode = "x",
           desc = "All (sel) in file",
@@ -83,7 +87,7 @@ return {
           desc = "All iw in (motion)",
         },
         {
-          "<leader>rw",
+          "cO",
           -- substitute_range("operator", { motion1 = "iw" }),
           substitute_range("word", { range = "%" }),
           mode = "n",

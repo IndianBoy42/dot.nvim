@@ -8,8 +8,8 @@ return {
       { "P", "<Plug>(YankyPutBefore)", mode = { "n", "x" } },
       { "gp", "<Plug>(YankyGPutAfter)", mode = { "n", "x" } },
       { "gP", "<Plug>(YankyGPutBefore)", mode = { "n", "x" } },
-      { "<F5>", "<Plug>(YankyCycleForward)", mode = { "n", "x" } },
-      { "<M-F5>", "<Plug>(YankyCycleBackward)", mode = { "n", "x" } },
+      { "<C-p>", "<Plug>(YankyCycleForward)", mode = { "n", "x" } },
+      { "<C-S-p>", "<Plug>(YankyCycleBackward)", mode = { "n", "x" } },
     },
   },
 }

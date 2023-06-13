@@ -54,9 +54,9 @@ return {
     end
   end,
   config = function(_, opts)
-    if vim.env.NVIM_LSP_LOG_DEBUG ~= "" then
-        vim.lsp.set_log_level(vim.log.levels.DEBUG)
-    require('vim.lsp.log').set_format_func(vim.inspect)
+    if vim.env.NVIM_LSP_LOG_DEBUG ~= nil and vim.env.NVIM_LSP_LOG_DEBUG ~= "" then
+      -- vim.lsp.set_log_level(vim.log.levels.DEBUG)
+      -- require("vim.lsp.log").set_format_func(vim.inspect)
     end
 
     require("lspconfig.ui.windows").default_options.border = "rounded"
@@ -110,7 +110,7 @@ return {
     local lsp_sel_rng = require "lsp-selection-range"
     lsp_sel_rng.update_capabilities(capabilities)
 
-    utils.lsp.cb_on_attach(function(client, bufnr)
+    utils.lsp.on_attach(function(client, bufnr)
       mappings.attach_lsp(client, bufnr)
 
       utils.lsp.document_highlight(client, bufnr)
@@ -120,6 +120,17 @@ return {
       local server_opts = vim.tbl_deep_extend("force", {
         capabilities = vim.deepcopy(capabilities),
       }, servers[server] or {})
+
+      if false then
+        -- TODO: multiplex all lsp servers
+        server_opts.cmd = "ra-multiplex"
+        -- TODO: server_opts.cmd = vim.lsp.rpc.connect("127.0.0.1", 27631)
+        server_opts.init_options = {
+          raMultiplex = {
+            server = server_opts.cmd,
+          },
+        }
+      end
 
       if opts.setup[server] then
         if opts.setup[server](server, server_opts) then return end
@@ -148,6 +159,6 @@ return {
     require("mason-lspconfig").setup { ensure_installed = ensure_installed }
     require("mason-lspconfig").setup_handlers { setup }
 
-    require("utils.lsp").format_on_save(O.format_on_save)
+    require("utils.lsp").format_on_save(true)
   end,
 }

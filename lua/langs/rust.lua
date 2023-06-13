@@ -239,7 +239,7 @@ return {
                   pd = { "<CMD>RustDebuggables<CR>", "Rust Debug" },
                 }
               end,
-              -- cmd = { "ra-multiplex", "--ra-mux-server", "rust-analyzer" },
+              cmd = { "ra-multiplex", "--ra-mux-server", "rust-analyzer" },
               settings = {
                 ["rust-analyzer"] = {
                   -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#rust_analyzer
@@ -327,7 +327,7 @@ return {
               }
             end
           end
-          -- require("utils.lsp").cb_on_attach(taplo_on_attach)
+          -- require("utils.lsp").on_attach(taplo_on_attach)
           opts.on_attach = taplo_on_attach
           -- utils.dump("taplo", opts)
           return false -- make sure the base implementation calls taplo.setup

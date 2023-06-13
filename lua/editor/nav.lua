@@ -510,7 +510,7 @@ return {
     "ggandor/leap.nvim",
     keys = {
       { "<leader>h", leap_anywhere, mode = "n", desc = "Leap all windows" },
-      { "L", leap_to_line, mode = "n", desc = "Leap to Line" },
+      -- { "L", leap_to_line, mode = "n", desc = "Leap to Line" },
       { "s", leap_bi_n, mode = "n", desc = "Leap" },
       { "z", leap_bi_x(1), mode = "x", desc = "Leap" },
       { "<leader>f", leap_bi_x(2), mode = "x", desc = "Leap Inc" },
@@ -739,7 +739,7 @@ return {
       }
     end,
     init = function()
-      utils.lsp.cb_on_attach(function(client, bufnr)
+      utils.lsp.on_attach(function(client, bufnr)
         local map = function(mode, lhs, rhs, opts)
           if bufnr then opts.buffer = bufnr end
           vim.keymap.set(mode, lhs, rhs, opts)

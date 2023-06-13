@@ -133,4 +133,8 @@ return {
     },
   },
   { "runiq/neovim-throttle-debounce" },
+  {
+    "axkirillov/hbac.nvim",
+    opts = {},
+  },
 }

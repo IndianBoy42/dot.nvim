@@ -119,8 +119,6 @@ function M.setup()
     vim.cmd [[autocmd UIEnter * if v:event.chan ==# 0 | call chansend(v:stderr, "\x1b[>1u") | endif]]
     vim.cmd [[autocmd UILeave * if v:event.chan ==# 0 | call chansend(v:stderr, "\x1b[<1u") | endif]]
   end
-
-  map("n", "<C-p>", "<NOP>", {})
   -- map("n", "<C-o>", "<NOP>", {})
 
   -- custom_n_repeat
@@ -271,7 +269,11 @@ function M.setup()
     else
       map(m, "<M-" .. c .. ">", c, nore)
     end
-    map(m, c, '"_' .. c, nore)
+    -- map(m, c, '"_' .. c, nore)
+    vim.keymap.amend(m, c, function(orig)
+      feedkeys '"_'
+      orig()
+    end)
   end
 
   dont_clobber_if_meta("n", "d")
@@ -490,24 +492,6 @@ function M.setup()
     local ok, notify = pcall(require, "notify")
     if ok then notify.dismiss { silent = true } end
   end, sile)
-  -- vim.on_key(function()
-  --   vim.cmd "nohls"
-  --   local ok, _ = pcall(function() return vim.cmd "FzClear" end)
-  --   vim.cmd "nohlsearch"
-  --   vim.o.spell = false
-  --   local ok, notify = pcall(require, "notify")
-  --   if ok then notify.dismiss { silent = true } end
-  -- end)
-
-  -- Map `cp` to `xp` (transpose two adjacent chars)
-  -- as a **repeatable action** with `.`
-  -- (since the `@=` trick doesn't work
-  -- nmap cp @='xp'<cr>
-  -- http://vimcasts.org/transcripts/61/en/
-  map("n", "<Plug>TransposeCharacters", [[xp<cmd>call repeat#set("\<Plug>TransposeCharacters")<cr>]], nore)
-  map("n", "cp", "<Plug>TransposeCharacters", {})
-  -- Make xp repeatable
-  -- map("n", "xp", "<Plug>TransposeCharacters", {})
 
   -- Go Back
   if true then
@@ -573,18 +557,9 @@ function M.setup()
   op_from "gP"
   op_from "g<C-p>"
 
-  map("x", "gy", function()
-    -- Remember the original position
-    feedkeys('"zy', "n")
-    -- Duplicate above and reselect original
-    feedkeys('"zy' .. "mz" .. "`<" .. '"zP' .. "`[V`]", "n")
-    -- Comment it
-    feedkeys("<C-c>", "m")
-    -- Go back to the original position
-    feedkeys("`z", "m")
-  end, { desc = "copy and comment" })
-  map("n", "gy", operatorfuncV_keys "gy", sile)
-  map("n", "gyy", "Vgy", sile)
+  local cmt_op = require("editor.edit").comment_operator
+  map("n", "<leader>" .. cmt_op, operatorfuncV_keys("<leader>" .. cmt_op), sile)
+  map("n", "<leader>" .. cmt_op .. cmt_op, "V<leader>" .. cmt_op, sile)
 
   -- Swap the mark jump keys
   map("n", "'", "`", nore)
@@ -704,11 +679,12 @@ function M.setup()
 
   -- "better" end and beginning of line
   map("o", "H", "^", { remap = true })
-  map({ "o", "n", "x" }, "L", "$", { remap = true })
+  map({ "o", "x" }, "L", "$", { remap = true })
   -- map("x", "H", "^", { remap = true })
   -- map("x", "L", "g_", { remap = true })
   -- map("n", "H", [[col('.') == match(getline('.'),'\S')+1 ? '0' : '^']], norexpr)
   -- map("n", "L", "$", { remap = true })
+  map("n", "L", "i<C-l>", { remap = true })
 
   -- map("n", "m-/", "")
 
@@ -721,7 +697,7 @@ function M.setup()
   -- sel_map("al", "$o0")
 
   -- Make change line (cc) preserve indentation
-  map("n", "cc", "^cg_", sile)
+  map("n", "cc", "^cg_", { desc = "Change line" })
 
   map("x", ".", ":normal .<CR>", sile)
 
@@ -748,6 +724,15 @@ function M.setup()
   -- map("n", "<leader>h", ")", { remap = true, desc = "Hop" })
 
   map({ "n", "x" }, "<cr><cr>", "<cmd>wa<cr>", { desc = "Write" })
+
+  map("n", "m", F'require"which-key".show "m"')
+
+  map("s", "i", "<C-g><esc>i")
+  map("s", "a", "<C-g>o<esc>a")
+  map("s", "c", "<C-o>c")
+  map("s", "d", "<C-o>c")
+  map("s", "y", "<C-o>y")
+  map("s", "v", "<C-g>")
 
   -- -- Open new line with a count
   -- map("n", "o", function()
@@ -824,7 +809,7 @@ function M.setup()
       t = { cmd "TroubleToggle", "Trouble" },
       n = { cmd "Navbuddy", "Navbuddy" },
       q = { utils.quickfix_toggle, "Quick fixes" },
-      e = { cmd "!open '%:p:h'", "Open File Explorer" },
+      E = { cmd "!open '%:p:h'", "Open File Explorer" },
       M = { vim.g.goneovim and cmd "GonvimMiniMap" or cmd "MinimapToggle", "Minimap" },
       d = { cmd "DiffviewOpen", "Diffview" },
       H = { cmd "DiffviewFileHistory", "File History" },

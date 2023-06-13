@@ -23,6 +23,11 @@ return {
       end
     end,
   },
+  { -- "j-hui/fidget.nvim",
+    "j-hui/fidget.nvim",
+    opts = {},
+    event = "VeryLazy",
+  },
   {
     "folke/noice.nvim",
     cond = enable and not vim.g.neovide,
@@ -63,7 +68,7 @@ return {
           },
         },
         lsp = {
-          progress = { enabled = false }, -- Using fidget so...
+          progress = { enabled = not utils.have_plugin "fidget.nvim" }, -- Using fidget so...
           override = {
             ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
             ["vim.lsp.util.stylize_markdown"] = true,

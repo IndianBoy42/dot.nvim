@@ -118,7 +118,7 @@ local plugins = {
       }
     end,
     init = function()
-      utils.lsp.cb_on_attach(function(client, bufnr)
+      utils.lsp.on_attach(function(client, bufnr)
         --
         require("lsp-inlayhints").on_attach(client, bufnr, false)
       end)
@@ -127,7 +127,7 @@ local plugins = {
   {
     "joechrisellis/lsp-format-modifications.nvim",
     init = function()
-      utils.lsp.cb_on_attach(function(client, bufnr)
+      utils.lsp.on_attach(function(client, bufnr)
         local have = client.server_capabilities.documentRangeFormattingProvider
         if have and client.name == "null-ls" then
           local ft = vim.bo[bufnr].filetype

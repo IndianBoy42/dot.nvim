@@ -51,6 +51,7 @@
   "gx-extended.nvim": { "branch": "main", "commit": "6c4bc65e770fc51a1ffe598cab1d4304f60f3182" },
   "haskell-scope-highlighting.nvim": { "branch": "master", "commit": "5b5f542886f6427ca4b6da86bcdd2caa91bb4b53" },
   "haskell-tools.nvim": { "branch": "master", "commit": "1a2f39087306ff14c2d668a2b19335362bcd27af" },
+  "hbac.nvim": { "branch": "main", "commit": "ef323b57af1bbd01865f1601a92947111ce2e0ba" },
   "highlight-undo.nvim": { "branch": "main", "commit": "77d28cd31d509f8669a922739a76d47aff7d0de0" },
   "hologram.nvim": { "branch": "main", "commit": "f5194f71ec1578d91b2e3119ff08e574e2eab542" },
   "hop.nvim": { "branch": "master", "commit": "90db1b2c61b820e230599a04fedcd2679e64bd07" },

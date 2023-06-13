@@ -76,6 +76,7 @@ return {
           g = true, -- bindings for prefixed with g
         },
       },
+      operators = { ["#"] = "Comments" },
       icons = {
         breadcrumb = "»", -- symbol used in the command line area that shows your active key combo
         separator = "➜", -- symbol used between a key and it's label
@@ -120,11 +121,6 @@ return {
   },
   -- TODO: try https://github.com/goolord/alpha-nvim (new dashboard plugin)
   -- TODO: dressing.nvim
-  { -- "j-hui/fidget.nvim",
-    "j-hui/fidget.nvim",
-    opts = {},
-    event = "VeryLazy",
-  },
   {
     "smjonas/live-command.nvim",
     opts = {
@@ -401,7 +397,7 @@ return {
     init = function()
       local opts = {
         bind = true,
-        hint_inline = function() return true end,
+        -- hint_inline = function() return true end,
         --     doc_lines = 2, -- will show two lines of comment/doc(if there are more than two lines in doc, will be truncated);
         --     -- Apply indentation for wrapped lines
         --     floating_window = true, -- show hint in a floating window, set to false for virtual text only mode
@@ -419,7 +415,7 @@ return {
         --     check_client_handlers = false,
       }
 
-      utils.lsp.cb_on_attach(function(client, bufnr) require("lsp_signature").on_attach(opts, bufnr) end)
+      utils.lsp.on_attach(function(client, bufnr) require("lsp_signature").on_attach(opts, bufnr) end)
     end,
   },
   -- TODO: { "amrbashir/nvim-docs-view" },
@@ -433,26 +429,26 @@ return {
       count = 1,
     },
     init = function()
-      local lastwin = nil
-      local f, t
-      vim.api.nvim_create_autocmd({ "WinEnter", "FocusGained" }, {
-        group = vim.api.nvim_create_augroup("blinker", {}),
-        callback = function()
-          if not f then
-            f, t = require("throttle-debounce").throttle_trailing(
-              function() require("blinker").blink_cursorline() end,
-              1000,
-              true
-            )
-          end
-
-          local win = vim.api.nvim_get_current_win()
-          if lastwin ~= win then
-            lastwin = win
-            f()
-          end
-        end,
-      })
+      -- local lastwin = nil
+      -- local f, t
+      -- vim.api.nvim_create_autocmd({ "WinEnter", "FocusGained" }, {
+      --   group = vim.api.nvim_create_augroup("blinker", {}),
+      --   callback = function()
+      --     if not f then
+      --       f, t = require("throttle-debounce").throttle_trailing(
+      --         function() require("blinker").blink_cursorline() end,
+      --         1000,
+      --         true
+      --       )
+      --     end
+      --
+      --     local win = vim.api.nvim_get_current_win()
+      --     if lastwin ~= win then
+      --       lastwin = win
+      --       f()
+      --     end
+      --   end,
+      -- })
     end,
   },
 }
