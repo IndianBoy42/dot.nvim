@@ -1,72 +1,9 @@
+-- TODO: use dr and yr
 return {
   {
     "IndianBoy42/kitty.lua",
     dev = true,
-    init = function()
-      vim.api.nvim_create_user_command("KittyAttach", function(args)
-        require("kitty").setup({
-          create_new_win = vim.g.kitty_from_current_win or "os-window",
-          target_providers = {
-            function(T) T.helloworld = { desc = "Hello world", cmd = "echo hello world" } end,
-            "just",
-            "cargo",
-          },
-        }, function(K)
-          K.setup_make()
-
-          require("rust-tools").config.options.tools.executor = K.rust_tools_executor()
-
-          local p = utils.partial
-          vim.keymap.set("n", "<leader>mk", K.run, { desc = "Kitty Run" })
-          vim.keymap.set("n", "<leader>mm", K.make, { desc = "Kitty Make" })
-          vim.keymap.set("n", "<leader>m<CR>", p(K.make, "last"), { desc = "Kitty ReMake" })
-          -- vim.keymap.set("n", "<leader>mK", KT.run, { desc = "Kitty Run" })
-          -- vim.keymap.set("n", "", require("kitty").send_cell, { buffer = 0 })
-
-          vim.api.nvim_create_user_command("Kitty", function(args)
-            if args.fargs and #args.fargs > 0 then
-              require("kitty").send(args.args .. "\n")
-            else
-              require "kitty"
-            end
-          end, {
-            nargs = "*",
-            -- preview = function(opts, ns, buf)
-            --   -- TODO: livestream to kitty
-            -- end,
-          })
-        end)
-      end, {})
-
-      vim.api.nvim_create_user_command("KittyOverlay", function(args)
-        local cmd = args.fargs
-        if not cmd or #cmd == 0 then
-          cmd = {} -- TODO: something
-        end
-        require("kitty.current_win").new_overlay({}, cmd)
-      end, { nargs = "*" })
-      vim.api.nvim_create_user_command("KittyTab", function(args)
-        local cmd = args.fargs
-        if not cmd or #cmd == 0 then
-          cmd = {} -- TODO: something
-        end
-        require("kitty.current_win").new_tab({}, cmd)
-      end, { nargs = "*" })
-      vim.api.nvim_create_user_command("KittyWindow", function(args)
-        local cmd = args.fargs
-        if not cmd or #cmd == 0 then
-          cmd = {} -- TODO: something
-        end
-        require("kitty.current_win").new_window({}, cmd)
-      end, { nargs = "*" })
-      vim.api.nvim_create_user_command("KittyNew", function(args)
-        local cmd = args.fargs
-        if not cmd or #cmd == 0 then
-          cmd = {} -- TODO: something
-        end
-        require("kitty.current_win").new_os_window({}, cmd)
-      end, { nargs = "*" })
-    end,
+    init = function() require "plugins.buildrun.kitty" end,
     config = function() require("kitty.current_win").setup {} end,
     keys = {
       {
@@ -143,20 +80,32 @@ return {
     opts = { create_keymaps = false },
     -- TODO: use a hydra?
     keys = {
-{ "<leader>dP", utils.lazy_require("debugprint").debugprint, desc = "DbgPrnt Line", expr = true },
-{ "<leader>dp", utils.lazy_require("debugprint").debugprint, desc = "DbgPrnt Line abv", expr = true },
+      { "dpp", utils.lazy_require("debugprint").debugprint, desc = "DbgPrnt Line", expr = true },
+      { "dP", utils.lazy_require("debugprint").debugprint, desc = "DbgPrnt Line abv", expr = true },
       {
-        "<leader>dv",
-utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true }),
+        "dpv",
+        utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true }),
         desc = "DbgPrnt Var",
-        mode = { "n", "x" },
         expr = true,
       },
       {
-        "<leader>dV",
-utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true }),
+        "dpV",
+        utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true, above = true }),
         desc = "DbgPrnt Var abv",
-        mode = { "n", "x" },
+        expr = true,
+      },
+      {
+        "<leader>dp",
+        utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true }),
+        desc = "DbgPrnt Var",
+        mode = "x",
+        expr = true,
+      },
+      {
+        "<leader>dp",
+        utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true, above = true }),
+        desc = "DbgPrnt Var abv",
+        mode = "x",
         expr = true,
       },
     },

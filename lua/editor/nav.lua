@@ -31,7 +31,7 @@ local jump_mappings = function()
   local function mapall(id, desc, sym)
     desc = desc or legend[id] or ""
     id = id or id
-    -- TODO: maybe this should use mini.bracketed?
+    -- TODO: this should use mini.bracketed
     local w = function() ai.move_cursor("left", "i", id, { search_method = "next" }) end
     local e = function() ai.move_cursor("right", "i", id, { search_method = "cover_or_next" }) end
     local b = function() ai.move_cursor("left", "i", id, { search_method = "cover_or_prev" }) end
@@ -239,7 +239,8 @@ local hop_fn = setmetatable({}, {
   end,
 })
 
-local function leap_to_line()
+-- TODO: make this every window
+local function leap_to_line(action)
   local function get_line_starts(winid)
     local wininfo = vim.fn.getwininfo(winid)[1]
     local cur_line = vim.fn.line "."
@@ -271,15 +272,20 @@ local function leap_to_line()
   require("leap").leap {
     target_windows = { winid },
     targets = get_line_starts(winid),
+    action = action,
   }
 end
 
-local function leap_anywhere()
+local function leap_anywhere(action)
   local focusable_windows_on_tabpage = vim.tbl_filter(
     function(win) return vim.api.nvim_win_get_config(win).focusable end,
     vim.api.nvim_tabpage_list_wins(0)
   )
-  require("leap").leap { target_windows = focusable_windows_on_tabpage }
+  require("leap").leap {
+    case_sensitive = false,
+    target_windows = focusable_windows_on_tabpage,
+    action = action,
+  }
 end
 local function _leap_bi()
   local winnr = vim.api.nvim_get_current_win()
@@ -510,6 +516,23 @@ return {
     "ggandor/leap.nvim",
     keys = {
       { "<leader>h", leap_anywhere, mode = "n", desc = "Leap all windows" },
+      {
+        "<leader>df",
+        function()
+          leap_to_line(function(jt)
+            utils.dump(jt)
+            utils.lsp.diag_line {
+              bufnr = jt.wininfo.bufnr,
+              pos = jt.pos[1] - 1,
+              -- row = jt.pos[1],
+              -- col = jt.pos[2],
+              -- relative = "win",
+            }
+          end)
+        end,
+        mode = "n",
+        desc = "Diagnostic at",
+      },
       -- { "L", leap_to_line, mode = "n", desc = "Leap to Line" },
       { "s", leap_bi_n, mode = "n", desc = "Leap" },
       { "z", leap_bi_x(1), mode = "x", desc = "Leap" },

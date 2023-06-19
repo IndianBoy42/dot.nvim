@@ -546,16 +546,16 @@ function M.setup()
   -- map("n", "gco", "o-<esc>gccA<BS>", sile)
 
   -- Select last pasted
-  map("n", "gp", "v`[o`]", { desc = "Select Last Paste" })
-  map("x", "gp", "`[o`]", { desc = "Select Last Paste" })
-  map("n", "gP", "V`[o`]", { desc = "SelLine Last Paste" })
-  map("x", "gP", "<esc>gP", { remap = true, desc = "SelLine Last Paste" })
-  map("n", "g<C-p>", "<C-v>`[o`]", { desc = "SelBlock Last Paste" })
-  map("x", "g<C-p>", "<esc>g<C-p>", { remap = true, desc = "SelBlock Last Paste" })
+  map("n", "<leader>p", "v`[o`]", { desc = "Select Last Paste" })
+  map("x", "<leader>p", "`[o`]", { desc = "Select Last Paste" })
+  map("n", "<leader>P", "V`[o`]", { desc = "SelLine Last Paste" })
+  map("x", "<leader>P", "<esc>gP", { remap = true, desc = "SelLine Last Paste" })
+  map("n", "<leader><C-p>", "<C-v>`[o`]", { desc = "SelBlock Last Paste" })
+  map("x", "<leader><C-p>", "<esc>g<C-p>", { remap = true, desc = "SelBlock Last Paste" })
   -- Use reselect as an operator
-  op_from "gp"
-  op_from "gP"
-  op_from "g<C-p>"
+  op_from "<leader>gp"
+  op_from "<leader>P"
+  op_from "<leader><C-p>"
 
   local cmt_op = require("editor.edit").comment_operator
   map("n", "<leader>" .. cmt_op, operatorfuncV_keys("<leader>" .. cmt_op), sile)
@@ -725,7 +725,7 @@ function M.setup()
 
   map({ "n", "x" }, "<cr><cr>", "<cmd>wa<cr>", { desc = "Write" })
 
-  map("n", "m", F'require"which-key".show "m"')
+  map("n", "m", F 'require"which-key".show "m"')
 
   map("s", "i", "<C-g><esc>i")
   map("s", "a", "<C-g>o<esc>a")
@@ -990,6 +990,7 @@ function M.setup()
       name = "LSP",
       d = { utils.lsp.range_diagnostics, "Range Diagnostics" },
       a = { telescope_fn.code_actions_previewed, "Code Actions" },
+      f = { utils.lsp.format, "Format" },
     },
     r = {
       name = "Replace/Refactor",
@@ -1137,9 +1138,17 @@ M.attach_lsp = function(client, bufnr)
   map({ "n", "x" }, "K", telescope_fn.code_actions_previewed, { remap = true, desc = "Do Code Action" })
 
   -- Formatting keymaps
-  map("n", "gf", utils.lsp.format, { desc = "Format Async" })
+  map({ "n" }, "gf", utils.lsp.format, { desc = "Format Async" })
 end
 
 return setmetatable(M, {
   __call = function(tbl, ...) return map(unpack(...)) end,
 })
+
+-- m  t (in normal mode maybe?)
+-- prefixes
+-- c d y r
+-- suffixes
+-- p x o u . ; -
+-- v is useful but not
+-- op-op combinations

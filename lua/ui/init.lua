@@ -381,16 +381,13 @@ return {
       require("indent_blankline").setup(opts)
     end,
   },
-  -- TODO: https://github.com/shellRaining/hlchunk.nvim
   {
-    "IndianBoy42/blockman.nvim",
-    dev = true,
-    lazy = false,
-    dependencies = {
-      "edluffy/hologram.nvim",
-    },
-    opts = {},
+    "HampusHauffman/block.nvim",
+    cond = false,
+    event = { "BufReadPost", "BufNewFile" },
+    opts = { percent = 1.05, depth = 10, automatic = true },
   },
+  -- TODO: https://github.com/shellRaining/hlchunk.nvim
   {
     "ray-x/lsp_signature.nvim",
     config = false,
@@ -451,4 +448,5 @@ return {
       -- })
     end,
   },
+  -- TODO: https://github.com/notomo/cmdbuf.nvim
 }

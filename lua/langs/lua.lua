@@ -7,7 +7,7 @@ return {
     opts = {
       servers = {
         lua_ls = {
-          cmd = { "ra-multiplex", "--ra-mux-server", "lua-language-server" },
+          -- cmd = { "ra-multiplex", "--ra-mux-server", "lua-language-server" },
           -- mason = false, -- set to false if you don't want this server to be installed with mason
           settings = {
             Lua = {

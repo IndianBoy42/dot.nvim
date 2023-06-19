@@ -1,4 +1,4 @@
-local cmt_op = "#"
+local cmt_op = "#" -- TODO: use yc (you comment?) + more
 return {
   comment_operator = cmt_op,
   {
@@ -55,7 +55,7 @@ return {
     keys = {
       { "<leader>ei", desc = "ISwapIncr" },
       { "<leader>ea", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "n" } },
-      { "cp", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "n" } },
+      { "yx", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "n" } },
       { "<leader>ea", "<cmd>ISwap<cr>", desc = "ISwap", mode = { "x" } },
       { "<leader>eA", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "x" } },
       { "<leader>es", F 'require("iswap").iswap_node({ autoswap = false })', desc = "ISwapNode", mode = { "n", "x" } },
@@ -105,9 +105,9 @@ return {
   },
   {
     "echasnovski/mini.align",
-    event = "VeryLazy",
     opts = {},
     main = "mini.align",
+    keys = { { "ga" } },
   },
   {
     "echasnovski/mini.move",
@@ -221,7 +221,7 @@ return {
     opts = {
       mappings = {
         comment = cmt_op,
-        comment_line = cmt_op .. cmt_op,
+        comment_line = cmt_op .. cmt_op:sub(-1),
         textobject = "i" .. cmt_op,
       },
 
@@ -286,7 +286,7 @@ return {
           config = { invoke_on_body = true },
           name = "Change case",
           mode = "n",
-          body = "<leader>ec",
+          body = "cu",
           heads = heads "quick_replace",
         }
         hydra {
@@ -305,6 +305,6 @@ return {
         }
       end
     end,
-    keys = { { "<leader>ec", desc = "Change case" }, { "<leader>rc", desc = "Rename case", mode = { "x", "n" } } },
+    keys = { { "cu", desc = "Change case" }, { "<leader>rc", desc = "Rename case", mode = { "x", "n" } } },
   },
 }

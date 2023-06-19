@@ -6,7 +6,9 @@ end
 return {
   {
     "gbprod/substitute.nvim",
-    opts = {},
+    opts = {
+      on_substitute = require("yanky.integration").substitute(),
+    },
     keys = function()
       -- Replace selection with register
       local substitute = function(fn, opts)
@@ -48,22 +50,22 @@ return {
         -- { "r", substitute("visual", { yank_substituted_text = true }), mode = "x", desc = "Replace" },
         -- TODO: fuck these, just use vim-visual-multi?
         {
-          "cr",
+          "rI",
           substitute_range "operator",
           mode = "n",
-          desc = "All (motion1) in (motion2)",
+          desc = "Replace all (motion1) in (motion2)",
         },
         {
-          "cA",
+          "rA",
           substitute_range("operator", { range = "%" }),
           mode = "n",
-          desc = "All (motion) in file",
+          desc = "Replace all (motion) in file",
         },
         {
           "r",
           substitute_range("visual", {}),
           mode = "x",
-          desc = "All (sel) in (motion)",
+          desc = "Replace all (sel) in (motion)",
         },
         -- {
         --   "cr",
@@ -71,27 +73,25 @@ return {
         --     -- text1 = { last_search = true },
         --   }),
         --   mode = { "x", "n" },
-        --   desc = "All (motion) in (sel)",
+        --   desc = "Replace all (motion) in (sel)",
         -- },
         {
-          "<leader>c",
+          "R",
           substitute_range("visual", { range = "%" }),
           mode = "x",
-          desc = "All (sel) in file",
+          desc = "Replace all (sel) in file",
         },
         {
           "co",
-          -- substitute_range("operator", { motion1 = "iw" }),
           substitute_range "word",
           mode = "n",
-          desc = "All iw in (motion)",
+          desc = "Replace all iw in (motion)",
         },
         {
           "cO",
-          -- substitute_range("operator", { motion1 = "iw" }),
           substitute_range("word", { range = "%" }),
           mode = "n",
-          desc = "All iw in file",
+          desc = "Replace all iw in file",
         },
         { "cx", exchange "operator", mode = "n", desc = "Exchange" },
         { "cxx", exchange "line", mode = "n", desc = "Exchange Line" },
