@@ -1,5 +1,6 @@
 local M = {
   "IndianBoy42/nvim-window-picker",
+  dev = true,
   main = "window-picker",
   -- FYI: local picked_window_id = require('window-picker').pick_window()
   opts = {

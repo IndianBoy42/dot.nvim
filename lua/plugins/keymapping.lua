@@ -13,6 +13,7 @@ return {
   "anuvyklack/hydra.nvim",
   {
     "anuvyklack/keymap-amend.nvim",
+    dev = true,
     config = function()
       local a = require "keymap-amend"
       vim.keymap.amend = a

@@ -492,7 +492,7 @@ local hops = function()
   }
 end
 return {
-  { "phaazon/hop.nvim" },
+  { "smoka7/hop.nvim" },
   { -- TODO: move from hop to leap
     "IndianBoy42/hop-extensions",
     dev = true,
@@ -788,7 +788,8 @@ return {
     },
   },
   { -- TODO:? remove for leap-ast once double sided labelling is implemented
-    "mfussenegger/nvim-treehopper",
+    "IndianBoy42/nvim-treehopper",
+    dev = true,
     config = function() require("tsht").config.hint_keys = O.hint_labels_array end,
     -- event = { "BufReadPost", "BufNewFile" },
     keys = {

@@ -3,6 +3,7 @@ return {
   comment_operator = cmt_op,
   {
     "ggandor/leap-spooky.nvim",
+    dev = true,
     config = function()
       require("leap-spooky").setup {
         affixes = {
@@ -34,7 +35,8 @@ return {
     event = "VeryLazy",
   },
   { -- mizlan/iswap.nvim
-    "mizlan/iswap.nvim",
+    "IndianBoy42/iswap.nvim",
+    dev = true,
     opts = {
       autoswap = true,
       move_cursor = true,

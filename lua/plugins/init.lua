@@ -8,7 +8,8 @@ local function p(obj)
 end
 return {
   {
-    "EricDriussi/remember-me.nvim",
+    "IndianBoy42/remember-me.nvim",
+    dev = true,
     opts = {
       project_roots = { ".git", ".svn", ".venv" },
     },
