@@ -135,7 +135,7 @@ function M.setup()
   local function srchrpt(k, op)
     return function()
       register_nN_repeat { nil, nil }
-      feedkeys(k, op or "n")
+      feedkeys(type(k) == "function" and k() or k, op or "n")
     end
   end
 
@@ -271,19 +271,19 @@ function M.setup()
     end
     -- map(m, c, '"_' .. c, nore)
     vim.keymap.amend(m, c, function(orig)
-      feedkeys '"_'
-      orig()
+      feedkeys('"_', "ni") -- FIXME:
+      vim.schedule(orig)
     end)
   end
 
   dont_clobber_if_meta("n", "d")
   dont_clobber_if_meta("n", "D")
   dont_clobber_if_meta("x", "r")
-  dont_clobber_by_default("n", "c")
+  -- dont_clobber_by_default("n", "c")
   -- dont_clobber_by_default("x", "c")
-  dont_clobber_by_default("n", "C")
+  -- dont_clobber_by_default("n", "C")
   dont_clobber_by_default("n", "x")
-  dont_clobber_by_default("x", "x")
+  -- dont_clobber_by_default("x", "x")
 
   -- Preserve cursor on yank in visual mode
   -- TODO: use register argument
@@ -541,9 +541,28 @@ function M.setup()
   map("n", "<M-h>", "<c-o>", nore)
   map("n", "<M-l>", "<c-i>", nore)
 
-  -- -- Commenting helpers
-  -- map("n", "gcO", "O-<esc>gccA<BS>", sile)
-  -- map("n", "gco", "o-<esc>gccA<BS>", sile)
+  local function quick_toggle(prefix, suffix, callback, name)
+    require "hydra" {
+      name = name,
+      body = prefix,
+      mode = "n",
+      config = {
+        timeout = 5000,
+        on_key = function()
+          -- Preserve animation
+          vim.wait(50, function()
+            vim.cmd "redraw!"
+            return false
+          end, 30, false)
+        end,
+      },
+      heads = {
+        { suffix, callback, { desc = name } },
+      },
+    }
+  end
+  quick_toggle("<leader>T", "d", utils.lsp.toggle_diagnostics)
+  quick_toggle("<leader>T", "i", F "vim.lsp.buf.inlay_hint(0)")
 
   -- Select last pasted
   map("n", "<leader>p", "v`[o`]", { desc = "Select Last Paste" })
@@ -727,12 +746,17 @@ function M.setup()
 
   map("n", "m", F 'require"which-key".show "m"')
 
-  map("s", "i", "<C-g><esc>i")
-  map("s", "a", "<C-g>o<esc>a")
-  map("s", "c", "<C-o>c")
-  map("s", "d", "<C-o>c")
-  map("s", "y", "<C-o>y")
-  map("s", "v", "<C-g>")
+  -- Selection mode
+  if false then
+    map("s", "i", "<C-g><esc>i")
+    map("s", "a", "<C-g>o<esc>a")
+    map("s", "c", "<C-o>c")
+    map("s", "d", "<C-o>c")
+    map("s", "y", "<C-o>y")
+    map("s", "v", "<C-g>")
+  else
+    map("s", "<cr>", "<C-g>")
+  end
 
   -- -- Open new line with a count
   -- map("n", "o", function()
@@ -794,9 +818,8 @@ function M.setup()
     },
     o = {
       name = "Open window",
-      f = { cmd "NvimTreeToggle", "File Sidebar" },
       u = { cmd "UndotreeToggle", "Undo tree" },
-      F = { cmd "Oil", "File Browser" },
+      f = { F "MiniFiles.open()", "File Browser" },
       o = { cmd "SymbolsOutline", "Outline" },
       s = {
         e = { cmd "TroubleToggle workspace_diagnostics", "Diagnostics" },
@@ -805,6 +828,7 @@ function M.setup()
         d = { cmd "TroubleToggle lsp_definitions", "Definitions" },
         q = { cmd "TroubleToggle quickfix", "Quick Fix" },
         l = { cmd "TroubleToggle loclist", "Loc List" },
+        f = { cmd "NvimTreeToggle", "File Sidebar" },
       },
       t = { cmd "TroubleToggle", "Trouble" },
       n = { cmd "Navbuddy", "Navbuddy" },
@@ -833,7 +857,11 @@ function M.setup()
       b = { cmd "set buflisted", "buflisted" },
       n = { utils.conceal_toggle, "Conceal" },
       H = { cmd "ToggleHiLightComments", "Comment Highlights" },
-      d = { utils.lsp.toggle_diagnostics, "Toggle Diags" },
+      v = { cmd "NvimContextVtToggle", "Context VT" },
+      -- d = { utils.lsp.toggle_diagnostics, "Toggle Diags" },
+      -- i = { F "vim.lsp.buf.inlay_hint(0)", "Toggle Inlay Hints" },
+      d = "Toggle Diags",
+      i = "Toggle Inlay Hints",
       fb = {
         utils.lsp.format_on_save_toggle(vim.b),
         "Toggle Format on Save",
@@ -1104,7 +1132,7 @@ end
 
 M.repeatable = require("keymappings.jump_mode").repeatable
 
-M.attach_lsp = function(client, bufnr)
+utils.lsp.on_attach(function(client, bufnr)
   local map = function(mode, lhs, rhs, opts)
     if bufnr then opts.buffer = bufnr end
     vim.keymap.set(mode, lhs, rhs, opts)
@@ -1133,13 +1161,17 @@ M.attach_lsp = function(client, bufnr)
   map("n", "gpe", utils.lsp.diag_line, { desc = "Diags" })
   -- Hover
   -- map("n", "K", lspbuf.hover, sile)
-  map("n", "H", utils.lsp.hover, { desc = "LSP Hover" })
+  map("n", "H", utils.lsp.repeatable_hover, { desc = "LSP Hover" })
   map("n", "<M-i>", lspbuf.signature_help, { desc = "LSP Signature Help" })
   map({ "n", "x" }, "K", telescope_fn.code_actions_previewed, { remap = true, desc = "Do Code Action" })
+  local code_action_op = operatorfunc_keys("K", "r")
+  map("n", "<leader>K", code_action_op, { remap = true, desc = "Do Code Action At" })
+  map("n", "<leader>H", operatorfunc_keys("<ESC>H", "rl"), { remap = true, desc = "Do Code Action At" })
+  map("n", "<leader>H", operatorfunc_keys ":norm ", { remap = true, desc = "Do Code Action At" })
 
   -- Formatting keymaps
   map({ "n" }, "gf", utils.lsp.format, { desc = "Format Async" })
-end
+end, "lsp_mappings")
 
 return setmetatable(M, {
   __call = function(tbl, ...) return map(unpack(...)) end,

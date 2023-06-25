@@ -111,6 +111,12 @@ echon get(function('s:set_opfunc'), 'name')
 ]],
   true
 )]
+M.set_opfunc = function(val)
+  if type(val) == "function" then
+    M.__set_opfunc_callback = val
+    vim.go.opfunc = "v:lua.utils.__set_opfunc_callback"
+  end
+end
 
 -- TODO: improve this
 function M.operatorfunc_helper_select(lines)
@@ -133,7 +139,7 @@ end
 function M.post_operatorfunc(old_func) vim.go.operatorfunc = old_func end
 
 -- wrapper for making operators easily
-function M.operatorfunc_scaffold(operatorfunc)
+function M.operatorfunc_scaffold(operatorfunc, op_pending)
   local old_func = vim.go.operatorfunc
 
   local wrapped = function()
@@ -144,56 +150,57 @@ function M.operatorfunc_scaffold(operatorfunc)
 
   return function()
     M.set_opfunc(wrapped)
-    feedkeys("g@", "n", false)
+    feedkeys("g@" .. (op_pending and type(op_pending) == "string" and op_pending or ""), "m", false)
+    if type(op_pending) == "function" then op_pending() end
   end
 end
 
 -- keys linewise
-function M.operatorfuncV_keys(verbkeys)
+function M.operatorfuncV_keys(verbkeys, op_pending)
   return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(true)
     feedkeys(t(verbkeys), "m", false)
-  end)
+  end, op_pending)
 end
 
 -- keys charwise
-function M.operatorfunc_keys(verbkeys)
+function M.operatorfunc_keys(verbkeys, op_pending)
   return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(false)
     feedkeys(t(verbkeys), "m", false)
-  end)
+  end, op_pending)
 end
 
 -- cmd linewise
-function M.operatorfunc_Vcmd(verbkeys)
+function M.operatorfunc_Vcmd(verbkeys, op_pending)
   return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(true)
     vim.cmd(verbkeys)
-  end)
+  end, op_pending)
 end
 
 -- cmd charwise
-function M.operatorfunc_cmd(verbkeys)
+function M.operatorfunc_cmd(verbkeys, op_pending)
   return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(false)
     vim.cmd(verbkeys)
-  end)
+  end, op_pending)
 end
 
 -- fn linewise
-function M.operatorfunc_Vfn(func)
+function M.operatorfunc_Vfn(func, op_pending)
   return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(true)
     func()
-  end)
+  end, op_pending)
 end
 
 -- fn charwise
-function M.operatorfunc_fn(func)
+function M.operatorfunc_fn(func, op_pending)
   return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(false)
     func()
-  end)
+  end, op_pending)
 end
 
 -- the font used in graphical neovim applications

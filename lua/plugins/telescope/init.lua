@@ -9,7 +9,6 @@ local telescope = {
     { "nvim-telescope/telescope-frecency.nvim", dependencies = {
       "kkharji/sqlite.lua",
     } },
-    "nvim-telescope/telescope-hop.nvim",
     "nvim-telescope/telescope-media-files.nvim",
     "nvim-telescope/telescope-github.nvim",
     {
@@ -67,7 +66,7 @@ local telescope = {
             ["<C-p>"] = action_layout.toggle_preview,
             ["<Esc>"] = actions.close,
 
-            ["<C-h>"] = function(...) return require("telescope").extensions.hop.hop(...) end,
+            ["<C-s>"] = utils.telescope.flash,
             ["<C-x>"] = actions.delete_buffer,
             ["<C-s>"] = actions.select_horizontal,
             ["<C-v>"] = actions.select_vertical,
@@ -90,6 +89,7 @@ local telescope = {
           },
           n = {
             -- ["<M-p>"] = action_layout.toggle_preview,
+            ["s"] = utils.telescope.flash,
             ["j"] = actions.move_selection_next,
             ["k"] = actions.move_selection_previous,
             ["<localleader>x"] = actions.delete_buffer,
@@ -137,7 +137,6 @@ local telescope = {
           -- the default case_mode is "smart_case"
         },
         "cmake",
-        hop = { keys = O.hint_labels_array },
         advanced_git_search = {
           -- fugitive or diffview
           diff_plugin = "diffview",
@@ -161,7 +160,6 @@ local telescope = {
 
     -- telescope.load_extension('fzy_native')
     telescope.load_extension "fzf"
-    telescope.load_extension "hop"
     telescope.load_extension "smart_open"
     telescope.load_extension "frecency"
     telescope.load_extension "luasnip"

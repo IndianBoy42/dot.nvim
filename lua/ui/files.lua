@@ -13,7 +13,96 @@ local keymaps = function(table)
 end
 return {
   {
+    "echasnovski/mini.files",
+    cond = true,
+    lazy = false,
+    main = "mini.files",
+    opts = {
+      windows = {
+        preview = true,
+        width_nofocus = 30,
+      },
+      mappings = {
+        go_in = "l",
+        go_in_plus = "L",
+        go_out = "h",
+        go_out_plus = "H",
+        reset = "<localleader>R",
+        close = "<C-q>",
+      },
+    },
+    config = function(_, opts)
+      local mf = require "mini.files"
+      mf.setup(opts)
+
+      local group = vim.api.nvim_create_augroup("mini_files_autocmds", {})
+
+      local files_set_cwd = function(path)
+        -- Works only if cursor is on the valid file system entry
+        local cur_entry_path = MiniFiles.get_fs_entry().path
+        local cur_directory = vim.fs.dirname(cur_entry_path)
+        vim.fn.chdir(cur_directory)
+      end
+
+      local show_dotfiles = true
+
+      local filter_show = function(fs_entry) return true end
+
+      local filter_hide = function(fs_entry) return not vim.startswith(fs_entry.name, ".") end
+
+      local toggle_dotfiles = function()
+        show_dotfiles = not show_dotfiles
+        local new_filter = show_dotfiles and filter_show or filter_hide
+        mf.refresh { content = { filter = new_filter } }
+      end
+
+      local set_from_picker = function()
+        vim.api.nvim_win_call(
+          mf.get_target_window(),
+          function() mf.set_target_window(require("ui.win_pick").pick_or_create()) end
+        )
+      end
+      local open_from_picker = function()
+        set_from_picker()
+        local entry = mf.get_fs_entry()
+        if not entry or entry.fs_type ~= "file" then return end
+        mf.go_in()
+      end
+
+      vim.api.nvim_create_autocmd("User", {
+        group = group,
+        pattern = "MiniFilesBufferCreate",
+        callback = function(args)
+          local bufnr = args.data.buf_id
+          vim.notify "hello"
+          vim.print(args.data)
+          require "hydra" {
+            name = "Move",
+            hint = false,
+            config = {
+              buffer = bufnr,
+              color = "pink",
+            },
+            body = "<localleader>",
+            heads = {
+              { "h", "h", { noremap = true } },
+              { "l", "l", { noremap = true } },
+              { "H", "h", { noremap = false } },
+              { "L", "l", { noremap = false } },
+              { "<localleader>", "", { exit = true } },
+            },
+          }
+          vim.keymap.set("n", "<localleader>~", files_set_cwd, { buffer = bufnr })
+          vim.keymap.set("n", "<localleader>.", toggle_dotfiles, { buffer = bufnr })
+          vim.keymap.set("n", "<localleader>p", set_from_picker, { buffer = bufnr })
+          vim.keymap.set("n", "<localleader>L", open_from_picker, { buffer = bufnr })
+        end,
+      })
+    end,
+  },
+  {
     "stevearc/oil.nvim",
+    cond = false,
     lazy = false, -- So that i can do `nvim .` or `nvim <some_directory>`
     opts = {
       columns = { "icon", "permissions", "size", "mtime" },
@@ -43,9 +132,7 @@ return {
       if vim.fn.argc() == 1 then
         local arg = vim.fn.argv(0)
         local stat = vim.loop.fs_stat(arg)
-        if stat and stat.type == "directory" then
-          require("lazy").load { plugins = { "oil.nvim" } }
-        end
+        if stat and stat.type == "directory" then require("lazy").load { plugins = { "oil.nvim" } } end
       end
       if not require("lazy.core.config").plugins["oil.nvim"]._.loaded then
         vim.api.nvim_create_autocmd("BufNew", {

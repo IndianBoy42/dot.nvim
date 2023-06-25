@@ -99,10 +99,23 @@ M.setup = function()
   map("n", "<leader>mk", function() terms[0]:run() end, { desc = "Kitty Run" })
   map("n", "<leader>mm", function() terms[0]:make() end, { desc = "Kitty Make" })
   map("n", "<leader>m<CR>", function() terms[0]:make "last" end, { desc = "Kitty ReMake" })
-  map({ "n", "x" }, "yr", function() terms[0]:send { selection = vim.api.nvim_get_mode() } end, { desc = "Kitty Send" })
+  map("n", "yr", function() terms[0]:send { selection = vim.api.nvim_get_mode() } end, { desc = "Kitty Send" })
+  map("x", "R", function() terms[0]:send { selection = vim.api.nvim_get_mode() } end, { desc = "Kitty Send" })
   map("n", "yrr", function() terms[0]:send() end, { desc = "Kitty Send Line" })
   -- vim.keymap.set("n", "<leader>mK", KT.run, { desc = "Kitty Run" })
   -- vim.keymap.set("n", "", require("kitty").send_cell, { buffer = 0 })
 end
+
+M = setmetatable(M, {
+  __index = function(t, k)
+    local term = terms[0]
+    if type(term[k]) == "function" then
+      return function(...) return term[k](term, ...) end
+    else
+      return term[k]
+    end
+  end,
+  __call = function() return M.kitty_attach() end,
+})
 
 return M

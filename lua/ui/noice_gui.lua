@@ -26,6 +26,7 @@ return {
   { -- "j-hui/fidget.nvim",
     "j-hui/fidget.nvim",
     opts = {},
+    branch = "legacy",
     event = "VeryLazy",
   },
   {

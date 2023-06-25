@@ -25,9 +25,9 @@ return {
       ["Redo"] = "<C-r>",
       ["Reselect Last"] = ldr .. ldr,
       ["Transpose"] = "(",
-      ["Visual Subtract"] = "-",
-      ["Split Regions"] = "-",
-      ["Toggle Mappings"] = ldr .. ldr,
+      ["Visual Subtract"] = "_",
+      ["Split Regions"] = "_",
+      ["Toggle Mappings"] = "-",
     }
     if ldr == "<Del>" then vim.g.VM_maps["Del"] = "" end
     vim.g.VM_mouse_mappings = true
@@ -62,9 +62,14 @@ return {
       end
     end
     -- map("x", "I", wrap_vm(nil, "Visual-Add", "i"), { remap = true })
-    map("x", "+", "<Plug>(VM-Visual-Add)<Plug>(VM-Disable-Mappings)", { remap = true })
-    map("x", "-", "<Plug>(VM-Visual-Add)<Plug>(VM-Split-Regions)", { remap = true })
-    map("n", "+", "<Plug>(VM-Add-Cursor-At-Pos)<Plug>(VM-Disable-Mappings)", { remap = true })
+    map(
+      "n",
+      "+",
+      "<Plug>(VM-Add-Cursor-At-Pos)<Plug>(VM-Disable-Mappings)",
+      { remap = true, desc = "Add Cursor At Pos" }
+    )
+    map("x", "+", "<Plug>(VM-Visual-Add)<Plug>(VM-Disable-Mappings)", { remap = true, desc = "Add Region" })
+    map("x", "-", "<Plug>(VM-Visual-Add)<Plug>(VM-Split-Regions)", { remap = true, desc = "Split Visual Region" })
     map("x", "I", wrap_vm(nil, "Visual-Add", "i"), { remap = true })
     map("x", "A", wrap_vm(nil, "Visual-Add", "a"), { remap = true })
     local c_v = t "<C-v>"
@@ -88,13 +93,19 @@ return {
     -- Multi select object
     local find_under_operator = utils.operatorfunc_keys "<Plug>(VM-Find-Subword-Under)"
     map("n", "<M-v>", find_under_operator, { desc = "Find Under (op)" })
-    map("n", ldr .. "m", find_under_operator, { desc = "Find Under (op)" })
+    map("n", "ms", find_under_operator, { desc = "Find Under (op)" })
     -- Multi select all
     local select_all_operator = utils.operatorfunc_keys "<Plug>(VM-Visual-Add)<Plug>(VM-Select-All)"
     map("n", "<M-S-v>", select_all_operator, { desc = "Select all (op)" })
-    map("n", ldr .. "M", select_all_operator, { desc = "Select all (op)" })
+    map("n", "mS", select_all_operator, { desc = "Select all (op)" })
+    local add_selection_operator = utils.operatorfunc_keys "<Plug>(VM-Visual-Add)<Plug>(VM-Disable-Mappings)"
+    map("n", "ma", add_selection_operator, { desc = "Add Selection (op)" })
+    map("n", "mr", function()
+      add_selection_operator()
+      feedkeys("r", "m")
+    end, { desc = "Add Selection (op)" })
 
-    map("n", "co", wrap_vm(nil, "Find-Under", "<Plug>(VM-Find-Operator)"), { remap = true })
+    map("n", "mo", wrap_vm(nil, "Find-Under", "<Plug>(VM-Find-Operator)"), { remap = true })
 
     -- map("n", ldr .. "n", "<Plug>(VM-Start-Regex-Search)<C-r>/<cr>", { desc = "Select all (op)" })
     map(

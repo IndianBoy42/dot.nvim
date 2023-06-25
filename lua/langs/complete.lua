@@ -18,7 +18,7 @@ local M = {
     "amarakon/nvim-cmp-lua-latex-symbols",
     {
       "tzachar/cmp-fuzzy-buffer",
-      -- dependencies = { "tzachar/fuzzy.nvim" },
+      dependencies = { "tzachar/fuzzy.nvim" },
     },
   },
 }

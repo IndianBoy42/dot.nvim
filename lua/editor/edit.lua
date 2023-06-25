@@ -1,44 +1,12 @@
 local cmt_op = "#" -- TODO: use yc (you comment?) + more
 return {
   comment_operator = cmt_op,
-  {
-    "ggandor/leap-spooky.nvim",
-    dev = true,
-    config = function()
-      require("leap-spooky").setup {
-        affixes = {
-          remote = { all_windows = "r" },
-          magnetic = {},
-        },
-        text_objects = (function()
-          local objs =
-            { "w", "W", "s", "p", "[", "]", "(", ")", "b", ">", "<", "t", "{", "}", "B", '"', "'", "`", "a", "f", "q" }
-          local tbl = {}
-          for _, v in ipairs(objs) do
-            for _, p in ipairs { "i", "a" } do
-              tbl[#tbl + 1] = p .. v
-            end
-          end
-          return tbl
-        end)(),
-        custom_actions = {
-          require("leap-spooky").yank_paste,
-          -- {
-          --
-          --   function(kwargs, mapping)
-          --
-          --               end,
-          -- },
-        },
-      }
-    end,
-    event = "VeryLazy",
-  },
   { -- mizlan/iswap.nvim
     "IndianBoy42/iswap.nvim",
     dev = true,
     opts = {
-      autoswap = true,
+      keys = O.hint_labels,
+      autoswap = false,
       move_cursor = true,
       only_current_line = false,
       debug = true,
@@ -56,13 +24,13 @@ return {
     },
     keys = {
       { "<leader>ei", desc = "ISwapIncr" },
-      { "<leader>ea", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "n" } },
-      { "yx", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "n" } },
-      { "<leader>ea", "<cmd>ISwap<cr>", desc = "ISwap", mode = { "x" } },
+      -- { "<leader>ea", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "n" } },
+      { "dx", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "n" } },
+      { "X", "<cmd>ISwap<cr>", desc = "ISwap", mode = { "x" } },
       { "<leader>eA", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "x" } },
-      { "<leader>es", F 'require("iswap").iswap_node({ autoswap = false })', desc = "ISwapNode", mode = { "n", "x" } },
-      { "yp", F 'require("iswap").iswap_node({ autoswap = false })', desc = "ISwapNode", mode = { "n" } },
-      { "mm", "<cmd>IMoveWith<cr>", desc = "IMove", mode = { "n" } },
+      { "yx", "<cmd>ISwapNodeWith<cr>", desc = "ISwapNode", mode = { "n" } },
+      -- { "mm", F 'require("iswap").imove_node({ autoswap = false })', desc = "IMoveNode", mode = { "n" } },
+      { "mm", "<cmd>IMoveNodeWith<cr>", desc = "IMove", mode = { "n" } },
       { O.swap_prev, "<cmd>ISwapWithLeft<cr>", desc = "ISwap Left", mode = "n" },
       { O.swap_next, "<cmd>ISwapWithRight<cr>", desc = "ISwap Right", mode = "n" },
     },
@@ -101,6 +69,7 @@ return {
     },
     keys = {
       { "<C-s>", function() require("treesj").toggle() end, desc = "SplitJoin", mode = { "n", "i" } },
+      -- TODO: make this a hydra for repeatability
       { "<leader>eJ", function() require("treesj").split() end, desc = "Split" },
       { "<leader>ej", function() require("treesj").join() end, desc = "Join" },
     },
@@ -163,7 +132,7 @@ return {
         hint = false,
         config = {},
         mode = { "x" },
-        body = "m",
+        body = "<leader>m",
         heads = {
           { "h", utils.partial(MiniMove.move_selection, "left"), {} },
           { "j", utils.partial(MiniMove.move_selection, "down"), {} },

@@ -177,7 +177,7 @@ M.move_by = function(prefix, suffixes, actions, desc, o)
       "n",
       function()
         actions[1]()
-        return "<Plug>(VM-Add-Cursor-At-Pos)"
+        return "<Plug>(VM-Add-Cursor-At-Pos)<Plug>(VM-Disable-Mappings)"
       end,
       { desc = "Add Cursor", private = true, expr = true },
     },
@@ -185,7 +185,7 @@ M.move_by = function(prefix, suffixes, actions, desc, o)
       "N",
       function()
         actions[2]()
-        return "<Plug>(VM-Add-Cursor-At-Pos)"
+        return "<Plug>(VM-Add-Cursor-At-Pos)<Plug>(VM-Disable-Mappings)"
       end,
       { desc = "Add Cursor", private = true, expr = true },
     },

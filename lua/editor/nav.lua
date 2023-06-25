@@ -1,4 +1,5 @@
 local partial = utils.partial
+local navutils = require "editor.nav.lib"
 local legend = {
   [" "] = "Whitespace",
   ['"'] = 'Balanced "',
@@ -446,120 +447,303 @@ local function leap_select(kwargs)
   }
 end
 
-local hops = function()
-  return {
-    { "?", "<cmd>HopPattern<cr>", "Search" },
-    { "/", hop_fn.hint_patterns_from({}, { reg = "/" }), "Last Search" },
-    -- { "w", exts "hint_words", "Words" },
-    { "L", hop_fn.hint_lines_skip_whitespace(), "Lines" },
-    { "v", hop_fn.hint_vertical(), "Lines Column" },
-    { "w", hop_fn.hint_patterns_from({}, { expand = "<cword>" }), "cword" },
-    { "W", hop_fn.hint_patterns_from({}, { expand = "<cWORD>" }), "cWORD" },
-    { "m", hop_fn.ts.hint_containing_nodes(), "TS Nodes Containing" },
-    { "l", hop_fn.ts.hint_defnref(), "Locals" },
-    { "D", hop_fn.ts.hint_definition(), "LSP Definitions" },
-    { "r", hop_fn.lsp.hint_references(), "LSP References" },
-    { "u", hop_fn.ts.hint_usages(), "TS Usages" },
-    { "c", hop_fn.ts.hint_scopes(), "Scopes" },
-    { "C", hop_fn.ts.hint_containing_scopes(), "Scopes" },
-    { "s", hop_fn.lsp.hint_symbols(), "LSP Symbols" },
-    { "d", hop_fn.hint_diagnostics(), "LSP Diagnostics" },
-    {
-      "k",
-      hop_fn.ts.hint_textobjects({}, {
-        captures = {
-          "@function",
-          "@block",
-          "@class",
-          "@conditional",
-          "@loop",
-        },
-      }),
-      "Blocks",
-    },
-    {
-      "j",
-      hop_fn.ts.hint_textobjects({}, {
-        captures = {
-          "@parameter",
-          "@statement",
-          -- "@assignment",
-          "@call",
-        },
-      }),
-      "Expressions",
-    },
-  }
-end
 return {
-  { "smoka7/hop.nvim" },
-  { -- TODO: move from hop to leap
-    "IndianBoy42/hop-extensions",
-    dev = true,
-    opts = { keys = O.hint_labels },
-    -- event = "VeryLazy",
-    keys = function()
-      local hop_pattern = {
-        "<C-CR>", -- "<M-CR>",
-        "<CR><CMD>lua require'hop'.hint_patterns({}, vim.fn.getreg('/'))<CR>",
-        mode = { "c" },
-      }
-      local keys = { hop_pattern }
-      for _, rhs_ in ipairs(hops()) do
-        local lhs, rhs, desc = unpack(rhs_)
-        table.insert(keys, { O.goto_prefix .. "h" .. lhs, rhs, desc = desc, mode = { "n", "x", "o" } })
-      end
-      return keys
-    end,
+  {
+    "folke/flash.nvim",
+    event = "VeryLazy",
+    ---@type Flash.Config
+    opts = {
+      labels = O.hint_labels,
+      search = {
+        incremental = true,
+      },
+      highlight = { label = { current = true }, backdrop = false },
+      jump = {
+        autojump = false, -- Causes accidents
+        history = true,
+        register = true,
+        pos = "start", ---@type "start" | "end" | "range"
+      },
+      modes = {
+        char = {
+          enabled = false,
+          keys = { "f", "F", "t", "T" },
+        },
+        treesitter = {
+          labels = O.hint_labels,
+        },
+        fuzzy = {
+          search = { mode = "fuzzy" },
+          -- highlight = {
+          -- label = { before = true, after = false },
+          -- },
+        },
+        leap = {
+          search = {
+            max_length = 2,
+          },
+        },
+        textcase = {
+          search = { mode = navutils.mode_textcase },
+        },
+        search_diagnostics = {
+          search = { mode = "fuzzy" },
+          action = navutils.there_and_back(utils.lsp.diag_line),
+        },
+        hover = {
+          search = { mode = "fuzzy" },
+          action = function(match, state)
+            vim.api.nvim_win_call(match.win, function()
+              vim.api.nvim_win_set_cursor(match.win, match.pos)
+              utils.lsp.hover(function(err, result, ctx)
+                vim.lsp.handlers.hover(err, result, ctx, { focusable = true, focus = true })
+                -- vim.api.nvim_win_set_cursor(match.win, state.pos)
+              end)
+            end)
+          end,
+        },
+        select = {
+          search = { mode = "fuzzy" },
+          jump = { pos = "range" },
+          highlight = {
+            label = { before = true, after = true },
+          },
+        },
+        references = {},
+        diagnostics = {
+          search = { multi_window = true, wrap = true, incremental = true },
+          highlight = { backdrop = true, label = { current = true } },
+        },
+        remote = {
+          search = { mode = "fuzzy" },
+          jump = { autojump = true },
+        },
+        -- TODO: implement iswap and some hop-extensions in this?
+        remote_ts = {
+          mode = "treesitter",
+          search = { mode = "search" },
+          jump = { pos = "range" },
+          highlight = { matches = true },
+        },
+      },
+    },
+    keys = {
+      -- TODO: jump continue with nN
+      {
+        "?",
+        mode = { "n" },
+        function() require("flash").jump { mode = "fuzzy" } end,
+        desc = "Fuzzy search",
+      },
+      {
+        "?",
+        mode = { "o" },
+        function() require("flash").remote { mode = "select" } end,
+        desc = "Fuzzy Sel",
+      },
+      {
+        "?",
+        mode = "x",
+        function() require("flash").jump { mode = "select" } end,
+        desc = "Fuzzy Sel",
+      },
+      {
+        O.select_dynamic,
+        mode = { "o", "x" },
+        function() require("flash").treesitter() end,
+        desc = "Select node",
+      },
+      {
+        "]o",
+        function() require("flash.plugins.jumplist").jump() end,
+        desc = "Jumplist",
+      },
+      {
+        O.goto_prefix .. "w", -- TODO: stop verbs from being labels
+        function() require("flash").jump { mode = "textcase", pattern = vim.fn.expand "<cword>" } end,
+      },
+      {
+        O.goto_prefix .. "W",
+        function() require("flash").jump { mode = "textcase", pattern = vim.fn.expand "<cWORD>" } end,
+      },
+      {
+        O.goto_prefix .. "n",
+        function() require("flash").jump { pattern = vim.fn.getreg "/" } end,
+      },
+      {
+        O.goto_prefix .. "hr",
+        desc = "References",
+        navutils.flash_references,
+      },
+      {
+        O.goto_prefix .. "hl",
+        desc = "Lines",
+        navutils.flash_lines,
+      },
+      {
+        O.goto_prefix .. "hh",
+        desc = "Hover",
+        function() require("flash").jump { mode = "hover" } end,
+      },
+      {
+        "<leader>df",
+        -- O.goto_prefix .. "hd",
+        desc = "Diagnostics",
+        navutils.flash_diagnostics,
+        function()
+          local Pos = require "flash.search.pos"
+          local diags = setmetatable({}, {
+            __index = function(t, k)
+              rawset(t, k, vim.diagnostic.get(vim.api.nvim_win_get_buf(k), {}))
+              return t[k]
+            end,
+          })
+          local lines = setmetatable({}, {
+            __index = function(t, k)
+              rawset(t, k, {})
+              return t[k]
+            end,
+          })
+          require("flash").jump {
+            mode = "search_diagnostics",
+            matcher = require "flash.plugins.flat_map"(function(win, pos, end_pos)
+              for _, diag in ipairs(diags[win]) do
+                local dmatch = {
+                  win = win,
+                  pos = Pos { diag.lnum + 1, diag.col },
+                  end_pos = Pos { diag.end_lnum + 1, diag.end_col - 1 },
+                  highlight_range = { pos = pos, end_pos = end_pos },
+                }
+                if pos[1] >= dmatch.pos[1] and pos[1] <= dmatch.end_pos[1] then
+                  lines[win][diag.lnum] = true
+                  return { dmatch }
+                end
+                lines[win][diag.lnum] = true
+              end
+              return {}
+            end),
+          }
+        end,
+      },
+      {
+        "<leader>dF",
+        desc = "Diagnostics + Code Action",
+        function() navutils.flash_diagnostics { action = utils.telescope.code_actions_previewed } end,
+      },
+      {
+        "r",
+        mode = "o",
+        desc = "remote ts",
+        function()
+          require("flash").remote {
+            mode = "remote_ts",
+            matcher = require "flash.plugins.flat_map"(require("flash.plugins.treesitter").get_nodes),
+          }
+        end,
+      },
+      {
+        "rx",
+        mode = { "x", "n" },
+        desc = "Remote Exchange",
+        function()
+          navutils.swap_with {
+            mode = "remote_ts",
+            matcher = require "flash.plugins.flat_map"(require("flash.plugins.treesitter").get_nodes),
+          }
+        end,
+      },
+      {
+        "M",
+        mode = "x",
+        desc = "remote ts",
+        function()
+          require("flash").jump {
+            mode = "remote_ts",
+            matcher = require "flash.plugins.flat_map"(require("flash.plugins.treesitter").get_nodes),
+          }
+        end,
+      },
+    },
   },
   {
     "ggandor/leap.nvim",
     keys = {
-      { "<leader>h", leap_anywhere, mode = "n", desc = "Leap all windows" },
+      -- { "<leader>hw", leap_anywhere, mode = "n", desc = "Leap all windows" },
+      { "s", "<Plug>(leap-forward-to)", mode = "n", desc = "Leap Fwd" },
+      { "S", "<Plug>(leap-backward-to)", mode = "n", desc = "Leap Bwd" },
+      { O.goto_prefix .. O.goto_prefix, leap_anywhere, mode = "n", desc = "Leap" },
       {
-        "<leader>df",
-        function()
-          leap_to_line(function(jt)
-            utils.dump(jt)
-            utils.lsp.diag_line {
-              bufnr = jt.wininfo.bufnr,
-              pos = jt.pos[1] - 1,
-              -- row = jt.pos[1],
-              -- col = jt.pos[2],
-              -- relative = "win",
-            }
-          end)
-        end,
-        mode = "n",
-        desc = "Diagnostic at",
+        "z", -- semi-inclusive
+        function() require("leap").leap { inclusive_op = true } end,
+        mode = { "x", "o" },
+        desc = "Leap f",
       },
-      -- { "L", leap_to_line, mode = "n", desc = "Leap to Line" },
-      { "s", leap_bi_n, mode = "n", desc = "Leap" },
-      { "z", leap_bi_x(1), mode = "x", desc = "Leap" },
-      { "<leader>f", leap_bi_x(2), mode = "x", desc = "Leap Inc" },
-      { "<leader>t", leap_bi_x(0), mode = "x", desc = "Leap Exc" },
+      {
+        "Z", -- semi-inclusive
+        function() require("leap").leap { backward = true, offset = 1, inclusive_op = true } end,
+        mode = { "x", "o" },
+        desc = "Leap f",
+      },
+      { "<leader>f", "<Plug>(leap-forward-to)", mode = "x", desc = "Leap f" },
+      { "<leader>t", "<Plug>(leap-forward-till)", mode = "x", desc = "Leap t" },
+      { "<leader>F", "<Plug>(leap-backward-to)", mode = "x", desc = "Leap F" },
+      { "<leader>T", "<Plug>(leap-backward-till)", mode = "x", desc = "Leap T" },
+      -- { "s", leap_bi_n, mode = "n", desc = "Leap" },
+      -- { "z", leap_bi_x(1), mode = "x", desc = "Leap" },
+      -- { "<leader>f", leap_bi_x(2), mode = "x", desc = "Leap Inc" },
+      -- { "<leader>t", leap_bi_x(0), mode = "x", desc = "Leap Exc" },
       { "z", leap_bi_o(1), mode = "o", desc = "Leap" },
       { "<leader>f", leap_bi_o(2), mode = "o", desc = "Leap Inc" },
       { "<leader>t", leap_bi_o(0), mode = "o", desc = "Leap Exc" },
+      {
+        "R",
+        function()
+          navutils.remote_op(function(do_op)
+            leap_anywhere(function(jt) do_op(jt.wininfo.winid, jt.pos) end)
+          end)
+        end,
+        desc = "remote",
+        mode = "o",
+      },
+      -- {
+      --   "<leader>r",
+      --   function()
+      --     navutils.remote_op(function(do_op)
+      --       leap_anywhere(function(jt) do_op(jt.wininfo.winid, jt.pos, "m") end)
+      --     end)
+      --   end,
+      --   desc = "remote treesitter",
+      --   mode = "o",
+      -- },
+      -- {
+      --   "<leader>df",
+      --   function()
+      --     leap_to_line(function(jt)
+      --       utils.dump(jt)
+      --       utils.lsp.diag_line {
+      --         bufnr = jt.wininfo.bufnr,
+      --         pos = jt.pos[1] - 1,
+      --         -- row = jt.pos[1],
+      --         -- col = jt.pos[2],
+      --         -- relative = "win",
+      --       }
+      --     end)
+      --   end,
+      --   mode = "n",
+      --   desc = "Diagnostic at",
+      -- },
+      -- {
+      --   "yp",
+      --   mode = "n",
+      --   desc = "Swap with",
+      --   function()
+      --     _G.__swap_with_opfunc = function() vim.api.nvim_feedkeys("`[cxv`]cxr", "m", true) end
+      --     vim.go.operatorfunc = "v:lua.__swap_with_opfunc"
+      --     return "g@"
+      --   end,
+      --   expr = true,
+      -- },
       -- { "m", leap_select, mode = "v", "Leap Exc" },
-      -- { "s", "<Plug>(leap-forward-to)", mode = "n", desc = "Leap Fwd" },
-      -- { "S", "<Plug>(leap-backward-to)", mode = "n", desc = "Leap Bwd" },
-      -- {
-      --   "z", -- semi-inclusive
-      --   function() require("leap").leap { inclusive_op = true } end,
-      --   mode = { "x", "o" },
-      --   desc = "Leap f",
-      -- },
-      -- {
-      --   "Z", -- semi-inclusive
-      --   function() require("leap").leap { backward = true, offset = 1, inclusive_op = true } end,
-      --   mode = { "x", "o" },
-      --   desc = "Leap f",
-      -- },
-      -- { "<leader>f", "<Plug>(leap-forward-to)", mode = { "x", "o" }, desc = "Leap f" },
-      -- { "<leader>t", "<Plug>(leap-forward-till)", mode = { "x", "o" }, desc = "Leap t" },
-      -- { "<leader>F", "<Plug>(leap-backward-to)", mode = { "x", "o" }, desc = "Leap F" },
-      -- { "<leader>T", "<Plug>(leap-backward-till)", mode = { "x", "o" }, desc = "Leap T" },
     },
     config = function()
       local leap = require "leap"
@@ -575,7 +759,7 @@ return {
         -- "\"'`",
       }
       -- stylua: ignore
-    leap.opts.safe_labels = {
+      leap.opts.safe_labels = {
         "s", "f", "n", "u", "t",
         "h", "j", "k", "l",
         "b", "e", "w",
@@ -609,43 +793,8 @@ return {
     },
   },
   {
-    "atusy/leap-search.nvim",
-    keys = {
-      { "<C-CR>", '<cr><cmd>lua require("leap-search").leap(vim.fn.getreg("/"))', mode = "c", desc = "Leap Search" },
-      {
-        O.goto_prefix .. "n",
-        function()
-          local pat = vim.fn.getreg "/"
-          local leapable = require("leap-search").leap(pat)
-          if not leapable then return vim.fn.search(pat) end
-        end,
-        desc = "Leap Next",
-      },
-      {
-        O.goto_prefix .. "N",
-        function()
-          local pat = vim.fn.getreg "/"
-          local leapable = require("leap-search").leap(pat, {}, { backward = true })
-          if not leapable then return vim.fn.search(pat, "b") end
-        end,
-        desc = "Leap Prev",
-      },
-      {
-        "<leader>sI",
-        function()
-          require("leap-search").leap(nil, {
-            engines = {
-              { name = "string.find", plain = true, ignorecase = true },
-              -- { name = "kensaku.query" }, -- to search Japanese string with romaji with https://github.com/lambdalisue/kensaku.vim
-            },
-          }, { target_windows = { vim.api.nvim_get_current_win() } })
-        end,
-        desc = "Leap Search",
-      },
-    },
-  },
-  {
     "cbochs/portal.nvim",
+    -- TODO: folke/flash jumplist
     dependencies = {
       -- "cbochs/grapple.nvim", -- Optional: provides the "grapple" query item
       -- "ThePrimeagen/harpoon", -- Optional: provides the "harpoon" query item
@@ -662,7 +811,7 @@ return {
     cmd = "Portal",
     keys = {
       { "<C-i>", function() require("portal.builtin").jumplist.tunnel_forward() end, desc = "portal fwd" },
-      { "]o", function() require("portal.builtin").jumplist.tunnel_backward() end, desc = "portal fwd" },
+      { "[o", function() require("portal.builtin").jumplist.tunnel_backward() end, desc = "portal fwd" },
       { "<C-o>", function() require("portal.builtin").jumplist.tunnel_backward() end, desc = "portal bwd" },
       -- TODO: use other queries?
     },
@@ -778,23 +927,15 @@ return {
     end,
   },
   {
-    "ggandor/leap-ast.nvim",
-    keys = {
-      {
-        "M",
-        function() require("leap-ast").leap() end,
-        mode = { "n", "x", "o" },
-      },
-    },
-  },
-  { -- TODO:? remove for leap-ast once double sided labelling is implemented
+    -- TODO:? remove for leap-ast once double sided labelling is implemented
+    -- TODO: soon to replace with folke/flash
     "IndianBoy42/nvim-treehopper",
     dev = true,
     config = function() require("tsht").config.hint_keys = O.hint_labels_array end,
     -- event = { "BufReadPost", "BufNewFile" },
     keys = {
-      { O.select_dynamic, [[:<C-U>lua require('tsht').nodes()<CR>]], mode = "o", silent = true },
-      { O.select_dynamic, [[:lua require('tsht').nodes()<CR>]], mode = "x", silent = true },
+      -- { O.select_dynamic, [[:<C-U>lua require('tsht').nodes()<CR>]], mode = "o", silent = true },
+      -- { O.select_dynamic, [[:lua require('tsht').nodes()<CR>]], mode = "x", silent = true },
       {
         O.goto_next .. O.select_dynamic,
         [[:<C-U>lua require('tsht').nodes({side = "end"})<CR>]],
@@ -877,6 +1018,65 @@ return {
           { keys[7], tc.swap_prev { skip_comments = true } },
         },
       }
+    end,
+  },
+  { "smoka7/hop.nvim" },
+  {
+    -- TODO: move from hop to leap
+    "IndianBoy42/hop-extensions",
+    dev = true,
+    opts = { keys = O.hint_labels },
+    -- event = "VeryLazy",
+    keys = function()
+      local keys = {}
+      local hops = {
+        { "?", "<cmd>HopPattern<cr>", "Search" },
+        { "/", hop_fn.hint_patterns_from({}, { reg = "/" }), "Last Search" },
+        -- { "w", exts "hint_words", "Words" },
+        { "L", hop_fn.hint_lines_skip_whitespace(), "Lines" },
+        { "v", hop_fn.hint_vertical(), "Lines Column" },
+        -- { "w", hop_fn.hint_patterns_from({}, { expand = "<cword>" }), "cword" },
+        -- { "W", hop_fn.hint_patterns_from({}, { expand = "<cWORD>" }), "cWORD" },
+        { "m", hop_fn.ts.hint_containing_nodes(), "TS Nodes Containing" },
+        { "l", hop_fn.ts.hint_defnref(), "Locals" },
+        { "D", hop_fn.ts.hint_definition(), "LSP Definitions" },
+        -- { "r", hop_fn.lsp.hint_references(), "LSP References" },
+        { "u", hop_fn.ts.hint_usages(), "TS Usages" },
+        { "c", hop_fn.ts.hint_scopes(), "Scopes" },
+        { "C", hop_fn.ts.hint_containing_scopes(), "Scopes" },
+        { "s", hop_fn.lsp.hint_symbols(), "LSP Symbols" },
+        { "d", hop_fn.hint_diagnostics(), "LSP Diagnostics" },
+        {
+          "k",
+          hop_fn.ts.hint_textobjects({}, {
+            captures = {
+              "@function",
+              "@block",
+              "@class",
+              "@conditional",
+              "@loop",
+            },
+          }),
+          "Blocks",
+        },
+        {
+          "j",
+          hop_fn.ts.hint_textobjects({}, {
+            captures = {
+              "@parameter",
+              "@statement",
+              -- "@assignment",
+              "@call",
+            },
+          }),
+          "Expressions",
+        },
+      }
+      for _, rhs_ in ipairs(hops) do
+        local lhs, rhs, desc = unpack(rhs_)
+        table.insert(keys, { O.goto_prefix .. "h" .. lhs, rhs, desc = desc, mode = { "n", "x", "o" } })
+      end
+      return keys
     end,
   },
 }

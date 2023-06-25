@@ -12,11 +12,16 @@ local diagnostic_config_all = {
     prefix = "",
     severity_limit = "Warning",
   },
-  virtual_lines = true,
+  virtual_lines = { highlight_whole_line = false },
   signs = true,
   underline = { severity = "Error" },
   severity_sort = true,
   update_in_insert = true,
+  float = {
+    header = false,
+    border = "rounded",
+    scope = "line",
+  },
 }
 local configs = {
   inlay_hints = {
@@ -57,9 +62,32 @@ local configs = {
     underline = true,
     severity_sort = true,
   },
+  hover_config = {},
 }
 configs.inlay_hints.parameter_hints_prefix = configs.inlay_hints.parameter_hints.prefix
 configs.inlay_hints.other_hints_prefix = configs.inlay_hints.type_hints.prefix
+
+if vim.lsp.buf.inlay_hint then
+  utils.lsp.on_attach(function(client, bufnr)
+    if client.server_capabilities.inlayHintProvider then
+      vim.lsp.buf.inlay_hint(bufnr, true)
+
+      local modes = {
+        false, -- Default
+        n = true,
+        i = false,
+      }
+
+      if true then
+        vim.api.nvim_create_autocmd("ModeChanged", {
+          buffer = bufnr,
+          group = "lsp_inlay_hints",
+          callback = function(args) vim.lsp.buf.inlay_hint(bufnr, modes[vim.api.nvim_get_mode().mode] or modes[0]) end,
+        })
+      end
+    end
+  end, "lsp_inlay_hints")
+end
 
 local plugins = {
   -- TODO: https://github.com/lukas-reineke/lsp-format.nvim
@@ -82,7 +110,8 @@ local plugins = {
     "lvimuser/lsp-inlayhints.nvim",
     -- event = { "BufReadPost", "BufNewFile" },
     branch = "anticonceal",
-    cond = not configs.inlay_hints.by_tools,
+    event = "LspAttach",
+    cond = not configs.inlay_hints.by_tools and vim.lsp.buf.inlay_hint == nil,
     config = function()
       require("lsp-inlayhints").setup {
         -- inlay_hints = configs.inlay_hints,
@@ -116,8 +145,6 @@ local plugins = {
         enabled_at_startup = not configs.inlay_hints.by_tools,
         -- enabled_at_startup = false,
       }
-    end,
-    init = function()
       utils.lsp.on_attach(function(client, bufnr)
         --
         require("lsp-inlayhints").on_attach(client, bufnr, false)

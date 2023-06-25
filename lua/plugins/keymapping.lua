@@ -16,8 +16,8 @@ return {
     dev = true,
     config = function()
       local a = require "keymap-amend"
-      vim.keymap.amend = a
-      vim.keymap.amend = a.get
+      vim.keymap.amend = a.amend
+      vim.keymap.get = a.get
     end,
     lazy = false,
   },

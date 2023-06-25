@@ -152,5 +152,7 @@ return {
       })
     end)
     -- utils.write_on_idle("noau_write_idle", 1000)
+
+    -- utils.lsp.auto_hover()
   end,
 }

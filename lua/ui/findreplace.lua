@@ -63,7 +63,7 @@ return {
           desc = "Replace all (motion) in file",
         },
         {
-          "r",
+          "ri",
           substitute_range("visual", {}),
           mode = "x",
           desc = "Replace all (sel) in (motion)",
@@ -77,7 +77,7 @@ return {
         --   desc = "Replace all (motion) in (sel)",
         -- },
         {
-          "R",
+          "ra",
           substitute_range("visual", { range = "%" }),
           mode = "x",
           desc = "Replace all (sel) in file",
@@ -96,7 +96,7 @@ return {
         },
         { "cx", exchange "operator", mode = "n", desc = "Exchange" },
         { "cxx", exchange "line", mode = "n", desc = "Exchange Line" },
-        { "X", exchange "visual", mode = "x", desc = "Exchange" },
+        { "x", exchange "visual", mode = "x", desc = "Exchange" },
         { "cX", exchange "cancel", mode = "n", desc = "Exchange Cancel" },
       }
     end,

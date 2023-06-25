@@ -36,7 +36,7 @@ local enhance_cscheme = function(name, cb)
   })
 end
 
-local function get_hl(name) return vim.api.nvim_get_hl_by_name(name, true) end
+local function get_hl(name) return vim.api.nvim_get_hl(-1, { name = name }) end
 
 local hilight_comments = {
 
@@ -46,7 +46,7 @@ local hilight_comments = {
   bright_hl = function()
     local bright_hl_name = "DiagnosticVirtualTextHint"
     -- local bright_hl_name = "@text.strong"
-    local hl = vim.api.nvim_get_hl_by_name(bright_hl_name, true)
+    local hl = vim.api.nvim_get_hl(-1, { name = bright_hl_name })
     hl = vim.tbl_deep_extend("force", hl, {
       bg = hl.foreground,
       fg = "white",
@@ -57,7 +57,7 @@ local hilight_comments = {
 }
 vim.api.nvim_create_user_command("HiLightComments", function()
   if not hilight_comments.de_lighted then return end
-  local hl = vim.api.nvim_get_hl_by_name(hilight_comments.comment_hl_name[1], true)
+  local hl = vim.api.nvim_get_hl(-1, { name = hilight_comments.comment_hl_name[1] })
   hilight_comments.cache_comment_hl = vim.deepcopy(hl)
   hl = hilight_comments.bright_hl()
 
@@ -144,6 +144,7 @@ return {
           ["@lsp.type.enumMember.rust"] = { link = "@type" },
           ["@lsp.mod.mutable.rust"] = { bg = get_hl("DiagnosticVirtualTextHint").background },
           ["@lsp.mod.reference.rust"] = { bg = get_hl("DiagnosticVirtualTextInfo").background },
+          ["LspInlayHint"] = { link = "DiagnosticVirtualTextInfo" },
         }
         for k, v in pairs(maps) do
           vim.api.nvim_set_hl(0, k, v)

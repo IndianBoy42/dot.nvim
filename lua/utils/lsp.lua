@@ -139,39 +139,6 @@ function M.view_location_pick(name)
   end
 end
 
-local hover_hydra
--- Easily repeatable hover
-function M.hover(hover, k)
-  hover = hover or vim.lsp.buf.hover
-  if false then
-    k = k or "h"
-    if not hover_hydra then
-      hover_hydra = require "hydra" {
-        mode = { "n", "x" },
-        hint = false,
-        body = nil,
-        heads = {
-          { "h", hover, { desc = "LSP Hover" } },
-          {
-            "<esc>",
-            function()
-              hover() -- TODO: how to do this better?
-              vim.api.nvim_win_close(0, true)
-            end,
-            { desc = "Close", exit = true, private = true },
-          },
-        },
-      }
-    end
-    return function()
-      hover()
-      hover_hydra:activate()
-    end
-  else
-    hover()
-  end
-end
-
 function M.toggle_diagnostics(b)
   if vim.diagnostic.is_disabled(b) then
     diags.enable(b or 0)
@@ -181,6 +148,21 @@ function M.toggle_diagnostics(b)
 end
 function M.disable_diagnostic(b) diags.disable(b or 0) end
 function M.enable_diagnostic(b) diags.enable(b or 0) end
+
+function M.toggle_diag_lines(enable)
+  if enable == nil then enable = not vim.diagnostic.config().virtual_lines end
+  if enable then
+    vim.diagnostic.config {
+      virtual_lines = require("langs").diagnostic_config_all.virtual_lines,
+      virtual_text = false,
+    }
+  else
+    vim.diagnostic.config {
+      virtual_lines = false,
+      virtual_text = require("langs").diagnostic_config_all.virtual_text,
+    }
+  end
+end
 
 -- TODO: Implement codeLens handlers
 function M.show_codelens()
@@ -228,21 +210,67 @@ end
 
 -- Jump between diagnostics
 -- TODO: clean up and remove the deprecate functions
-local popup_diagnostics_opts = function()
-  return {
-    header = false,
-    border = "rounded",
-    scope = "line",
-  }
+function M.diag_line(opts) diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "line" })) end
+function M.diag_cursor(opts) diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "cursor" })) end
+function M.diag_buffer(opts) diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "buffer" })) end
+
+function M.hover(handler)
+  if type(handler) == "table" then
+    local config = handler
+    handler = function(err, result, ctx) vim.lsp.handlers.hover(err, result, ctx, config) end
+  end
+  local params = vim.lsp.util.make_position_params()
+  vim.lsp.buf_request(0, "textDocument/hover", params, handler)
 end
-function M.diag_line(opts)
-  diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "line" }, popup_diagnostics_opts()))
+function M.auto_hover()
+  local auto_hover = vim.api.nvim_create_augroup("auto_hover", {})
+  vim.api.nvim_create_autocmd({ "CursorHold" }, {
+    group = auto_hover,
+    callback = function()
+      if vim.b.cursor_hold_hover then return end
+      M.hover {
+        focusable = false,
+        border = "single",
+      }
+      vim.b.cursor_hold_hover = true
+    end,
+  })
+  vim.api.nvim_create_autocmd({ "CursorMoved" }, {
+    group = auto_hover,
+    callback = function() vim.b.cursor_hold_hover = false end,
+  })
 end
-function M.diag_cursor(opts)
-  diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "cursor" }, popup_diagnostics_opts()))
-end
-function M.diag_buffer(opts)
-  diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "buffer" }, popup_diagnostics_opts()))
+local hover_hydra
+-- Easily repeatable hover
+function M.repeatable_hover(hover, k)
+  hover = hover or vim.lsp.buf.hover
+  if false then
+    k = k or "h"
+    if not hover_hydra then
+      hover_hydra = require "hydra" {
+        mode = { "n", "x" },
+        hint = false,
+        body = nil,
+        heads = {
+          { "h", hover, { desc = "LSP Hover" } },
+          {
+            "<esc>",
+            function()
+              hover() -- TODO: how to do this better?
+              vim.api.nvim_win_close(0, true)
+            end,
+            { desc = "Close", exit = true, private = true },
+          },
+        },
+      }
+    end
+    return function()
+      hover()
+      hover_hydra:activate()
+    end
+  else
+    hover()
+  end
 end
 
 function M.get_highest_diag(ns, bufnr)
@@ -257,14 +285,12 @@ end
 function M.diag_next(opts)
   diags.goto_next(vim.tbl_extend("keep", opts or {}, {
     enable_popup = true,
-    float = popup_diagnostics_opts(),
     severity = M.get_highest_diag(),
   }))
 end
 function M.diag_prev(opts)
   diags.goto_prev(vim.tbl_extend("keep", opts or {}, {
     enable_popup = true,
-    float = popup_diagnostics_opts(),
     severity = M.get_highest_diag(),
   }))
 end
@@ -450,7 +476,7 @@ vim.lsp.buf.cancel_formatting = function(bufnr)
 end
 
 M.on_attach = function(on_attach, group)
-  if type(group) == "string" then group = vim.api.create_augroup(group, { clear = true }) end
+  if type(group) == "string" then group = vim.api.nvim_create_augroup(group, { clear = true }) end
   vim.api.nvim_create_autocmd("LspAttach", {
     group = group,
     callback = function(args)
@@ -503,7 +529,7 @@ function M.rename_file(new_name)
 
   local old_name = vim.api.nvim_buf_get_name(0)
 
-  local f = function(name)
+  local do_rename = function(name)
     if name == nil then return end
     local new_name = string.format("%s/%s", vim.fs.dirname(old_name), name)
     prepare_rename { old_name = old_name, new_name = new_name }
@@ -511,12 +537,12 @@ function M.rename_file(new_name)
   end
 
   if new_name then
-    f(new_name)
+    do_rename(new_name)
   else
     vim.ui.input({
       prompt = "Rename " .. old_name,
       default = old_name,
-    }, f)
+    }, do_rename)
   end
 end
 

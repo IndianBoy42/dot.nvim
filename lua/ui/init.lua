@@ -154,28 +154,13 @@ return {
     "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
     config = function() require("lsp_lines").setup() end,
     event = { "BufReadPost", "BufNewFile" },
-    keys = function()
-      return {
-        {
-          "<leader>Tl",
-          function()
-            local enabled = vim.diagnostic.config().virtual_lines
-            if enabled then
-              vim.diagnostic.config {
-                virtual_lines = false,
-                virtual_text = require("langs").diagnostic_config_all.virtual_text,
-              }
-            else
-              vim.diagnostic.config {
-                virtual_lines = require("langs").diagnostic_config_all.virtual_lines,
-                virtual_text = false,
-              }
-            end
-          end,
-          desc = "Toggle lsp_lines",
-        },
-      }
-    end,
+    keys = {
+      {
+        "<leader>Tl",
+        utils.lsp.toggle_diag_lines,
+        desc = "Toggle lsp_lines",
+      },
+    },
   },
   { -- "VidocqH/lsp-lens.nvim",
     "VidocqH/lsp-lens.nvim",
@@ -195,7 +180,8 @@ return {
     "haringsrob/nvim_context_vt",
     event = { "BufReadPost", "BufNewFile" },
     opts = {
-      prefix = "󱞿",
+      prefix = "⤸",
+      -- "󱞿",
       highlight = "DiagnosticVirtualTextInfo",
     },
   },
@@ -384,8 +370,9 @@ return {
   {
     "HampusHauffman/block.nvim",
     cond = false,
-    event = { "BufReadPost", "BufNewFile" },
-    opts = { percent = 1.05, depth = 10, automatic = true },
+    cmd = { "Block", "BlockOn", "BlockOff" },
+    opts = { percent = 1.05, depth = 10, automatic = false },
+    -- event = { "BufReadPost", "BufNewFile" },
   },
   -- TODO: https://github.com/shellRaining/hlchunk.nvim
   {

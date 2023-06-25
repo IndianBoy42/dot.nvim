@@ -73,7 +73,7 @@ local O = {
   -- ( # ? <del> <up/down/left/right>
   -- The below is used for most hint based navigation/selection (hop, hint_textobjects)
   -- hint_labels = "fdsahjklgvcxznmbyuiorewqtp",
-  hint_labels = "hjklfdsag;nm,.ervcxzbuioyptwq",
+  hint_labels = "jklfdsahg;nm,.ervcxzbuioyptwq",
 
   -- hint_labels = "hjklfdsagnmervcxzbuioyptwq",
   database = { save_location = "~/.config/nvim/.db", auto_execute = 1 },
