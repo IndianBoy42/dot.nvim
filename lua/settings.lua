@@ -60,7 +60,7 @@ return function()
   opt.timeoutlen = O.timeoutlen -- time to wait for a mapped sequence to complete (in milliseconds)
   opt.title = true -- set the title of window to the value of the titlestring
   opt.titlestring = "%<%F%=%l/%L - nvim" -- what the title of the window will be set to
-  vim.g.cursorhold_updatetime = 300
+  vim.g.cursorhold_updatetime = 500
   opt.updatetime = vim.g.cursorhold_updatetime
   opt.writebackup = false -- if a file is being edited by another program (or was written to file while editing with another program), it is not allowed to be edited
   opt.expandtab = true -- convert tabs to spaces

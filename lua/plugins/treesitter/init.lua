@@ -2,6 +2,7 @@ local M = {
   -- TODO: break this apart into separate definitions in navedit/
   {
     "nvim-treesitter/nvim-treesitter",
+    cond = not vim.g.kitty_scrollback,
     build = ":TSUpdate",
     event = { "BufReadPost", "BufNewFile" },
     dependencies = {
@@ -88,7 +89,7 @@ local M = {
         -- max_file_lines = 1000, -- Do not enable for files with more than 1000 lines, int
       },
       incremental_selection = {
-        enable = true,
+        enable = not not O.select,
         keymaps = {
           init_selection = O.select,
           node_incremental = O.select,

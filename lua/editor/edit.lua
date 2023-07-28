@@ -1,12 +1,14 @@
 local cmt_op = "#" -- TODO: use yc (you comment?) + more
+local cmt_vi
 return {
   comment_operator = cmt_op,
+  comment_visual = cmt_vi or cmt_op,
   { -- mizlan/iswap.nvim
     "IndianBoy42/iswap.nvim",
     dev = true,
     opts = {
       keys = O.hint_labels,
-      autoswap = false,
+      autoswap = "after_label",
       move_cursor = true,
       only_current_line = false,
       debug = true,
@@ -23,41 +25,14 @@ return {
       "ISwapNodeWith",
     },
     keys = {
-      { "<leader>ei", desc = "ISwapIncr" },
       -- { "<leader>ea", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "n" } },
-      { "dx", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "n" } },
-      { "X", "<cmd>ISwap<cr>", desc = "ISwap", mode = { "x" } },
-      { "<leader>eA", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "x" } },
-      { "yx", "<cmd>ISwapNodeWith<cr>", desc = "ISwapNode", mode = { "n" } },
+      { "mx", "<cmd>ISwapNodeWith<cr>", desc = "ISwapNodeWith", mode = { "n" } },
+      { "ix", "<cmd>ISwapNodeWith<cr>", desc = "ISwapNodeWith", mode = { "x" } },
+      { "im", "<cmd>IMoveNodeWith<cr>", desc = "IMoveNodeWith", mode = { "x" } },
+      { "mX", "<cmd>ISwapNode<cr>", desc = "ISwapNode", mode = { "n" } },
       -- { "mm", F 'require("iswap").imove_node({ autoswap = false })', desc = "IMoveNode", mode = { "n" } },
       { "mm", "<cmd>IMoveNodeWith<cr>", desc = "IMove", mode = { "n" } },
-      { O.swap_prev, "<cmd>ISwapWithLeft<cr>", desc = "ISwap Left", mode = "n" },
-      { O.swap_next, "<cmd>ISwapWithRight<cr>", desc = "ISwap Right", mode = "n" },
     },
-    config = function(_, opts)
-      require("iswap").setup(opts)
-      require "hydra" {
-        name = "ISwapIncr",
-        hint = "",
-        config = {
-          color = "pink",
-          invoke_on_body = true,
-          hint = {
-            border = "rounded",
-            offset = -1,
-          },
-        },
-        mode = "n",
-        body = "<leader>ei",
-        heads = {
-          { "h", "<cmd>ISwapWithLeft<cr>", { desc = "Left" } },
-          { "j", "<cmd>ISwapWithRight<cr>", { desc = "Right" } },
-          { "k", "<cmd>ISwapWithLeft<cr>", { desc = "Left" } },
-          { "l", "<cmd>ISwapWithRight<cr>", { desc = "Right" } },
-          { "<esc>", "<esc>", { desc = "Exit", exit = true } },
-        },
-      }
-    end,
   },
   {
     -- "bennypowers/splitjoin.nvim",
@@ -78,7 +53,7 @@ return {
     "echasnovski/mini.align",
     opts = {},
     main = "mini.align",
-    keys = { { "ga" } },
+    keys = { { "ga", mode = { "n", "x" } } },
   },
   {
     "echasnovski/mini.move",
@@ -95,7 +70,6 @@ return {
         { keys[6], mode = "n" },
         { keys[7], mode = "n" },
         { keys[8], mode = "n" },
-        { "m", mode = { "n", "x" } },
       }
     end,
     opts = {
@@ -110,37 +84,37 @@ return {
         line_up = "<Up>",
       },
     },
-    config = function(_, opts)
-      require("mini.move").setup(opts)
-
-      -- TODO: moving hydra mode
-      require "hydra" {
-        name = "Move Item",
-        hint = false,
-        config = {},
-        mode = { "n" },
-        body = "m",
-        heads = {
-          { "h", utils.partial(MiniMove.move_line, "left"), {} },
-          { "j", utils.partial(MiniMove.move_line, "down"), {} },
-          { "k", utils.partial(MiniMove.move_line, "up"), {} },
-          { "l", utils.partial(MiniMove.move_line, "right"), {} },
-        },
-      }
-      require "hydra" {
-        name = "Move Item",
-        hint = false,
-        config = {},
-        mode = { "x" },
-        body = "<leader>m",
-        heads = {
-          { "h", utils.partial(MiniMove.move_selection, "left"), {} },
-          { "j", utils.partial(MiniMove.move_selection, "down"), {} },
-          { "k", utils.partial(MiniMove.move_selection, "up"), {} },
-          { "l", utils.partial(MiniMove.move_selection, "right"), {} },
-        },
-      }
-    end,
+    -- config = function(_, opts)
+    --   require("mini.move").setup(opts)
+    --
+    --   -- TODO: moving hydra mode
+    --   require "hydra" {
+    --     name = "Move Item",
+    --     hint = false,
+    --     config = {},
+    --     mode = { "n" },
+    --     body = "m",
+    --     heads = {
+    --       { "h", utils.partial(MiniMove.move_line, "left"), {} },
+    --       { "j", utils.partial(MiniMove.move_line, "down"), {} },
+    --       { "k", utils.partial(MiniMove.move_line, "up"), {} },
+    --       { "l", utils.partial(MiniMove.move_line, "right"), {} },
+    --     },
+    --   }
+    --   require "hydra" {
+    --     name = "Move Item",
+    --     hint = false,
+    --     config = {},
+    --     mode = { "x" },
+    --     body = "<leader>m",
+    --     heads = {
+    --       { "h", utils.partial(MiniMove.move_selection, "left"), {} },
+    --       { "j", utils.partial(MiniMove.move_selection, "down"), {} },
+    --       { "k", utils.partial(MiniMove.move_selection, "up"), {} },
+    --       { "l", utils.partial(MiniMove.move_selection, "right"), {} },
+    --     },
+    --   }
+    -- end,
   },
   {
     "monaqa/dial.nvim",
@@ -191,7 +165,7 @@ return {
     main = "mini.comment",
     opts = {
       mappings = {
-        comment = cmt_op,
+        comment = cmt_vi and "" or cmt_op,
         comment_line = cmt_op .. cmt_op:sub(-1),
         textobject = "i" .. cmt_op,
       },
@@ -216,6 +190,11 @@ return {
           .. "`z", -- Go back to the original position
         { desc = "copy and comment" }
       )
+
+      if cmt_vi then
+        vim.keymap.set("x", cmt_vi, ":<c-u>MiniComment.operator('visual')<cr>", { desc = "Comment selection" })
+        vim.keymap.set("n", cmt_op, function() return MiniComment.operator() end, { expr = true, desc = "Comment" })
+      end
     end,
   },
   {
@@ -277,5 +256,42 @@ return {
       end
     end,
     keys = { { "cu", desc = "Change case" }, { "<leader>rc", desc = "Rename case", mode = { "x", "n" } } },
+  },
+  {
+    "smjonas/duplicate.nvim",
+    opts = { operator = { visual_mode = "D", normal_mode = "yd", line = "ydd" } },
+    keys = { { "yd" }, { "ydd" }, { mode = "x", "D" } },
+  },
+  {
+    "gbprod/yanky.nvim",
+    opts = {},
+    config = function(_, opts)
+      require("yanky").setup(opts)
+      require("telescope").load_extension "yank_history"
+    end,
+    keys = {
+      { "y", "<Plug>(YankyYank)", mode = { "n", "x" } },
+      { "dy", F "require'yanky'.history.delete(1)", mode = "n", desc = "Drop last yank from history" },
+      { "p", "<Plug>(YankyPutAfter)", mode = { "n", "x" } },
+      { "P", "<Plug>(YankyPutBefore)", mode = { "n", "x" } },
+      { "gp", "<Plug>(YankyGPutAfter)", mode = { "n", "x" } },
+      { "gP", "<Plug>(YankyGPutBefore)", mode = { "n", "x" } },
+      { "<C-p>", "<Plug>(YankyCycleForward)", mode = { "n", "x" }, desc = "Cycle paste backward" },
+      -- TODO: Cycle hydra for no modifiers?
+      { "<C-S-p>", "<Plug>(YankyCycleBackward)", mode = { "n", "x" }, desc = "Cycle paste forward" },
+      { "<leader>sp", "<cmd>Telescope yank_history<CR>", mode = { "n", "x" }, desc = "Search yank history" },
+      { "<leader>p", "<Plug>(YankyPutIndentAfterLinewise)", mode = "n", desc = "Put after line" },
+      { "<leader>P", "<Plug>(YankyPutIndentBeforeLinewise)", mode = "n", desc = "Put before line" },
+      { "yp", "<Plug>(YankyPutIndentAfterCharwise)", mode = "n", desc = "Put after char" },
+      { "yP", "<Plug>(YankyPutIndentBeforeCharwise)", mode = "n", desc = "Put before char" },
+      { "cp", '"+p', mode = "n", desc = "Clipboard p" },
+      { "cP", '"+P', mode = "n", desc = "Clipboard P" },
+      { "cy", '"+y', mode = "n", desc = "Clipboard y" },
+      { "cyy", '"+yy', mode = "n", desc = "Clipboard yy" },
+      { "cY", '"+Y', mode = "n", desc = "Clipboard Y" },
+      { "cd", '"+d', mode = "n", desc = "Clipboard d" },
+      { "cdd", '"+dd', mode = "n", desc = "Clipboard dd" },
+      { "cD", '"+D', mode = "n", desc = "Clipboard D" },
+    },
   },
 }

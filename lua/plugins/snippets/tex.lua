@@ -412,7 +412,7 @@ list_extend(auto, {
   -- ms("\\gg=", { c(1, { t "\\geq", t "\\succeq", t "\\supseteq" }) }),
   -- ms("\\ll=", { c(1, { t "\\leq", t "\\preceq", t "\\subseteq" }) }),
   ms(re "(%b{})/", {
-    t "\\frac",
+    t "\\frac{",
     sub(1),
     i(1),
     t "}{",

@@ -35,7 +35,6 @@ local telescope = {
 
     local with_rg = require("utils.telescope").with_rg
     local rg = with_rg { ignore = true, hidden = true }
-    -- M.shell_cmd.fd = vim.list_extend(vim.deepcopy(M.shell_cmd.rg), { "--files" })
     local fd = with_rg { ignore = true, hidden = true, files = true }
 
     return {
@@ -59,14 +58,14 @@ local telescope = {
             flip_columns = 150,
           },
         },
-        path_display = { "shorten" },
+        path_display = { "smart" },
         set_env = { ["COLORTERM"] = "truecolor" }, -- default = nil,
         mappings = {
           i = {
             ["<C-p>"] = action_layout.toggle_preview,
             ["<Esc>"] = actions.close,
 
-            ["<C-s>"] = utils.telescope.flash,
+            ["<C-h>"] = utils.telescope.flash,
             ["<C-x>"] = actions.delete_buffer,
             ["<C-s>"] = actions.select_horizontal,
             ["<C-v>"] = actions.select_vertical,
@@ -89,7 +88,7 @@ local telescope = {
           },
           n = {
             -- ["<M-p>"] = action_layout.toggle_preview,
-            ["s"] = utils.telescope.flash,
+            ["h"] = utils.telescope.flash,
             ["j"] = actions.move_selection_next,
             ["k"] = actions.move_selection_previous,
             ["<localleader>x"] = actions.delete_buffer,
@@ -159,11 +158,12 @@ local telescope = {
     telescope.setup(opts)
 
     -- telescope.load_extension('fzy_native')
+    telescope.load_extension "noice"
     telescope.load_extension "fzf"
     telescope.load_extension "smart_open"
     telescope.load_extension "frecency"
     telescope.load_extension "luasnip"
-    -- telescope.load_extension "undo"
+    telescope.load_extension "undo"
     -- telescope.load_extension('project')
   end,
 }

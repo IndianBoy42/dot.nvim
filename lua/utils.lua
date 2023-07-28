@@ -150,7 +150,7 @@ function M.operatorfunc_scaffold(operatorfunc, op_pending)
 
   return function()
     M.set_opfunc(wrapped)
-    feedkeys("g@" .. (op_pending and type(op_pending) == "string" and op_pending or ""), "m", false)
+    feedkeys("g@" .. (op_pending and type(op_pending) == "string" and op_pending or ""), "n", false)
     if type(op_pending) == "function" then op_pending() end
   end
 end
@@ -396,7 +396,29 @@ do
   local cbs = M.timeout_helper(1000, function()
     -- local row, col = unpack(getcurpos(0))
     -- setmark(0, "'", row, col)
-    if vim.api.nvim_get_mode().mode == "n" then vim.cmd "normal! m'" end
+    if vim.api.nvim_get_mode().mode == "n" then
+      local found
+      local jumplist = unpack(vim.fn.getjumplist())
+      local newentry = {
+        bufnr = vim.api.nvim_get_current_buf(),
+        col = vim.fn.col ".",
+        lnum = vim.fn.line ".",
+      }
+      for _, entry in ipairs(jumplist) do
+        local eq = true
+        for k, v in pairs(newentry) do
+          if entry[k] ~= v then
+            eq = false
+            break
+          end
+        end
+        if eq then
+          found = entry
+          break
+        end
+      end
+      if not found then vim.cmd "normal! m'" end
+    end
     -- feedkeys("m'", "n", true)
   end)
   local grp = vim.api.nvim_create_augroup("hold_jumplist", { clear = true })

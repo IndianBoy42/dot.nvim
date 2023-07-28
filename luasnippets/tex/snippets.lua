@@ -16,6 +16,7 @@ local tbl_extend = vim.tbl_extend
 local conds = require "luasnip.extras.expand_conditions"
 
 local function sub(j)
+  j = j or 1
   return f(function(_, args)
     return string.format("%s", args.captures[j])
   end, {})
@@ -195,7 +196,7 @@ local math_maps = {
   ["nii"] = "ni",
   ["!in"] = "notin",
   ["!!"] = "neg",
-  [ [[\\]] ] = "setminus",
+  [ [[\-]] ] = "setminus",
   ["null"] = "emptyset",
   ["varnull"] = "varnothing",
   "cup",

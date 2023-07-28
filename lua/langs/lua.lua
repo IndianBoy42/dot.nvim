@@ -25,21 +25,27 @@ return {
               },
             },
           },
-          on_attach = function(client, bufnr)
-            local map = vim.keymap.setl
-            map("n", "<localleader>X", "<Plug>(Luadev-RunLine)") --	Execute the current line
-            map("n", "<localleader>x", "<Plug>(Luadev-Run)") --	Operator to execute lua code over a movement or text object.
-            map("n", "<localleader>rw", "<Plug>(Luadev-RunWord)") --	Eval identifier under cursor, including table.attr
-            -- map("n", "<localleader>x", "<Plug>(Luadev-Complete)") --
-          end,
         },
       },
     },
   },
+  -- TODO: which is the best nvim-lua REPL?
   {
     "bfredl/nvim-luadev",
     opts = {},
     cmd = "Luadev",
+    init = function()
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "lua",
+        callback = function()
+          local map = vim.keymap.setl
+          map("n", "<localleader>X", "<Plug>(Luadev-RunLine)") --	Execute the current line
+          map("n", "<localleader>x", "<Plug>(Luadev-Run)") --	Operator to execute lua code over a movement or text object.
+          map("n", "<localleader>rw", "<Plug>(Luadev-RunWord)") --	Eval identifier under cursor, including table.attr
+          -- map("n", "<localleader>x", "<Plug>(Luadev-Complete)") --
+        end,
+      })
+    end,
   },
   {
     "ii14/neorepl.nvim",
@@ -65,5 +71,25 @@ return {
     keys = {
       { "g:", "<cmd>NeoRepl<cr>", "NeoRepl" },
     },
+  },
+  {
+    "rafcamlet/nvim-luapad",
+    opts = { context = {
+      utils = utils,
+    } },
+    cmd = { "Luapad", "LuaRun", "LuaAttach", "LuaDetach", "LuaEval" },
+    config = function(_, opts)
+      require("luapad").setup(opts)
+      local cmd = function(name, fn, opts)
+        vim.api.nvim_create_user_command(
+          name,
+          function(args) require("luapad")[fn](type(opts) == "function" and opts(args) or opts) end,
+          { nargs = "*" }
+        )
+      end
+      cmd("LuaAttach", "attach", {})
+      cmd("LuaDetach", "detach", {})
+      vim.api.nvim_create_user_command("LuaEval", function(args) require("luapad.state").current():eval() end, {})
+    end,
   },
 }

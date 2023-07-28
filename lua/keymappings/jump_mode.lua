@@ -102,7 +102,7 @@ M.repeatable = function(ch, desc, fwdbwd, _opts)
 end
 
 -- M.word_suffixes = { "w", "b", "e", "ge", "W", "B", "E", "gE", "v", "&", "n", "N", "f", "F" }
-M.word_suffixes = { "w", "b", "e", "ge", "W", "B", "E", "gE", "I", "A", "}", "{", "]", "[" }
+M.word_suffixes = { "w", "b", "e", "ge", "W", "B", "E", "gE", "I", "A", "IN", "IL", "AN", "AL" }
 M.move_by_descs = {
   "Next Begin",
   "Prev Begin",
@@ -135,8 +135,8 @@ M.sym_suffixes = {
   O.select_outer,
   O.select_next,
   O.select_previous,
-  "a" .. O.select_next,
-  "a" .. O.select_previous,
+  O.select_next,
+  O.select_previous,
 }
 
 -- TODO: more of this, better selection mappings for repeats
@@ -148,7 +148,7 @@ M.move_by = function(prefix, suffixes, actions, desc, o)
     name = desc,
     config = {
       color = "pink",
-      invoke_on_body = false,
+      invoke_on_body = true,
       -- timeout = 5000, -- millis
       hint = {
         border = "rounded",
@@ -174,7 +174,7 @@ M.move_by = function(prefix, suffixes, actions, desc, o)
   end
   vim.list_extend(heads, {
     {
-      "n",
+      "<M-n>",
       function()
         actions[1]()
         return "<Plug>(VM-Add-Cursor-At-Pos)<Plug>(VM-Disable-Mappings)"
@@ -182,7 +182,7 @@ M.move_by = function(prefix, suffixes, actions, desc, o)
       { desc = "Add Cursor", private = true, expr = true },
     },
     {
-      "N",
+      "<M-S-N>",
       function()
         actions[2]()
         return "<Plug>(VM-Add-Cursor-At-Pos)<Plug>(VM-Disable-Mappings)"

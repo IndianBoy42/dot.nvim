@@ -30,6 +30,7 @@ return {
     end)
 
     augrp("_terminal_insert", function(au)
+      if true then return end
       au("BufEnter", {
         pattern = "term://*",
         callback = function() vim.cmd.startinsert() end,
@@ -101,7 +102,7 @@ return {
       local fs = vim.fs
 
       -- Automatically change to project root directory using either LSP or configured root patterns
-      local root_patterns = { ".git", "Makefile", "CMakeLists.txt", "Justfile" }
+      local root_patterns = { ".git", "Makefile", "CMakeLists.txt", "Justfile", "Cargo.toml" }
 
       local function get(args)
         if args.event == "VimEnter" then

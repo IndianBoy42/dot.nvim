@@ -12,6 +12,10 @@ return {
         ui = {
           border = "rounded",
         },
+        registries = {
+          "lua:masonry",
+          "github:mason-org/mason-registry",
+        },
       },
       config = function(_, opts)
         require("mason").setup(opts)
@@ -22,7 +26,7 @@ return {
         end
       end,
     },
-    "williamboman/mason-lspconfig.nvim",
+    { "williamboman/mason-lspconfig.nvim", enabled = true },
   },
   opts = {
     -- LSP Server Settings

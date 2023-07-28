@@ -1,11 +1,11 @@
 local M = {}
 M.hydra = function(bufnr)
   local hint = [[
- _J_: next hunk   _s_: stage hunk        _d_: show deleted   _b_: blame line
- _K_: prev hunk   _u_: undo last stage   _p_: preview hunk   _B_: blame show full 
+ _]_: next hunk   _s_: stage hunk        _d_: show deleted   _b_: blame line
+ _[_: prev hunk   _u_: undo last stage   _p_: preview hunk   _B_: blame show full 
  _o_: open file   _S_: stage buffer      ^ ^                 _/_: show base file
  ^
- ^ ^              _<Enter>_: Fugitive          _q_: exit
+ ^ ^              _g_: Neogit          _q_: exit
 ]]
   local Hydra = require "hydra"
   local gitsigns = require "gitsigns"
@@ -30,7 +30,7 @@ M.hydra = function(bufnr)
         local cursor_pos = vim.api.nvim_win_get_cursor(0)
         vim.cmd "loadview"
         vim.api.nvim_win_set_cursor(0, cursor_pos)
-        vim.cmd "normal zv"
+        vim.cmd "normal! zv"
         gitsigns.toggle_signs(false)
         gitsigns.toggle_linehl(false)
         gitsigns.toggle_deleted(false)
@@ -40,7 +40,7 @@ M.hydra = function(bufnr)
     body = "<leader>g",
     heads = {
       {
-        "J",
+        "]",
         function()
           if vim.wo.diff then return "]c" end
           vim.schedule(function() gitsigns.next_hunk() end)
@@ -49,7 +49,7 @@ M.hydra = function(bufnr)
         { expr = true, desc = "next hunk" },
       },
       {
-        "K",
+        "[",
         function()
           if vim.wo.diff then return "[c" end
           vim.schedule(function() gitsigns.prev_hunk() end)
@@ -79,8 +79,8 @@ M.hydra = function(bufnr)
       { "B", function() gitsigns.blame_line { full = true } end, { desc = "blame show full" } },
       { "/", gitsigns.show, { exit = true, desc = "show base file" } }, -- show the base of the file
       { "o", utils.telescope.git_status, { desc = "Open" } },
-      { "<Enter>", function() vim.cmd "tab G" end, { exit = true, desc = "Fugitive" } },
-      { "<Space>", ":tab G ", { exit = true, desc = false } },
+      { "g", function() vim.cmd "Neogit" end, { exit_before = true, desc = "Fugitive" } },
+      -- { "<Space>", ":tab G ", { exit = true, desc = false } },
       { "q", nil, { exit = true, nowait = true, desc = "exit" } },
       { "<esc>", nil, { exit = true, nowait = true, desc = "exit" } },
     },

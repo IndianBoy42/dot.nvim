@@ -51,13 +51,13 @@ return {
         -- { "r", substitute("visual", { yank_substituted_text = true }), mode = "x", desc = "Replace" },
         -- TODO: fuck these, just use vim-visual-multi?
         {
-          "rI",
+          "<leader>rI",
           substitute_range "operator",
           mode = "n",
           desc = "Replace all (motion1) in (motion2)",
         },
         {
-          "rA",
+          "<leader>rA",
           substitute_range("operator", { range = "%" }),
           mode = "n",
           desc = "Replace all (motion) in file",
@@ -83,13 +83,13 @@ return {
           desc = "Replace all (sel) in file",
         },
         {
-          "co",
+          "<leader>ro",
           substitute_range "word",
           mode = "n",
           desc = "Replace all iw in (motion)",
         },
         {
-          "cO",
+          "<leader>rO",
           substitute_range("word", { range = "%" }),
           mode = "n",
           desc = "Replace all iw in file",
@@ -97,7 +97,7 @@ return {
         { "cx", exchange "operator", mode = "n", desc = "Exchange" },
         { "cxx", exchange "line", mode = "n", desc = "Exchange Line" },
         { "x", exchange "visual", mode = "x", desc = "Exchange" },
-        { "cX", exchange "cancel", mode = "n", desc = "Exchange Cancel" },
+        -- { "<leader>X", exchange "cancel", mode = "n", desc = "Cancel Exchange" },
       }
     end,
   },
@@ -321,6 +321,15 @@ return {
         expr = true,
         desc = "Rename",
       },
+      {
+        "ru",
+        function()
+          require "inc_rename"
+          return ":IncRename " .. vim.fn.expand "<cword>"
+        end,
+        expr = true,
+        desc = "Lsp Rename",
+      },
     },
     config = true,
   },
@@ -337,5 +346,39 @@ return {
     keys = {
       { "<leader>rq", utils.lazy_require("replacer").run, desc = "Replace from quickfix" },
     },
+  },
+  {
+    "eugen0329/vim-esearch",
+    keys = {
+      { "<leader>re", desc = "Esearch", "<Plug>(esearch)" },
+      { "<leader>R", desc = "Esearch (op)", "<Plug>(operator-esearch-prefill)" },
+    },
+    init = function()
+      vim.g.esearch = {
+        default_mappings = 0,
+        live_update = 1,
+        prefill = { "hlsearch", "last", "clipboard" },
+        win_map = {
+          { "n", "<C-q>", "<cmd>bdelete<cr>" },
+          -- yf    | Yank a hovered file absolute path.
+          { "n", "yf", ":call setreg(esearch#util#clipboard_reg(), b:esearch.filename())<cr>" },
+          -- t     | Use a custom command to open the file in a tab.
+          { "n", "t", ':call b:esearch.open("NewTabdrop")<cr>' },
+          -- +     | Render [count] more lines after a line with matches. Ex: + adds 1 line, 10+ adds 10.
+          { "n", "<localleader>+", ":call esearch#init(extend(b:esearch, AddAfter(+v:count1)))<cr>" },
+          -- -     | Render [count] less lines after a line with matches. Ex: - hides 1 line, 10- hides 10.
+          { "n", "<localleader>-", ":call esearch#init(extend(b:esearch, AddAfter(-v:count1)))<cr>" },
+          -- gq    | Populate QuickFix list using results of the current pattern search.
+          { "n", "<localleader>q", ':call esearch#init(extend(copy(b:esearch), {"out": "qflist"}))<cr>' },
+          -- gsp   | Sort the results by path. NOTE that it's search util-specific.
+          { "n", "<localleader>sp", ":call esearch#init(extend(b:esearch, esearch_sort_by_path))<cr>" },
+          -- gsd   | Sort the results by modification date. NOTE that it's search util-specific.
+          { "n", "<localleader>sd", ":call esearch#init(extend(b:esearch, esearch_sort_by_date))<cr>" },
+        },
+      }
+      vim.g.esearch_sort_by_path = { adapters = { rg = { options = "--sort path" } } }
+      vim.g.esearch_sort_by_date = { adapters = { rg = { options = "--sort modified" } } }
+      vim.cmd [[ let g:AddAfter = {n -> {'after': b:esearch.after + n, 'backend': 'system'}} ]]
+    end,
   },
 }

@@ -56,6 +56,8 @@ return {
         formatters.fnlfmt,
         -- formatters.json_tool,
         formatters.nixfmt,
+        formatters.mdformat,
+        formatters.markdownlint,
 
         -- -- Diagnostics
         -- -- diagnostics.chktex, -- vimtex?

@@ -38,8 +38,8 @@ local function dap_hydra_setup()
       { "X", dap.close, { silent = true } },
       { "C", "<cmd>lua require('dapui').close()<cr>:DapVirtualTextForceRefresh<CR>", { silent = true } },
       { "b", dap.toggle_breakpoint, { silent = true } },
-      -- { "K", require("dap.ui.widgets").hover, { silent = true } },
-      { "K", dapui.eval, { silent = true } },
+      { O.hover_key, require("dap.ui.widgets").hover, { silent = true } },
+      { O.action_key, dapui.eval, { silent = true } },
       {
         "<M-k>",
         partial(vim.ui.input, { prompt = "Eval:" }, function(input)
@@ -113,9 +113,18 @@ return {
       dap.listeners.before.event_terminated.dapui_config = dapui.close
       dap.listeners.before.event_exited.dapui_config = dapui.close
 
-      dap.listeners.after.event_initialized.virt_diags = function() utils.lsp.disable_diagnostic() end
-      dap.listeners.before.event_terminated.virt_diags = function() utils.lsp.enable_diagnostic() end
-      dap.listeners.before.event_exited.virt_diags = function() utils.lsp.enable_diagnostic() end
+      dap.listeners.after.event_initialized.virt_diags = function()
+        utils.lsp.disable_diagnostic()
+        utils.lsp.inlay_hints(0, false)
+      end
+      dap.listeners.before.event_terminated.virt_diags = function()
+        utils.lsp.enable_diagnostic()
+        utils.lsp.inlay_hints(0, true)
+      end
+      dap.listeners.before.event_exited.virt_diags = function()
+        utils.lsp.enable_diagnostic()
+        utils.lsp.inlay_hints(0, true)
+      end
 
       vim.api.nvim_create_autocmd("FileType", {
         pattern = "dap-repl",

@@ -1,3 +1,75 @@
+local function on_attach()
+  local rt = require "rust-tools"
+  -- require("utils.lsp").live_codelens()
+
+  mappings.localleader {
+    m = { "<Cmd>RustExpandMacro<CR>", "Expand Macro" },
+    -- TODO: Integrate with Kitty.lua
+    e = { "<Cmd>RustRunnables<CR>", "Runnables" },
+    d = { "<Cmd>RustDebuggables<CR>", "Debuggables" },
+    -- a = { require("rust-tools").code_action_group.code_action_group, "Code Actions" },
+    s = { ":RustSSR  ==>> <Left><Left><Left><Left><Left><Left>", "Structural S&R" },
+  }
+  local map = vim.keymap.setl
+  map("x", O.hover_key, "<cmd>RustHoverRange<CR>", { desc = "Hover Range" })
+  map("n", O.hover_key, "<cmd>RustHoverActions<CR>", { desc = "Hover Actions" })
+  map("n", "gj", "<cmd>RustJoinLines<CR>", { desc = "Join Lines" })
+
+  local move_item = function(dir)
+    return function()
+      rt.move_item.move_item(dir == "k")
+      vim.cmd "norm! zz"
+    end
+  end
+  local move_mode = require "hydra" {
+    name = "Move Item",
+    config = { color = "pink" },
+    mode = { "n" },
+    body = "<localleader>",
+    heads = {
+      {
+        "l",
+        move_item "j",
+        { desc = "Move Item Down" },
+      },
+      {
+        "h",
+        move_item "k",
+        { desc = "Move Item Up" },
+      },
+      { "q", nil, { exit = true, nowait = true, desc = "exit" } },
+      { "<ESC>", nil, { exit = true, nowait = true, desc = "exit" } },
+    },
+  }
+  -- map("n", "gmj", function()
+  --   move_item "j"()
+  --   -- move_mode:activate()
+  -- end, { desc = "Move Item Down" })
+  -- map("n", "gmk", function()
+  --   move_item "k"()
+  --   -- move_mode:activate()
+  -- end, { desc = "Move Item Up" })
+
+  local function code_action(kind, opts)
+    opts = opts or {}
+    opts.kind = opts.kind or kind
+    return function() vim.lsp.buf.code_action(opts) end
+  end
+
+  -- map("n", "KK", require("rust-tools").code_action_group.code_action_group, { desc = "Code Actions" })
+  mappings.vlocalleader {
+    h = { "<cmd>RustHoverRange<CR>", "Hover Range" },
+    e = {
+      name = "Refactoring",
+      v = { code_action "refactor.extract.function", "Extract Function" },
+      -- TODO: the rest of these actions
+    },
+  }
+  mappings.ftleader {
+    pR = { "<CMD>RustRunnables<CR>", "Rust Run" },
+    pd = { "<CMD>RustDebuggables<CR>", "Rust Debug" },
+  }
+end
 local function postfix_wrap_call(trig, call, requires)
   return {
     postfix = trig,
@@ -129,11 +201,6 @@ return {
           local liblldb_path = vim.fn.has "mac" == 1 and extension_path .. "lldb/lib/liblldb.dylib"
             or extension_path .. "lldb/lib/liblldb.so"
 
-          local rust_tools_executor = nil
-          local inlay_hints = vim.deepcopy(require("langs").inlay_hints)
-          local inlay_hints_enabled = inlay_hints.auto and inlay_hints.by_tools
-          inlay_hints.auto = inlay_hints_enabled
-
           local rust_tools_opts = vim.tbl_deep_extend("force", opts, {
             dap = {
               adapter = require("rust-tools.dap").get_codelldb_adapter(codelldb_path, liblldb_path),
@@ -143,7 +210,7 @@ return {
                 auto_focus = true,
                 border = "rounded",
               },
-              inlay_hints = inlay_hints,
+              inlay_hints = { auto = false },
               runnables = {
                 use_telescope = true,
                 layout_config = {
@@ -160,86 +227,8 @@ return {
               },
             },
             server = {
-              on_attach = function()
-                local rt = require "rust-tools"
-                -- require("utils.lsp").live_codelens()
-
-                local dap = require "dap"
-                dap.listeners.after.event_initialized.rust_tools = function()
-                  require("rust-tools").inlay_hints.disable()
-                end
-                dap.listeners.before.event_terminated.rust_tools = function() require("rust-tools").inlay_hints.enable() end
-                dap.listeners.before.event_exited.rust_tools = function() require("rust-tools").inlay_hints.enable() end
-
-                mappings.localleader {
-                  m = { "<Cmd>RustExpandMacro<CR>", "Expand Macro" },
-                  i = {
-                    function()
-                      if inlay_hints_enabled then
-                        rt.inlay_hints.disable()
-                      else
-                        rt.inlay_hints.enable()
-                      end
-                    end,
-                    "Toggle Inlay Hints",
-                  },
-                  -- TODO: Integrate with Kitty.lua
-                  e = { "<Cmd>RustRunnables<CR>", "Runnables" },
-                  d = { "<Cmd>RustDebuggables<CR>", "Debuggables" },
-                  h = { "<Cmd>RustHoverActions<CR>", "Hover Actions" },
-                  a = { require("rust-tools").code_action_group.code_action_group, "Code Actions" },
-                  s = { ":RustSSR  ==>> <Left><Left><Left><Left><Left><Left>", "Structural S&R" },
-                }
-                local map = vim.keymap.setl
-                map("x", "H", "<cmd>RustHoverRange<CR>", { desc = "Hover Range" })
-                map("n", "H", "<cmd>RustHoverActions<CR>", { desc = "Hover Actions" })
-                map("n", "gj", "<cmd>RustJoinLines<CR>", { desc = "Join Lines" })
-
-                local move_item = function(dir)
-                  return function()
-                    rt.move_item.move_item(dir == "k")
-                    vim.cmd("normal! " .. dir)
-                  end
-                end
-                local move_mode = require "hydra" {
-                  name = "Move Item",
-                  hint = false,
-                  config = { color = "pink" },
-                  mode = { "n" },
-                  heads = {
-                    {
-                      "j",
-                      move_item "j",
-                      { desc = "Move Item Down" },
-                    },
-                    {
-                      "k",
-                      move_item "k",
-                      { desc = "Move Item Up" },
-                    },
-                    { "q", nil, { exit = true, nowait = true, desc = "exit" } },
-                    { "<ESC>", nil, { exit = true, nowait = true, desc = "exit" } },
-                  },
-                }
-                map("n", "gmj", function()
-                  move_item "j"()
-                  -- move_mode:activate()
-                end, { desc = "Move Item Down" })
-                map("n", "gmk", function()
-                  move_item "k"()
-                  -- move_mode:activate()
-                end, { desc = "Move Item Up" })
-
-                -- map("n", "KK", require("rust-tools").code_action_group.code_action_group, { desc = "Code Actions" })
-                mappings.vlocalleader {
-                  h = { "<cmd>RustHoverRange<CR>", "Hover Range" },
-                }
-                mappings.ftleader {
-                  pR = { "<CMD>RustRunnables<CR>", "Rust Run" },
-                  pd = { "<CMD>RustDebuggables<CR>", "Rust Debug" },
-                }
-              end,
-              cmd = { "ra-multiplex", "--ra-mux-server", "rust-analyzer" },
+              on_attach = on_attach,
+              cmd = { "ra-multiplex", "client" },
               settings = {
                 ["rust-analyzer"] = {
                   -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#rust_analyzer
@@ -309,7 +298,7 @@ return {
 
           local taplo_on_attach = function(client, buffer)
             if is_cargo() then
-              vim.keymap.set("n", "H", show_popup, { buffer = buffer })
+              vim.keymap.set("n", O.hover_key, show_popup, { buffer = buffer })
               local crates = require "crates"
               mappings.localleader {
                 t = { crates.toggle, "Toggle" },

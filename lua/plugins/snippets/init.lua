@@ -1,13 +1,21 @@
+local function load_all()
+  require("luasnip.loaders.from_lua").lazy_load()
+  require("luasnip.loaders.from_vscode").lazy_load()
+  require("luasnip.loaders.from_snipmate").lazy_load()
+end
 local M = {
   {
     "L3MON4D3/LuaSnip",
     dependencies = {
+      { "rafamadriz/friendly-snippets" },
       {
-        "rafamadriz/friendly-snippets",
-        config = function() require("luasnip.loaders.from_vscode").lazy_load() end,
+        "benfowler/telescope-luasnip.nvim",
+        config = function() require("telescope").load_extension "luasnip" end,
+        keys = {
+          { "<leader>sP", "<cmd>Telescope luasnip<cr>", desc = "Snippets" },
+        },
       },
     },
-    event = { "InsertEnter" },
     config = function()
       local map = vim.keymap.set
       --  "<Plug>luasnip-expand-or-jump"
@@ -36,32 +44,32 @@ local M = {
         end
       end
 
-      map("i", "<M-n>", jump_next, { silent = true })
-      map("s", "n", jump_next, { silent = true })
-      map("i", "<C-n>", jump_next, { silent = true })
-      map("i", "<M-p>", jump_prev, { silent = true })
-      map("s", "p", jump_prev, { silent = true })
-      map("i", "<C-p>", jump_prev, { silent = true })
+      map({ "i", "s" }, "<M-n>", jump_next, { silent = true })
+      map({ "i", "s" }, "<M-p>", jump_prev, { silent = true })
       -- map("i", "<C-u>", require "luasnip.extras.select_choice", { silent = true })
       -- map("i", "<M-n>", "<Plug>luasnip-next-choice", { silent = true })
-      map("s", "j", "<Plug>luasnip-next-choice", { silent = true })
+      map({ "i", "s" }, "<M-j>", "<Plug>luasnip-next-choice", { silent = true })
       -- map("i", "<M-p>", "<Plug>luasnip-prev-choice", { silent = true })
-      map("s", "k", "<Plug>luasnip-prev-choice", { silent = true })
+      map({ "i", "s" }, "<M-k>", "<Plug>luasnip-prev-choice", { silent = true })
       -- map("i", "<C-y>", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
+      map("s", "n", jump_next, { silent = true })
+      map("s", "p", jump_prev, { silent = true })
+      map("s", "j", "<Plug>luasnip-next-choice", { silent = true })
       map("s", "h", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
+      map("s", "k", "<Plug>luasnip-prev-choice", { silent = true })
 
       map("n", "<M-s>", utils.operatorfunc_keys "<TAB>", { silent = true })
       for _, v in ipairs { "a", "b", "c" } do
         map(
           "v",
-          "<C-f>" .. v,
+          "<M-f>" .. v,
           '"' .. v .. "<cmd>lua require('luasnip.extras.otf').on_the_fly('" .. v .. "')<cr>",
           { silent = true, desc = "On the fly: " .. v }
         )
 
         map(
           "i",
-          "<C-f>" .. v,
+          "<M-f>" .. v,
           "<cmd>lua require('luasnip.extras.otf').on_the_fly('" .. v .. "')<cr>",
           { silent = true, desc = "On the fly: " .. v }
         )
@@ -127,7 +135,7 @@ local M = {
         ext_base_prio = 300,
         -- minimal increase in priority.
         ext_prio_increase = 1,
-        store_selection_keys = "<tab>",
+        store_selection_keys = "<leader><leader>",
 
         ext_opts = {
           [types.choiceNode] = {
@@ -169,19 +177,35 @@ local M = {
       }
 
       require("plugins.snippets.luasnips_choices").config()
-      require("luasnip.loaders.from_lua").lazy_load { paths = _G.CONFIG_PATH .. "/luasnippets" }
+      -- friendly-snippets - enable standardized comments snippets
+      require("luasnip").filetype_extend("typescript", { "tsdoc" })
+      require("luasnip").filetype_extend("javascript", { "jsdoc" })
+      require("luasnip").filetype_extend("lua", { "luadoc" })
+      require("luasnip").filetype_extend("python", { "python-docstring" })
+      require("luasnip").filetype_extend("rust", { "rustdoc" })
+      require("luasnip").filetype_extend("cs", { "csharpdoc" })
+      require("luasnip").filetype_extend("java", { "javadoc" })
+      require("luasnip").filetype_extend("sh", { "shelldoc" })
+      require("luasnip").filetype_extend("c", { "cdoc" })
+      require("luasnip").filetype_extend("cpp", { "cppdoc" })
+      require("luasnip").filetype_extend("php", { "phpdoc" })
+      require("luasnip").filetype_extend("kotlin", { "kdoc" })
+      require("luasnip").filetype_extend("ruby", { "rdoc" })
+      load_all()
 
       vim.api.nvim_create_user_command("EditSnippets", function(args)
         local args = args.args or "edit!"
         require("luasnip.loaders").edit_snippet_files {
-          edit = function(f) vim.cmd(args .. " " .. f) end,
+          -- format = function(file, source_name)
+          --   if source_name == "lua" then
+          --     return nil
+          --   else
+          --     return file:gsub(vim.fn.stdpath "config" .. "/luasnippets", "$LuaSnip")
+          --   end
+          -- end,
         }
       end, { nargs = "?" })
-      vim.api.nvim_create_user_command(
-        "ReloadSnippets",
-        function(args) require("luasnip.loaders.from_lua").lazy_load { paths = _G.CONFIG_PATH .. "/luasnippets" } end,
-        {}
-      )
+      vim.api.nvim_create_user_command("ReloadSnippets", function(args) load_all() end, {})
     end,
   },
   {

@@ -1,11 +1,3 @@
-local function imm(obj)
-  obj.lazy = false
-  return obj
-end
-local function p(obj)
-  obj.event = "VeryLazy"
-  return obj
-end
 return {
   {
     "IndianBoy42/remember-me.nvim",
@@ -15,7 +7,7 @@ return {
     },
     lazy = false,
   },
-  { import = "langs" },
+  { import = "langs", cond = not vim.g.kitty_scrollback },
   { import = "editor" },
   { import = "ui" },
   { "tpope/vim-repeat", lazy = false },
@@ -50,38 +42,6 @@ return {
       "SudoEdit",
     },
   },
-  {
-    "ahmedkhalf/project.nvim",
-    opts = {
-      -- Manual mode doesn't automatically change your root directory, so you have
-      -- the option to manually do so using `:ProjectRoot` command.
-      manual_mode = true,
-      -- When set to false, you will get a message when project.nvim changes your
-      -- directory.
-      silent_chdir = false,
-      -- Methods of detecting the root directory. **"lsp"** uses the native neovim
-      -- lsp, while **"pattern"** uses vim-rooter like glob pattern matching. Here
-      -- order matters: if one is not detected, the other is used as fallback. You
-      -- can also delete or rearangne the detection methods.
-      -- detection_methods = { "lsp", "pattern" },
-      -- All the patterns used to detect root dir, when **"pattern"** is in
-      -- detection_methods
-      -- patterns = { ".git", "_darcs", ".hg", ".bzr", ".svn", "Makefile", "package.json" },
-      -- Table of lsp clients to ignore by name
-      -- eg: { "efm", ... }
-      -- ignore_lsp = true,
-    },
-    config = function(_, opts)
-      require("project_nvim").setup(opts)
-
-      require("telescope").load_extension "projects"
-    end,
-    cmd = "ProjectRoot",
-    keys = {
-      { "<leader>pR", "<cmd>ProjectRoot<cr>", desc = "Rooter" },
-      { "<leader>pP", "<cmd>Telescope projects<cr>", desc = "T Projects" },
-    },
-  },
 
   {
     "nacro90/numb.nvim",
@@ -100,7 +60,6 @@ return {
       fallback = O.clipboard,
     },
   },
-
   {
     "krady21/compiler-explorer.nvim",
     cmd = {
@@ -119,6 +78,7 @@ return {
   -- TODO: https://github.com/chrisgrieser/nvim-recorder
   {
     "rmagatti/gx-extended.nvim",
+    keys = { "gx" },
     opts = {
       extensions = {
         {

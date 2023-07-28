@@ -19,7 +19,12 @@ return {
     end,
   },
   -- Highlighting based extensions:
-  { "HiPhish/nvim-ts-rainbow2", event = { "BufReadPost", "BufNewFile" } },
+  {
+    "HiPhish/rainbow-delimiters.nvim",
+    event = { "BufReadPost", "BufNewFile" },
+    opts = {},
+    config = function(_, opts) require "rainbow-delimiters.setup"(opts) end,
+  },
   { --folke/todo-comments.nvim
     "folke/todo-comments.nvim",
     cmd = { "TodoTrouble", "TodoTelescope" },

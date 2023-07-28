@@ -28,4 +28,5 @@ require "settings"()
 _G.Au = require "autocmds"
 Au.defaults()
 
+-- require("lazy").setup("plugins", require "plugins.configs.lazynvim")
 require("lazy").setup("plugins", require "plugins.configs.lazynvim")

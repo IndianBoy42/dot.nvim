@@ -242,6 +242,7 @@ function M.grep_last_search(opts)
 
   -- \<getreg\>\C
   -- -> Subs out the search things
+  -- TODO: properly escape this
   local register = vim.fn.getreg("/"):gsub("\\<", ""):gsub("\\>", ""):gsub("\\C", "")
 
   opts.path_display = { "shorten_path" }
@@ -514,11 +515,12 @@ return setmetatable(M, {
     -- end
     --     end
 
-    local builtin = require("telescope.builtin")[k]
-    if builtin then
-      return builtin
-    else
-      return require("telescope").extensions[k]
-    end
+    return function(...) return require("telescope.builtin")[k](...) end
+    -- local builtin = require("telescope.builtin")[k]
+    -- if builtin then
+    --   return builtin
+    -- else
+    --   return require("telescope").extensions[k]
+    -- end
   end,
 })

@@ -6,6 +6,7 @@ local snippets = {
       if selected == nil or selected == "" or selected == {} then
         res = vim.split(vim.fn.getreg '"', "\n")
       else
+        if type(selected) == "string" then selected = { selected } end
         for _, ele in ipairs(selected) do
           table.insert(res, ele)
         end

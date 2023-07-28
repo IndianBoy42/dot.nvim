@@ -22,17 +22,21 @@ return {
         preview = true,
         width_nofocus = 30,
       },
+      options = {
+        use_as_default_explorer = true,
+      },
       mappings = {
         go_in = "l",
         go_in_plus = "L",
         go_out = "h",
-        go_out_plus = "H",
+        go_out_plus = "<cr>",
         reset = "<localleader>R",
         close = "<C-q>",
       },
     },
     config = function(_, opts)
       local mf = require "mini.files"
+      opts.options.use_as_default_explorer = not vim.g.flatten_is_guest
       mf.setup(opts)
 
       local group = vim.api.nvim_create_augroup("mini_files_autocmds", {})
@@ -74,8 +78,6 @@ return {
         pattern = "MiniFilesBufferCreate",
         callback = function(args)
           local bufnr = args.data.buf_id
-          vim.notify "hello"
-          vim.print(args.data)
           require "hydra" {
             name = "Move",
             hint = false,

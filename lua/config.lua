@@ -60,23 +60,29 @@ local O = {
   goto_next_outer_end = "<leader>]]", -- "))",
   goto_previous_outer_end = "<leader>[[", -- "((",
   select = "&",
-  select_dynamic = "m", -- v
+  select_dynamic = "m",
+  select_remote = "r",
+  select_remote_dynamic = "ir",
   select_outer = "<M-S-7>", -- M-&
   select_less = "<C-S-7>", -- C-&
-  select_next = "}",
-  select_previous = "{",
-  select_next_outer = "}}",
-  select_previous_outer = "}}",
-  select_mode = "!",
-  swap_next = ")",
-  swap_prev = "(",
-  -- ( # ? <del> <up/down/left/right>
+  select_next = "in",
+  select_previous = "iN",
+  select_next_outer = "an",
+  select_previous_outer = "aN",
+  -- USE: { }
   -- The below is used for most hint based navigation/selection (hop, hint_textobjects)
   -- hint_labels = "fdsahjklgvcxznmbyuiorewqtp",
-  hint_labels = "jklfdsahg;nm,.ervcxzbuioyptwq",
+  hint_labels = "jklfdsahgnm.ervcxzbuioyptwq",
 
   -- hint_labels = "hjklfdsagnmervcxzbuioyptwq",
   database = { save_location = "~/.config/nvim/.db", auto_execute = 1 },
+  hover_key = "H",
+  action_key = "K",
+  action_key_vis = "K",
+  -- TODO:?
+  -- hover_key = "K",
+  -- action_key = "co",
+  -- action_key_vis = "C",
 }
 
 O.goto_prev = O.goto_previous

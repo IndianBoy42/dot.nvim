@@ -546,4 +546,6 @@ function M.rename_file(new_name)
   end
 end
 
+M.inlay_hints = vim.lsp.inlay_hint or vim.lsp.buf.inlay_hint or function(...) end
+
 return M

@@ -1,7 +1,6 @@
 local surround_mappings = {
   add = "ys", -- Add surrounding in Normal and Visual modes
   vadd = "s", -- Add surrounding in Normal and Visual modes
-  vadd2 = "S", -- Add surrounding in Normal and Visual modes
   delete = "ds", -- Delete surrounding
   find = "]s", -- Find surrounding (to the right)
   find_left = "[s", -- Find surrounding (to the left)
@@ -165,7 +164,7 @@ local M = {
       local mappings = {
         { surround_mappings.add, desc = "Add surrounding" },
         { surround_mappings.vadd, desc = "Add surrounding", mode = { "x" } },
-        { surround_mappings.vadd2, desc = "Add surrounding", mode = { "v" } },
+        { surround_mappings.vadd2, desc = "Add surrounding", mode = { "x" } },
         { surround_mappings.delete, desc = "Delete surrounding" },
         { surround_mappings.find, desc = "Find right surrounding" },
         { surround_mappings.find_left, desc = "Find left surrounding" },

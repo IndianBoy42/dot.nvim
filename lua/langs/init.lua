@@ -67,24 +67,27 @@ local configs = {
 configs.inlay_hints.parameter_hints_prefix = configs.inlay_hints.parameter_hints.prefix
 configs.inlay_hints.other_hints_prefix = configs.inlay_hints.type_hints.prefix
 
-if vim.lsp.buf.inlay_hint then
+local inlay_hints = utils.lsp.inlay_hints
+if inlay_hints then
   utils.lsp.on_attach(function(client, bufnr)
     if client.server_capabilities.inlayHintProvider then
-      vim.lsp.buf.inlay_hint(bufnr, true)
+      inlay_hints(bufnr, true)
 
-      local modes = {
-        false, -- Default
-        n = true,
-        i = false,
-      }
-
-      if true then
-        vim.api.nvim_create_autocmd("ModeChanged", {
-          buffer = bufnr,
-          group = "lsp_inlay_hints",
-          callback = function(args) vim.lsp.buf.inlay_hint(bufnr, modes[vim.api.nvim_get_mode().mode] or modes[0]) end,
-        })
-      end
+      -- local modes = {
+      --   true, -- Default
+      --   -- n = true,
+      --   -- i = false,
+      -- }
+      --
+      -- if true then
+      --   vim.api.nvim_create_autocmd("ModeChanged", {
+      --     buffer = bufnr,
+      --     group = "lsp_inlay_hints",
+      --     callback = function(args)
+      --       inlay_hint(bufnr, modes[vim.api.nvim_get_mode().mode] or modes[0])
+      --     end,
+      --   })
+      -- end
     end
   end, "lsp_inlay_hints")
 end
@@ -107,51 +110,6 @@ local plugins = {
   },
   -- TODO: https://github.com/codethread/qmk.nvim
   {
-    "lvimuser/lsp-inlayhints.nvim",
-    -- event = { "BufReadPost", "BufNewFile" },
-    branch = "anticonceal",
-    event = "LspAttach",
-    cond = not configs.inlay_hints.by_tools and vim.lsp.buf.inlay_hint == nil,
-    config = function()
-      require("lsp-inlayhints").setup {
-        -- inlay_hints = configs.inlay_hints,
-        inlay_hints = {
-          highlight = configs.inlay_hints.highlight,
-          low_prio_highlight = configs.inlay_hints.low_prio_highlight,
-          virt_text_formatter = function(label, hint, opts, client_name)
-            if client_name == "lua_ls" then
-              hint.paddingLeft = false
-              hint.paddingRight = false
-              -- if hint.kind == 2 then
-              --   hint.paddingLeft = false
-              -- else
-              --   hint.paddingRight = false
-              -- end
-            end
-
-            local highlight = opts.highlight
-            if client_name == "rust_analyzer" then
-              if hint.kind == nil or hint.kind > 2 then highlight = opts.low_prio_highlight end
-            end
-
-            local vt = {}
-            if hint.paddingLeft then vt[#vt + 1] = { " ", "None" } end
-            vt[#vt + 1] = { label, highlight }
-            if hint.paddingRight then vt[#vt + 1] = { " ", "None" } end
-
-            return vt
-          end,
-        },
-        enabled_at_startup = not configs.inlay_hints.by_tools,
-        -- enabled_at_startup = false,
-      }
-      utils.lsp.on_attach(function(client, bufnr)
-        --
-        require("lsp-inlayhints").on_attach(client, bufnr, false)
-      end)
-    end,
-  },
-  {
     "joechrisellis/lsp-format-modifications.nvim",
     init = function()
       utils.lsp.on_attach(function(client, bufnr)
@@ -171,6 +129,7 @@ local plugins = {
       end)
     end,
   },
+  -- TODO:  {"jmbuhr/otter.nvim"}
 }
 
 for k, v in pairs(configs) do

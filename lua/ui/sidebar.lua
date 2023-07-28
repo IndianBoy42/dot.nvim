@@ -37,7 +37,7 @@ return {
         jump_close = { "o" }, -- jump to the diagnostic and close the list
         toggle_mode = "m", -- toggle between "workspace" and "document" diagnostics mode
         toggle_preview = "P", -- toggle auto_preview
-        hover = "H", -- opens a small popup with the full multiline message
+        hover = O.hover_key, -- opens a small popup with the full multiline message
         preview = "p", -- preview the diagnostic location
         close_folds = { "zm", "h" }, -- close all folds
         open_folds = { "zr", "l" }, -- open all folds
@@ -71,9 +71,9 @@ return {
         close = "<C-q>",
         toggle_preview = "P",
         focus_location = "o",
-        hover_symbol = "H",
+        hover_symbol = O.hover_key,
         rename_symbol = "R",
-        code_actions = "K",
+        code_actions = O.action_key,
         fold_reset = "zR",
         fold_all = "zm",
         unfold_all = "zr",

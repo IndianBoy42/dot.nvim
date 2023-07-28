@@ -76,7 +76,7 @@ return {
           g = true, -- bindings for prefixed with g
         },
       },
-      operators = { ["#"] = "Comments" },
+      operators = { ["yc"] = "Comments", r = "Replace", cx = "Exchange" },
       icons = {
         breadcrumb = "»", -- symbol used in the command line area that shows your active key combo
         separator = "➜", -- symbol used between a key and it's label
@@ -123,6 +123,8 @@ return {
   -- TODO: dressing.nvim
   {
     "smjonas/live-command.nvim",
+    main = "live-command",
+    event = "CmdlineEnter",
     opts = {
       commands = {
         Norm = { cmd = "norm" },
@@ -143,6 +145,7 @@ return {
   },
   { -- "kosayoda/nvim-lightbulb",
     "kosayoda/nvim-lightbulb",
+    enabled = false,
     config = function()
       vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
         callback = function() require("nvim-lightbulb").update_lightbulb() end,
@@ -171,8 +174,8 @@ return {
     },
     event = { "BufReadPost", "BufNewFile" },
   },
-  { -- "romgrk/nvim-treesitter-context",
-    "romgrk/nvim-treesitter-context",
+  { -- "nvim-treesitter/nvim-treesitter-context",
+    "nvim-treesitter/nvim-treesitter-context",
     event = { "BufReadPost", "BufNewFile" },
     opts = {},
   },
@@ -369,9 +372,8 @@ return {
   },
   {
     "HampusHauffman/block.nvim",
-    cond = false,
     cmd = { "Block", "BlockOn", "BlockOff" },
-    opts = { percent = 1.05, depth = 10, automatic = false },
+    opts = { percent = 1.20, depth = 10, automatic = true },
     -- event = { "BufReadPost", "BufNewFile" },
   },
   -- TODO: https://github.com/shellRaining/hlchunk.nvim
@@ -436,4 +438,8 @@ return {
     end,
   },
   -- TODO: https://github.com/notomo/cmdbuf.nvim
+  {
+    "Aasim-A/scrollEOF.nvim",
+    opts = {},
+  },
 }

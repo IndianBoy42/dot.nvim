@@ -47,61 +47,27 @@ local jump_mappings = function()
     local van = function() ai.select_textobject("a", id, { search_method = "next" }) end
     local vip = function() ai.select_textobject("i", id, { search_method = "prev" }) end
     local vap = function() ai.select_textobject("a", id, { search_method = "prev" }) end
-    jump_mode.repeatable(id, desc, { w, b, e, ge }, {})
-    jump_mode.repeatable(
-      id,
-      desc,
-      { W, B, E, gE },
-      { body = { O.goto_next_outer, O.goto_previous_outer, O.goto_next_outer_end, O.goto_previous_outer_end } }
-    )
+    local hydra =
+      jump_mode.move_by(sym, jump_mode.move_by_suffixes, { w, b, e, ge, W, B, E, gE, vi, va, vin, vip, van, vap }, desc)
+    -- TODO: enable these hydras in visual mode after selection, ie
+    -- viaeee should select argument and then extend the selection 3 arguments ahead.
 
-    local hydra = jump_mode.move_by(
-      O.goto_prefix .. id,
-      jump_mode.move_by_suffixes,
-      { w, b, e, ge, W, B, E, gE, vi, va, vin, vip, van, vap },
-      desc
-    )
     -- require("which-key").register({ [O.goto_prefix .. id] = desc }, {})
-    if sym then
-      vim.keymap.set("n", sym, function() return hydra[1]:activate() end, { desc = desc })
-      for _, suffix in ipairs(jump_mode.move_by_suffixes) do
-        vim.keymap.set("o", sym .. suffix, O.goto_prefix .. id .. suffix, { remap = true, desc = desc })
-        vim.keymap.set("x", sym .. suffix, O.goto_prefix .. id .. suffix, { remap = true, desc = desc })
-      end
-      -- require("which-key").register({ [sym] = { name = desc } }, { mode = "o" })
-      -- require("which-key").register({ [sym] = { name = desc } }, { mode = "x" })
-    end
+    -- if sym then
+    --   vim.keymap.set("n", sym, function() return hydra[1]:activate() end, { desc = desc })
+    --   for _, suffix in ipairs(jump_mode.move_by_suffixes) do
+    --     vim.keymap.set("o", sym .. suffix, O.goto_prefix .. id .. suffix, { remap = true, desc = desc })
+    --     vim.keymap.set("x", sym .. suffix, O.goto_prefix .. id .. suffix, { remap = true, desc = desc })
+    --   end
+    --   -- require("which-key").register({ [sym] = { name = desc } }, { mode = "o" })
+    --   -- require("which-key").register({ [sym] = { name = desc } }, { mode = "x" })
+    -- end
   end
-  mapall("f", nil, "|")
   mapall("a", nil, ",")
-  mapall("k", nil, "=")
-  mapall("j", nil, "_")
   -- mapall("b", nil, ")")
   -- mapall("q", nil)
   -- mapall "t"
   -- mapall "p" -- TODO: paragraph movements
-  -- TODO: subword movements
-
-  for _, m in ipairs { "n", "x", "o" } do
-    require("which-key").register({
-      [O.goto_prefix] = {
-        name = "Nav mode",
-        f = legend.f,
-        k = legend.k,
-        a = legend.a,
-        j = legend.j,
-        -- q = legend.q,
-        -- b = legend.b,
-      },
-      ["|"] = legend.f,
-      ["="] = legend.k,
-      [","] = legend.a,
-      ["_"] = legend.j,
-      -- [")"] = legend.b,
-    }, {
-      mode = m, -- NORMAL mode
-    })
-  end
 end
 local custom_textobjects = function(ai)
   local s = ai.gen_spec
@@ -153,8 +119,27 @@ local custom_textobjects = function(ai)
       end
       return { from = { line = line_num, col = from_col }, to = { line = line_num, col = to_col } }
     end,
-    E = function(ai_type) return { from = { line = 0, col = 0 }, to = { line = -1, col = -1 } } end,
     B = { "%b{}", "^.%s*().-()%s*.$" },
+    S = {
+      {
+        { "%u[%l%d]+[^%l%d]", "^().*()[^%l%d]$" },
+        { "%S[%l%d]+[^%l%d]", "^%S().*()[^%l%d]$" },
+        { "%P[%l%d]+[^%l%d]", "^%P().*()[^%l%d]$" },
+        { "^[%l%d]+[^%l%d]", "^().*()[^%l%d]$" },
+      },
+    },
+    -- Subword (TODO: 'a' variant)
+    s = {
+      {
+        "%u[%l%d]+%f[^%l%d]",
+        "%f[%S][%l%d]+%f[^%l%d]",
+        "%f[%P][%l%d]+%f[^%l%d]",
+        "^[%l%d]+%f[^%l%d]",
+      },
+      "^().*()$",
+    },
+    -- Number
+    n = { "%u[%l%d]+%f[^%l%d]", "" },
     -- B = function(ai_type)
     --   local n_lines = vim.fn.line "$"
     --   local start_line, end_line = 1, n_lines
@@ -457,26 +442,55 @@ return {
       search = {
         incremental = true,
       },
-      highlight = { label = { current = true }, backdrop = false },
+      highlight = { backdrop = false },
+      label = { current = true },
       jump = {
         autojump = false, -- Causes accidents
         history = true,
         register = true,
         pos = "start", ---@type "start" | "end" | "range"
       },
+      remote_op = {
+        restore = true,
+        motion = true,
+      },
       modes = {
+        search = {
+          highlight = { min_pattern_length = 3 },
+        },
         char = {
           enabled = false,
           keys = { "f", "F", "t", "T" },
         },
         treesitter = {
           labels = O.hint_labels,
+          remote_op = {
+            restore = false,
+            motion = false,
+          },
+        },
+        remote_ts = {
+          -- TODO: use `;,<cr><tab><spc` to extend the selection to sibling nodes
+          -- TODO: integrate i/a textobjects somehow. Maybe 'i<label><char>' = jump<label> i<char>
+          mode = "treesitter",
+          search = {
+            -- mode = "fuzzy",
+            -- mode = navutils.remote_ts_search,
+            max_length = 2,
+            incremental = false,
+          },
+          jump = { pos = "range", register = false },
+          highlight = { matches = true },
+          matcher = navutils.remote_ts,
+          treesitter = { containing_end_pos = true },
+          remote_op = {
+            restore = true,
+            motion = true,
+          },
         },
         fuzzy = {
           search = { mode = "fuzzy" },
-          -- highlight = {
           -- label = { before = true, after = false },
-          -- },
         },
         leap = {
           search = {
@@ -505,61 +519,74 @@ return {
         select = {
           search = { mode = "fuzzy" },
           jump = { pos = "range" },
-          highlight = {
-            label = { before = true, after = true },
-          },
+          label = { before = true, after = true },
         },
         references = {},
         diagnostics = {
           search = { multi_window = true, wrap = true, incremental = true },
-          highlight = { backdrop = true, label = { current = true } },
+          label = { current = true },
+          highlight = { backdrop = true },
         },
         remote = {
           search = { mode = "fuzzy" },
           jump = { autojump = true },
         },
         -- TODO: implement iswap and some hop-extensions in this?
-        remote_ts = {
-          mode = "treesitter",
-          search = { mode = "search" },
-          jump = { pos = "range" },
-          highlight = { matches = true },
-        },
       },
     },
     keys = {
       -- TODO: jump continue with nN
       {
         "?",
-        mode = { "n" },
+        mode = { "n", "x", "o" },
         function() require("flash").jump { mode = "fuzzy" } end,
         desc = "Fuzzy search",
       },
-      {
-        "?",
-        mode = { "o" },
-        function() require("flash").remote { mode = "select" } end,
-        desc = "Fuzzy Sel",
-      },
-      {
-        "?",
-        mode = "x",
-        function() require("flash").jump { mode = "select" } end,
-        desc = "Fuzzy Sel",
-      },
+      -- {
+      --   "?",
+      --   mode = { "o" },
+      --   function() require("flash").remote { mode = "select" } end,
+      --   desc = "Fuzzy Sel",
+      -- },
+      -- {
+      --   "?",
+      --   mode = "x",
+      --   function() require("flash").jump { mode = "select" } end,
+      --   desc = "Fuzzy Sel",
+      -- },
       {
         O.select_dynamic,
         mode = { "o", "x" },
         function() require("flash").treesitter() end,
+        desc = "Cursor Node",
+      },
+      {
+        O.select_remote_dynamic,
+        mode = { "o" },
+        desc = "Remote Node",
+        function() require("flash").jump { mode = "remote_ts" } end,
+      },
+      {
+        O.select_remote_dynamic .. O.select_remote_dynamic,
+        mode = { "x" },
+        desc = "Remote Node",
+        function() require("flash").jump { mode = "remote_ts" } end,
+      },
+      {
+        O.goto_next .. O.select_dynamic,
+        mode = { "o", "x" },
+        function() require("flash").jump { mode = "remote_ts", treesitter = { starting_from_pos = true } } end,
         desc = "Select node",
       },
       {
-        "]o",
-        function() require("flash.plugins.jumplist").jump() end,
-        desc = "Jumplist",
+        O.goto_prev .. O.select_dynamic,
+        mode = { "o", "x" },
+        function() require("flash").jump { mode = "remote_ts", treesitter = { ending_at_pos = true } } end,
+        desc = "Select node",
       },
       {
         O.goto_prefix .. "w", -- TODO: stop verbs from being labels
+        -- TODO: allow searching continuations
         function() require("flash").jump { mode = "textcase", pattern = vim.fn.expand "<cword>" } end,
       },
       {
@@ -568,17 +595,12 @@ return {
       },
       {
         O.goto_prefix .. "n",
-        function() require("flash").jump { pattern = vim.fn.getreg "/" } end,
+        function() require("flash").jump { continue = true } end,
       },
       {
         O.goto_prefix .. "hr",
         desc = "References",
         navutils.flash_references,
-      },
-      {
-        O.goto_prefix .. "hl",
-        desc = "Lines",
-        navutils.flash_lines,
       },
       {
         O.goto_prefix .. "hh",
@@ -590,40 +612,6 @@ return {
         -- O.goto_prefix .. "hd",
         desc = "Diagnostics",
         navutils.flash_diagnostics,
-        function()
-          local Pos = require "flash.search.pos"
-          local diags = setmetatable({}, {
-            __index = function(t, k)
-              rawset(t, k, vim.diagnostic.get(vim.api.nvim_win_get_buf(k), {}))
-              return t[k]
-            end,
-          })
-          local lines = setmetatable({}, {
-            __index = function(t, k)
-              rawset(t, k, {})
-              return t[k]
-            end,
-          })
-          require("flash").jump {
-            mode = "search_diagnostics",
-            matcher = require "flash.plugins.flat_map"(function(win, pos, end_pos)
-              for _, diag in ipairs(diags[win]) do
-                local dmatch = {
-                  win = win,
-                  pos = Pos { diag.lnum + 1, diag.col },
-                  end_pos = Pos { diag.end_lnum + 1, diag.end_col - 1 },
-                  highlight_range = { pos = pos, end_pos = end_pos },
-                }
-                if pos[1] >= dmatch.pos[1] and pos[1] <= dmatch.end_pos[1] then
-                  lines[win][diag.lnum] = true
-                  return { dmatch }
-                end
-                lines[win][diag.lnum] = true
-              end
-              return {}
-            end),
-          }
-        end,
       },
       {
         "<leader>dF",
@@ -631,79 +619,125 @@ return {
         function() navutils.flash_diagnostics { action = utils.telescope.code_actions_previewed } end,
       },
       {
-        "r",
-        mode = "o",
-        desc = "remote ts",
-        function()
-          require("flash").remote {
-            mode = "remote_ts",
-            matcher = require "flash.plugins.flat_map"(require("flash.plugins.treesitter").get_nodes),
-          }
-        end,
+        "rX",
+        mode = { "x", "n" },
+        desc = "Exchange <motion1> with <node>",
+        function() navutils.swap_with { mode = "remote_ts" } end,
       },
       {
         "rx",
         mode = { "x", "n" },
-        desc = "Remote Exchange",
-        function()
-          navutils.swap_with {
-            mode = "remote_ts",
-            matcher = require "flash.plugins.flat_map"(require("flash.plugins.treesitter").get_nodes),
-          }
-        end,
+        desc = "Exchange <motion1> with <motion2>",
+        function() navutils.swap_with {} end,
       },
+      -- TODO: Copy there, Paste here
       {
-        "M",
-        mode = "x",
-        desc = "remote ts",
+        "rR", -- TODO: better keymap?
+        mode = { "n" },
+        desc = "Remote Replace",
         function()
-          require("flash").jump {
-            mode = "remote_ts",
-            matcher = require "flash.plugins.flat_map"(require("flash.plugins.treesitter").get_nodes),
-          }
+          vim.api.nvim_feedkeys("r", "m", false)
+          vim.schedule(function() require("flash").jump { mode = "remote_ts" } end)
         end,
       },
+      { -- TODO: this
+        "ry",
+        mode = { "x", "n" },
+        desc = "Replace with <remote-motion>",
+        function() navutils.swap_with { exchange = { not_there = true } } end,
+      },
+      { -- TODO: this
+        "rd",
+        mode = { "x", "n" },
+        desc = "Replace with d<remote-motion>",
+        function() navutils.swap_with { exchange = { not_there = true } } end,
+      },
+      { -- TODO: this
+        "rc",
+        mode = { "x", "n" },
+        desc = "Replace with c<remote-motion>",
+        function() navutils.swap_with { exchange = { not_there = true } } end,
+      },
+      { -- TODO: this
+        "rY",
+        mode = { "n" },
+        desc = "Replace with <node>",
+        function() navutils.swap_with { exchange = { not_there = true } } end,
+      },
+      { -- TODO: this
+        "rD",
+        mode = { "x", "n" },
+        desc = "Replace with d<node>",
+        function() navutils.swap_with { exchange = { not_there = true } } end,
+      },
+      { -- TODO: this
+        "rC",
+        mode = { "x", "n" },
+        desc = "Replace with c<node>",
+        function() navutils.swap_with { exchange = { not_there = true } } end,
+      },
+      -- TODO: Copy this, Paste there
     },
   },
   {
     "ggandor/leap.nvim",
     keys = {
+      { "}" }, -- Repeat mappings
+      { "{" },
       -- { "<leader>hw", leap_anywhere, mode = "n", desc = "Leap all windows" },
       { "s", "<Plug>(leap-forward-to)", mode = "n", desc = "Leap Fwd" },
       { "S", "<Plug>(leap-backward-to)", mode = "n", desc = "Leap Bwd" },
       { O.goto_prefix .. O.goto_prefix, leap_anywhere, mode = "n", desc = "Leap" },
       {
-        "z", -- semi-inclusive
+        "f", -- semi-inclusive
         function() require("leap").leap { inclusive_op = true } end,
-        mode = { "x", "o" },
+        mode = "c",
         desc = "Leap f",
       },
       {
-        "Z", -- semi-inclusive
+        "F", -- semi-inclusive
         function() require("leap").leap { backward = true, offset = 1, inclusive_op = true } end,
-        mode = { "x", "o" },
-        desc = "Leap f",
+        mode = "c",
+        desc = "Leap F",
       },
       { "<leader>f", "<Plug>(leap-forward-to)", mode = "x", desc = "Leap f" },
       { "<leader>t", "<Plug>(leap-forward-till)", mode = "x", desc = "Leap t" },
       { "<leader>F", "<Plug>(leap-backward-to)", mode = "x", desc = "Leap F" },
       { "<leader>T", "<Plug>(leap-backward-till)", mode = "x", desc = "Leap T" },
-      -- { "s", leap_bi_n, mode = "n", desc = "Leap" },
-      -- { "z", leap_bi_x(1), mode = "x", desc = "Leap" },
+      -- -- { "s", leap_bi_n, mode = "n", desc = "Leap" },
+      -- { "f", leap_bi_x(1), mode = "x", desc = "Leap" },
       -- { "<leader>f", leap_bi_x(2), mode = "x", desc = "Leap Inc" },
       -- { "<leader>t", leap_bi_x(0), mode = "x", desc = "Leap Exc" },
-      { "z", leap_bi_o(1), mode = "o", desc = "Leap" },
+      { "f", leap_bi_o(1), mode = "o", desc = "Leap" },
       { "<leader>f", leap_bi_o(2), mode = "o", desc = "Leap Inc" },
       { "<leader>t", leap_bi_o(0), mode = "o", desc = "Leap Exc" },
       {
-        "R",
+        O.select_remote,
         function()
           navutils.remote_op(function(do_op)
             leap_anywhere(function(jt) do_op(jt.wininfo.winid, jt.pos) end)
           end)
         end,
-        desc = "remote",
+        desc = "Leap Remote",
         mode = "o",
+      },
+      -- {
+      --   "dp",
+      --   mode = "n",
+      --   desc = "Remote Paste",
+      --   navutils.remote_paste(),
+      -- },
+      {
+        "rP",
+        mode = "n",
+        desc = "Remote paste line",
+        navutils.remote_paste("z", "<leader>p"),
+      },
+      {
+        "rp",
+        mode = "n",
+        desc = "Remote Paste",
+        navutils.remote_paste "z",
       },
       -- {
       --   "<leader>r",
@@ -765,6 +799,7 @@ return {
         "b", "e", "w",
         ",", "-",
       }
+      require("leap").add_repeat_mappings("}", "{", {})
     end,
   },
   {
@@ -818,12 +853,38 @@ return {
   },
   {
     "chrisgrieser/nvim-spider",
-    enabled = false,
+    -- TODO: subword hydra
+    opts = { skipInsignificantPunctuation = true },
     keys = {
-      { "w", F "require('spider').motion('w')", desc = "Spider-w", mode = { "n", "o", "x" } },
-      { "e", F "require('spider').motion('e')", desc = "Spider-e", mode = { "n", "o", "x" } },
-      { "b", F "require('spider').motion('b')", desc = "Spider-b", mode = { "n", "o", "x" } },
-      { "ge", F "require('spider').motion('ge')", desc = "Spider-ge", mode = { "n", "o", "x" } },
+      { "w", "<cmd>lua require('spider').motion('w')<cr>", desc = "Spider-w", mode = "n" },
+      { "e", "<cmd>lua require('spider').motion('e')<cr>", desc = "Spider-e", mode = "n" },
+      { "b", "<cmd>lua require('spider').motion('b')<cr>", desc = "Spider-b", mode = "n" },
+      { "ge", "<cmd>lua require('spider').motion('ge')<cr>", desc = "Spider-ge", mode = "n" },
+      { "<C-w>", "<C-o>db", desc = "Spider-ge", mode = "n", remap = true },
+      {
+        "w",
+        "<cmd>lua require('spider').motion('w', { skipInsignificantPunctuation = false })<cr>",
+        desc = "Spider-w",
+        mode = { "x" },
+      },
+      {
+        "e",
+        "<cmd>lua require('spider').motion('e', { skipInsignificantPunctuation = false })<cr>",
+        desc = "Spider-e",
+        mode = { "x", "o" },
+      },
+      {
+        "b",
+        "<cmd>lua require('spider').motion('b', { skipInsignificantPunctuation = false })<cr>",
+        desc = "Spider-b",
+        mode = { "x", "o" },
+      },
+      {
+        "ge",
+        "<cmd>lua require('spider').motion('ge', { skipInsignificantPunctuation = false })<cr>",
+        desc = "Spider-ge",
+        mode = { "x", "o" },
+      },
     },
   },
   {
@@ -852,6 +913,7 @@ return {
           goto_left = "",
           goto_right = "",
         },
+        silent = true,
       }
     end,
     config = function(_, opts)
@@ -900,7 +962,6 @@ return {
       window = { suffix = "" },
       yank = { suffix = "" },
     },
-    -- TODO: auto repeatable, clean up my config
   },
   {
     "camilledejoye/nvim-lsp-selection-range",
@@ -916,7 +977,7 @@ return {
           if bufnr then opts.buffer = bufnr end
           vim.keymap.set(mode, lhs, rhs, opts)
         end
-        if client.server_capabilities.selectionRangeProvider then
+        if O.select and client.server_capabilities.selectionRangeProvider then
           local lsp_sel_rng = require "lsp-selection-range"
           map("n", O.select, "v" .. O.select, { remap = true, desc = "LSP Selection Range" })
           map("n", O.select, "v" .. O.select_outer, { remap = true, desc = "LSP Selection Range" })
@@ -924,159 +985,6 @@ return {
           map("x", O.select_outer, O.select .. O.select, { remap = true, desc = "LSP Selection Range" }) -- TODO: use folding range
         end
       end)
-    end,
-  },
-  {
-    -- TODO:? remove for leap-ast once double sided labelling is implemented
-    -- TODO: soon to replace with folke/flash
-    "IndianBoy42/nvim-treehopper",
-    dev = true,
-    config = function() require("tsht").config.hint_keys = O.hint_labels_array end,
-    -- event = { "BufReadPost", "BufNewFile" },
-    keys = {
-      -- { O.select_dynamic, [[:<C-U>lua require('tsht').nodes()<CR>]], mode = "o", silent = true },
-      -- { O.select_dynamic, [[:lua require('tsht').nodes()<CR>]], mode = "x", silent = true },
-      {
-        O.goto_next .. O.select_dynamic,
-        [[:<C-U>lua require('tsht').nodes({side = "end"})<CR>]],
-        mode = "o",
-        silent = true,
-      },
-      {
-        O.goto_prev .. O.select_dynamic,
-        [[:<C-U>lua require('tsht').nodes({side = "start"})<CR>]],
-        mode = "o",
-        silent = true,
-      },
-      {
-        O.goto_next .. O.select_dynamic,
-        [[:lua require('tsht').nodes({side = "end"})<CR>]],
-        mode = "x",
-        silent = true,
-      },
-      {
-        O.goto_prev .. O.select_dynamic,
-        [[:lua require('tsht').nodes({side = "start"})<CR>]],
-        mode = "x",
-        silent = true,
-      },
-      {
-        O.goto_next .. O.select_dynamic,
-        [[:lua require('tsht').nodes({side = "end", mode = "move"})<CR>]],
-        mode = "n",
-        silent = true,
-      },
-      {
-        O.goto_prev .. O.select_dynamic,
-        [[:lua require('tsht').nodes({side = "start", mode = "move"})<CR>]],
-        mode = "n",
-        silent = true,
-      },
-    },
-    -- module = "tsht",
-  },
-  {
-    "drybalka/tree-climber.nvim",
-    opts = {
-      highlight = true,
-    },
-    keys = { "-" },
-    config = function(_, opts)
-      local treeclimber = require "tree-climber"
-      local tc = setmetatable({}, {
-        __index = function(t, k)
-          return function(args)
-            return function() treeclimber[k](vim.tbl_extend("keep", args or {}, opts)) end
-          end
-        end,
-      })
-      local keys = { "w", "b", "-", "e", "I", ")", "(" }
-      local keys = { "j", "k", "h", "l", "I", ")", "(" }
-      require "hydra" {
-        name = "Treeclimber",
-        config = {
-          color = "pink",
-          invoke_on_body = true,
-          -- timeout = 5000, -- millis
-          hint = {
-            border = "rounded",
-            type = "window",
-            position = "top",
-            show_name = true,
-          },
-          on_key = function() vim.wait(50) end,
-        },
-        body = "-",
-        mode = { "n", "x" },
-        heads = {
-          { keys[1], tc.goto_next() },
-          { keys[2], tc.goto_prev() },
-          { keys[3], tc.goto_parent() },
-          { keys[4], tc.goto_child() },
-          { keys[5], tc.select_node() },
-          { keys[6], tc.swap_next { skip_comments = true } },
-          { keys[7], tc.swap_prev { skip_comments = true } },
-        },
-      }
-    end,
-  },
-  { "smoka7/hop.nvim" },
-  {
-    -- TODO: move from hop to leap
-    "IndianBoy42/hop-extensions",
-    dev = true,
-    opts = { keys = O.hint_labels },
-    -- event = "VeryLazy",
-    keys = function()
-      local keys = {}
-      local hops = {
-        { "?", "<cmd>HopPattern<cr>", "Search" },
-        { "/", hop_fn.hint_patterns_from({}, { reg = "/" }), "Last Search" },
-        -- { "w", exts "hint_words", "Words" },
-        { "L", hop_fn.hint_lines_skip_whitespace(), "Lines" },
-        { "v", hop_fn.hint_vertical(), "Lines Column" },
-        -- { "w", hop_fn.hint_patterns_from({}, { expand = "<cword>" }), "cword" },
-        -- { "W", hop_fn.hint_patterns_from({}, { expand = "<cWORD>" }), "cWORD" },
-        { "m", hop_fn.ts.hint_containing_nodes(), "TS Nodes Containing" },
-        { "l", hop_fn.ts.hint_defnref(), "Locals" },
-        { "D", hop_fn.ts.hint_definition(), "LSP Definitions" },
-        -- { "r", hop_fn.lsp.hint_references(), "LSP References" },
-        { "u", hop_fn.ts.hint_usages(), "TS Usages" },
-        { "c", hop_fn.ts.hint_scopes(), "Scopes" },
-        { "C", hop_fn.ts.hint_containing_scopes(), "Scopes" },
-        { "s", hop_fn.lsp.hint_symbols(), "LSP Symbols" },
-        { "d", hop_fn.hint_diagnostics(), "LSP Diagnostics" },
-        {
-          "k",
-          hop_fn.ts.hint_textobjects({}, {
-            captures = {
-              "@function",
-              "@block",
-              "@class",
-              "@conditional",
-              "@loop",
-            },
-          }),
-          "Blocks",
-        },
-        {
-          "j",
-          hop_fn.ts.hint_textobjects({}, {
-            captures = {
-              "@parameter",
-              "@statement",
-              -- "@assignment",
-              "@call",
-            },
-          }),
-          "Expressions",
-        },
-      }
-      for _, rhs_ in ipairs(hops) do
-        local lhs, rhs, desc = unpack(rhs_)
-        table.insert(keys, { O.goto_prefix .. "h" .. lhs, rhs, desc = desc, mode = { "n", "x", "o" } })
-      end
-      return keys
     end,
   },
 }

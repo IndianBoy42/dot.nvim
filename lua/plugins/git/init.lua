@@ -43,6 +43,30 @@ return {
     ft = "diff",
     cmd = { "DiffviewOpen", "DiffviewFileHistory" },
   },
+  -- TODO: neogit
+  {
+    "NeogitOrg/neogit",
+    cmd = "Neogit",
+    dependencies = "nvim-lua/plenary.nvim",
+    opts = {
+      use_telescope = true,
+      telescope_sorter = function() return require("telescope").extensions.fzf.native_fzf_sorter() end,
+      integrations = {
+        diffview = true,
+      },
+      mappings = {
+        status = {
+          s = "",
+          S = "",
+          a = "Stage",
+          A = "StageUnstaged",
+          ["<C-a"] = "StageAll",
+          C = "CherryPickPopup",
+          h = "Toggle", l = "Toggle"
+        },
+      },
+    },
+  },
   {
     "tpope/vim-fugitive",
     config = function() end,
@@ -70,7 +94,7 @@ return {
     event = { "BufReadPre", "BufNewFile" },
     -- keys = function()
     --   local repeatable = mappings.repeatable
---   local gs = utils.lazy_require "gitsigns"
+    --   local gs = utils.lazy_require "gitsigns"
     --   repeatable("g", "Git Hunk", { vim.schedule_wrap(gs.next_hunk), vim.schedule_wrap(gs.prev_hunk) }, {
     --   local p = utils.partial
     --   return {

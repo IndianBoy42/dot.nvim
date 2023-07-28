@@ -1,65 +1,80 @@
 local M = {}
-local terms = setmetatable({}, {
-  __index = function(t, k)
-    if k == 0 then k = vim.api.nvim_get_current_win() end
-    if not t[k] then
-      -- if t.global == nil then M.kitty_attach() end -- TODO: this is async so this wont work
-      t[k] = t.global
-    end
-    return t[k]
-  end,
-  __newindex = function(t, k, v)
-    if k == 0 then k = vim.api.nvim_get_current_win() end
-    rawset(t, k, v)
-  end,
-})
+-- TODO: save this information to sessions?
+local terms = {}
 
-local cmd = vim.api.nvim_create_user_command
-local map = vim.keymap.set
+local function get_terminal(key, raw)
+  if key == nil then return terms.global end
+  if key == 0 then key = vim.api.nvim_get_current_win() end
+  if terms[key] then return terms[key] end
+  if type(key) == "number" then return terms.global end
+end
+M.get_term = get_terminal
 
-local function get_terminal(args)
+local function get_terminal_name(args)
   local k = 0
   if args.fargs and #args.fargs > 0 then
-    if args:sub(1, 1) == ":" then
-      k = args.fargs[0]:sub(2)
+    if args.fargs[1]:sub(1, 1) == ":" then
+      k = args.fargs[1]:sub(2)
 
-      for i = 2, #args.fargs do
-        args.fargs[i - 1] = args.fargs[i]
+      for i = 1, #args.fargs do
+        args.fargs[i] = args.fargs[i + 1]
       end
+      args.args = table.concat(args.fargs, " ")
     end
   end
+  if k == 0 then k = vim.api.nvim_get_current_win() end
   return k
 end
-local uuid = 999
+
+local uuid = 0
 local function get_uuid()
   uuid = uuid + 1
-  return uuid
+  return "_" .. uuid
 end
-local function new_terminal(cmd, opts, args)
+
+local function new_terminal(where, opts, args, k)
   opts = opts or {}
-  local k = get_terminal(args)
+  k = k or get_terminal_name(args)
   local cmd = args.fargs
   if not cmd or #cmd == 0 then
     cmd = {} -- TODO: something
   end
 
-  terms[k] = require("kitty.current_win")[cmd](args, cmd)
+  opts.env_injections = opts.env_injections or {}
+  if k then opts.env_injections.KITTY_NVIM_NAME = k end
+
+  if cmd == nil then cmd = "launch" end
+  terms[k] = require("kitty.current_win").launch(opts, where, cmd)
   terms[get_uuid()] = terms[k]
 end
 
 function M.kitty_attach(create_new_win)
   create_new_win = create_new_win or vim.g.kitty_from_current_win or "os-window"
+  require("kitty.current_win").setup {
+    default_launch_location = create_new_win,
+    keep_open = true,
+  }
 
   require("kitty").setup({
     create_new_win = create_new_win,
+    default_launch_location = create_new_win,
     target_providers = {
       function(T) T.helloworld = { desc = "Hello world", cmd = "echo hello world" } end,
       "just",
       "cargo",
     },
-  }, function(K)
-    terms.global = K
+  }, function(K, ls)
+    terms.global = K.instance
     K.setup_make()
+
+    -- TODO: keep polling to update the terms
+    local Term = require "kitty.term"
+    for id, t in pairs(ls:all_windows()) do
+      terms["k" .. id] = Term:new {
+        attach_to_current_win = id,
+      }
+      if t.env and t.env.KITTY_NVIM_NAME then terms[t.env.KITTY_NVIM_NAME] = terms["k" .. id] end
+    end
 
     require("rust-tools").config.options.tools.executor = K.rust_tools_executor()
   end)
@@ -67,28 +82,48 @@ function M.kitty_attach(create_new_win)
   return require("kitty").instance
 end
 
-M.setup = function()
-  cmd("KittyAttach", function(args)
-    local create_new_win = nil
-    if args.fargs and #args.fargs > 0 then create_new_win = args.fargs[0] end
+M.setup = function(opts)
+  local cmd = vim.api.nvim_create_user_command
+  opts = opts or {}
+  if opts.attach_now then
+    M.kitty_attach()
+  else
+    cmd("KittyAttach", function(args)
+      local create_new_win = nil
+      if args.fargs and #args.fargs > 0 then create_new_win = args.fargs[0] end
 
-    kitty_attach(create_new_win)
-  end, {})
+      M.kitty_attach(create_new_win)
+    end, {})
+  end
 
-  cmd("KittyTab", function(args) new_terminal("new_tab", {}, args) end, { nargs = "*" })
-  cmd("KittyWindow", function(args) new_terminal("new_window", {}, args) end, { nargs = "*" })
-  cmd("KittyNew", function(args) new_terminal("new_os_window", {}, args) end, { nargs = "*" })
+  cmd("KittyTab", function(args) new_terminal("tab", {}, args) end, { nargs = "*" })
+  cmd("KittyWindow", function(args) new_terminal("window", {}, args) end, { nargs = "*" })
+  cmd("KittyNew", function(args) new_terminal("os-window", {}, args) end, { nargs = "*" })
   cmd("Kitty", function(args)
-    local k = get_terminal(args)
-
-    if args.fargs and #args.fargs > 0 then
-      terms[k]:send(args.fargs .. "\n")
-    else
-      -- TODO:
-      terms[k]:focus()
+    if not terms.global then
+      M.kitty_attach()
+      return
     end
-
-    terms[get_uuid()] = terms[k]
+    local k = get_terminal_name(args)
+    local t = get_terminal(k)
+    if t then
+      if args.fargs and #args.fargs > 0 then
+        t:send(args.args .. "\n")
+      else
+        -- TODO:
+        t:focus()
+      end
+    else
+      new_terminal(true, {}, args, k)
+    end
+  end, { nargs = "*" })
+  cmd("KittyClose", function(args)
+    local k = get_terminal_name(args)
+    local t = get_terminal(k)
+    if t then
+      pcall(function() t:close() end)
+      terms[k] = nil
+    end
   end, {
     nargs = "*",
     -- preview = function(opts, ns, buf)
@@ -96,26 +131,26 @@ M.setup = function()
     -- end,
   })
 
-  map("n", "<leader>mk", function() terms[0]:run() end, { desc = "Kitty Run" })
-  map("n", "<leader>mm", function() terms[0]:make() end, { desc = "Kitty Make" })
-  map("n", "<leader>m<CR>", function() terms[0]:make "last" end, { desc = "Kitty ReMake" })
-  map("n", "yr", function() terms[0]:send { selection = vim.api.nvim_get_mode() } end, { desc = "Kitty Send" })
-  map("x", "R", function() terms[0]:send { selection = vim.api.nvim_get_mode() } end, { desc = "Kitty Send" })
-  map("n", "yrr", function() terms[0]:send() end, { desc = "Kitty Send Line" })
+  local map = vim.keymap.set
+  map("n", "<leader>mk", function() get_terminal(0):run() end, { desc = "Kitty Run" })
+  map("n", "<leader>mm", function() get_terminal(0):make() end, { desc = "Kitty Make" })
+  map("n", "<leader>m<CR>", function() get_terminal(0):make "last" end, { desc = "Kitty ReMake" })
+  map("n", "|", function() get_terminal(0):send { selection = vim.api.nvim_get_mode() } end, { desc = "Kitty Send" })
+  map("x", "|", function() get_terminal(0):send { selection = vim.api.nvim_get_mode() } end, { desc = "Kitty Send" })
+  map("n", "||", function() get_terminal(0):send() end, { desc = "Kitty Send Line" })
   -- vim.keymap.set("n", "<leader>mK", KT.run, { desc = "Kitty Run" })
   -- vim.keymap.set("n", "", require("kitty").send_cell, { buffer = 0 })
 end
 
 M = setmetatable(M, {
   __index = function(t, k)
-    local term = terms[0]
+    local term = get_terminal(0)
     if type(term[k]) == "function" then
       return function(...) return term[k](term, ...) end
     else
       return term[k]
     end
   end,
-  __call = function() return M.kitty_attach() end,
 })
 
 return M

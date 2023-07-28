@@ -1,10 +1,37 @@
--- TODO: use dr and yr
 return {
   {
     "IndianBoy42/kitty.lua",
     dev = true,
-    init = function() require "plugins.buildrun.kitty" end,
-    config = function() require("kitty.current_win").setup {} end,
+    lazy = false,
+    config = function()
+      require("kitty.terms").setup {
+        dont_attach = not not vim.g.kitty_scrollback,
+        attach = {
+          target_providers = {
+            function(T) T.helloworld = { desc = "Hello world", cmd = "echo hello world" } end,
+            "just",
+            "cargo",
+          },
+          current_win_setup = {},
+          on_attach = function(_, K, _)
+            K.setup_make()
+
+            -- TODO:
+            -- require("rust-tools").config.options.tools.executor = K.rust_tools_executor()
+          end,
+          bracketed_paste = true,
+        },
+      }
+      local Terms = require "kitty.terms"
+      local map = vim.keymap.set
+      map("n", "<leader>mk", function() Terms.get_terminal(0):run() end, { desc = "Kitty Run" })
+      map("n", "mk", function() Terms.get_terminal(0):make() end, { desc = "Kitty Make" })
+      map("n", "mr", function() Terms.get_terminal(0):make "last" end, { desc = "Kitty ReMake" })
+      map("n", "dx", function() Terms.get_terminal(0):send { selection = true } end, { desc = "Kitty Send" })
+      map("x", "X", function() Terms.get_terminal(0):send { selection = true } end, { desc = "Kitty Send" })
+      map("n", "dxx", function() Terms.get_terminal(0):send() end, { desc = "Kitty Send Line" })
+      map("n", "yc", function() Terms.get_terminal(0):get_selection() end, { desc = "Yank From Kitty" })
+    end,
     keys = {
       {
         "<leader>ok",
@@ -19,7 +46,7 @@ return {
       { "<leader>K", ":=require'kitty.current_win'", desc = "Kitty Control" },
     },
   },
-  -- https://github.com/Olical/conjure
+  -- TODO: https://github.com/Olical/conjure
   {
     "michaelb/sniprun",
     build = "bash ./install.sh 1",
@@ -40,14 +67,14 @@ return {
     end,
     cmd = "SnipRun",
     keys = {
-      { "!!", "<Plug>SnipRun", desc = "SnipRun Line" },
-      { "!", "<Plug>SnipRunOperator", desc = "SnipRun" },
-      { "!", "<Plug>SnipRun", desc = "SnipRun", mode = "x" },
+      { "<leader>xx", "<Plug>SnipRun", desc = "SnipRun Line" },
+      { "<leader>x", "<Plug>SnipRunOperator", desc = "SnipRun" },
+      { "<leader>x", "<Plug>SnipRun", desc = "SnipRun", mode = "x" },
       { "<leader>xQ", "<Plug>SnipReset", desc = "SnipRun Reset" },
-      { "<leader>xq", "<Plug>SnipReplMemoryClean", desc = "SnipRun Clean" },
-      { "<leader>xi", "<Plug>SnipInfo", desc = "SnipRun Info" },
-      { "<leader>xl", "<Plug>SnipLive", desc = "SnipRun Live" },
-      { "<leader>xc", "<Plug>SnipClose", desc = "SnipRun Close" },
+      { "<leader>xX", "<Plug>SnipReplMemoryClean", desc = "SnipRun Clean" },
+      { "<leader>xI", "<Plug>SnipInfo", desc = "SnipRun Info" },
+      { "<leader>xL", "<Plug>SnipLive", desc = "SnipRun Live" },
+      { "<leader>xq", "<Plug>SnipClose", desc = "SnipRun Close" },
     },
   },
   -- TODO: https://github.com/Dax89/automaton.nvim
@@ -62,15 +89,7 @@ return {
   --     require("lv-terms").mdeval()
   --   end,
   -- }
-  -- use {
-  --   "pianocomposer321/yabs.nvim",
-  --   config = function()
-  --     require("lv-yabs").config()
-  --   end,
-  --   module = { "yabs", "telescope._extensions.yabs" },
-
-  -- }
-  -- https://github.com/lpoto/telescope-tasks.nvim
+  -- TODO: https://github.com/lpoto/telescope-tasks.nvim
   {
     "t-troebst/perfanno.nvim",
     opts = {},
@@ -81,7 +100,12 @@ return {
     -- TODO: use a hydra?
     keys = {
       { "dpp", utils.lazy_require("debugprint").debugprint, desc = "DbgPrnt Line", expr = true },
-      { "dP", utils.lazy_require("debugprint").debugprint, desc = "DbgPrnt Line abv", expr = true },
+      {
+        "dPP",
+        utils.partial(utils.lazy_require("debugprint").debugprint, { above = true }),
+        desc = "DbgPrnt Line abv",
+        expr = true,
+      },
       {
         "dpv",
         utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true }),
@@ -89,7 +113,7 @@ return {
         expr = true,
       },
       {
-        "dpV",
+        "dPV",
         utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true, above = true }),
         desc = "DbgPrnt Var abv",
         expr = true,
@@ -102,30 +126,12 @@ return {
         expr = true,
       },
       {
-        "<leader>dp",
+        "<leader>dP",
         utils.partial(utils.lazy_require("debugprint").debugprint, { variable = true, above = true }),
         desc = "DbgPrnt Var abv",
         mode = "x",
         expr = true,
       },
     },
-  },
-  {
-    "rafcamlet/nvim-luapad",
-    opts = {},
-    cmd = { "Luapad", "LuaRun", "LuaAttach", "LuaDetach", "LuaEval" },
-    config = function(_, opts)
-      require("luapad").setup(opts)
-      local cmd = function(name, fn, opts)
-        vim.api.nvim_create_user_command(
-          name,
-          function(args) require("luapad")[fn](type(opts) == "function" and opts(args) or opts) end,
-          { nargs = "*" }
-        )
-      end
-      cmd("LuaAttach", "attach", {})
-      cmd("LuaDetach", "detach", {})
-      vim.api.nvim_create_user_command("LuaEval", function(args) require("luapad.state").current():eval() end, {})
-    end,
   },
 }
