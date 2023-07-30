@@ -123,7 +123,7 @@ local do_op = function(state, win, pos, end_pos, using_visual_mode)
   local function restore()
     vim.schedule(function()
       if vim.api.nvim_get_mode().mode == "i" then
-        vim.api.nvim_create_autocmd("InsertLeave", {
+vim.api.nvim_create_autocmd("InsertLeave", {
           once = true,
           callback = restore,
         })
@@ -347,12 +347,91 @@ M.filter_nodes = function(nodes, win, pos, end_pos)
 end
 M.get_nodes = function(win, pos, end_pos)
   local nodes = require("flash.plugins.treesitter").get_nodes(win, pos)
+  local matches = {}
   -- nodes = M.filter_nodes(nodes, win, pos, end_pos)
   return nodes
 end
 
+local function sib(dir, n)
+  if dir < 0 then
+    return n:prev_named_sibling()
+  else
+    return n:next_named_sibling()
+  end
+end
+
+local function node_proc(bwd, fwd, m, matches, n, opts, state)
+  local ok = true
+  if state.opts.treesitter then
+    if state.opts.treesitter.starting_from_pos then ok = ok and (m.pos == n.pos) end
+    if state.opts.treesitter.ending_at_pos then ok = ok and (m.end_pos == n.end_pos) end
+    if state.opts.treesitter.containing_end_pos then ok = ok and (m.end_pos <= n.end_pos) end
+  end
+  if fwd ~= 0 or bwd ~= 0 then
+    local node = n.node
+    local parent = n.node:parent()
+    while parent ~= nil do
+      local a, b, c, d = parent:range()
+      local na, nb, nc, nd = node:range()
+      if a ~= na or b ~= nb or c ~= nc or d ~= nd then break end
+      node = parent
+      parent = parent:parent()
+    end
+
+    local sn, en = node, node
+    if fwd ~= 0 then
+      for _ = 1, math.abs(fwd) do
+        en = sib(fwd, en)
+        if en == nil then
+          ok = false
+          break
+        end
+      end
+      if en ~= nil then
+        local r, c = en:end_()
+        n.end_pos = { row = r + 1, col = c - 1 }
+        -- TODO: needs some correction
+      end
+    end
+    if bwd ~= 0 then
+      for _ = 1, math.abs(bwd) do
+        sn = sib(-bwd, sn)
+        if sn == nil then
+          ok = false
+          break
+        end
+      end
+      if sn ~= nil then
+        local r, c = sn:start()
+        n.pos = { row = r + 1, col = c }
+      end
+    end
+  end
+
+  if ok then
+    -- don't highlight treesitter nodes. Use labels only
+    n.highlight = false
+    table.insert(matches, n)
+  end
+  return ok
+end
+
+M.custom_ts = function(win, state, opts)
+  local fwd = state.remote_ts_fwd or 0
+  local bwd = state.remote_ts_bwd or 0
+  local matches = {}
+  local m = {
+    pos = state.pos,
+    end_pos = state.pos,
+  }
+  for _, n in ipairs(M.get_nodes(win, m.pos, m.end_pos)) do
+    node_proc(bwd, fwd, m, matches, n, opts, state)
+  end
+  return matches
+end
 M.remote_ts = function(win, state, opts)
   if state.pattern.pattern == " " then
+    -- TODO: completely switch to `custom_ts`
     -- state.pattern.pattern = (" "):rep(state.opts.search.max_length)
     state.opts.search.max_length = 1
     local matches = require("flash.plugins.treesitter").matcher(win, state)
@@ -366,24 +445,17 @@ M.remote_ts = function(win, state, opts)
   local matches = {} ---@type Flash.Match[]
   local search = Search.new(win, state)
   local smatches = search:get(opts)
-  local find_nodes = #state.pattern.pattern > 1
+  local find_nodes = #state.pattern.pattern >= 2
+  local fwd = state.remote_ts_fwd or 0
+  local bwd = state.remote_ts_bwd or 0
   for _, m in ipairs(smatches) do
-    local n_nodes = 0
+    local ok = false
     if find_nodes then
       for _, n in ipairs(M.get_nodes(win, m.pos, m.end_pos)) do
-        local ok = true
-        if state.opts.treesitter.starting_from_pos then ok = ok and (m.pos == n.pos) end
-        if state.opts.treesitter.ending_at_pos then ok = ok and (m.end_pos == n.end_pos) end
-        if state.opts.treesitter.containing_end_pos then ok = ok and (m.end_pos <= n.end_pos) end
-        if ok then
-          -- don't highlight treesitter nodes. Use labels only
-          n_nodes = 1
-          n.highlight = false
-          table.insert(matches, n)
-        end
+        ok = node_proc(bwd, fwd, m, matches, n, opts, state)
       end
     end
-    if not find_nodes or n_nodes > 0 then
+    if not find_nodes or ok then
       -- don't add labels to the search results
       m.label = false
       table.insert(matches, m)
@@ -391,6 +463,22 @@ M.remote_ts = function(win, state, opts)
   end
   return matches
 end
+local function ts_shift(state, fwdincr, bwdincr)
+  state.remote_ts_fwd = (state.remote_ts_fwd or 0) + fwdincr
+  state.remote_ts_bwd = (state.remote_ts_bwd or 0) + bwdincr
+
+  -- Force update
+  -- state.pattern:set(state.remote_ts_fwd .. state.remote_ts_bwd)
+  state:update { dirty_cache = true }
+end
+M.ts_actions = {
+  ["}"] = function(state) ts_shift(state, 1, 0) end,
+  ["{"] = function(state) ts_shift(state, 0, 1) end,
+  ["["] = function(state) ts_shift(state, -1, 0) end,
+  ["]"] = function(state) ts_shift(state, 0, -1) end,
+  [")"] = function(state) ts_shift(state, 1, -1) end,
+  ["("] = function(state) ts_shift(state, -1, 1) end,
+}
 M.remote_sel = function(win, state, opts)
   local pat = state.pattern
   state.pattern = pat:sub(1, 1)
@@ -402,59 +490,6 @@ M.remote_sel = function(win, state, opts)
     end
   end
   return matches
-end
-
-M.labelled_select = function(opts, node_maker)
-  if node_maker == nil then node_maker = M.get_nodes end
-  local Repeat = require "flash.repeat"
-  local Util = require "flash.util"
-  local Config = require "flash.config"
-  local state = Repeat.get_state(
-    "treesitter",
-    Config.get({ mode = "treesitter" }, opts, {
-      matcher = function(win, state)
-        local labels = state:labels()
-        local ret = node_maker(win, state.pos)
-
-        for i = 1, #ret do
-          ret[i].label = table.remove(labels, 1)
-        end
-        return ret
-      end,
-      labeler = function() end,
-      search = { multi_window = false, wrap = true, incremental = false },
-    })
-  )
-
-  local pos = vim.api.nvim_win_get_cursor(0)
-  ---@type Flash.Match?
-  local current
-  for _, m in ipairs(state.results) do
-    ---@cast m Flash.Match | {first?:boolean}
-    if m.first then current = m end
-  end
-  current = state:jump(current)
-
-  while true do
-    local char = Util.get_char()
-    if not char then
-      vim.cmd [[normal! v]]
-      vim.api.nvim_win_set_cursor(0, pos)
-      break
-    elseif char == ";" then
-      current = state:jump { match = current, forward = false }
-    elseif char == "," then
-      current = state:jump { forward = true, match = current }
-    elseif char == Util.CR then
-      state:jump(current and current.label or nil)
-      break
-    else
-      if not state:jump(char) then vim.api.nvim_input(char) end
-      break
-    end
-  end
-  state:hide()
-  return state
 end
 
 -- TODO: iswap

@@ -77,21 +77,23 @@ return {
   },
   -- TODO: https://github.com/chrisgrieser/nvim-recorder
   {
-    "rmagatti/gx-extended.nvim",
-    keys = { "gx" },
-    opts = {
-      extensions = {
-        {
-          patterns = { "Cargo.toml" },
-          match_to_url = function(line_string)
-            local resource_name = string.match(line_string, "^([%S]+) =")
-            local url = "https://lib.rs/crates/" .. resource_name
+    "mrshmllow/open-handlers.nvim",
+    -- We modify builtin functions, so be careful lazy loading
+    lazy = false,
+    cond = vim.ui.open ~= nil,
+    config = function()
+      local oh = require "open-handlers"
 
-            return url
-          end,
+      oh.setup {
+        -- In order, each handler is tried.
+        -- The first handler to successfully open will be used.
+        handlers = {
+          oh.issue, -- A builtin which handles github and gitlab issues
+          oh.commit, -- A builtin which handles git commits
+          oh.native, -- Default native handler. Should always be last
         },
-      },
-    },
+      }
+    end,
   },
   { "runiq/neovim-throttle-debounce" },
   {

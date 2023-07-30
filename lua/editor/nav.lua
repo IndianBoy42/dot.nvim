@@ -468,6 +468,15 @@ return {
             restore = false,
             motion = false,
           },
+          search = { multi_window = false, wrap = true, incremental = false, max_length = 0 },
+          config = function(opts)
+            if false and vim.fn.mode() == "v" then
+              opts.labels:gsub("[cdyrx]", "") -- TODO: Remove all operations
+            end
+          end,
+          treesitter = { containing_end_pos = true },
+          matcher = navutils.custom_ts,
+          actions = navutils.ts_actions,
         },
         remote_ts = {
           -- TODO: use `;,<cr><tab><spc` to extend the selection to sibling nodes
@@ -481,12 +490,13 @@ return {
           },
           jump = { pos = "range", register = false },
           highlight = { matches = true },
-          matcher = navutils.remote_ts,
           treesitter = { containing_end_pos = true },
+          actions = navutils.ts_actions,
           remote_op = {
             restore = true,
             motion = true,
           },
+          matcher = navutils.remote_ts,
         },
         fuzzy = {
           search = { mode = "fuzzy" },
@@ -556,8 +566,8 @@ return {
       -- },
       {
         O.select_dynamic,
-        mode = { "o", "x" },
-        function() require("flash").treesitter() end,
+        mode = { "o", "x", "n" },
+        function() require("flash").jump { mode = "treesitter" } end,
         desc = "Cursor Node",
       },
       {
@@ -567,7 +577,7 @@ return {
         function() require("flash").jump { mode = "remote_ts" } end,
       },
       {
-        O.select_remote_dynamic .. O.select_remote_dynamic,
+        O.select_remote_dynamic,
         mode = { "x" },
         desc = "Remote Node",
         function() require("flash").jump { mode = "remote_ts" } end,
@@ -691,13 +701,13 @@ return {
       {
         "f", -- semi-inclusive
         function() require("leap").leap { inclusive_op = true } end,
-        mode = "c",
+        mode = "x",
         desc = "Leap f",
       },
       {
         "F", -- semi-inclusive
         function() require("leap").leap { backward = true, offset = 1, inclusive_op = true } end,
-        mode = "c",
+        mode = "x",
         desc = "Leap F",
       },
       { "<leader>f", "<Plug>(leap-forward-to)", mode = "x", desc = "Leap f" },

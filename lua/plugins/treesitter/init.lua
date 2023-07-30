@@ -29,7 +29,7 @@ local M = {
     },
     opts = {
       ensure_installed = "all",
-      ignore_install = {},
+      ignore_install = {"comment"},
       matchup = {
         enable = true,
         -- disable = { "c", "ruby" },  -- list of language that will be disabled

@@ -32,16 +32,15 @@ return {
   -- TODO: which is the best nvim-lua REPL?
   {
     "bfredl/nvim-luadev",
-    opts = {},
     cmd = "Luadev",
     init = function()
       vim.api.nvim_create_autocmd("FileType", {
         pattern = "lua",
         callback = function()
           local map = vim.keymap.setl
-          map("n", "<localleader>X", "<Plug>(Luadev-RunLine)") --	Execute the current line
+          map("n", "<localleader>xx", "<Plug>(Luadev-RunLine)") --	Execute the current line
           map("n", "<localleader>x", "<Plug>(Luadev-Run)") --	Operator to execute lua code over a movement or text object.
-          map("n", "<localleader>rw", "<Plug>(Luadev-RunWord)") --	Eval identifier under cursor, including table.attr
+          map("n", "<localleader>xw", "<Plug>(Luadev-RunWord)") --	Eval identifier under cursor, including table.attr
           -- map("n", "<localleader>x", "<Plug>(Luadev-Complete)") --
         end,
       })

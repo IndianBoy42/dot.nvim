@@ -789,14 +789,11 @@ function M.setup()
   end, { expr = true })
   map("ca", "s", "s//g<left><left><left>")
 
-  do -- bailing operator pending mode to operator
-    local opkey = ""
-    -- TODO: doesnt work for custom operators (r)
-    vim.on_key(function(k)
-      if vim.tbl_contains({ "y", "d", "c", "r" }, k) then opkey = k end
-    end)
+  if false then -- bailing operator pending mode to operator
     for _, k in ipairs { "s", "y", "d", "c", "r", "x", "X", "q", "Q", "u" } do
       map("o", k, function()
+        -- TODO: doesnt work for custom operators (r)
+        local opkey = vim.v.operator
         feedkeys("<C-\\><C-n>", "n")
         feedkeys("<esc>", "n")
         feedkeys(opkey .. k, "m")

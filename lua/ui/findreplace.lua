@@ -346,6 +346,12 @@ return {
     keys = {
       { "<leader>rq", utils.lazy_require("replacer").run, desc = "Replace from quickfix" },
     },
+    init = function()
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "qf",
+        callback = function() vim.keymap.set("n", "i", utils.lazy_require("replacer").run, { desc = "Replacer" }) end,
+      })
+    end,
   },
   {
     "eugen0329/vim-esearch",
