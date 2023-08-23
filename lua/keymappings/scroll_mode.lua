@@ -1,6 +1,6 @@
 local M = {
-  horz_spd = 2,
-  vert_spd = 2,
+  horz_spd = 4,
+  vert_spd = 4,
 }
 local meta_M = {}
 M.setup = function()
@@ -35,9 +35,11 @@ M.setup = function()
   }
 
   local map = vim.keymap.set
-  map("n", "<leader>vj", "zz", { desc = "Center this Line" })
-  map("n", "<leader>v_", "zb", { desc = "Bottom this Line" })
-  map("n", "<leader>v^", "zt", { desc = "Top this Line" })
+  map("n", "--", "zz", { desc = "Center this Line" })
+  map("n", "-_", "zb", { desc = "Bottom this Line" })
+  map("n", "-+", "zt", { desc = "Top this Line" })
+  map("n", "-/", "zs", { desc = "Right this Line" })
+  map("n", "-<", "ze", { desc = "Left this Line" })
 
   return hydra
 end

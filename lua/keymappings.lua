@@ -49,6 +49,10 @@ M.register_nN_repeat = register_nN_repeat
 local cmd = utils.cmd
 local luareq = cmd.require
 local telescope_fn = utils.telescope
+  local telescope_cursor = function(name)
+    -- TODO: make this bigger
+    return function() return telescope_fn[name](require("telescope.themes").get_cursor()) end
+  end
 local focus_fn = luareq "focus"
 local lspbuf = vim.lsp.buf
 local operatorfunc_scaffold = utils.operatorfunc_scaffold
@@ -239,11 +243,11 @@ function M.setup()
   -- end
 
   -- Tab switch buffer
-  map("n", "<tab>", cmd "b#", nore)
-  map("n", "<C-tab>", cmd "BufferLineCycleNext", nore)
-  map("n", "<C-S-tab>", cmd "BufferLineCyclePrev", nore)
-  map("n", "<cr><tab>", require("keymappings.buffer_mode").tab_new_or_next, nore)
-  map("n", "<S-cr><S-tab>", require("keymappings.buffer_mode").tab_new_or_prev, nore)
+  map("n", "<tab>", cmd "b#", { desc = "Last Buffer" })
+  map("n", "<C-tab>", cmd "BufferLineCycleNext", { desc = "Next Buffer" })
+  map("n", "<C-S-tab>", cmd "BufferLineCyclePrev", { desc = "Prev Buffer" })
+  map("n", "<S-tab>", require("keymappings.buffer_mode").tab_new_or_next, { desc = "Next Tab" })
+  -- map("n", "<S-cr><S-tab>", require("keymappings.buffer_mode").tab_new_or_prev, { desc = "Prev Tab" })
 
   -- Move selection
   map("x", "<C-h>", "", {})
@@ -551,19 +555,16 @@ function M.setup()
   end
   quick_toggle("<leader>T", "d", utils.lsp.toggle_diagnostics)
   quick_toggle("<leader>T", "i", F "utils.lsp.inlay_hints(0)")
+  quick_toggle("<leader>T", "b", "<cmd>ToggleBlame virtual<cr>")
 
   -- Select last pasted
-  map("x", "<leader>p", "`[o`]", { desc = "Select Last Paste" })
-  map("x", "<leader>P", "<esc>gP", { remap = true, desc = "SelLine Last Paste" })
-  map("x", "<leader><C-p>", "<esc>g<C-p>", { remap = true, desc = "SelBlock Last Paste" })
+  map("x", O.goto_prefix .. "p", "`[o`]", { desc = "Select Last Paste" })
+  map("x", O.goto_prefix .. "P", "<esc>gP", { remap = true, desc = "SelLine Last Paste" })
+  map("x", O.goto_prefix .. "<C-p>", "<esc>g<C-p>", { remap = true, desc = "SelBlock Last Paste" })
   -- Use reselect as an operator
   op_from "<leader>p"
   op_from "<leader>P"
   op_from "<leader><C-p>"
-
-  local cmt_op = require("editor.edit").comment_operator
-  map("n", "<leader>" .. cmt_op, operatorfuncV_keys("<leader>" .. cmt_op), sile)
-  map("n", "<leader>" .. cmt_op .. cmt_op, "V<leader>" .. cmt_op, sile)
 
   -- Swap the mark jump keys
   map("n", "'", "`", nore)
@@ -749,7 +750,7 @@ function M.setup()
   map({ "n", "x" }, "gq", "=", { desc = "Indent Op" })
   map("n", "gqq", "==", { desc = "Indent Line" })
 
-  map("n", "(", "z", { desc = "z" })
+  map("n", "(", "z", { desc = "z", remap = true })
 
   map(
     "n",
@@ -787,7 +788,13 @@ function M.setup()
     -- TODO: refresh inccomand
     return "i<bs>"
   end, { expr = true })
-  map("ca", "s", "s//g<left><left><left>")
+  map("ca", "s", function()
+    if vim.fn.getcmdtype() == ":" then
+      return "s//g<left><left><left>"
+    else
+      return "s"
+    end
+  end, { expr = true })
 
   if false then -- bailing operator pending mode to operator
     for _, k in ipairs { "s", "y", "d", "c", "r", "x", "X", "q", "Q", "u" } do
@@ -836,22 +843,33 @@ function M.setup()
     -- f = { telescope_fn.find_files, "Smart Open File" },
     f = { telescope_fn.smart_open, "Smart Open File" },
     F = { telescope_fn.find_all_files, "Find all Files" },
-    ["<Space>"] = { "<cmd>w<cr>", "Write" },
+    ["<Space>"] = {
+      function()
+        if vim.api.nvim_buf_get_name(0) == "" then
+          vim.notify("No filename yet, complete in cmdline", vim.log.levels.WARN)
+          return ":w "
+        else
+          return "<cmd>w<cr>"
+        end
+      end,
+      "Write",
+      expr = true,
+      replace_keycodes = true,
+    },
     W = {
       function()
         if vim.api.nvim_buf_get_name(0) == "" then
           vim.notify("No filename yet, complete in cmdline", vim.log.levels.WARN)
-          feedkeys ":noau w "
-          -- vim.ui.input({ prompt = "filename:" }, function(f)
-          --   vim.cmd("w " .. f)
-          -- end)
+          return ":noau w "
         else
-          vim.cmd "noau w"
+          return "<cmd>noau w<cr>"
         end
       end,
       "Write (noau)",
+      expr = true,
+      replace_keycodes = true,
     }, -- w = { cmd "noau up", "Write" },
-    q = { "<C-W>q", "Quit" },
+    q = { "<cmd>wq<cr>", "Quit" },
     ["<C-q>"] = { "<cmd>qa<cr>", "Quit All" },
     Q = { function() return pcall(vim.cmd.tabclose) or pcall(vim.cmd.quitall) end, "Quit Tab" },
     e = {
@@ -956,11 +974,11 @@ function M.setup()
       -- i = { telescope_fn.lsp_implementations, "Implementations" },
       -- s = {
       -- name = "View in Split", -- TODO: peek before pick
-      d = { utils.lsp.view_location_pick "definition", "Definition" },
-      D = { utils.lsp.view_location_pick "declaration", "Declaration" },
-      t = { utils.lsp.view_location_pick "typeDefinition", "Type Def" },
-      r = { utils.lsp.view_location_pick "references", "References" },
-      i = { utils.lsp.view_location_pick "implementation", "Implementation" },
+      d = { telescope_cursor "lsp_definitions", "Definition" },
+      D = { telescope_cursor "lsp_declarations", "Declaration" },
+      t = { telescope_cursor "lsp_type_definitions", "Type Def" },
+      r = { telescope_cursor "lsp_references", "References" },
+      i = { telescope_cursor "lsp_implementations", "Implementation" },
       -- },
       p = {
         name = "Peek in Float",
@@ -1178,23 +1196,19 @@ utils.lsp.on_attach(function(client, bufnr)
     vim.keymap.set(mode, lhs, rhs, opts)
   end
 
-  local telescope_cursor = function(name)
-    -- TODO: make this bigger
-    return function() return telescope_fn[name](require("telescope.themes").get_cursor()) end
-  end
 
-  map("n", "gd", telescope_cursor "lsp_definitions", { desc = "Goto Definition" })
-  map("n", O.goto_prefix .. "d", telescope_cursor "lsp_definitions", { desc = "Goto Definition" })
+  map("n", "gd", utils.lsp.view_location_pick "definition", { desc = "Goto Definition" })
+  map("n", O.goto_prefix .. "d", utils.lsp.view_location_pick "definition", { desc = "Goto Definition" })
   -- map("n", "gd", vim.lsp.buf.definition, { desc = "Definition" })
-  map("n", "gD", lspbuf.declaration, { desc = "Goto Declaration" })
-  map("n", O.goto_prefix .. "D", lspbuf.declaration, { desc = "Goto Declaration" })
-  map("n", O.goto_prefix .. "r", telescope_fn.lsp_references, { desc = "Goto References" })
+  map("n", "gD", utils.lsp.view_location_pick "declaration", { desc = "Goto Declaration" })
+  map("n", O.goto_prefix .. "D", utils.lsp.view_location_pick "declaration", { desc = "Goto Declaration" })
+  map("n", O.goto_prefix .. "r", utils.lsp.view_location_pick "references", { desc = "Goto References" })
   -- Preview variants -- TODO: preview and then open new window
-  map("n", "gpd", utils.lsp.preview_location_at "definition", { desc = "Peek definition" }) -- TODO: replace with glance.nvim?
-  map("n", "gpD", utils.lsp.preview_location_at "declaration", { desc = "Peek declaration" })
-  map("n", "gpr", telescope_fn.lsp_references, { desc = "Peek references" })
-  map("n", "gpi", telescope_fn.lsp_implementations, { desc = "Peek implementation" })
-  map("n", "gpe", utils.lsp.diag_line, { desc = "Diags" })
+  map("n", O.goto_prefix .. "pd", utils.lsp.preview_location_at "definition", { desc = "Peek definition" }) -- TODO: replace with glance.nvim?
+  map("n", O.goto_prefix .. "pD", utils.lsp.preview_location_at "declaration", { desc = "Peek declaration" })
+  map("n", O.goto_prefix .. "pr", telescope_fn.lsp_references, { desc = "Peek references" })
+  map("n", O.goto_prefix .. "pi", telescope_fn.lsp_implementations, { desc = "Peek implementation" })
+  map("n", O.goto_prefix .. "pe", utils.lsp.diag_line, { desc = "Diags" })
   -- Hover
   map("n", O.hover_key, utils.lsp.repeatable_hover, { desc = "LSP Hover" })
   map("i", "<C-i>", lspbuf.signature_help, { desc = "LSP Signature Help" })
@@ -1218,8 +1232,8 @@ return setmetatable(M, {
 
 -- m  t (in normal mode maybe?)
 -- prefixes
--- c d y r
+-- c d y r = !
 -- suffixes
--- p x o u . ; -
+-- p x o u . ; - =  ! > <
 -- v is useful but not
 -- op-op combinations

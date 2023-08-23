@@ -299,9 +299,13 @@ function M.with_rg(opts)
 end
 
 function M.live_grep_all()
-  require("telescope.builtin").find_files {
+  require("telescope.builtin").live_grep {
     find_command = M.with_rg {},
   }
+end
+function M.live_grep()
+  -- require("telescope.builtin").live_grep ()
+  require("telescope").extensions.live_grep_args.live_grep_args()
 end
 
 function M.find_all_files()

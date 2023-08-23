@@ -119,7 +119,6 @@ return {
       }
     end,
   },
-  -- TODO: try https://github.com/goolord/alpha-nvim (new dashboard plugin)
   -- TODO: dressing.nvim
   {
     "smjonas/live-command.nvim",
@@ -439,7 +438,65 @@ return {
   },
   -- TODO: https://github.com/notomo/cmdbuf.nvim
   {
+    "notomo/cmdbuf.nvim",
+    config = function(_, opts)
+      local cmdbuf = require("cmdbuf")
+      local map = vim.keymap.set
+      local split_open = function (h, opts)
+      return function ()
+          cmdbuf.split_open(h or vim.o.cmdwinheight, opts)
+      end
+      end
+      map("n", "q:", split_open(nil), { desc = "Cmdwin" })
+      map(
+        "n",
+        "q/",
+        split_open(nil, { type = "vim/search/forward" }),
+        { desc = "Cmdwin Search Forward" }
+      )
+      map(
+        "n",
+        "q?",
+        split_open(nil, { type = "vim/search/backward" }),
+        { desc = "Cmdwin Search Backward" }
+      )
+      map(
+        "n",
+        "ql",
+        split_open(nil, { type = "lua/cmd" }),
+        { desc = "Cmdwin Lua" }
+      )
+      map("c", "<C-f>", function()
+        require("cmdbuf").split_open(vim.o.cmdwinheight, { line = vim.fn.getcmdline(), column = vim.fn.getcmdpos() })
+        vim.api.nvim_feedkeys(vim.keycode "<C-c>", "n", true)
+      end)
+
+      -- Custom buffer mappings
+      vim.api.nvim_create_autocmd({ "User" }, {
+        group = vim.api.nvim_create_augroup("cmdbuf_setting", {}),
+        pattern = { "CmdbufNew" },
+        callback = function(args)
+          vim.bo.bufhidden = "wipe" -- if you don't need previous opened buffer state
+          map("n", "q", [[<Cmd>quit<CR>]], { nowait = true, buffer = true })
+          map("n", "dd", [[<Cmd>lua require('cmdbuf').delete()<CR>]], { buffer = true })
+
+          -- you can filter buffer lines
+          local lines = vim.tbl_filter(
+            function(line) return line ~= "q" end,
+            vim.api.nvim_buf_get_lines(args.buf, 0, -1, false)
+          )
+          vim.api.nvim_buf_set_lines(args.buf, 0, -1, false, lines)
+        end,
+      })
+
+      -- open lua command-line window
+      -- q/, q? alternative
+    end,
+    keys = { "q:", "q/", "q?", "ql", { "<C-f", mode = "c" } },
+  },
+  {
     "Aasim-A/scrollEOF.nvim",
     opts = {},
   },
+  -- TODO: https://github.com/roobert/action-hints.nvim
 }

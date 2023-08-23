@@ -130,13 +130,13 @@ return {
         --    direction = 'left'|'right'|'up'|'down',
         --    split(), -- utility function to split current Neovim pane in the current direction
         -- }
-        if ctx.direction == "left" then
+        if ctx.direction == "left" and require("ui.tree").cond then
           vim.cmd.NvimTreeFocus()
-        -- elseif ctx.direction == "right" then
-        --   vim.cmd.Trouble()
-        else
-          ctx.split()
+          -- elseif ctx.direction == "right" then
+          --   vim.cmd.Trouble()
+          return
         end
+        ctx.split()
       end,
     },
     keys = function()

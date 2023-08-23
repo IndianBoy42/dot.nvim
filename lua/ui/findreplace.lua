@@ -36,18 +36,8 @@ return {
       return {
         -- TODO: Could use 'yr' for this
         { "r", substitute "operator", mode = "n", desc = "Replace" },
-        {
-          "rr",
-          substitute "line",
-          mode = "n",
-          desc = "Replace Line",
-        },
-        {
-          "R",
-          substitute "eol",
-          mode = "n",
-          desc = "Replace EOL",
-        },
+        { "rr", substitute "line", mode = "n", desc = "Replace Line", },
+        -- { "R", substitute "eol", mode = "n", desc = "Replace EOL" },
         -- { "r", substitute("visual", { yank_substituted_text = true }), mode = "x", desc = "Replace" },
         -- TODO: fuck these, just use vim-visual-multi?
         {
@@ -349,7 +339,7 @@ return {
     init = function()
       vim.api.nvim_create_autocmd("FileType", {
         pattern = "qf",
-        callback = function() vim.keymap.set("n", "i", utils.lazy_require("replacer").run, { desc = "Replacer" }) end,
+        callback = function() vim.keymap.setl("n", "i", utils.lazy_require("replacer").run, { desc = "Replacer" }) end,
       })
     end,
   },

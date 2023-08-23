@@ -1,5 +1,7 @@
-local cmt_op = "#" -- TODO: use yc (you comment?) + more
-local cmt_vi
+-- local cmt_op = "#" -- TODO: use yc (you comment?) + more
+-- local cmt_vi
+local cmt_op = "yc" -- TODO: use yc (you comment?) + more
+local cmt_vi = "C"
 return {
   comment_operator = cmt_op,
   comment_visual = cmt_vi or cmt_op,
@@ -7,8 +9,8 @@ return {
     "IndianBoy42/iswap.nvim",
     dev = true,
     opts = {
-      keys = O.hint_labels,
-      autoswap = "after_label",
+      keys = O.hint_labels .. O.hint_labels:upper(),
+      autoswap = false,
       move_cursor = true,
       only_current_line = false,
       debug = true,
@@ -16,22 +18,22 @@ return {
     },
     cmd = {
       "ISwap",
-      "ISwapWith",
-      "ISwapWithLeft",
-      "ISwapWithRight",
+      "ISwapTwo",
+      "ISwapTwoLeft",
+      "ISwapTwoRight",
       "IMove",
-      "IMoveWith",
-      "ISwapNode",
-      "ISwapNodeWith",
+      "IMoveTwo",
+      "ISwapList",
+      "ISwapListTwo",
     },
     keys = {
-      -- { "<leader>ea", "<cmd>ISwapWith<cr>", desc = "ISwap", mode = { "n" } },
-      { "mx", "<cmd>ISwapNodeWith<cr>", desc = "ISwapNodeWith", mode = { "n" } },
-      { "ix", "<cmd>ISwapNodeWith<cr>", desc = "ISwapNodeWith", mode = { "x" } },
-      { "im", "<cmd>IMoveNodeWith<cr>", desc = "IMoveNodeWith", mode = { "x" } },
-      { "mX", "<cmd>ISwapNode<cr>", desc = "ISwapNode", mode = { "n" } },
+      { "mx", "<cmd>ISwap<cr>", desc = "ISwapNodeWith", mode = { "n" } },
+      -- { "mx", "<Plug>(ISwap)", desc = "ISwapNodeWith", mode = { "n" } },
+      { "X", "<cmd>ISwap<cr>", desc = "ISwapNodeWith", mode = { "x" } },
+      { "M", "<cmd>IMove<cr>", desc = "IMoveNodeWith", mode = { "x" } },
+      { "mX", "<cmd>ISwapTwo<cr>", desc = "ISwapNode", mode = { "n" } },
       -- { "mm", F 'require("iswap").imove_node({ autoswap = false })', desc = "IMoveNode", mode = { "n" } },
-      { "mm", "<cmd>IMoveNodeWith<cr>", desc = "IMove", mode = { "n" } },
+      { "mm", "<cmd>IMove<cr>", desc = "IMove", mode = { "n" } },
     },
   },
   {
@@ -40,10 +42,16 @@ return {
     dependencies = { "nvim-treesitter" },
     opts = {
       use_default_keymaps = false,
-      max_join_length = 9999999,
+      max_join_length = 120,
     },
     keys = {
-      { "<C-s>", function() require("treesj").toggle() end, desc = "SplitJoin", mode = { "n", "i" } },
+      { "<C-s>", function() require("treesj").toggle() end, desc = "SplitJoin", mode = { "n", "i", "x" } },
+      {
+        "<C-S-s>",
+        function() require("treesj").nested_toggle "flash" end,
+        desc = "SplitJoin Nested",
+        mode = { "n", "i", "x" },
+      },
       -- TODO: make this a hydra for repeatability
       { "<leader>eJ", function() require("treesj").split() end, desc = "Split" },
       { "<leader>ej", function() require("treesj").join() end, desc = "Join" },
@@ -178,7 +186,8 @@ return {
     config = function(_, opts)
       require("mini.comment").setup(opts)
 
-      vim.keymap.set(
+      local map = vim.keymap.set
+      map(
         "x",
         "<leader>" .. cmt_op,
         '"zy'
@@ -190,6 +199,9 @@ return {
           .. "`z", -- Go back to the original position
         { desc = "copy and comment" }
       )
+      local cmt_op = require("editor.edit").comment_operator
+      map("n", "<leader>" .. cmt_op, utils.operatorfuncV_keys("<leader>" .. cmt_op), { desc = "copy and comment op" })
+      map("n", "<leader>" .. cmt_op .. cmt_op:sub(-1), "V<leader>" .. cmt_op, { desc = "copy and comment line" })
 
       if cmt_vi then
         vim.keymap.set("x", cmt_vi, ":<c-u>MiniComment.operator('visual')<cr>", { desc = "Comment selection" })
@@ -292,6 +304,26 @@ return {
       { "cd", '"+d', mode = "n", desc = "Clipboard d" },
       { "cdd", '"+dd', mode = "n", desc = "Clipboard dd" },
       { "cD", '"+D', mode = "n", desc = "Clipboard D" },
+      -- TODO: hydra
+    },
+  },
+  {
+    "echasnovski/mini.operators",
+    main = "mini.operators",
+    opts = {
+      -- Evaluate text and replace with output
+      evaluate = { prefix = "<leader>=" },
+      sort = { prefix = "gs" },
+      exchange = { prefix = "" },
+      multiply = { prefix = "" },
+      replace = { prefix = "" },
+      -- Sort text
+    },
+    keys = {
+      { "gs", mode = { "n", "x" }, desc = "Sort" },
+      { "gss", mode = { "n" }, desc = "Sort line" },
+      { "<leader>=", mode = { "n", "x" }, desc = "Evaluate" },
+      { "<leader>==", mode = { "n" }, desc = "Evaluate line" },
     },
   },
 }

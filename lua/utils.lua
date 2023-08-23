@@ -648,6 +648,18 @@ M.lsp = require "utils.lsp"
 M.telescope = require "utils.telescope"
 M.ui = require "utils.ui"
 
+local plug_char = t "<Plug>"
+M.doplug = function(name, mode, esc)
+  feedkeys(plug_char .. name, mode, esc)
+end
+M.repeatable = function(fn)
+  return function()
+    _G.__repeatable_opfunc = fn
+    vim.go.operatorfunc = "v:lua.__repeatable_opfunc"
+    feedkeys("g@l", "n", false)
+  end
+end
+
 return setmetatable(M, {
   __index = function(_, key)
     local ok, val = pcall(require, "utils" .. key)

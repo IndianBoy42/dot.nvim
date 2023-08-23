@@ -133,6 +133,8 @@ local M = {
       },
     },
   },
+
+-- https://github.com/roobert/f-string-toggle.nvim
 }
 
 local get_alt_win = function(term, cmd)

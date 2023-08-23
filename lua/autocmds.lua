@@ -58,7 +58,7 @@ return {
       au({ "FocusLost", "WinLeave", "TabLeave" }, function()
         if vim.bo.buftype == "" then pcall(vim.cmd.update) end
       end)
-      au("FocusLost", function() f "<C-\\><C-n>" end)
+      -- au("FocusLost", function() f "<C-\\><C-n>" end)
       au({ "WinLeave", "TabLeave" }, function() vim.cmd.stopinsert() end)
     end)
 
@@ -155,5 +155,60 @@ return {
     -- utils.write_on_idle("noau_write_idle", 1000)
 
     -- utils.lsp.auto_hover()
+
+    do
+      local buflen = 4
+      local buf = {}
+      for i = 1, buflen do
+        buf[i] = ""
+      end
+      local pattern_builder = {
+      }
+      local state_root = {}
+      for lhs, rhs in pairs(pattern_builder) do
+        local P = state_root
+        for i = 1, #lhs - 1 do
+          local c = lhs:sub(i, i)
+          if not P[c] then P[c] = {} end
+          P = P[c]
+        end
+        P[lhs:sub(#lhs)] = rhs
+      end
+
+      local state = state_root
+
+      local function reset()
+        buf = {}
+        state = state_root
+      end
+      local function timeout()
+        vim.defer_fn(function() reset() end, vim.o.timeoutlen)
+      end
+
+      -- Limitations: on_key gets the keys after mappings
+      local ns = vim.on_key(function(k)
+        if vim.api.nvim_get_mode().mode ~= "n" then return end
+
+        -- Circular buffer
+        for i = 2, buflen do
+          buf[i - 1] = buf[i]
+        end
+        buf[buflen] = k
+
+        local act = state[k]
+        if not act then
+          reset()
+        else
+          if type(act) == "table" then
+            state = act
+            timeout()
+          else
+            if type(act) == "string" then vim.cmd.normal { bang = true, act } end
+            if type(act) == "function" then act() end
+            reset()
+          end
+        end
+      end, nil)
+    end
   end,
 }

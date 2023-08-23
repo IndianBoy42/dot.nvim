@@ -25,10 +25,10 @@ return {
         end
       end
 
-      require("yop").op_map({ "n", "v" }, "gs", sort)
+      -- require("yop").op_map({ "n", "v" }, "gs", sort)
     end,
     keys = {
-      { mode = { "n", "v" }, "gs" },
+      -- { mode = { "n", "v" }, "gs" },
     },
   },
 
@@ -42,7 +42,7 @@ return {
   },
   "anuvyklack/hydra.nvim",
   {
-    "anuvyklack/keymap-amend.nvim",
+    "indianboy42/keymap-amend.nvim",
     dev = true,
     config = function()
       local a = require "keymap-amend"
@@ -52,4 +52,3 @@ return {
     lazy = false,
   },
 }
--- TODO: legendary.nvim

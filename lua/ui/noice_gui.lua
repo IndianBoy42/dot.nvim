@@ -31,7 +31,7 @@ return {
   },
   {
     "folke/noice.nvim",
-    cond = enable and not vim.g.neovide,
+    cond = enable, -- and not vim.g.neovide,
     event = "VeryLazy",
     dependencies = { "MunifTanjim/nui.nvim" },
     config = function()

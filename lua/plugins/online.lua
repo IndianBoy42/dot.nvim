@@ -3,7 +3,7 @@ local M = {
     "chipsenkbeil/distant.nvim",
     config = function()
       local actions = require "distant.nav.actions"
-      require("distant").setup {
+      require("distant"):setup {
         ["*"] = {
           -- Apply these launch settings to all hosts
           launch = {

@@ -80,8 +80,14 @@ local function multiop(select, find)
   end
 end
 
+local VM_meta = {}
+VM_meta.__index = function(t, k) return setmetatable({ t[1] .. "#" .. k }, VM_meta) end
+VM_meta.__call = function(t, ...) return vim.fn[t[0]](...) end
+local VM = setmetatable({ "vm" }, VM_meta)
+
 return {
   "IndianBoy42/vim-visual-multi",
+  api = VM,
   dev = true,
   init = function()
     vim.g.VM_maps = nil
@@ -133,7 +139,6 @@ return {
     vim.cmd.VMTheme(vim.g.VM_theme)
     local ldr = vim.g.VM_leader
     local map = vim.keymap.set
-    -- map("x", "I", wrap_vm(nil, "Visual-Add", "i"), { remap = true })
     map(
       "n",
       "+",
@@ -155,9 +160,11 @@ return {
     end, { expr = true, remap = false })
 
     map("x", "<C-v>", function()
-      if vim.api.nvim_get_mode().mode == c_v then
+      local m = vim.api.nvim_get_mode().mode
+      if m == c_v or m == "V" then
         return "<Plug>(VM-Visual-Add)"
       else
+        -- If same row then go to visual block mode
         if vim.fn.getpos(".")[2] == vim.fn.getpos("v")[2] then
           feedkeys("<c-v>", "n")
           return ""

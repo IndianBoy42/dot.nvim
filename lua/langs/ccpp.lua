@@ -99,4 +99,6 @@ return {
     },
   },
   -- TODO: {"Civitasv/cmake-tools.nvim"}
+  -- TODO: https://github.com/Badhi/nvim-treesitter-cpp-tools
+  -- https://github.com/roobert/hoversplit.nvim
 }

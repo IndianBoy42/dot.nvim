@@ -1,3 +1,10 @@
+local function focus_me()
+  if vim.g.neovide then
+    pcall(vim.cmd.NeovideFocus)
+  else
+    require("kitty.current_win").focus()
+  end
+end
 local function FNV_hash(s)
   local prime = 1099511628211
   local hash = 14695981039346656037
@@ -57,7 +64,11 @@ return {
         -- Alternatively, we can block if we find the diff-mode option
         -- return vim.tbl_contains(argv, "-d")
       end,
-      no_files = function() require("kitty.current_win").focus() end,
+
+      no_files = function()
+        -- TODO: this seems to open minifiles?
+        pcall(function() focus_me() end)
+      end,
       -- Called when a request to edit file(s) is received
       pre_open = function() end,
       post_open = function(bufnr, winnr, filetype)
@@ -65,7 +76,7 @@ return {
         -- Passed the buf id, win id, and filetype of the new window
 
         -- Switch kitty window
-        require("kitty.current_win").focus()
+        focus_me()
 
         -- If the file is a git commit, create one-shot autocmd to delete its buffer on write
         -- If you just want the toggleable terminal integration, ignore this bit

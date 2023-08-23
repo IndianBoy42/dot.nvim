@@ -29,7 +29,7 @@ local O = {
   cursorline = true,
   shell = "bash", -- shell is used for running scripts
   termshell = "fish", -- termshell is used for interactive terminals
-  timeoutlen = 300,
+  timeoutlen = 500,
   nvim_tree_disable_netrw = 0,
   ignore_case = true,
   smart_case = true,
@@ -60,9 +60,10 @@ local O = {
   goto_next_outer_end = "<leader>]]", -- "))",
   goto_previous_outer_end = "<leader>[[", -- "((",
   select = "&",
-  select_dynamic = "m",
+  select_dynamic = "im",
+  select_dynamic_around = "am",
   select_remote = "r",
-  select_remote_dynamic = "ir",
+  select_remote_dynamic = "m",
   select_outer = "<M-S-7>", -- M-&
   select_less = "<C-S-7>", -- C-&
   select_next = "in",
@@ -72,12 +73,12 @@ local O = {
   -- USE: { }
   -- The below is used for most hint based navigation/selection (hop, hint_textobjects)
   -- hint_labels = "fdsahjklgvcxznmbyuiorewqtp",
-  hint_labels = "jklfdsahgnm.ervcxzbuioyptwq",
+  hint_labels = "jklfdsahgnmervcxzbuioyptwq",
 
   -- hint_labels = "hjklfdsagnmervcxzbuioyptwq",
   database = { save_location = "~/.config/nvim/.db", auto_execute = 1 },
   hover_key = "H",
-  action_key = "K",
+  action_key = "K", -- <leader><dot>? cu?
   action_key_vis = "K",
   -- TODO:?
   -- hover_key = "K",

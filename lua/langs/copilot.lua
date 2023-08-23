@@ -25,7 +25,7 @@ return {
         {
           name = source,
           group_index = 2,
-          max_item_count = 3,
+          max_item_count = 5,
         },
       }, opts.sources)
       if source == "copilot" then

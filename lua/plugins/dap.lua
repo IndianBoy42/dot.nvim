@@ -140,4 +140,5 @@ return {
       { "<leader>D", desc = "Debugging" },
     },
   },
+  -- TODO: Debug neovim plugins: https://github.com/jbyuki/one-small-step-for-vimkind
 }

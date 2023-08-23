@@ -31,6 +31,13 @@ M.default_sources = {
   { name = "calc", group_index = 2 },
   -- { name = "cmp_tabnine" , group_index = 2},
   { name = "lua-latex-symbols", group_index = 2 },
+  {
+      name = 'omni',
+    group_index = 2,
+      option = {
+        disable_omnifuncs = { 'v:lua.vim.lsp.omnifunc' }
+      }
+    },
 }
 M.config = function(_, opts)
   local cmp = require "cmp"

@@ -47,6 +47,7 @@ local jump_mappings = function()
     local van = function() ai.select_textobject("a", id, { search_method = "next" }) end
     local vip = function() ai.select_textobject("i", id, { search_method = "prev" }) end
     local vap = function() ai.select_textobject("a", id, { search_method = "prev" }) end
+    jump_mode.repeatable(id, desc, { w, b, e, ge }, {})
     local hydra =
       jump_mode.move_by(sym, jump_mode.move_by_suffixes, { w, b, e, ge, W, B, E, gE, vi, va, vin, vip, van, vap }, desc)
     -- TODO: enable these hydras in visual mode after selection, ie
@@ -63,6 +64,7 @@ local jump_mappings = function()
     --   -- require("which-key").register({ [sym] = { name = desc } }, { mode = "x" })
     -- end
   end
+  mapall("f", nil, "|")
   mapall("a", nil, ",")
   -- mapall("b", nil, ")")
   -- mapall("q", nil)
@@ -262,17 +264,6 @@ local function leap_to_line(action)
   }
 end
 
-local function leap_anywhere(action)
-  local focusable_windows_on_tabpage = vim.tbl_filter(
-    function(win) return vim.api.nvim_win_get_config(win).focusable end,
-    vim.api.nvim_tabpage_list_wins(0)
-  )
-  require("leap").leap {
-    case_sensitive = false,
-    target_windows = focusable_windows_on_tabpage,
-    action = action,
-  }
-end
 local function _leap_bi()
   local winnr = vim.api.nvim_get_current_win()
   local pre_leap_pos = vim.api.nvim_win_get_cursor(winnr)
@@ -456,7 +447,7 @@ return {
       },
       modes = {
         search = {
-          highlight = { min_pattern_length = 3 },
+          label = { min_pattern_length = 3 },
         },
         char = {
           enabled = false,
@@ -499,7 +490,8 @@ return {
           matcher = navutils.remote_ts,
         },
         fuzzy = {
-          search = { mode = "fuzzy" },
+          search = { mode = "fuzzy", max_length = 9999 },
+          label = { min_pattern_length = 4 },
           -- label = { before = true, after = false },
         },
         leap = {
@@ -566,46 +558,59 @@ return {
       -- },
       {
         O.select_dynamic,
-        mode = { "o", "x", "n" },
+        mode = { "o", "x" },
         function() require("flash").jump { mode = "treesitter" } end,
         desc = "Cursor Node",
       },
       {
         O.select_remote_dynamic,
-        mode = { "o" },
+        mode = { "o", "x" },
         desc = "Remote Node",
         function() require("flash").jump { mode = "remote_ts" } end,
       },
       {
-        O.select_remote_dynamic,
-        mode = { "x" },
-        desc = "Remote Node",
-        function() require("flash").jump { mode = "remote_ts" } end,
-      },
-      {
-        O.goto_next .. O.select_dynamic,
+        O.goto_next .. O.select_remote_dynamic,
         mode = { "o", "x" },
         function() require("flash").jump { mode = "remote_ts", treesitter = { starting_from_pos = true } } end,
         desc = "Select node",
       },
       {
-        O.goto_prev .. O.select_dynamic,
+        O.goto_prev .. O.select_remote_dynamic,
         mode = { "o", "x" },
         function() require("flash").jump { mode = "remote_ts", treesitter = { ending_at_pos = true } } end,
         desc = "Select node",
       },
       {
+        O.goto_next .. O.select_remote_dynamic,
+        mode = "n",
+        function()
+          require("flash").jump { mode = "remote_ts", treesitter = { end_of_node = true }, jump = { pos = "end" } }
+        end,
+        desc = "Jump to end of node",
+      },
+      {
+        O.goto_prev .. O.select_remote_dynamic,
+        mode = "n",
+        function()
+          require("flash").jump { mode = "remote_ts", treesitter = { start_of_node = true }, jump = { pos = "start" } }
+        end,
+        desc = "Jump to start of node",
+      },
+      {
         O.goto_prefix .. "w", -- TODO: stop verbs from being labels
         -- TODO: allow searching continuations
         function() require("flash").jump { mode = "textcase", pattern = vim.fn.expand "<cword>" } end,
+        desc = "Flash <cword>",
       },
       {
         O.goto_prefix .. "W",
         function() require("flash").jump { mode = "textcase", pattern = vim.fn.expand "<cWORD>" } end,
+        desc = "Flash <cWORD>",
       },
       {
         O.goto_prefix .. "n",
         function() require("flash").jump { continue = true } end,
+        desc = "Continue Flash",
       },
       {
         O.goto_prefix .. "hr",
@@ -629,62 +634,76 @@ return {
         function() navutils.flash_diagnostics { action = utils.telescope.code_actions_previewed } end,
       },
       {
-        "rX",
+        "rix", -- TODO: better keymap?
+        -- FIXME: its broken??
         mode = { "x", "n" },
         desc = "Exchange <motion1> with <node>",
         function() navutils.swap_with { mode = "remote_ts" } end,
       },
-      {
-        "rx",
-        mode = { "x", "n" },
-        desc = "Exchange <motion1> with <motion2>",
-        function() navutils.swap_with {} end,
-      },
+      -- TODO: y<motion><something><leap><motion>
+      -- {
+      --   "rx",
+      --   mode = { "n", "x" },
+      --   desc = "Exchange <motion1> with <motion2>",
+      --   -- TODO: use leap?
+      --   function() navutils.swap_with() end,
+      -- },
+      -- {
+      --   "rxx",
+      --   mode = { "n", "x" },
+      --   desc = "Exchange V<motion1> with V<motion2>",
+      --   -- TODO: use leap?
+      --   function()
+      --     navutils.swap_with { exchange = {
+      --       visual_mode = "V",
+      --     } }
+      --   end,
+      -- },
+      -- {
+      --   "R",
+      --   mode = { "n" },
+      --   desc = "Remote Replace",
+      --   function()
+      --     vim.api.nvim_feedkeys("r", "m", false)
+      --     vim.schedule(function() require("flash").jump {} end)
+      --   end,
+      -- },
       -- TODO: Copy there, Paste here
-      {
-        "rR", -- TODO: better keymap?
-        mode = { "n" },
-        desc = "Remote Replace",
-        function()
-          vim.api.nvim_feedkeys("r", "m", false)
-          vim.schedule(function() require("flash").jump { mode = "remote_ts" } end)
-        end,
-      },
-      { -- TODO: this
+      { -- FIXME: this
         "ry",
         mode = { "x", "n" },
         desc = "Replace with <remote-motion>",
         function() navutils.swap_with { exchange = { not_there = true } } end,
       },
-      { -- TODO: this
+      { -- FIXME: this
         "rd",
         mode = { "x", "n" },
         desc = "Replace with d<remote-motion>",
         function() navutils.swap_with { exchange = { not_there = true } } end,
       },
-      { -- TODO: this
+      { -- FIXME: this
         "rc",
         mode = { "x", "n" },
         desc = "Replace with c<remote-motion>",
         function() navutils.swap_with { exchange = { not_there = true } } end,
       },
-      { -- TODO: this
+      { -- FIXME: this
         "rY",
         mode = { "n" },
         desc = "Replace with <node>",
-        function() navutils.swap_with { exchange = { not_there = true } } end,
+        function() navutils.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
       },
-      { -- TODO: this
+      { -- FIXME: this
         "rD",
         mode = { "x", "n" },
         desc = "Replace with d<node>",
-        function() navutils.swap_with { exchange = { not_there = true } } end,
+        function() navutils.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
       },
-      { -- TODO: this
+      { -- FIXME: this
         "rC",
         mode = { "x", "n" },
         desc = "Replace with c<node>",
-        function() navutils.swap_with { exchange = { not_there = true } } end,
+        function() navutils.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
       },
       -- TODO: Copy this, Paste there
     },
@@ -694,18 +713,36 @@ return {
     keys = {
       { "}" }, -- Repeat mappings
       { "{" },
-      -- { "<leader>hw", leap_anywhere, mode = "n", desc = "Leap all windows" },
+      -- { "<leader>hw", navutils.leap_anywhere, mode = "n", desc = "Leap all windows" },
       { "s", "<Plug>(leap-forward-to)", mode = "n", desc = "Leap Fwd" },
       { "S", "<Plug>(leap-backward-to)", mode = "n", desc = "Leap Bwd" },
-      { O.goto_prefix .. O.goto_prefix, leap_anywhere, mode = "n", desc = "Leap" },
+      { O.goto_prefix .. O.goto_prefix, navutils.leap_anywhere, mode = "n", desc = "Leap" },
       {
-        "f", -- semi-inclusive
+        "t", -- semi-inclusive
+        function()
+          vim.cmd.normal { "v", bang = true }
+          require("leap").leap { inclusive_op = true }
+        end,
+        mode = "n",
+        desc = "Leap vf",
+      },
+      {
+        "T", -- semi-inclusive
+        function()
+          vim.cmd.normal { "v", bang = true }
+          require("leap").leap { backward = true, offset = 1, inclusive_op = true }
+        end,
+        mode = "x",
+        desc = "Leap vF",
+      },
+      {
+        "h", -- semi-inclusive
         function() require("leap").leap { inclusive_op = true } end,
         mode = "x",
         desc = "Leap f",
       },
       {
-        "F", -- semi-inclusive
+        "H", -- semi-inclusive
         function() require("leap").leap { backward = true, offset = 1, inclusive_op = true } end,
         mode = "x",
         desc = "Leap F",
@@ -718,76 +755,66 @@ return {
       -- { "f", leap_bi_x(1), mode = "x", desc = "Leap" },
       -- { "<leader>f", leap_bi_x(2), mode = "x", desc = "Leap Inc" },
       -- { "<leader>t", leap_bi_x(0), mode = "x", desc = "Leap Exc" },
-      { "f", leap_bi_o(1), mode = "o", desc = "Leap" },
+      { "h", leap_bi_o(1), mode = "o", desc = "Leap SemiInc" },
+      { "H", leap_bi_o(2), mode = "o", desc = "Leap Incl." },
       { "<leader>f", leap_bi_o(2), mode = "o", desc = "Leap Inc" },
       { "<leader>t", leap_bi_o(0), mode = "o", desc = "Leap Exc" },
       {
         O.select_remote,
-        function()
-          navutils.remote_op(function(do_op)
-            leap_anywhere(function(jt) do_op(jt.wininfo.winid, jt.pos) end)
-          end)
-        end,
+        function() navutils.leap_remote() end,
         desc = "Leap Remote",
         mode = "o",
-      },
-      -- {
-      --   "dp",
-      --   mode = "n",
-      --   desc = "Remote Paste",
-      --   navutils.remote_paste(),
-      -- },
-      {
-        "rP",
-        mode = "n",
-        desc = "Remote paste line",
-        navutils.remote_paste("z", "<leader>p"),
       },
       {
         "rp",
         mode = "n",
         desc = "Remote Paste",
-        navutils.remote_paste "z",
+        navutils.remote_paste "h",
       },
-      -- {
-      --   "<leader>r",
-      --   function()
-      --     navutils.remote_op(function(do_op)
-      --       leap_anywhere(function(jt) do_op(jt.wininfo.winid, jt.pos, "m") end)
-      --     end)
-      --   end,
-      --   desc = "remote treesitter",
-      --   mode = "o",
-      -- },
-      -- {
-      --   "<leader>df",
-      --   function()
-      --     leap_to_line(function(jt)
-      --       utils.dump(jt)
-      --       utils.lsp.diag_line {
-      --         bufnr = jt.wininfo.bufnr,
-      --         pos = jt.pos[1] - 1,
-      --         -- row = jt.pos[1],
-      --         -- col = jt.pos[2],
-      --         -- relative = "win",
-      --       }
-      --     end)
-      --   end,
-      --   mode = "n",
-      --   desc = "Diagnostic at",
-      -- },
-      -- {
-      --   "yp",
-      --   mode = "n",
-      --   desc = "Swap with",
-      --   function()
-      --     _G.__swap_with_opfunc = function() vim.api.nvim_feedkeys("`[cxv`]cxr", "m", true) end
-      --     vim.go.operatorfunc = "v:lua.__swap_with_opfunc"
-      --     return "g@"
-      --   end,
-      --   expr = true,
-      -- },
-      -- { "m", leap_select, mode = "v", "Leap Exc" },
+      {
+        "rP",
+        mode = "n",
+        desc = "Remote Paste line",
+        navutils.remote_paste("h", "<leader>p"),
+      },
+      -- TODO: y<motion><something><leap><motion>
+      -- TODO: why is this not working??
+      {
+        "rx",
+        mode = "n",
+        desc = "Exchange <motion1> with <motion2>",
+        function()
+          navutils.swap_with(
+            {},
+            nil,
+            -- "r"
+            vim.schedule_wrap(navutils.leap_remote)
+          )
+        end,
+      },
+      {
+        "rX",
+        mode = "n",
+        desc = "Exchange V<motion1> with V<motion2>",
+        function()
+          navutils.swap_with(
+            { exchange = {
+              visual_mode = "V",
+            } },
+            nil,
+            vim.schedule_wrap(navutils.leap_remote)
+          )
+        end,
+      },
+      {
+        "R",
+        mode = { "n" },
+        desc = "Remote Replace",
+        function()
+          vim.api.nvim_feedkeys("r", "m", false)
+          vim.schedule(navutils.leap_remote)
+        end,
+      },
     },
     config = function()
       local leap = require "leap"
@@ -870,7 +897,7 @@ return {
       { "e", "<cmd>lua require('spider').motion('e')<cr>", desc = "Spider-e", mode = "n" },
       { "b", "<cmd>lua require('spider').motion('b')<cr>", desc = "Spider-b", mode = "n" },
       { "ge", "<cmd>lua require('spider').motion('ge')<cr>", desc = "Spider-ge", mode = "n" },
-      { "<C-w>", "<C-o>db", desc = "Spider-ge", mode = "n", remap = true },
+      { "<C-w>", "<C-o>db", desc = "Delete word back", mode = "i", remap = true },
       {
         "w",
         "<cmd>lua require('spider').motion('w', { skipInsignificantPunctuation = false })<cr>",

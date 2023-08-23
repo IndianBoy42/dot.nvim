@@ -1,5 +1,6 @@
 local M = {
   "nvim-tree/nvim-tree.lua",
+  cond = false,
   cmd = { "NvimTreeOpen", "NvimTreeFocus", "NvimTreeToggle" },
   dependencies = {
     { "antosha417/nvim-lsp-file-operations", opts = {} },

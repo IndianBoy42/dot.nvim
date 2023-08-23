@@ -16,6 +16,9 @@ return {
     "echasnovski/mini.files",
     cond = true,
     lazy = false,
+    dependencies = {
+      { "antosha417/nvim-lsp-file-operations", opts = {} },
+    },
     main = "mini.files",
     opts = {
       windows = {
@@ -27,9 +30,9 @@ return {
       },
       mappings = {
         go_in = "l",
-        go_in_plus = "L",
+        go_in_plus = "<cr>",
         go_out = "h",
-        go_out_plus = "<cr>",
+        go_out_plus = "-",
         reset = "<localleader>R",
         close = "<C-q>",
       },
@@ -104,7 +107,7 @@ return {
   },
   {
     "stevearc/oil.nvim",
-    cond = false,
+    enabled = false,
     lazy = false, -- So that i can do `nvim .` or `nvim <some_directory>`
     opts = {
       columns = { "icon", "permissions", "size", "mtime" },

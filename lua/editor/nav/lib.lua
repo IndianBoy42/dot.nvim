@@ -119,56 +119,50 @@ M.mode_textcase = function(pat, modes)
   return "\\V\\(" .. table.concat(pats, "\\|") .. "\\)"
 end
 
-local do_op = function(state, win, pos, end_pos, using_visual_mode)
+local do_op = function(state, win, pos, end_pos)
+  local _restore = function()
+    vim.api.nvim_set_current_win(state.win)
+    vim.fn.winrestview(state.view)
+  end
   local function restore()
     vim.schedule(function()
-      if vim.api.nvim_get_mode().mode == "i" then
-vim.api.nvim_create_autocmd("InsertLeave", {
-          once = true,
-          callback = restore,
-        })
-      else
-        vim.api.nvim_set_current_win(state.win)
-        vim.fn.winrestview(state.view)
-        if state.on_return then state:on_return(win, pos, end_pos) end
-      end
+      require("flash.jump").restore_remote {
+        restore = _restore,
+      }
     end)
   end
   local function __do_op(start, finish)
-    vim.go.operatorfunc = state.op_func
-    if true then
-      vim.api.nvim_win_set_cursor(0, start)
-      vim.cmd "normal! v"
-      vim.api.nvim_win_set_cursor(0, finish)
-      vim.api.nvim_input('"' .. state.register .. state.operator)
-    else
-      vim.api.nvim_win_set_cursor(0, start)
-      local k = '"' .. state.register .. state.operator
-      k = k .. "v`]"
-      vim.api.nvim_feedkeys(k, "ni", true)
-      -- vim.api.nvim_win_set_cursor(0, { finish[1], finish[2] })
-    end
+    vim.api.nvim_win_set_cursor(0, start)
+    vim.cmd "normal! v"
+    vim.api.nvim_win_set_cursor(0, finish)
+    vim.api.nvim_input('"' .. state.register .. state.operator)
 
     restore()
   end
 
-  state.view = vim.fn.winsaveview()
-  vim.api.nvim_set_current_win(win)
+  vim.api.nvim_feedkeys(vim.keycode "<C-\\><C-n>", "nx", false)
+  vim.api.nvim_feedkeys(vim.keycode "<esc>", "n", false)
 
-  if not end_pos or type(end_pos) ~= "table" then -- Use a op-pending to get a selction
-    vim.api.nvim_win_set_cursor(win, pos)
+  vim.schedule(function()
+    vim.api.nvim_set_current_win(win)
 
-    if type(end_pos) == "function" then
-      end_pos() -- FIXME: doesn't work at all
-      restore()
+    if not end_pos or type(end_pos) ~= "table" then -- Use a op-pending to get a selction
+      vim.api.nvim_win_set_cursor(win, pos)
+
+      if type(end_pos) == "function" then
+        end_pos() -- FIXME: doesn't work at all
+        restore()
+      else
+        -- _G.__remote_op_opfunc = function() __do_op(vim.api.nvim_buf_get_mark(0, "["), vim.api.nvim_buf_get_mark(0, "]")) end
+        -- vim.go.operatorfunc = "v:lua.__remote_op_opfunc"
+        vim.go.operatorfunc = state.op_func
+        vim.api.nvim_input('"' .. state.register .. state.operator .. (end_pos and end_pos or ""))
+        restore()
+      end
     else
-      _G.__remote_op_opfunc = function() __do_op(vim.api.nvim_buf_get_mark(0, "["), vim.api.nvim_buf_get_mark(0, "]")) end
-      vim.go.operatorfunc = "v:lua.__remote_op_opfunc"
-      vim.api.nvim_feedkeys("g@" .. (end_pos and end_pos or ""), "mi", true)
+      __do_op(pos, end_pos)
     end
-  else
-    __do_op(pos, end_pos)
-  end
+  end)
 end
 
 M.remote_op = function(callback, operator, register, opfunc)
@@ -185,13 +179,12 @@ M.remote_op = function(callback, operator, register, opfunc)
     op_func = opfunc or vim.go.operatorfunc,
     pos = vim.api.nvim_win_get_cursor(0),
     win = vim.api.nvim_get_current_win(),
+    view = vim.fn.winsaveview(),
   }
 
-  vim.api.nvim_feedkeys(vim.keycode "<C-\\><C-n>", "nx", false)
-  vim.api.nvim_feedkeys(vim.keycode "<esc>", "n", false)
-  if callback then vim.schedule(function()
-    callback(function(...) do_op(opstate, ...) end)
-  end) end
+  -- vim.api.nvim_feedkeys(vim.keycode "<C-\\><C-n>", "nx", false)
+  -- vim.api.nvim_feedkeys(vim.keycode "<esc>", "n", false)
+  if callback then callback(function(...) do_op(opstate, ...) end) end
   return opstate
 end
 M.do_op = do_op
@@ -224,35 +217,36 @@ local swap_text = function(opts, ma, mb)
   end)
 end
 
-local swap_with = function(jump, ma, mb, jumper)
+local swap_with = function(opts, ma, mb, jumper)
   local reg = vim.fn.getreg '"'
   local start, finish = vim.api.nvim_buf_get_mark(0, ma), vim.api.nvim_buf_get_mark(0, mb)
   local a, b = vim.api.nvim_buf_get_mark(0, "a"), vim.api.nvim_buf_get_mark(0, "b")
   vim.api.nvim_buf_set_mark(0, "a", start[1], start[2], {})
   vim.api.nvim_buf_set_mark(0, "b", finish[1], finish[2], {})
-  vim.api.nvim_feedkeys("`av`by", "nx", false)
+  local vis_mode = opts and opts.exchange and opts.exchange.visual_mode or "v"
+  vim.api.nvim_feedkeys("`a" .. vis_mode .. "`by", "nx", false)
 
   -- vim.schedule(function()
   _G.__remote_op_opfunc = function()
-    -- vim.schedule(function() vim.cmd "normal! `[v`]p`av`bp" end)
-    local action = "`[v`]"
-    if jump and jump.exchange and jump.exchange.not_there then
+    local action = "`[" .. vis_mode .. "`]"
+    if opts and opts.exchange and opts.exchange.not_there then
       action = action .. "y"
     else
       action = action .. "p"
     end
-    if jump and jump.exchange and not jump.exchange.not_here then action = action .. "`av`bp" end
+    if not (opts and opts.exchange and opts.exchange.not_here) then action = action .. "`a" .. vis_mode .. "`bp" end
     vim.cmd("normal! " .. action)
+
     vim.fn.setreg('"', reg)
     vim.api.nvim_buf_set_mark(0, "a", a[1], a[2], {})
     vim.api.nvim_buf_set_mark(0, "b", b[1], b[2], {})
   end
   vim.go.operatorfunc = "v:lua.__remote_op_opfunc"
-  vim.api.nvim_feedkeys("g@", "n", false)
+  vim.api.nvim_feedkeys("g@" .. (type(jumper) == "string" and jumper or ""), "m", false)
   -- end)
-  if jumper then
-    jumper(jump)
-  else
+  if jumper and type(jumper) == "function" then
+    jumper(opts)
+  elseif jumper == nil then
     vim.schedule(
       function()
         require("flash").jump(vim.tbl_deep_extend("force", {
@@ -260,16 +254,33 @@ local swap_with = function(jump, ma, mb, jumper)
             restore = true,
             motion = true,
           },
-        }, jump or {}))
+        }, opts or {}))
       end
     )
   end
 end
 
-M.swap_with = function(opts)
-  _G.__remote_op_opfunc = function() swap_with(opts, "[", "]") end
+M.swap_with = function(opts, textobj, textobj2)
+  _G.__remote_op_opfunc = function() swap_with(opts, "[", "]", textobj2) end
   vim.go.operatorfunc = "v:lua.__remote_op_opfunc"
-  vim.api.nvim_feedkeys("g@", "n", false)
+  vim.api.nvim_feedkeys("g@" .. (type(textobj) == "string" and textobj or ""), "m", false)
+  if type(textobj) == "function" then textobj() end
+end
+function M.leap_anywhere(action)
+  local focusable_windows_on_tabpage = vim.tbl_filter(
+    function(win) return vim.api.nvim_win_get_config(win).focusable end,
+    vim.api.nvim_tabpage_list_wins(0)
+  )
+  require("leap").leap {
+    case_sensitive = false,
+    target_windows = focusable_windows_on_tabpage,
+    action = action,
+  }
+end
+M.leap_remote = function()
+  M.remote_op(function(do_op)
+    M.leap_anywhere(function(jt) do_op(jt.wininfo.winid, jt.pos) end)
+  end)
 end
 
 M.remote_paste = function(key, paste_key)
@@ -279,6 +290,7 @@ M.remote_paste = function(key, paste_key)
   return function()
     local cur = vim.api.nvim_win_get_cursor(0)
     _G.__remote_op_opfunc = function()
+      -- Get the other side of the selection
       local a, b = vim.api.nvim_buf_get_mark(0, "["), vim.api.nvim_buf_get_mark(0, "]")
       if cur[1] == a[1] and cur[2] == a[2] then
         vim.api.nvim_win_set_cursor(0, b)
@@ -362,11 +374,10 @@ end
 
 local function node_proc(bwd, fwd, m, matches, n, opts, state)
   local ok = true
-  if state.opts.treesitter then
-    if state.opts.treesitter.starting_from_pos then ok = ok and (m.pos == n.pos) end
-    if state.opts.treesitter.ending_at_pos then ok = ok and (m.end_pos == n.end_pos) end
-    if state.opts.treesitter.containing_end_pos then ok = ok and (m.end_pos <= n.end_pos) end
-  end
+  local tsopts = state.opts.treesitter or {}
+  if tsopts.starting_from_pos then ok = ok and (m.pos == n.pos) end
+  if tsopts.ending_at_pos then ok = ok and (m.end_pos == n.end_pos) end
+  if tsopts.containing_end_pos then ok = ok and (m.end_pos <= n.end_pos) end
   if fwd ~= 0 or bwd ~= 0 then
     local node = n.node
     local parent = n.node:parent()
@@ -411,11 +422,25 @@ local function node_proc(bwd, fwd, m, matches, n, opts, state)
   if ok then
     -- don't highlight treesitter nodes. Use labels only
     n.highlight = false
+    if tsopts.end_of_node then
+      n.pos = n.end_pos
+      n.end_pos = n.pos
+    end
+    if tsopts.start_of_node then
+      if tsopts.end_of_node then
+        local n2 = vim.deepcopy(n)
+        n2.end_pos = nil
+        table.insert(matches, n2)
+      else
+        n.end_pos = nil
+      end
+    end
     table.insert(matches, n)
   end
   return ok
 end
 
+-- TODO: Full on almost arbitrary node selection (iswap.nvim style)
 M.custom_ts = function(win, state, opts)
   local fwd = state.remote_ts_fwd or 0
   local bwd = state.remote_ts_bwd or 0
@@ -472,10 +497,13 @@ local function ts_shift(state, fwdincr, bwdincr)
   state:update { dirty_cache = true }
 end
 M.ts_actions = {
+  -- Extend right
   ["}"] = function(state) ts_shift(state, 1, 0) end,
   ["{"] = function(state) ts_shift(state, 0, 1) end,
+  -- Extend left
   ["["] = function(state) ts_shift(state, -1, 0) end,
   ["]"] = function(state) ts_shift(state, 0, -1) end,
+  -- Move
   [")"] = function(state) ts_shift(state, 1, -1) end,
   ["("] = function(state) ts_shift(state, -1, 1) end,
 }

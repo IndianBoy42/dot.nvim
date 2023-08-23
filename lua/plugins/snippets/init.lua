@@ -52,12 +52,15 @@ local M = {
       -- map("i", "<M-p>", "<Plug>luasnip-prev-choice", { silent = true })
       map({ "i", "s" }, "<M-k>", "<Plug>luasnip-prev-choice", { silent = true })
       -- map("i", "<C-y>", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
-      map("s", "n", jump_next, { silent = true })
-      map("s", "p", jump_prev, { silent = true })
-      map("s", "j", "<Plug>luasnip-next-choice", { silent = true })
-      map("s", "h", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
-      map("s", "k", "<Plug>luasnip-prev-choice", { silent = true })
+      if false then
+        map("s", "n", jump_next, { silent = true })
+        map("s", "p", jump_prev, { silent = true })
+        map("s", "j", "<Plug>luasnip-next-choice", { silent = true })
+        map("s", "h", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
+        map("s", "k", "<Plug>luasnip-prev-choice", { silent = true })
+      end
 
+      map("x", "<M-s>", "<TAB><ESC>", { silent = true })
       map("n", "<M-s>", utils.operatorfunc_keys "<TAB>", { silent = true })
       for _, v in ipairs { "a", "b", "c" } do
         map(
@@ -135,7 +138,7 @@ local M = {
         ext_base_prio = 300,
         -- minimal increase in priority.
         ext_prio_increase = 1,
-        store_selection_keys = "<leader><leader>",
+        store_selection_keys = "S",
 
         ext_opts = {
           [types.choiceNode] = {
@@ -256,6 +259,10 @@ local M = {
       { "<leader>nbc", "<cmd>CBcbox<r>", desc = "Center Box" },
     },
     opts = {},
+  },
+  {
+    "filNaj/tree-setter",
+    event = "InsertEnter",
   },
 }
 return M

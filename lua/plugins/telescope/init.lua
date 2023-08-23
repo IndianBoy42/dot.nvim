@@ -11,6 +11,7 @@ local telescope = {
     } },
     "nvim-telescope/telescope-media-files.nvim",
     "nvim-telescope/telescope-github.nvim",
+    "nvim-telescope/telescope-live-grep-args.nvim",
     {
       "nvim-telescope/telescope-fzf-native.nvim",
       -- NOTE: If you are having trouble with this installation,
@@ -30,6 +31,7 @@ local telescope = {
     --   end,
     -- })
     local actions = require "telescope.actions"
+    local lga_actions = require "telescope-live-grep-args.actions"
     local action_layout = require "telescope.actions.layout"
     local previewers = require "telescope.previewers"
 
@@ -73,18 +75,27 @@ local telescope = {
             ["<C-j>"] = actions.move_selection_next,
             ["<C-k>"] = actions.move_selection_previous,
             ["<CR>"] = actions.select_default,
-            ["<C-up>"] = actions.preview_scrolling_up,
-            ["<C-down>"] = actions.preview_scrolling_down,
-            ["<C-q>"] = function(...)
+            ["<C-u>"] = actions.preview_scrolling_up,
+            ["<C-d>"] = actions.preview_scrolling_down,
+            ["<C-up>"] = actions.cycle_history_next,
+            ["<C-down>"] = actions.cycle_history_prev,
+            ["<C-S-q>"] = function(...)
               actions.send_to_qflist(...)
               actions.open_qflist(...)
               require("replacer").run()
+            end,
+            ["<C-q>"] = function(...)
+              actions.send_to_qflist(...)
+              actions.open_qflist(...)
             end,
             ["<C-l>"] = function(...) require("trouble.providers.telescope").open_with_trouble(...) end,
             -- ["<C-y>"] = functions.set_prompt_to_entry_value,
             ["<C-cr>"] = utils.telescope.select_pick_window,
             ["<M-cr>"] = utils.telescope.select_pick_window,
             -- ["<C-Space>"] = to fuzzy
+            ["<tab>"] = function(prompt_bufnr)
+              vim.api.nvim_buf_call(prompt_bufnr, function() vim.cmd "normal! A.*?" end)
+            end,
           },
           n = {
             -- ["<M-p>"] = action_layout.toggle_preview,
@@ -111,7 +122,7 @@ local telescope = {
         live_grep = {
           on_input_filter_cb = function(prompt)
             -- AND operator for live_grep like how fzf handles spaces with wildcards in rg
-            return { prompt = prompt:gsub("%s", ".*") }
+            return { prompt = prompt:gsub("%s", ".*?") }
           end,
         },
         git_branches = {
@@ -150,6 +161,16 @@ local telescope = {
         smart_open = {
           match_algorithm = "fzf",
         },
+        live_grep_args = {
+          auto_quoting = true,
+          mappings = {
+            i = {
+              ["<C-k>"] = lga_actions.quote_prompt(),
+              ["<C-i>"] = lga_actions.quote_prompt { postfix = " --iglob " },
+              ["<C-S-i>"] = lga_actions.quote_prompt { postfix = " --t " },
+            },
+          },
+        },
       },
     }
   end,
@@ -164,6 +185,7 @@ local telescope = {
     telescope.load_extension "frecency"
     telescope.load_extension "luasnip"
     telescope.load_extension "undo"
+    telescope.load_extension "live_grep_args"
     -- telescope.load_extension('project')
   end,
 }

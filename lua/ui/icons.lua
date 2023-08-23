@@ -82,4 +82,5 @@ return {
     opts = {},
   },
   { "mortepau/codicons.nvim" },
+  { "nvim-tree/nvim-web-devicons" },
 }

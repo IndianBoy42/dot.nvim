@@ -1,3 +1,4 @@
+-- TODO: formatter.nvim and nvim-lint
 return {
   "jose-elias-alvarez/null-ls.nvim",
   event = { "BufReadPre", "BufNewFile" },

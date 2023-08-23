@@ -2,7 +2,8 @@ return {
   {
     "IndianBoy42/kitty.lua",
     dev = true,
-    lazy = false,
+    event = "VeryLazy",
+    cond = not not vim.env.KITTY_PID,
     config = function()
       require("kitty.terms").setup {
         dont_attach = not not vim.g.kitty_scrollback,
@@ -24,13 +25,19 @@ return {
       }
       local Terms = require "kitty.terms"
       local map = vim.keymap.set
+      -- TODO: move upstream
       map("n", "<leader>mk", function() Terms.get_terminal(0):run() end, { desc = "Kitty Run" })
-      map("n", "mk", function() Terms.get_terminal(0):make() end, { desc = "Kitty Make" })
-      map("n", "mr", function() Terms.get_terminal(0):make "last" end, { desc = "Kitty ReMake" })
-      map("n", "dx", function() Terms.get_terminal(0):send { selection = true } end, { desc = "Kitty Send" })
-      map("x", "X", function() Terms.get_terminal(0):send { selection = true } end, { desc = "Kitty Send" })
-      map("n", "dxx", function() Terms.get_terminal(0):send() end, { desc = "Kitty Send Line" })
-      map("n", "yc", function() Terms.get_terminal(0):get_selection() end, { desc = "Yank From Kitty" })
+      map("n", "MK", function() Terms.get_terminal(0):make() end, { desc = "Kitty Make" })
+      map("n", "MR", function() Terms.get_terminal(0):make "last" end, { desc = "Kitty ReMake" })
+      map("n", "mr", function() return Terms.get_terminal(0):send_operator() end, { expr = true, desc = "Kitty Send" })
+      map("x", "R", function() return Terms.get_terminal(0):send_operator() end, { expr = true, desc = "Kitty Send" })
+      map(
+        "n",
+        "mrr",
+        function() return Terms.get_terminal(0):send_operator { type = "line", range = "$" } end,
+        { expr = true, desc = "Kitty Send Line" }
+      )
+      map("n", "yu", function() Terms.get_terminal(0):get_selection() end, { desc = "Yank From Kitty" })
     end,
     keys = {
       {
