@@ -1,61 +1,3 @@
-local testb = false
-local blah = {
-  { 2, 1, 6 },
-  { 3, 4, 6 },
-  { 3, 4, 6 },
-}
-local function test(args, ns, buf)
-  if not testb then -- First iter
-    vim.notify "hello"
-  end
-  if ns then
-    testb = true
-  else
-    testb = false
-  end
-  local n = tonumber(args.args)
-  if n then
-    -- vim.notify(vim.api.nvim_get_current_win() .. " " .. tonumber(args.args))
-    if vim.fn.buflisted(vim.api.nvim_list_bufs()[n]) then
-      vim.api.nvim_win_set_buf(vim.api.nvim_get_current_win(), vim.api.nvim_list_bufs()[n])
-    end
-  end
-  return 1
-end
-vim.api.nvim_create_user_command("Test", test, {
-  nargs = "*",
-  preview = test,
-  complete = function(arglead, cmdline, cpos)
-    local bufs = vim.api.nvim_list_bufs()
-    bufs = vim.tbl_filter(function(bufnr) return vim.fn.buflisted(bufnr) end, bufs)
-    bufs = vim.tbl_map(function(bufnr) return tostring(bufnr) end, bufs)
-    return bufs
-  end,
-})
-
--- vim.api.nvim_create_autocmd("User", {
---   pattern = "VeryLazy",
---   callback = function()
---     -- TODO: https://github.com/stevearc/dressing.nvim
---     vim.ui.input = function(opts, on_confirm)
---       opts = opts or {}
---       -- opts.completion
---       -- opts.highlight
---
---       utils.ui.inline_text_input {
---         prompt = opts.prompt,
---         border = O.input_border,
---         enter = on_confirm,
---         initial = opts.default,
---         at_begin = false,
---         minwidth = 20,
---         insert = true,
---       }
---     end
---     -- require "commands"
---   end,
--- })
-
 return {
   { -- "folke/which-key.nvim",
     "folke/which-key.nvim",
@@ -246,10 +188,6 @@ return {
   --   },
   --   cond = false,
   -- },
-  { -- "mbbill/undotree",
-    "mbbill/undotree",
-    cmd = { "UndotreeToggle", "UndotreeShow" },
-  },
 
   { -- "ElPiloto/significant.nvim",
     "ElPiloto/significant.nvim",
@@ -440,32 +378,15 @@ return {
   {
     "notomo/cmdbuf.nvim",
     config = function(_, opts)
-      local cmdbuf = require("cmdbuf")
+      local cmdbuf = require "cmdbuf"
       local map = vim.keymap.set
-      local split_open = function (h, opts)
-      return function ()
-          cmdbuf.split_open(h or vim.o.cmdwinheight, opts)
-      end
+      local split_open = function(h, opts)
+        return function() cmdbuf.split_open(h or vim.o.cmdwinheight, opts) end
       end
       map("n", "q:", split_open(nil), { desc = "Cmdwin" })
-      map(
-        "n",
-        "q/",
-        split_open(nil, { type = "vim/search/forward" }),
-        { desc = "Cmdwin Search Forward" }
-      )
-      map(
-        "n",
-        "q?",
-        split_open(nil, { type = "vim/search/backward" }),
-        { desc = "Cmdwin Search Backward" }
-      )
-      map(
-        "n",
-        "ql",
-        split_open(nil, { type = "lua/cmd" }),
-        { desc = "Cmdwin Lua" }
-      )
+      map("n", "q/", split_open(nil, { type = "vim/search/forward" }), { desc = "Cmdwin Search Forward" })
+      map("n", "q?", split_open(nil, { type = "vim/search/backward" }), { desc = "Cmdwin Search Backward" })
+      map("n", "ql", split_open(nil, { type = "lua/cmd" }), { desc = "Cmdwin Lua" })
       map("c", "<C-f>", function()
         require("cmdbuf").split_open(vim.o.cmdwinheight, { line = vim.fn.getcmdline(), column = vim.fn.getcmdpos() })
         vim.api.nvim_feedkeys(vim.keycode "<C-c>", "n", true)
@@ -499,4 +420,15 @@ return {
     opts = {},
   },
   -- TODO: https://github.com/roobert/action-hints.nvim
+  {
+    "winston0410/range-highlight.nvim",
+    enabled = false,
+    event = "CmdlineEnter",
+    dependencies = {
+
+      "winston0410/cmd-parser.nvim",
+    },
+    opts = {},
+  },
+  -- TODO: https://github.com/b0o/incline.nvim
 }

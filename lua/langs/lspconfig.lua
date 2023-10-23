@@ -47,16 +47,7 @@ return {
       -- ["*"] = function(server, opts) end,
     },
   },
-  init = function()
-    -- https://github.com/neovim/neovim/pull/23500
-    local ok, wf = pcall(require, "vim.lsp._watchfiles")
-    if ok then
-      -- disable lsp watcher. Too slow on linux
-      wf._watchfunc = function()
-        return function() end
-      end
-    end
-  end,
+  init = function() require("lsp.fswatch").setup() end,
   config = function(_, opts)
     if vim.env.NVIM_LSP_LOG_DEBUG ~= nil and vim.env.NVIM_LSP_LOG_DEBUG ~= "" then
       -- vim.lsp.set_log_level(vim.log.levels.DEBUG)

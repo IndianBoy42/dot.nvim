@@ -98,6 +98,7 @@ return {
   { "runiq/neovim-throttle-debounce" },
   {
     "axkirillov/hbac.nvim",
+    event = "VeryLazy",
     opts = {},
   },
 }

@@ -25,6 +25,7 @@ local legend = {
   q = "Quote `, \", '",
   t = "Tag",
   E = "Everything",
+  C = "Code Cell",
 }
 local jump_mappings = function()
   local ai = require "mini.ai"
@@ -724,7 +725,7 @@ return {
           require("leap").leap { inclusive_op = true }
         end,
         mode = "n",
-        desc = "Leap vf",
+        desc = "Leap v t",
       },
       {
         "T", -- semi-inclusive
@@ -732,8 +733,8 @@ return {
           vim.cmd.normal { "v", bang = true }
           require("leap").leap { backward = true, offset = 1, inclusive_op = true }
         end,
-        mode = "x",
-        desc = "Leap vF",
+        mode = "n",
+        desc = "Leap v T",
       },
       {
         "h", -- semi-inclusive
@@ -756,7 +757,7 @@ return {
       -- { "<leader>f", leap_bi_x(2), mode = "x", desc = "Leap Inc" },
       -- { "<leader>t", leap_bi_x(0), mode = "x", desc = "Leap Exc" },
       { "h", leap_bi_o(1), mode = "o", desc = "Leap SemiInc" },
-      { "H", leap_bi_o(2), mode = "o", desc = "Leap Incl." },
+      { ".", leap_bi_o(2), mode = "o", desc = "Leap Incl." },
       { "<leader>f", leap_bi_o(2), mode = "o", desc = "Leap Inc" },
       { "<leader>t", leap_bi_o(0), mode = "o", desc = "Leap Exc" },
       {
@@ -807,6 +808,11 @@ return {
         end,
       },
       {
+        "rx",
+        mode = "x",
+        -- TODO: figure this out
+      },
+      {
         "R",
         mode = { "n" },
         desc = "Remote Replace",
@@ -853,9 +859,15 @@ return {
     --   },
     -- },
     keys = function()
+      local mods = {
+        ["f"] = { "n", "x", "o" },
+        ["F"] = { "n", "x", "o" },
+        ["t"] = { "n", "x" },
+        ["T"] = { "n", "x" },
+      }
       local ret = {}
-      for _, key in ipairs { "f", "F", "t", "T" } do
-        ret[#ret + 1] = { key, mode = { "n", "x", "o" }, desc = key }
+      for key, modes in ipairs(mods) do
+        ret[#ret + 1] = { key, mode = modes, desc = key }
       end
       return ret
     end,

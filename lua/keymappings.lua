@@ -49,10 +49,10 @@ M.register_nN_repeat = register_nN_repeat
 local cmd = utils.cmd
 local luareq = cmd.require
 local telescope_fn = utils.telescope
-  local telescope_cursor = function(name)
-    -- TODO: make this bigger
-    return function() return telescope_fn[name](require("telescope.themes").get_cursor()) end
-  end
+local telescope_cursor = function(name)
+  -- TODO: make this bigger
+  return function() return telescope_fn[name](require("telescope.themes").get_cursor()) end
+end
 local focus_fn = luareq "focus"
 local lspbuf = vim.lsp.buf
 local operatorfunc_scaffold = utils.operatorfunc_scaffold
@@ -567,9 +567,9 @@ function M.setup()
   op_from "<leader><C-p>"
 
   -- Swap the mark jump keys
-  map("n", "'", "`", nore)
-  map("n", "`", "'", nore)
-  map("n", "M", "m", nore)
+  map("n", "<cr>'", "`", nore)
+  map("n", "<cr>`", "'", nore)
+  map("n", "<cr>m", "m", nore)
 
   -- Spell checking
   -- map("i", "<C-l>", "<c-g>u<Esc>[s1z=`]a<c-g>u", nore)
@@ -749,8 +749,6 @@ function M.setup()
   map("n", "==", "gqq", { desc = "Format Line" })
   map({ "n", "x" }, "gq", "=", { desc = "Indent Op" })
   map("n", "gqq", "==", { desc = "Indent Line" })
-
-  map("n", "(", "z", { desc = "z", remap = true })
 
   map(
     "n",
@@ -1195,7 +1193,6 @@ utils.lsp.on_attach(function(client, bufnr)
     if bufnr then opts.buffer = bufnr end
     vim.keymap.set(mode, lhs, rhs, opts)
   end
-
 
   map("n", "gd", utils.lsp.view_location_pick "definition", { desc = "Goto Definition" })
   map("n", O.goto_prefix .. "d", utils.lsp.view_location_pick "definition", { desc = "Goto Definition" })

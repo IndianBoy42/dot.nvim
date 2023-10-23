@@ -22,9 +22,7 @@ return {
     --   return true
     -- end,
   },
-  install = {
-    colorscheme = { "onedark", "torte" },
-  },
+  install = { colorscheme = { "onedark", "torte" } },
   checker = {
     enabled = true,
   },

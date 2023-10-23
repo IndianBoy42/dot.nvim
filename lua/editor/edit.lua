@@ -1,12 +1,11 @@
--- local cmt_op = "#" -- TODO: use yc (you comment?) + more
--- local cmt_vi
-local cmt_op = "yc" -- TODO: use yc (you comment?) + more
-local cmt_vi = "C"
+local cmt_op = O.commenting.op
+local cmt_vi = O.commenting.vi
+local cmt_li = O.commenting.line
+local cmt_to = O.commenting.obj
 return {
-  comment_operator = cmt_op,
-  comment_visual = cmt_vi or cmt_op,
   { -- mizlan/iswap.nvim
     "IndianBoy42/iswap.nvim",
+    branch = "wip",
     dev = true,
     opts = {
       keys = O.hint_labels .. O.hint_labels:upper(),
@@ -19,8 +18,8 @@ return {
     cmd = {
       "ISwap",
       "ISwapTwo",
-      "ISwapTwoLeft",
-      "ISwapTwoRight",
+      "ISwapLeft",
+      "ISwapRight",
       "IMove",
       "IMoveTwo",
       "ISwapList",
@@ -174,8 +173,8 @@ return {
     opts = {
       mappings = {
         comment = cmt_vi and "" or cmt_op,
-        comment_line = cmt_op .. cmt_op:sub(-1),
-        textobject = "i" .. cmt_op,
+        comment_line = cmt_li,
+        textobject = cmt_to,
       },
 
       -- Hook functions to be executed at certain stage of commenting
@@ -189,7 +188,7 @@ return {
       local map = vim.keymap.set
       map(
         "x",
-        "<leader>" .. cmt_op,
+        O.commenting.copy.vi,
         '"zy'
           .. "mz" -- Remember the original position
           .. "`<" -- Go back to the original position
@@ -199,9 +198,13 @@ return {
           .. "`z", -- Go back to the original position
         { desc = "copy and comment" }
       )
-      local cmt_op = require("editor.edit").comment_operator
-      map("n", "<leader>" .. cmt_op, utils.operatorfuncV_keys("<leader>" .. cmt_op), { desc = "copy and comment op" })
-      map("n", "<leader>" .. cmt_op .. cmt_op:sub(-1), "V<leader>" .. cmt_op, { desc = "copy and comment line" })
+      map("n", O.commenting.copy.op, utils.operatorfuncV_keys("<leader>" .. cmt_op), { desc = "copy and comment op" })
+      map(
+        "n",
+        O.commenting.copy.op .. O.commenting.copy.op:sub(-1),
+        "V<leader>" .. cmt_op,
+        { desc = "copy and comment line" }
+      )
 
       if cmt_vi then
         vim.keymap.set("x", cmt_vi, ":<c-u>MiniComment.operator('visual')<cr>", { desc = "Comment selection" })
@@ -273,6 +276,7 @@ return {
     "smjonas/duplicate.nvim",
     opts = { operator = { visual_mode = "D", normal_mode = "yd", line = "ydd" } },
     keys = { { "yd" }, { "ydd" }, { mode = "x", "D" } },
+    -- TODO: use this to implemented comment duplicated
   },
   {
     "gbprod/yanky.nvim",

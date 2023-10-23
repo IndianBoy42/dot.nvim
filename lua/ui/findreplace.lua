@@ -36,7 +36,7 @@ return {
       return {
         -- TODO: Could use 'yr' for this
         { "r", substitute "operator", mode = "n", desc = "Replace" },
-        { "rr", substitute "line", mode = "n", desc = "Replace Line", },
+        { "rr", substitute "line", mode = "n", desc = "Replace Line" },
         -- { "R", substitute "eol", mode = "n", desc = "Replace EOL" },
         -- { "r", substitute("visual", { yank_substituted_text = true }), mode = "x", desc = "Replace" },
         -- TODO: fuck these, just use vim-visual-multi?
@@ -282,7 +282,7 @@ return {
       max_width = 120,
       max_height = 25,
       keymaps = {
-        close = "q",
+        close = "<C-q>",
         next_match = "n",
         prev_match = "N",
         replace_confirm = "<cr>",
@@ -293,7 +293,7 @@ return {
       {
         "<leader>rr",
         function() require("ssr").open() end,
-        mode = { "n", "v" },
+        mode = { "n", "x" },
         desc = "Treesitter SSR",
       },
     },
@@ -351,7 +351,7 @@ return {
     },
     init = function()
       vim.g.esearch = {
-        default_mappings = 0,
+        -- default_mappings = 0,
         live_update = 1,
         prefill = { "hlsearch", "last", "clipboard" },
         win_map = {

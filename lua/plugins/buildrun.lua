@@ -1,4 +1,5 @@
 return {
+  -- FIXME: breaks when not run inside kitty, make it optional?
   {
     "IndianBoy42/kitty.lua",
     dev = true,
@@ -26,9 +27,9 @@ return {
       local Terms = require "kitty.terms"
       local map = vim.keymap.set
       -- TODO: move upstream
-      map("n", "<leader>mk", function() Terms.get_terminal(0):run() end, { desc = "Kitty Run" })
-      map("n", "MK", function() Terms.get_terminal(0):make() end, { desc = "Kitty Make" })
-      map("n", "MR", function() Terms.get_terminal(0):make "last" end, { desc = "Kitty ReMake" })
+      map("n", "mK", function() Terms.get_terminal(0):run() end, { desc = "Kitty Run" })
+      map("n", "mk", function() Terms.get_terminal(0):make() end, { desc = "Kitty Make" })
+      map("n", "mkk", function() Terms.get_terminal(0):make "last" end, { desc = "Kitty ReMake" })
       map("n", "mr", function() return Terms.get_terminal(0):send_operator() end, { expr = true, desc = "Kitty Send" })
       map("x", "R", function() return Terms.get_terminal(0):send_operator() end, { expr = true, desc = "Kitty Send" })
       map(

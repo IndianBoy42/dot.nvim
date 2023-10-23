@@ -60,7 +60,7 @@ local O = {
   goto_next_outer_end = "<leader>]]", -- "))",
   goto_previous_outer_end = "<leader>[[", -- "((",
   select = "&",
-  select_dynamic = "im",
+  select_dynamic = "M",
   select_dynamic_around = "am",
   select_remote = "r",
   select_remote_dynamic = "m",
@@ -84,7 +84,23 @@ local O = {
   -- hover_key = "K",
   -- action_key = "co",
   -- action_key_vis = "C",
+  commenting = {
+    op = "yc",
+    vi = "C",
+  },
 }
+
+do
+  local c = O.commenting
+  if c.vi == nil then c.vi = c.op end
+  if c.line == nil then c.line = c.op .. c.op:sub(-1) end
+  if c.obj == nil then c.obj = "i" .. c.op end
+  if c.copy == nil then c.copy = {} end
+  local cc = c.copy
+  if cc.op == nil then cc.op = "<leader>" .. c.op end
+  if cc.vi == nil then cc.vi = "<leader>" .. c.vi end
+  if cc.line == nil then cc.line = "<leader>" .. c.line end
+end
 
 O.goto_prev = O.goto_previous
 O.goto_prev_outer = O.goto_previous_outer

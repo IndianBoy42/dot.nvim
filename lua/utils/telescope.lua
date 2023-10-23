@@ -303,7 +303,7 @@ function M.live_grep_all()
     find_command = M.with_rg {},
   }
 end
-function M.live_grep()
+function M.live_grep_args()
   -- require("telescope.builtin").live_grep ()
   require("telescope").extensions.live_grep_args.live_grep_args()
 end

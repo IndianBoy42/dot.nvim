@@ -1,3 +1,4 @@
+local ufo = false
 local function jump_closed_fold(dir)
   local cmd = "norm! z" .. dir
   local view = vim.fn.winsaveview()
@@ -12,6 +13,7 @@ end
 return {
   { -- "anuvyklack/pretty-fold.nvim",
     "anuvyklack/pretty-fold.nvim",
+    cond = not ufo,
     event = { "BufReadPost", "BufNewFile" },
     opts = {
       sections = {
@@ -30,13 +32,14 @@ return {
   { -- "kevinhwang91/nvim-ufo",
     -- TODO: figure out why this is so janky
     "kevinhwang91/nvim-ufo",
-    cond = false,
-    config = function()
-      vim.o.foldcolumn = "0" -- '0' is not bad
+    cond = ufo,
+    init = function()
+      vim.o.foldcolumn = "1" -- '0' is not bad
       vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
       vim.o.foldlevelstart = 99
       vim.o.foldenable = true
-
+    end,
+    config = function()
       local handler = function(virtText, lnum, endLnum, width, truncate)
         local newVirtText = {}
         local suffix = ("  %d "):format(endLnum - lnum)
