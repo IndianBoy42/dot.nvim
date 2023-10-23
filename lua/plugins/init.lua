@@ -51,7 +51,6 @@ return {
       show_cursorline = true, -- Enable 'cursorline' for the window while peeking
     },
   },
-  { "seandewar/nvimesweeper", cmd = "Nvimesweeper" },
   {
     "EtiamNullam/deferred-clipboard.nvim",
     event = { "BufReadPost", "BufNewFile" },

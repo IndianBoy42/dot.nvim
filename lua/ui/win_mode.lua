@@ -26,27 +26,27 @@ local function window_hydra_setup()
 
   local heads = {
     -- TODO: open nvim-tree if we go left far enough
-    { "h", smart_splits "move_cursor_left" },
-    { "j", smart_splits "move_cursor_down" },
-    { "k", smart_splits "move_cursor_up" },
-    { "l", smart_splits "move_cursor_right" },
+    { "<C-h>", smart_splits "move_cursor_left" },
+    { "<C-j>", smart_splits "move_cursor_down" },
+    { "<C-k>", smart_splits "move_cursor_up" },
+    { "<C-l>", smart_splits "move_cursor_right" },
 
     -- { "<M-h>", smart_splits_api("move_to_edge", "left", false), { desc = false } },
     -- { "<M-j>", smart_splits_api("move_to_edge", "down", false), { desc = false } },
     -- { "<M-k>", smart_splits_api("move_to_edge", "up", false), { desc = false } },
     -- { "<M-l>", smart_splits_api("move_to_edge", "right", false), { desc = false } },
 
-    { "H", smart_splits "swap_buf_left" },
-    { "J", smart_splits "swap_buf_down" },
-    { "K", smart_splits "swap_buf_up" },
-    { "L", smart_splits "swap_buf_right" },
+    { "h", smart_splits "swap_buf_left" },
+    { "j", smart_splits "swap_buf_down" },
+    { "k", smart_splits "swap_buf_up" },
+    { "l", smart_splits "swap_buf_right" },
 
-    { "r", cmd "RotatePanesAnti" }, -- Rotate
+    { "o", cmd "RotatePanesAnti" }, -- Rotate
 
-    { "<C-h>", smart_splits("resize_left", 2) },
-    { "<C-j>", smart_splits("resize_down", 2) },
-    { "<C-k>", smart_splits("resize_up", 2) },
-    { "<C-l>", smart_splits("resize_right", 2) },
+    { "H", smart_splits("resize_left", 2) },
+    { "J", smart_splits("resize_down", 2) },
+    { "K", smart_splits("resize_up", 2) },
+    { "L", smart_splits("resize_right", 2) },
     { "=", "<C-w>=", { desc = "equalize" } },
 
     { "n", cmd "tabnew", { desc = "New Tab" } },
@@ -130,8 +130,8 @@ return {
         --    direction = 'left'|'right'|'up'|'down',
         --    split(), -- utility function to split current Neovim pane in the current direction
         -- }
-        if ctx.direction == "left" and require("ui.tree").cond then
-          vim.cmd.NvimTreeFocus()
+        if ctx.direction == "left" then
+          if require("ui.tree").cond then vim.cmd.NvimTreeFocus() end
           -- elseif ctx.direction == "right" then
           --   vim.cmd.Trouble()
           return

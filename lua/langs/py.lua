@@ -132,9 +132,36 @@ local M = {
         -- },
       },
     },
+    init = function()
+      local function mason_package_path(package)
+        local path = vim.fn.resolve(vim.fn.stdpath "data" .. "/mason/packages/" .. package)
+        return path
+      end
+      -- TODO: on install hook??
+      vim.api.nvim_create_user_command("PyLsp", function()
+        -- depends on package manager / language
+        local command = "./venv/bin/pip"
+        local args = {
+          "install",
+          "pylsp-rope",
+          "python-lsp-ruff",
+          "pyls-isort",
+          "python-lsp-black",
+          "pylsp-mypy",
+        }
+
+        require("plenary.job")
+          :new({
+            command = command,
+            args = args,
+            cwd = mason_package_path "python-lsp-server",
+          })
+          :start()
+      end, {})
+    end,
   },
 
--- https://github.com/roobert/f-string-toggle.nvim
+  -- https://github.com/roobert/f-string-toggle.nvim
 }
 
 local get_alt_win = function(term, cmd)

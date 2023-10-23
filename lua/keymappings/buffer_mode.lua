@@ -130,7 +130,7 @@ M.setup = function()
   local tab_mgmt = {
     t = {
       M.tab_new_or_last,
-      "Next",
+      "Next or",
     },
     -- ["<C-t>"] = { cmd "tabnext", "which_key_ignore" },
     n = { cmd "tabnew", "New" },
@@ -139,7 +139,7 @@ M.setup = function()
     h = { cmd "tabprev", "Prev" },
     L = { cmd "tabmove +1", "Move Next" },
     H = { cmd "tabmove -1", "Move Prev" },
-    s = { cmd "Telescope telescope-tabs list_tabs", "Search tabs" },
+    p = { cmd "Telescope telescope-tabs list_tabs", "Search tabs" },
     o = { cmd "tabonly", "Close others" },
     ["1"] = { cmd "tabfirst", "Tab 1" },
     ["2"] = { cmd "tabnext 2", "Tab 2" },

@@ -207,7 +207,7 @@ return {
       )
 
       if cmt_vi then
-        vim.keymap.set("x", cmt_vi, ":<c-u>MiniComment.operator('visual')<cr>", { desc = "Comment selection" })
+        vim.keymap.set("x", cmt_vi, ":<c-u>lua MiniComment.operator('visual')<cr>", { desc = "Comment selection" })
         vim.keymap.set("n", cmt_op, function() return MiniComment.operator() end, { expr = true, desc = "Comment" })
       end
     end,

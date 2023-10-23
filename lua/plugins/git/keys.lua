@@ -205,7 +205,7 @@ M.diffview = function(actions)
     },
     file_history_panel = {
       { "n", "g!", actions.options, { desc = "Open the option panel" } },
-      { "n", "<C-A-d>", actions.open_in_diffview, { desc = "Open the entry under the cursor in a diffview" } },
+      { "n", "<C-M-d>", actions.open_in_diffview, { desc = "Open the entry under the cursor in a diffview" } },
       { "n", "y", actions.copy_hash, { desc = "Copy the commit hash of the entry under the cursor" } },
       { "n", "L", actions.open_commit_log, { desc = "Show commit details" } },
       { "n", "zR", actions.open_all_folds, { desc = "Expand all folds" } },

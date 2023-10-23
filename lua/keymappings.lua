@@ -1218,9 +1218,6 @@ utils.lsp.on_attach(function(client, bufnr)
   )
   local code_action_op = operatorfunc_keys(O.action_key, "r")
   map("n", "<leader>K", code_action_op, { remap = true, desc = "Do Code Action At" })
-
-  -- Formatting keymaps
-  map({ "n" }, "gf", utils.lsp.format, { desc = "Format Async" })
 end, "lsp_mappings")
 
 return setmetatable(M, {

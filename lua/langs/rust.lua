@@ -249,6 +249,7 @@ return {
                   completion = {
                     snippets = snippets,
                     postfix = { enable = true },
+                    fullFunctionSignatures = { enable = true },
                   },
                   procMacro = {
                     enable = true,

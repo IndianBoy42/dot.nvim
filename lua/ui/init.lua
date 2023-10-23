@@ -192,127 +192,8 @@ return {
   { -- "ElPiloto/significant.nvim",
     "ElPiloto/significant.nvim",
   },
-  { --giusgad/pets.nvim
-    "giusgad/pets.nvim",
-    opts = {
-      random = true,
-      row = 2,
-    },
-    init = function()
-      vim.api.nvim_create_user_command("LotsOPets", function()
-        local names = "abcdefghijklmnopqrstuvwxyz"
-
-        local chars = {}
-        for c in names:gmatch "." do
-          vim.cmd.PetsNew(c)
-        end
-      end, {})
-    end,
-    config = function(_, opts) require("pets").setup(opts) end,
-    dependencies = { "MunifTanjim/nui.nvim", "edluffy/hologram.nvim" },
-    cmd = {
-      "PetsNew",
-      "PetsNewCustom",
-      "PetsList",
-      "PetsKill",
-      "PetsKillAll",
-      "PetsPauseToggle",
-      "PetsHideToggle",
-      "PetsSleepToggle",
-    },
-  },
-  { --tamton-aquib/duck.nvim
-    "tamton-aquib/duck.nvim",
-    keys = {
-      -- {
-      --   "gzD",
-      --   function()
-      --     -- 🦆 ඞ  🦀 🐈 🐎 🦖 🐤
-      --     require("duck").hatch("🦆", "10")
-      --   end,
-      --   desc = "hatch a duck",
-      -- },
-    },
-  },
   -- TODO: https://github.com/DNLHC/glance.nvim
   -- TODO: https://github.com/stevearc/qf_helper.nvim
-  { --lukas-reineke/indent-blankline.nvim
-    "lukas-reineke/indent-blankline.nvim",
-    event = { "BufReadPost", "BufNewFile" },
-    -- opts = {
-    --   setup = function()
-    --     vim.cmd [[highlight IndentBlanklineIndent1 guibg=#000000 gui=nocombine]]
-    --     vim.cmd [[highlight IndentBlanklineIndent2 guibg=#1a1a1a gui=nocombine]]
-    --   end,
-    --   char = "",
-    --   char_highlight_list = {
-    --     "IndentBlanklineIndent1",
-    --     "IndentBlanklineIndent2",
-    --   },
-    --   space_char_highlight_list = {
-    --     "IndentBlanklineIndent1",
-    --     "IndentBlanklineIndent2",
-    --   },
-    --   show_trailing_blankline_indent = false,
-    --   show_current_context = true,
-    --   show_current_context_start = false,
-    -- },
-    opts = {
-      setup = function()
-        -- vim.cmd [[highlight IndentBlanklineIndent6 guifg=#000000 gui=nocombine]]
-        -- vim.cmd [[highlight IndentBlanklineIndent5 guifg=#000000 gui=nocombine]]
-        -- vim.cmd [[highlight IndentBlanklineIndent4 guifg=#000000 gui=nocombine]]
-        -- vim.cmd [[highlight IndentBlanklineIndent3 guifg=#000000 gui=nocombine]]
-        -- vim.cmd [[highlight IndentBlanklineIndent2 guifg=#000000 gui=nocombine]]
-        -- vim.cmd [[highlight IndentBlanklineIndent1 guifg=#000000 gui=nocombine]]
-        -- vim.cmd [[highlight IndentBlanklineIndent5 guifg=#E06C75 gui=nocombine]]
-        -- vim.cmd [[highlight IndentBlanklineIndent4 guifg=#E5C07B gui=nocombine]]
-        -- vim.cmd [[highlight IndentBlanklineIndent3 guifg=#98C379 gui=nocombine]]
-        -- -- vim.cmd [[highlight IndentBlanklineIndent2 guifg=#56B6C2 gui=nocombine]]
-        -- vim.cmd [[highlight IndentBlanklineIndent2 guifg=#61AFEF gui=nocombine]]
-        -- vim.cmd [[highlight IndentBlanklineIndent1 guifg=#C678DD gui=nocombine]]
-        -- vim.cmd [[highlight IndentBlanklineIndent1 guibg=#1f1f1f gui=nocombine]]
-        -- vim.cmd [[highlight IndentBlanklineIndent2 guibg=#1a1a1a gui=nocombine]]
-      end,
-      char = "▏",
-      filetype_exclude = { "help", "terminal", "dashboard" },
-      buftype_exclude = { "terminal", "nofile" },
-      char_highlight = "LineNr",
-      show_trailing_blankline_indent = false,
-      -- show_first_indent_level = false,
-      space_char_blankline = " ",
-      show_current_context = true,
-      show_current_context_start = false,
-      char_highlight_list = {
-        "IndentBlanklineIndent1",
-        "IndentBlanklineIndent2",
-        "IndentBlanklineIndent3",
-        "IndentBlanklineIndent4",
-        "IndentBlanklineIndent5",
-        "IndentBlanklineIndent6",
-      },
-      -- space_char_highlight_list = {
-      --   "IndentBlanklineIndent1",
-      --   "IndentBlanklineIndent2",
-      -- },
-    },
-    config = function(_, opts)
-      opts.setup()
-      opts.setup = nil
-
-      -- vim.opt.list = true
-      -- vim.opt.listchars:append "space:⋅"
-      -- vim.opt.listchars:append "eol:↴"
-
-      require("indent_blankline").setup(opts)
-    end,
-  },
-  {
-    "HampusHauffman/block.nvim",
-    cmd = { "Block", "BlockOn", "BlockOff" },
-    opts = { percent = 1.20, depth = 10, automatic = true },
-    -- event = { "BufReadPost", "BufNewFile" },
-  },
   -- TODO: https://github.com/shellRaining/hlchunk.nvim
   {
     "ray-x/lsp_signature.nvim",
@@ -424,11 +305,8 @@ return {
     "winston0410/range-highlight.nvim",
     enabled = false,
     event = "CmdlineEnter",
-    dependencies = {
-
-      "winston0410/cmd-parser.nvim",
-    },
+    dependencies = { "winston0410/cmd-parser.nvim" },
     opts = {},
   },
-  -- TODO: https://github.com/b0o/incline.nvim
+  { "seandewar/nvimesweeper", cmd = "Nvimesweeper" },
 }
