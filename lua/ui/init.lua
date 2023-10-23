@@ -268,7 +268,7 @@ return {
       map("n", "q/", split_open(nil, { type = "vim/search/forward" }), { desc = "Cmdwin Search Forward" })
       map("n", "q?", split_open(nil, { type = "vim/search/backward" }), { desc = "Cmdwin Search Backward" })
       map("n", "ql", split_open(nil, { type = "lua/cmd" }), { desc = "Cmdwin Lua" })
-      map("c", "<C-f>", function()
+      map("c", "<c-f>", function()
         require("cmdbuf").split_open(vim.o.cmdwinheight, { line = vim.fn.getcmdline(), column = vim.fn.getcmdpos() })
         vim.api.nvim_feedkeys(vim.keycode "<C-c>", "n", true)
       end)

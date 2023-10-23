@@ -77,4 +77,7 @@ return {
       },
     },
   },
+  diff = {
+    cmd = "diffview.nvim",
+  },
 }

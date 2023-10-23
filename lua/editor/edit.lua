@@ -273,12 +273,6 @@ return {
     keys = { { "cu", desc = "Change case" }, { "<leader>rc", desc = "Rename case", mode = { "x", "n" } } },
   },
   {
-    "smjonas/duplicate.nvim",
-    opts = { operator = { visual_mode = "D", normal_mode = "yd", line = "ydd" } },
-    keys = { { "yd" }, { "ydd" }, { mode = "x", "D" } },
-    -- TODO: use this to implemented comment duplicated
-  },
-  {
     "gbprod/yanky.nvim",
     opts = {},
     config = function(_, opts)
@@ -323,11 +317,18 @@ return {
       replace = { prefix = "" },
       -- Sort text
     },
+    setup = function(_, opts)
+      require("mini.operators").setup(opts)
+      require("mini.operators").make_mappings("multiple", { textobject = "yd", line = "ydd", selection = "D" })
+    end,
     keys = {
       { "gs", mode = { "n", "x" }, desc = "Sort" },
       { "gss", mode = { "n" }, desc = "Sort line" },
       { "<leader>=", mode = { "n", "x" }, desc = "Evaluate" },
       { "<leader>==", mode = { "n" }, desc = "Evaluate line" },
+      { "yd", desc = "Duplicate" },
+      { "ydd", desc = "Duplicate Line" },
+      { mode = "x", "D", desc = "Duplicate" },
     },
   },
 }
