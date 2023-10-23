@@ -1,6 +1,6 @@
 return {
   "neovim/nvim-lspconfig",
-  event = { "BufReadPre", "BufNewFile" },
+  event = "LazyFile",
   dependencies = {
     -- { "folke/neoconf.nvim", cmd = "Neoconf",                                config = true },
     -- { "folke/neodev.nvim",  opts = { experimental = { pathStrict = true } } },

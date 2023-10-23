@@ -4,7 +4,7 @@ local M = {
     "nvim-treesitter/nvim-treesitter",
     cond = not vim.g.kitty_scrollback,
     build = ":TSUpdate",
-    event = { "BufReadPost", "BufNewFile" },
+    event = "LazyFile",
     dependencies = {
       {
         "nvim-treesitter/nvim-treesitter-textobjects",

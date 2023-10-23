@@ -1,7 +1,7 @@
 -- TODO: formatter.nvim and nvim-lint
 return {
   "nvimtools/none-ls.nvim",
-  event = { "BufReadPre", "BufNewFile" },
+  event = "LazyFile",
   dependencies = {
     {
       "williamboman/mason.nvim",

@@ -45,7 +45,7 @@ return {
       },
     },
     opts = {},
-    event = { "BufReadPost", "BufNewFile" },
+    event = "LazyFile",
   },
   { --tzachar/local-highlight.nvim
     "tzachar/local-highlight.nvim",
@@ -61,7 +61,7 @@ return {
         -- bold = true,
       })
     end,
-    event = { "BufReadPost", "BufNewFile" },
+    event = "LazyFile",
   },
   {
     "nullchilly/fsread.nvim",

@@ -17,14 +17,14 @@ end
 return {
   {
     "HiPhish/rainbow-delimiters.nvim",
-    event = { "BufReadPost", "BufNewFile" },
+    event = "LazyFile",
     opts = { highlight = highlights },
     config = function(_, opts) require "rainbow-delimiters.setup"(opts) end,
   },
   {
     "lukas-reineke/indent-blankline.nvim",
     --https://github.com/lukas-reineke/indent-blankline.nvim/pull/612
-    event = { "BufReadPost", "BufNewFile" },
+    event = "LazyFile",
     -- branch = "v3",
     main = "ibl",
     opts = {
@@ -48,6 +48,6 @@ return {
     "HampusHauffman/block.nvim",
     cmd = { "Block", "BlockOn", "BlockOff" },
     opts = { percent = 1.20, depth = 10, automatic = true },
-    -- event = { "BufReadPost", "BufNewFile" },
+    -- event = "LazyFile",
   },
 }

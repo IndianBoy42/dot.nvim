@@ -97,7 +97,7 @@ return {
   { -- "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
     "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
     config = function() require("lsp_lines").setup() end,
-    event = { "BufReadPost", "BufNewFile" },
+    event = "LazyFile",
     keys = {
       {
         "<leader>Tl",
@@ -113,16 +113,16 @@ return {
       enable = true,
       include_declaration = true,
     },
-    event = { "BufReadPost", "BufNewFile" },
+    event = "LazyFile",
   },
   { -- "nvim-treesitter/nvim-treesitter-context",
     "nvim-treesitter/nvim-treesitter-context",
-    event = { "BufReadPost", "BufNewFile" },
+    event = "LazyFile",
     opts = {},
   },
   { -- "haringsrob/nvim_context_vt",
     "haringsrob/nvim_context_vt",
-    event = { "BufReadPost", "BufNewFile" },
+    event = "LazyFile",
     opts = {
       prefix = "⤸",
       -- "󱞿",

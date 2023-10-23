@@ -221,7 +221,7 @@ return {
     opts = {
       on_attach = function(bufnr) require("plugins.git.keys").hydra(bufnr) end,
     },
-    event = { "BufReadPre", "BufNewFile" },
+    event = "LazyFile",
     -- keys = function()
     --   local repeatable = mappings.repeatable
     --   local gs = utils.lazy_require "gitsigns"

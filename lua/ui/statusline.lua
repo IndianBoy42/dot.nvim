@@ -41,13 +41,14 @@ local M = {
     },
     "marko-cerovac/material.nvim",
     {
-      "roobert/statusline-action-hints.nvim",
-      config = function()
-        require("statusline-action-hints").setup {
-          definition_identifier = "gd",
-          template = "%s ref:%s",
-        }
-      end,
+      "roobert/action-hints.nvim",
+      opts = {
+        template = {
+          definition = { text = " ⊛", color = "#add8e6" },
+          references = { text = " ↱%s", color = "#ff6666" },
+        },
+        use_virtual_text = false,
+      },
     },
   },
 }

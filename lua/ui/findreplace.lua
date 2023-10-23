@@ -5,7 +5,7 @@ local function spectre(name, ...)
 end
 return {
   {
-    "IndianBoy42/substitute.nvim",
+    "gbprod/substitute.nvim",
     dev = true,
     opts = {
       on_substitute = require("yanky.integration").substitute(),

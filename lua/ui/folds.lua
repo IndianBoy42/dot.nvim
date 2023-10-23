@@ -14,7 +14,7 @@ return {
   { -- "anuvyklack/pretty-fold.nvim",
     "anuvyklack/pretty-fold.nvim",
     cond = not ufo,
-    event = { "BufReadPost", "BufNewFile" },
+    event = "LazyFile",
     opts = {
       sections = {
         left = { "content" },
@@ -114,6 +114,6 @@ return {
       end, { desc = "peekFoldedLinesUnderCursor" })
     end,
     dependencies = "kevinhwang91/promise-async",
-    event = { "BufReadPost", "BufNewFile" },
+    event = "LazyFile",
   },
 }
