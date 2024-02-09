@@ -79,7 +79,6 @@ return function()
   opt.scrolloff = O.scrolloff -- Scrolloffset to block the cursor from reaching the top/bottom
   opt.breakindent = true -- Apply indentation for wrapped lines
   opt.breakindentopt = "sbr" -- Apply indentation for wrapped lines
-  opt.pastetoggle = "<F3>" -- Enter Paste Mode with
   opt.foldlevelstart = 99 -- Don't fold on startup
   opt.foldcolumn = O.fold_columns -- Add fold indicators to number column
   opt.foldmethod = "indent" -- Set default fold method as indent, although will be overriden by treesitter soon anyway

@@ -40,7 +40,7 @@ return {
     },
     event = "InsertEnter",
   },
-  "anuvyklack/hydra.nvim",
+  "nvimtools/hydra.nvim",
   {
     "indianboy42/keymap-amend.nvim",
     dev = true,

@@ -1,3 +1,4 @@
+--TODO: https://github.com/folke/styler.nvim
 local bg = vim.env.NVIM_THEME_BG or "dark"
 vim.opt.background = bg
 local theme_choice = ({
