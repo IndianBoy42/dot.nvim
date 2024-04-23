@@ -72,7 +72,6 @@ local line_begin = { condition = conds.line_begin }
 local no_backslash = {
   condition = function(line_to_cursor, m)
     local n = -m:len() - 1
-    print(line_to_cursor:sub(n, n))
     return (mathmode_() ~= 0) and (line_to_cursor:sub(n, n) ~= "\\")
   end,
 }

@@ -186,6 +186,7 @@ return {
 
   require("langs").mason_ensure_installed { "codelldb", "rust-analyzer", "taplo" },
 
+  -- TODO: rustaceanvim https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/plugins/extras/lang/rust.lua
   {
     "neovim/nvim-lspconfig",
     dependencies = {
@@ -206,7 +207,9 @@ return {
             dap = {
               adapter = require("rust-tools.dap").get_codelldb_adapter(codelldb_path, liblldb_path),
             },
+
             tools = {
+              -- TODO: executor = require("kitty").rust_tools_executor(),
               hover_actions = {
                 auto_focus = true,
                 border = "rounded",

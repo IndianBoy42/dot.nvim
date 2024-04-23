@@ -51,7 +51,7 @@ return {
         "<cmd>KittyOverlay<cr>",
         desc = "Kitty Open",
       },
-      { "<leader>K", ":=require'kitty.current_win'", desc = "Kitty Control" },
+      { "<leader>C", ":=require'kitty.current_win'", desc = "Kitty Control" },
     },
   },
   -- TODO: https://github.com/Olical/conjure

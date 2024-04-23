@@ -25,6 +25,7 @@ return {
     "lukas-reineke/indent-blankline.nvim",
     --https://github.com/lukas-reineke/indent-blankline.nvim/pull/612
     event = "LazyFile",
+    version = "*",
     -- branch = "v3",
     main = "ibl",
     opts = {

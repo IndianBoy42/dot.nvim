@@ -1217,7 +1217,7 @@ utils.lsp.on_attach(function(client, bufnr)
     { remap = true, desc = "Do Code Action" }
   )
   local code_action_op = operatorfunc_keys(O.action_key, "r")
-  map("n", "<leader>K", code_action_op, { remap = true, desc = "Do Code Action At" })
+  -- map("n", "<leader>K", code_action_op, { remap = true, desc = "Do Code Action At" })
 end, "lsp_mappings")
 
 return setmetatable(M, {

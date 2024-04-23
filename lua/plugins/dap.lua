@@ -89,6 +89,7 @@ return {
       {
         "rcarriga/nvim-dap-ui",
         main = "dapui",
+        dependencies = { "nvim-neotest/nvim-nio" },
         opts = { floating = { border = "rounded" } },
       },
       {
@@ -115,15 +116,15 @@ return {
 
       dap.listeners.after.event_initialized.virt_diags = function()
         utils.lsp.disable_diagnostic()
-        utils.lsp.inlay_hints(0, false)
+        vim.lsp.inlay_hint.enable(0, false)
       end
       dap.listeners.before.event_terminated.virt_diags = function()
         utils.lsp.enable_diagnostic()
-        utils.lsp.inlay_hints(0, true)
+        vim.lsp.inlay_hint.enable(0, true)
       end
       dap.listeners.before.event_exited.virt_diags = function()
         utils.lsp.enable_diagnostic()
-        utils.lsp.inlay_hints(0, true)
+        vim.lsp.inlay_hint.enable(0, true)
       end
 
       vim.api.nvim_create_autocmd("FileType", {

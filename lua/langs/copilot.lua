@@ -1,4 +1,6 @@
 local source = "codeium"
+-- TODO: add Cody https://github.com/sourcegraph/sg.nvim
+-- TODO: add together.ai
 return {
   {
     "hrsh7th/nvim-cmp",

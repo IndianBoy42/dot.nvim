@@ -415,7 +415,7 @@ return {
       vim.g.tex_conceal = "abdmgs"
       vim.g.vimtex_subfile_start_local = 1
 
-      vim.g.vimtex_compiler_method = "latexmk"
+      vim.g.vimtex_compiler_method = "tectonic"
       vim.g.vimtex_compiler_generic = { cmd = "watchexec -e tex -- tectonic --synctex --keep-logs *.tex" }
       vim.g.vimtex_compiler_latexmk = {
         ["options"] = {

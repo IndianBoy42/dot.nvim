@@ -102,15 +102,15 @@ function M.conceal_toggle(n)
   end
 end
 
-M.set_opfunc = vim.fn[vim.api.nvim_exec(
-  [[
-func s:set_opfunc(val)
-    let &opfunc = a:val
-endfunc
-echon get(function('s:set_opfunc'), 'name')
-]],
-  true
-)]
+-- M.set_opfunc = vim.fn[vim.api.nvim_exec(
+--   [[
+-- func s:set_opfunc(val)
+--     let &opfunc = a:val
+-- endfunc
+-- echon get(function('s:set_opfunc'), 'name')
+-- ]],
+--   true
+-- )]
 M.set_opfunc = function(val)
   if type(val) == "function" then
     M.__set_opfunc_callback = val
@@ -214,7 +214,7 @@ end
 function M.mod_guifont(diff, font)
   local size = vim.g.guifontsize
   M.set_guifont(size + diff, font)
-  print(vim.opt.guifont._value)
+  -- print(vim.opt.guifont._value)
 end
 
 if vim.g.neovide then
@@ -649,9 +649,7 @@ M.telescope = require "utils.telescope"
 M.ui = require "utils.ui"
 
 local plug_char = t "<Plug>"
-M.doplug = function(name, mode, esc)
-  feedkeys(plug_char .. name, mode, esc)
-end
+M.doplug = function(name, mode, esc) feedkeys(plug_char .. name, mode, esc) end
 M.repeatable = function(fn)
   return function()
     _G.__repeatable_opfunc = fn

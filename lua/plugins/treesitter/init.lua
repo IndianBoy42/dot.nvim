@@ -104,19 +104,6 @@ local M = {
       -- Custom parsers
       local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
 
-      parser_config.just = {
-        install_info = {
-          -- url = "local-tree-sitter/start/tree-sitter-just", -- local path or git repo
-          url = "https://github.com/IndianBoy42/tree-sitter-just", -- local path or git repo
-          -- url = "~/.local/share/nvim/site/pack/tree-sitter-just", -- local path or git repo
-          files = { "src/parser.c", "src/scanner.cc" },
-          branch = "main",
-        },
-        -- filetype = "just", -- if filetype does not agrees with parser name
-        -- used_by = {"bar", "baz"} -- additional filetypes that use this parser
-        maintainers = { "@IndianBoy42" },
-      }
-
       require("nvim-treesitter.configs").setup(opts)
 
       vim.opt.foldmethod = "expr"

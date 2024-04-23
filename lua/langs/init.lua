@@ -67,7 +67,7 @@ local configs = {
 configs.inlay_hints.parameter_hints_prefix = configs.inlay_hints.parameter_hints.prefix
 configs.inlay_hints.other_hints_prefix = configs.inlay_hints.type_hints.prefix
 
-local inlay_hints = utils.lsp.inlay_hints
+local inlay_hints = vim.lsp.inlay_hint.enable 
 if inlay_hints then
   utils.lsp.on_attach(function(client, bufnr)
     if client.server_capabilities.inlayHintProvider then

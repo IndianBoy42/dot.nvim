@@ -162,8 +162,7 @@ return {
       for i = 1, buflen do
         buf[i] = ""
       end
-      local pattern_builder = {
-      }
+      local pattern_builder = {}
       local state_root = {}
       for lhs, rhs in pairs(pattern_builder) do
         local P = state_root

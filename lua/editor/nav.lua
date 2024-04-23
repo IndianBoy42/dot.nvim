@@ -822,6 +822,7 @@ return {
         end,
       },
     },
+    -- TODO: unlazy me
     config = function()
       local leap = require "leap"
       leap.opts.equivalence_classes = {
@@ -847,6 +848,7 @@ return {
   },
   {
     "ggandor/flit.nvim",
+    lazy = false,
     -- TODO:
     -- dependencies = {
     --   {
@@ -858,19 +860,6 @@ return {
     --     end,
     --   },
     -- },
-    keys = function()
-      local mods = {
-        ["f"] = { "n", "x", "o" },
-        ["F"] = { "n", "x", "o" },
-        ["t"] = { "n", "x" },
-        ["T"] = { "n", "x" },
-      }
-      local ret = {}
-      for key, modes in ipairs(mods) do
-        ret[#ret + 1] = { key, mode = modes, desc = key }
-      end
-      return ret
-    end,
     opts = {
       labeled_modes = "nx",
       opts = { equivalence_classes = {} },
