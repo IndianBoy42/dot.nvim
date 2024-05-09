@@ -118,6 +118,7 @@ function M.view_location_pick_callback(title)
       if title == "references" then return end
       res = result[1]
     end
+    -- TODO: if res is in the visible screen then just jump
     require("ui.win_pick").pick_or_create(function(id)
       vim.api.nvim_set_current_win(id)
       vim.lsp.util.jump_to_location(res, oe, false)
@@ -298,74 +299,6 @@ end
 function M.error_next() M.diag_next { severity = vim.diagnostic.severity.ERROR } end
 function M.error_prev() M.diag_prev { severity = vim.diagnostic.severity.ERROR } end
 
-function M.live_codelens()
-  local id = vim.api.nvim_create_augroup("lsp_codelens_refresh", { clear = false })
-  vim.api.nvim_create_autocmd(
-    { "CursorHold", "InsertLeave", "BufWritePost" },
-    { buffer = 0, callback = vim.lsp.codelens.refresh, group = id }
-  )
-end
-
--- Helper for better renaming interface
-M.rename = (function()
-  local function handler(...)
-    local result
-    local method
-    local err = select(1, ...)
-    local is_new = not select(4, ...) or type(select(4, ...)) ~= "number"
-    if is_new then
-      method = select(3, ...).method
-      result = select(2, ...)
-    else
-      method = select(2, ...)
-      result = select(3, ...)
-    end
-
-    if O.lsp.rename_notification then
-      if err then
-        vim.notify(("Error running LSP query '%s': %s"):format(method, err), vim.log.levels.ERROR)
-        return
-      end
-
-      -- echo the resulting changes
-      local new_word = ""
-      if result and result.changes then
-        local msg = {}
-        for f, c in pairs(result.changes) do
-          new_word = c[1].newText
-          table.insert(msg, ("%d changes -> %s"):format(#c, utils.get_relative_path(f)))
-        end
-        local currName = vfn.expand "<cword>"
-        vim.notify(msg, vim.log.levels.INFO, { title = ("Rename: %s -> %s"):format(currName, new_word) })
-      end
-    end
-
-    vim.lsp.handlers[method](...)
-  end
-
-  local function do_rename()
-    local new_name = vim.trim(vfn.getline("."):sub(5, -1))
-    cmd [[q!]]
-    local params = lsp.util.make_position_params()
-    local curr_name = vfn.expand "<cword>"
-    if not (new_name and #new_name > 0) or new_name == curr_name then return end
-    params.newName = new_name
-    lsp.buf_request(0, "textDocument/rename", params, handler)
-  end
-
-  return function()
-    utils.ui.inline_text_input {
-      border = O.lsp.rename_border,
-      -- enter = do_rename,
-      enter = vim.lsp.buf.rename,
-      startup = function() feedkeys(t "viw<C-G>", "n", false) end,
-      init_cword = true,
-      at_begin = true, -- FIXME: What happened to this?
-      minwidth = true,
-    }
-  end
-end)()
-
 -- Use select mode for renaming
 M.renamer = (function()
   local function del_keymaps()
@@ -545,7 +478,5 @@ function M.rename_file(new_name)
     }, do_rename)
   end
 end
-
-M.inlay_hints = vim.lsp.inlay_hint or vim.lsp.buf.inlay_hint or function(...) end
 
 return M

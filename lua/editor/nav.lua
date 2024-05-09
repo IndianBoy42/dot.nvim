@@ -717,7 +717,7 @@ return {
       -- { "<leader>hw", navutils.leap_anywhere, mode = "n", desc = "Leap all windows" },
       { "s", "<Plug>(leap-forward-to)", mode = "n", desc = "Leap Fwd" },
       { "S", "<Plug>(leap-backward-to)", mode = "n", desc = "Leap Bwd" },
-      { O.goto_prefix .. O.goto_prefix, navutils.leap_anywhere, mode = "n", desc = "Leap" },
+      { O.goto_prefix .. O.goto_prefix, navutils.leap_anywhere, mode = { "n", "x" }, desc = "Leap" },
       {
         "t", -- semi-inclusive
         function()
@@ -737,13 +737,13 @@ return {
         desc = "Leap v T",
       },
       {
-        "h", -- semi-inclusive
+        O.goto_prefix, -- semi-inclusive
         function() require("leap").leap { inclusive_op = true } end,
         mode = "x",
         desc = "Leap f",
       },
       {
-        "H", -- semi-inclusive
+        "<tab>", -- semi-inclusive
         function() require("leap").leap { backward = true, offset = 1, inclusive_op = true } end,
         mode = "x",
         desc = "Leap F",
@@ -756,7 +756,7 @@ return {
       -- { "f", leap_bi_x(1), mode = "x", desc = "Leap" },
       -- { "<leader>f", leap_bi_x(2), mode = "x", desc = "Leap Inc" },
       -- { "<leader>t", leap_bi_x(0), mode = "x", desc = "Leap Exc" },
-      { "h", leap_bi_o(1), mode = "o", desc = "Leap SemiInc" },
+      { O.goto_prefix, leap_bi_o(1), mode = "o", desc = "Leap SemiInc" },
       { ".", leap_bi_o(2), mode = "o", desc = "Leap Incl." },
       { "<leader>f", leap_bi_o(2), mode = "o", desc = "Leap Inc" },
       { "<leader>t", leap_bi_o(0), mode = "o", desc = "Leap Exc" },
@@ -893,37 +893,22 @@ return {
     "chrisgrieser/nvim-spider",
     -- TODO: subword hydra
     opts = { skipInsignificantPunctuation = true },
-    keys = {
-      { "w", "<cmd>lua require('spider').motion('w')<cr>", desc = "Spider-w", mode = "n" },
-      { "e", "<cmd>lua require('spider').motion('e')<cr>", desc = "Spider-e", mode = "n" },
-      { "b", "<cmd>lua require('spider').motion('b')<cr>", desc = "Spider-b", mode = "n" },
-      { "ge", "<cmd>lua require('spider').motion('ge')<cr>", desc = "Spider-ge", mode = "n" },
-      { "<C-w>", "<C-o>db", desc = "Delete word back", mode = "i", remap = true },
-      {
-        "w",
-        "<cmd>lua require('spider').motion('w', { skipInsignificantPunctuation = false })<cr>",
-        desc = "Spider-w",
-        mode = { "x" },
-      },
-      {
-        "e",
-        "<cmd>lua require('spider').motion('e', { skipInsignificantPunctuation = false })<cr>",
-        desc = "Spider-e",
-        mode = { "x", "o" },
-      },
-      {
-        "b",
-        "<cmd>lua require('spider').motion('b', { skipInsignificantPunctuation = false })<cr>",
-        desc = "Spider-b",
-        mode = { "x", "o" },
-      },
-      {
-        "ge",
-        "<cmd>lua require('spider').motion('ge', { skipInsignificantPunctuation = false })<cr>",
-        desc = "Spider-ge",
-        mode = { "x", "o" },
-      },
-    },
+    config = function(_, opts)
+      require("spider").setup(opts)
+      require "hydra" {
+        name = "Subwords",
+        mode = "n",
+        hint = false,
+        body = "_",
+        heads = {
+          { "w", "<cmd>lua require('spider').motion('w')<cr>", desc = "Spider-w" },
+          { "e", "<cmd>lua require('spider').motion('e')<cr>", desc = "Spider-e" },
+          { "b", "<cmd>lua require('spider').motion('b')<cr>", desc = "Spider-b" },
+          { "g", "<cmd>lua require('spider').motion('ge')<cr>", desc = "Spider-ge" },
+        },
+      }
+    end,
+    keys = { "_" },
   },
   {
     "rapan931/lasterisk.nvim",

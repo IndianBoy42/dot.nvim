@@ -16,13 +16,15 @@ function M.else_true(tbl) return M.else_meta(tbl, true) end
 function M.else_false(tbl) return M.else_meta(tbl, false) end
 
 local function dump(...)
-  local objects, v = {}, nil
-  for i = 1, select("#", ...) do
-    v = select(i, ...)
-    table.insert(objects, vim.inspect(v))
-  end
+  if false then
+    local objects, v = {}, nil
+    for i = 1, select("#", ...) do
+      v = select(i, ...)
+      table.insert(objects, vim.inspect(v))
+    end
 
-  print(table.concat(objects, "\n"))
+    print(table.concat(objects, "\n"))
+  end
   return ...
 end
 M.dump = dump

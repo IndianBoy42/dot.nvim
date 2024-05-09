@@ -20,7 +20,7 @@ return {
   lazy = false,
   priority = 1001,
   opts = {
-    pipe_path = function()
+    _pipe_path = function()
       -- If running in a Kitty terminal, all tabs/windows/os-windows in the same instance of kitty will open in the first neovim instance
       if vim.env.NVIM then return vim.env.NVIM end
 
@@ -39,6 +39,10 @@ return {
     -- <String, Bool> dictionary of filetypes that should be blocking
     block_for = {
       gitcommit = true,
+    },
+    one_per = {
+      kitty = true,
+      wezterm = true,
     },
     -- Window options
     window = {
@@ -70,7 +74,7 @@ return {
         pcall(function() focus_me() end)
       end,
       -- Called when a request to edit file(s) is received
-      pre_open = function() end,
+      pre_open = function() print "hello world" end,
       post_open = function(bufnr, winnr, filetype)
         -- Called after a file is opened
         -- Passed the buf id, win id, and filetype of the new window

@@ -7,9 +7,6 @@ return {
   {
     "gbprod/substitute.nvim",
     dev = true,
-    opts = {
-      on_substitute = require("yanky.integration").substitute(),
-    },
     keys = function()
       -- Replace selection with register
       local substitute = function(fn, opts)
@@ -89,6 +86,12 @@ return {
         { "x", exchange "visual", mode = "x", desc = "Exchange" },
         -- { "<leader>X", exchange "cancel", mode = "n", desc = "Cancel Exchange" },
       }
+    end,
+    config = function()
+      local opts = {
+        on_substitute = require("yanky.integration").substitute(),
+      }
+      require("substitute").setup(opts)
     end,
   },
   {
@@ -304,19 +307,13 @@ return {
     keys = {
       {
         "<leader>rn",
-        function()
-          require "inc_rename"
-          return ":IncRename " .. vim.fn.expand "<cword>"
-        end,
+        function() return ":IncRename " .. vim.fn.expand "<cword>" end,
         expr = true,
         desc = "Rename",
       },
       {
-        "ru",
-        function()
-          require "inc_rename"
-          return ":IncRename " .. vim.fn.expand "<cword>"
-        end,
+        "rn",
+        function() return ":IncRename " .. vim.fn.expand "<cword>" end,
         expr = true,
         desc = "Lsp Rename",
       },

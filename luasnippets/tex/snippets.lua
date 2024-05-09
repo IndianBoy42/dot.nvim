@@ -208,6 +208,7 @@ local math_maps = {
   "models",
   [">="] = "geq",
   ["=="] = "equiv",
+  [":="] = "coloneqq",
   ["=~"] = "cong",
   "cong",
   "gets",

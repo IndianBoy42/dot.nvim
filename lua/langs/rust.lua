@@ -1,15 +1,5 @@
 local function on_attach()
   local rt = require "rust-tools"
-  -- require("utils.lsp").live_codelens()
-
-  mappings.localleader {
-    m = { "<Cmd>RustExpandMacro<CR>", "Expand Macro" },
-    -- TODO: Integrate with Kitty.lua
-    e = { "<Cmd>RustRunnables<CR>", "Runnables" },
-    d = { "<Cmd>RustDebuggables<CR>", "Debuggables" },
-    -- a = { require("rust-tools").code_action_group.code_action_group, "Code Actions" },
-    s = { ":RustSSR  ==>> <Left><Left><Left><Left><Left><Left>", "Structural S&R" },
-  }
   local map = vim.keymap.setl
   map("x", O.hover_key, "<cmd>RustHoverRange<CR>", { desc = "Hover Range" })
   map("n", O.hover_key, "<cmd>RustHoverActions<CR>", { desc = "Hover Actions" })
@@ -50,18 +40,32 @@ local function on_attach()
   --   -- move_mode:activate()
   -- end, { desc = "Move Item Up" })
 
-  local function code_action(kind, opts)
+  local function code_action(kind, sub, opts)
     opts = opts or {}
-    opts.kind = opts.kind or kind
+    opts.context = opts.context or {}
+    opts.context.only = { kind }
+    opts.apply = true
+    if sub then opts.filter = function(c) return c.title:sub(-#sub) == sub end end
     return function() vim.lsp.buf.code_action(opts) end
   end
 
   -- map("n", "KK", require("rust-tools").code_action_group.code_action_group, { desc = "Code Actions" })
+  mappings.localleader {
+    m = { "<Cmd>RustExpandMacro<CR>", "Expand Macro" },
+    -- TODO: Integrate with Kitty.lua
+    e = { "<Cmd>RustRunnables<CR>", "Runnables" },
+    i = { code_action "refactor.inline", "Inline" },
+    r = { code_action "refactor.rewrite", "Rewrite" },
+    d = { "<Cmd>RustDebuggables<CR>", "Debuggables" },
+    -- a = { require("rust-tools").code_action_group.code_action_group, "Code Actions" },
+    s = { ":RustSSR  ==>> <Left><Left><Left><Left><Left><Left>", "Structural S&R" },
+  }
   mappings.vlocalleader {
     h = { "<cmd>RustHoverRange<CR>", "Hover Range" },
     e = {
       name = "Refactoring",
-      v = { code_action "refactor.extract.function", "Extract Function" },
+      f = { code_action("refactor.extract", "function"), "Extract Function" },
+      v = { code_action("refactor.extract", "variable"), "Extract Variable" },
       -- TODO: the rest of these actions
     },
   }
@@ -116,8 +120,16 @@ local snippets = {
     body = { [[for ${1:i} in ${receiver} {
               $0
               }]] },
-    description = "Wrap in unsafe{}",
+    description = "Wrap in for _ in _ {}",
     scope = "expr",
+  },
+  ["if"] = {
+    postfix = "if",
+    body = { [[if ${receiver} {
+              $0
+              }]] },
+    scope = "expre",
+    description = "Wrap in if _ {}",
   },
   ["thread::spawn"] = {
     prefix = "spawn",
@@ -187,6 +199,7 @@ return {
   require("langs").mason_ensure_installed { "codelldb", "rust-analyzer", "taplo" },
 
   -- TODO: rustaceanvim https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/plugins/extras/lang/rust.lua
+  -- https://github.com/mrcjkb/rustaceanvim/discussions/122
   {
     "neovim/nvim-lspconfig",
     dependencies = {
@@ -214,6 +227,7 @@ return {
                 auto_focus = true,
                 border = "rounded",
               },
+              on_type_formatting = false,
               inlay_hints = { auto = false },
               runnables = {
                 use_telescope = true,
@@ -329,4 +343,5 @@ return {
       },
     },
   },
+  -- TODO: https://github.com/adaszko/tree_climber_rust.nvim
 }

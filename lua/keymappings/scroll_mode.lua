@@ -10,7 +10,7 @@ M.setup = function()
     config = {
       invoke_on_body = false,
       hint = {
-        border = "rounded",
+        float_opts = { border = "rounded" },
         offset = -1,
       },
     },

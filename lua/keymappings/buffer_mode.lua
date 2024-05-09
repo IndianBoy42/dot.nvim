@@ -64,7 +64,7 @@ M.setup = function()
       color = "red",
       invoke_on_body = true,
       hint = {
-        border = "rounded",
+        float_opts = { border = "rounded" },
         type = "window",
         position = "bottom",
         show_name = true,

@@ -9,6 +9,8 @@ return {
       require("kitty.terms").setup {
         dont_attach = not not vim.g.kitty_scrollback,
         attach = {
+          default_launch_location = "os-window",
+          -- create_new_win = "os-window",
           target_providers = {
             function(T) T.helloworld = { desc = "Hello world", cmd = "echo hello world" } end,
             "just",
@@ -42,14 +44,19 @@ return {
     end,
     keys = {
       {
+        "<c-;>", -- TODO: bind in kitty to make this come back
+        "<cmd>Kitty<cr>",
+        desc = "Kitty Open",
+      },
+      {
         "<leader>ok",
         "<cmd>Kitty<cr>",
         desc = "Kitty Open",
       },
       {
-        "<leader>oK",
+        "<c-:>",
         "<cmd>KittyOverlay<cr>",
-        desc = "Kitty Open",
+        desc = "Kitty Open Overlay",
       },
       { "<leader>C", ":=require'kitty.current_win'", desc = "Kitty Control" },
     },

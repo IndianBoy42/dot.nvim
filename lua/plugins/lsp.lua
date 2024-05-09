@@ -27,5 +27,6 @@ return {
       end)
     end,
   },
+  -- TODO: https://github.com/roobert/hoversplit.nvim
   -- TODO:  {"jmbuhr/otter.nvim"}
 }

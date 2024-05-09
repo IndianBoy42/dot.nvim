@@ -98,7 +98,7 @@ local function window_hydra_setup()
     config = {
       invoke_on_body = true,
       hint = {
-        border = "rounded",
+        float_opts = { border = "rounded" },
         offset = -1,
       },
       timeout = 2000,
@@ -130,11 +130,13 @@ return {
         --    direction = 'left'|'right'|'up'|'down',
         --    split(), -- utility function to split current Neovim pane in the current direction
         -- }
-        if ctx.direction == "left" then
-          if require("ui.tree").cond then vim.cmd.NvimTreeFocus() end
+        if require("ui.tree").cond then
+          if ctx.direction == "left" then
+            vim.cmd.NvimTreeFocus()
+            return
+          end
           -- elseif ctx.direction == "right" then
           --   vim.cmd.Trouble()
-          return
         end
         ctx.split()
       end,

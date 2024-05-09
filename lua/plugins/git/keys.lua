@@ -17,7 +17,7 @@ M.hydra = function(bufnr)
       color = "pink",
       invoke_on_body = true,
       hint = {
-        border = "rounded",
+        float_opts = { border = "rounded" },
       },
       on_key = function() vim.wait(50) end,
       on_enter = function()

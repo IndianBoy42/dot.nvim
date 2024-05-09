@@ -16,7 +16,7 @@ return {
         color = "pink",
         invoke_on_body = true,
         hint = {
-          border = "rounded",
+          float_opts = { border = "rounded" },
         },
         on_enter = function() vim.o.virtualedit = "all" end,
       },

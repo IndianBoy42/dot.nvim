@@ -2,22 +2,6 @@ return {
   {
     "folke/trouble.nvim",
     cmd = "TroubleToggle",
-    dependencies = {
-      -- {
-      --   "nvim-telescope/telescope.nvim",
-      --   opts = function()
---     local trouble = utils.lazy_require "trouble.providers.telescope"
-      --     return {
-      --       defaults = {
-      --         mappings = {
-      --           i = { ["<localleader>T"] = trouble.open_with_trouble },
-      --           n = { ["<localleader>T"] = trouble.open_with_trouble },
-      --         },
-      --       },
-      --     }
-      --   end,
-      -- },
-    },
     opts = {
       -- your configuration comes here
       -- or leave it empty to use the default settings
@@ -59,7 +43,7 @@ return {
       -- vim.keymap.set("n", O.goto_next .. "t", t[2], { desc = "Prev Trouble" })
     end,
   },
-  -- "ldelossa/litee-calltree.nvim"
+  -- TODO: "ldelossa/litee-calltree.nvim"
   { --
     "simrat39/symbols-outline.nvim",
     opts = {

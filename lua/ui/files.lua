@@ -13,6 +13,27 @@ local keymaps = function(table)
 end
 return {
   {
+    "chrisgrieser/nvim-genghis",
+    dependencies = "stevearc/dressing.nvim",
+    cmd = {
+      "New",
+      "Duplicate",
+      "NewFromSelection",
+      "Rename",
+      "Move",
+      "MoveToFolderInCwd",
+      "Chmodx",
+      "CopyFilename",
+      "CopyFilepath",
+      "CopyFilepathWithTilde",
+      "CopyRelativePath",
+      "CopyDirectoryPath",
+      "CopyRelativeDirectoryPath",
+      -- TODO: Remove/Delete?
+      "Trash"
+    },
+  },
+  {
     "echasnovski/mini.files",
     cond = true,
     lazy = false,
@@ -103,6 +124,7 @@ return {
           vim.keymap.set("n", "<localleader>L", open_from_picker, { buffer = bufnr })
         end,
       })
+      require "ui.files.git"
     end,
   },
   {

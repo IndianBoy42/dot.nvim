@@ -18,6 +18,7 @@ return {
                 callSnippet = "Both",
                 keywordSnippet = "Both",
               },
+              codeLens = { enable = false },
               hint = {
                 enable = true,
                 setType = false,
@@ -68,7 +69,7 @@ return {
       end, {})
     end,
     keys = {
-      { "g:", "<cmd>NeoRepl<cr>", "NeoRepl" },
+      { "g:", "<cmd>NeoRepl<cr>", desc = "NeoRepl" },
     },
   },
   {

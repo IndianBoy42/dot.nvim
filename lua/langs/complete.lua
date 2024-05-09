@@ -12,6 +12,7 @@ local M = {
     "hrsh7th/cmp-omni",
     "f3fora/cmp-spell",
     "petertriho/cmp-git",
+    "chrisgrieser/cmp_yanky",
     "dmitmel/cmp-cmdline-history",
     "saadparwaiz1/cmp_luasnip",
     "hrsh7th/cmp-nvim-lsp-document-symbol",
@@ -24,20 +25,21 @@ local M = {
 }
 M.default_sources = {
   { name = "luasnip", group_index = 1 },
-  { name = "nvim_lsp", group_index = 2 },
+  { name = "nvim_lsp", group_index = 1 },
   -- { name = "buffer" , group_index = 2},
   { name = "path", group_index = 2 },
   -- { name = "latex_symbols" , group_index = 2},
   { name = "calc", group_index = 2 },
+  -- { name = "cmp_yanky", group_index = 2 },
   -- { name = "cmp_tabnine" , group_index = 2},
   { name = "lua-latex-symbols", group_index = 2 },
   {
-      name = 'omni',
+    name = "omni",
     group_index = 2,
-      option = {
-        disable_omnifuncs = { 'v:lua.vim.lsp.omnifunc' }
-      }
+    option = {
+      disable_omnifuncs = { "v:lua.vim.lsp.omnifunc" },
     },
+  },
 }
 M.config = function(_, opts)
   local cmp = require "cmp"
@@ -83,6 +85,10 @@ M.config = function(_, opts)
         name = "cmdline_history",
       } }
     ),
+  })
+
+  require("cmp").setup.filetype("DressingInput", {
+    sources = cmp.config.sources { { name = "omni" } },
   })
 end
 

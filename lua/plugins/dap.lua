@@ -18,7 +18,7 @@ local function dap_hydra_setup()
       invoke_on_body = true,
       hint = {
         position = "bottom",
-        border = "rounded",
+        float_opts = { border = "rounded" },
       },
     },
     name = "dap",

@@ -55,13 +55,25 @@ return {
   },
   { -- "aznhe21/actions-preview.nvim",
     "aznhe21/actions-preview.nvim",
-    config = function(_, opts)
+    config = function()
       require("actions-preview").setup {
         telescope = require("utils.telescope").cursor_menu(),
+        highlight_command = {
+          require("actions-preview.highlight").delta(),
+          -- require("actions-preview.highlight").diff_so_fancy(),
+          -- require("actions-preview.highlight").diff_highlight(),
+        },
       }
     end,
+    -- TODO: https://github.com/jan-xyz/lsp-preview.nvim/tree/main
   },
   -- TODO: dressing.nvim
+  {
+    "stevearc/dressing.nvim",
+    opts = {
+      select = { backend = "telescope" },
+    },
+  },
   {
     "smjonas/live-command.nvim",
     main = "live-command",
@@ -294,13 +306,12 @@ return {
       -- open lua command-line window
       -- q/, q? alternative
     end,
-    keys = { "q:", "q/", "q?", "ql", { "<C-f", mode = "c" } },
+    keys = { "q:", "q/", "q?", "ql", { "<C-f>", mode = "c" } },
   },
   {
     "Aasim-A/scrollEOF.nvim",
     opts = {},
   },
-  -- TODO: https://github.com/roobert/action-hints.nvim
   {
     "winston0410/range-highlight.nvim",
     enabled = false,
@@ -309,4 +320,6 @@ return {
     opts = {},
   },
   { "seandewar/nvimesweeper", cmd = "Nvimesweeper" },
+  -- TODO: https://github.com/altermo/nwm
+  --  could be useful for showing zathura pdf inside nvim? but why?
 }

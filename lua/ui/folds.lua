@@ -1,4 +1,4 @@
-local ufo = false
+local ufo = true
 local function jump_closed_fold(dir)
   local cmd = "norm! z" .. dir
   local view = vim.fn.winsaveview()
@@ -11,30 +11,32 @@ local function jump_closed_fold(dir)
   if open then vim.fn.winrestview(view) end
 end
 return {
-  { -- "anuvyklack/pretty-fold.nvim",
-    "anuvyklack/pretty-fold.nvim",
-    cond = not ufo,
-    event = "LazyFile",
-    opts = {
-      sections = {
-        left = { "content" },
-        right = { " ", "number_of_folded_lines", " " },
-      },
-      fill_char = " ",
-    },
+  {
+    "chrisgrieser/nvim-origami", -- Fold unfold automatically using h/l
+    event = "LazyFile", -- later or on keypress would prevent saving folds
+    opts = true, -- needed even when using default config
   },
   {
-    "jghauser/fold-cycle.nvim",
-    opts = {},
-    config = function(_, opts) require("fold-cycle").setup(opts) end,
-    keys = {},
+    "neovim/nvim-lspconfig",
+    opts = {
+      capabilities = {
+        textDocument = {
+          foldingRange = {
+            dynamicRegistration = false,
+            lineFoldingOnly = true,
+          },
+        },
+      },
+    },
   },
   { -- "kevinhwang91/nvim-ufo",
     -- TODO: figure out why this is so janky
     "kevinhwang91/nvim-ufo",
     cond = ufo,
+    dependencies = "kevinhwang91/promise-async",
+    event = "LazyFile",
     init = function()
-      vim.o.foldcolumn = "1" -- '0' is not bad
+      --vim.o.foldcolumn = "0" -- '0' is not bad
       vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
       vim.o.foldlevelstart = 99
       vim.o.foldenable = true
@@ -70,50 +72,78 @@ return {
 
       local ufo = require "ufo"
       ufo.setup {
-        -- provider_selector = function() return { "treesitter", "indent" } end,
-        fold_virt_text_handler = handler,
+        -- provider_selector = function() return { "treesitter", "indent" } end, -- If we only use Treesitter
+        -- fold_virt_text_handler = handler,
       }
       vim.api.nvim_create_autocmd({ "WinNew", "VimEnter" }, {
         callback = function() vim.w.ufo_foldlevel = 1 end,
       })
-      vim.keymap.set("n", "zM", function()
+
+      local map = vim.keymap.set
+      map("n", "zm", function()
         vim.w.ufo_foldlevel = 0
         ufo.closeFoldsWith(vim.w.ufo_foldlevel)
       end)
-      vim.keymap.set("n", "zR", function()
+      map("n", "zr", function()
         vim.w.ufo_foldlevel = 5
-        ufo.closeFoldsWith(vim.w.fo_foldlevel)
+        ufo.openAllFolds()
       end)
-      vim.keymap.set("n", "zr", function()
-        vim.w.ufo_foldlevel = vim.w.ufo_foldlevel + 1
-        ufo.closeFoldsWith(vim.w.ufo_foldlevel)
-      end)
-      vim.keymap.set("n", "zm", function()
-        vim.w.ufo_foldlevel = math.max(vim.w.ufo_foldlevel - 1, 0)
-
-        ufo.closeFoldsWith(vim.w.ufo_foldlevel)
-      end)
-      vim.keymap.set("n", "]z", ufo.goNextClosedFold, { desc = "Closed Fold" })
-      vim.keymap.set("n", "[z", ufo.goPreviousClosedFold, { desc = "Closed Fold" })
-      vim.keymap.set("n", "zp", function()
+      require "hydra" {
+        name = "Folds",
+        hint = "see [m]ore, [r]educe",
+        config = {
+          color = "pink",
+          invoke_on_body = false,
+          hint = {
+            float_opts = { border = "rounded" },
+            offset = -1,
+          },
+        },
+        mode = "n",
+        body = "z",
+        heads = {
+          {
+            "M",
+            function()
+              if vim.w.ufo_foldlevel == nil then
+                vim.w.ufo_foldlevel = 1
+              else
+                vim.w.ufo_foldlevel = math.max(vim.w.ufo_foldlevel - 1, 0)
+              end
+              ufo.closeFoldsWith(vim.v.count or vim.w.ufo_foldlevel)
+            end,
+            { desc = "Close more" },
+          },
+          {
+            "R",
+            function()
+              if vim.w.ufo_foldlevel == nil then
+                vim.w.ufo_foldlevel = 1
+              else
+                vim.w.ufo_foldlevel = vim.w.ufo_foldlevel + 1
+              end
+              ufo.closeFoldsWith(vim.v.count or vim.w.ufo_foldlevel)
+            end,
+            { desc = "Open more" },
+          },
+        },
+      }
+      map("n", "]z", ufo.goNextClosedFold, { desc = "Closed Fold" })
+      map("n", "[z", ufo.goPreviousClosedFold, { desc = "Closed Fold" })
+      map("n", "zp", function()
         local winid = require("ufo").peekFoldedLinesUnderCursor()
         if winid then
           local bufnr = vim.api.nvim_win_get_buf(winid)
           local keys = { "a", "i", "o", "A", "I", "O", "gd", "gr" }
           for _, k in ipairs(keys) do
             -- Add a prefix key to fire `trace` action,
-            -- if Neovim is 0.8.0 before, remap yourself
-            vim.keymap.set("n", k, "<CR>" .. k, { noremap = false, buffer = bufnr })
+            map("n", k, O.localleader .. k, { noremap = false, buffer = bufnr })
           end
         else
-          -- coc.nvim
-          vim.fn.CocActionAsync "definitionHover"
           -- nvimlsp
           vim.lsp.buf.hover()
         end
       end, { desc = "peekFoldedLinesUnderCursor" })
     end,
-    dependencies = "kevinhwang91/promise-async",
-    event = "LazyFile",
   },
 }

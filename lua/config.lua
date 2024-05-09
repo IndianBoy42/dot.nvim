@@ -15,7 +15,7 @@ local O = {
   bigfontsize = 13,
   auto_complete = true,
   colorcolumn = "99999",
-  clipboard = "unnamedplus",
+  clipboard = "", -- "unnamedplus",
   hidden_files = true,
   wrap_lines = false,
   spell = false,
@@ -60,7 +60,7 @@ local O = {
   goto_next_outer_end = "<leader>]]", -- "))",
   goto_previous_outer_end = "<leader>[[", -- "((",
   select = "&",
-  select_dynamic = "M",
+  select_dynamic = "v",
   select_dynamic_around = "am",
   select_remote = "r",
   select_remote_dynamic = "m",
@@ -78,7 +78,7 @@ local O = {
   -- hint_labels = "hjklfdsagnmervcxzbuioyptwq",
   database = { save_location = "~/.config/nvim/.db", auto_execute = 1 },
   hover_key = "H",
-  action_key = "K", -- <leader><dot>? cu?
+  action_key = "K",
   action_key_vis = "K",
   -- TODO:?
   -- hover_key = "K",

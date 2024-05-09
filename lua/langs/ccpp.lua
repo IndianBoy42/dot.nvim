@@ -27,9 +27,10 @@ local clangd_flags =
 return {
   -- correctly setup lspconfig
   {
+    -- TODO: hhttps://github.com/LazyVim/LazyVim/blob/f086bcde253c29be9a2b9c90b413a516f5d5a3b2/lua/lazyvim/plugins/extras/lang/clangd.lua#L89
     "neovim/nvim-lspconfig",
     dependencies = {
-      "p00f/clangd_extensions.nvim",
+      "https://git.sr.ht/~p00f/clangd_extensions.nvim",
     },
     opts = {
       -- make sure mason installs the server
@@ -93,12 +94,11 @@ return {
               },
             },
           }
-          return true
+          return false
         end,
       },
     },
   },
   -- TODO: {"Civitasv/cmake-tools.nvim"}
   -- TODO: https://github.com/Badhi/nvim-treesitter-cpp-tools
-  -- https://github.com/roobert/hoversplit.nvim
 }

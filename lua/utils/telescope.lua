@@ -437,7 +437,7 @@ function M.diagnostics(opts)
 end
 function M.workspace_diagnostics(opts) require("telescope.builtin").diagnostics(opts) end
 
-function M.code_actions_previewed() require("actions-preview").code_actions() end
+function M.code_actions_previewed(...) require("actions-preview").code_actions(...) end
 
 function M.side_split_theme(opts)
   opts = opts or {}

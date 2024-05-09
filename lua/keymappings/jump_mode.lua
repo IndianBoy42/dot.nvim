@@ -16,7 +16,7 @@ M.repeatable = function(ch, desc, fwdbwd, _opts)
       invoke_on_body = false,
       timeout = 5000, -- millis
       hint = {
-        border = "rounded",
+        float_opts = { border = "rounded" },
         type = "window",
         position = "top",
         show_name = true,
@@ -151,7 +151,7 @@ M.move_by = function(prefix, suffixes, actions, desc, o)
       invoke_on_body = true,
       -- timeout = 5000, -- millis
       hint = {
-        border = "rounded",
+        float_opts = { border = "rounded" },
         type = "window",
         position = "top",
         show_name = true,

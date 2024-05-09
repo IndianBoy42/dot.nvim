@@ -60,7 +60,7 @@ return {
     "echasnovski/mini.align",
     opts = {},
     main = "mini.align",
-    keys = { { "ga", mode = { "n", "x" } } },
+    keys = { { "ga", mode = { "n", "x" }, desc = "Align" } },
   },
   {
     "echasnovski/mini.move",
@@ -172,7 +172,8 @@ return {
     main = "mini.comment",
     opts = {
       mappings = {
-        comment = cmt_vi and "" or cmt_op,
+        comment = cmt_op,
+        comment_visual = cmt_vi,
         comment_line = cmt_li,
         textobject = cmt_to,
       },
@@ -205,11 +206,6 @@ return {
         "V<leader>" .. cmt_op,
         { desc = "copy and comment line" }
       )
-
-      if cmt_vi then
-        vim.keymap.set("x", cmt_vi, ":<c-u>lua MiniComment.operator('visual')<cr>", { desc = "Comment selection" })
-        vim.keymap.set("n", cmt_op, function() return MiniComment.operator() end, { expr = true, desc = "Comment" })
-      end
     end,
   },
   {
@@ -254,13 +250,13 @@ return {
           body = "cu",
           heads = heads "quick_replace",
         }
-        hydra {
-          config = { invoke_on_body = true },
-          name = "Change case LSP rename",
-          mode = "n",
-          body = "<leader>rc",
-          heads = heads "lsp_rename",
-        }
+        -- hydra {
+        --   config = { invoke_on_body = true },
+        --   name = "Change case LSP rename",
+        --   mode = "n",
+        --   body = "<leader>rc",
+        --   heads = heads "lsp_rename",
+        -- }
         hydra {
           config = { invoke_on_body = true },
           name = "Change case",
@@ -270,7 +266,10 @@ return {
         }
       end
     end,
-    keys = { { "cu", desc = "Change case" }, { "<leader>rc", desc = "Rename case", mode = { "x", "n" } } },
+    keys = {
+      { "cu", desc = "Change case" },
+      -- { "<leader>rc", desc = "Rename case", mode = { "x", "n" } },
+    },
   },
   {
     "gbprod/yanky.nvim",
@@ -281,27 +280,33 @@ return {
     end,
     keys = {
       { "y", "<Plug>(YankyYank)", mode = { "n", "x" } },
+      { "Y", '"+<Plug>(YankyYank)', mode = { "x" } },
       { "dy", F "require'yanky'.history.delete(1)", mode = "n", desc = "Drop last yank from history" },
-      { "p", "<Plug>(YankyPutAfter)", mode = { "n", "x" } },
-      { "P", "<Plug>(YankyPutBefore)", mode = { "n", "x" } },
+      { "p", "<Plug>(YankyPutAfter)", mode = "n" },
+      { "P", "<Plug>(YankyPutBefore)", mode = "n" },
+      { "p", "<Plug>(YankyPutBefore)", mode = "x" },
+      { "P", "<Plug>(YankyPutAfter)", mode = "x" },
       { "gp", "<Plug>(YankyGPutAfter)", mode = { "n", "x" } },
       { "gP", "<Plug>(YankyGPutBefore)", mode = { "n", "x" } },
       { "<C-p>", "<Plug>(YankyCycleForward)", mode = { "n", "x" }, desc = "Cycle paste backward" },
       -- TODO: Cycle hydra for no modifiers?
-      { "<C-S-p>", "<Plug>(YankyCycleBackward)", mode = { "n", "x" }, desc = "Cycle paste forward" },
+      { "<M-p>", "<Plug>(YankyCycleBackward)", mode = { "n", "x" }, desc = "Cycle paste forward" },
       { "<leader>sp", "<cmd>Telescope yank_history<CR>", mode = { "n", "x" }, desc = "Search yank history" },
       { "<leader>p", "<Plug>(YankyPutIndentAfterLinewise)", mode = "n", desc = "Put after line" },
       { "<leader>P", "<Plug>(YankyPutIndentBeforeLinewise)", mode = "n", desc = "Put before line" },
       { "yp", "<Plug>(YankyPutIndentAfterCharwise)", mode = "n", desc = "Put after char" },
       { "yP", "<Plug>(YankyPutIndentBeforeCharwise)", mode = "n", desc = "Put before char" },
-      { "cp", '"+p', mode = "n", desc = "Clipboard p" },
-      { "cP", '"+P', mode = "n", desc = "Clipboard P" },
-      { "cy", '"+y', mode = "n", desc = "Clipboard y" },
-      { "cyy", '"+yy', mode = "n", desc = "Clipboard yy" },
-      { "cY", '"+Y', mode = "n", desc = "Clipboard Y" },
-      { "cd", '"+d', mode = "n", desc = "Clipboard d" },
-      { "cdd", '"+dd', mode = "n", desc = "Clipboard dd" },
-      { "cD", '"+D', mode = "n", desc = "Clipboard D" },
+      -- { "cp", '"+p', mode = "n", desc = "Clipboard p" },
+      -- { "cP", '"+P', mode = "n", desc = "Clipboard P" },
+      { "cy", '"+y', remap = true, mode = "n", desc = "Clipboard y" },
+      { "cyy", '"+yy', remap = true, mode = "n", desc = "Clipboard yy" },
+      { "cY", '"+Y', remap = true, mode = "n", desc = "Clipboard Y" },
+      -- { "cd", '"+d', mode = "n", desc = "Clipboard d" },
+      -- { "cdd", '"+dd', mode = "n", desc = "Clipboard dd" },
+      -- { "cD", '"+D', mode = "n", desc = "Clipboard D" },
+      -- { "cr", '"+r', mode = "n", desc = "Clipboard r" },
+      -- { "crr", '"+rr', mode = "n", desc = "Clipboard rr" },
+      -- { "cR", '"+r$', mode = "n", desc = "Clipboard R" },
       -- TODO: hydra
     },
   },

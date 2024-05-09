@@ -254,10 +254,11 @@ return {
     -- map("n", "co", utils.operatorfunc_keys("<esc><M-n>mgv"), {})
     -- vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufNewFile" }, { command = "VMTheme " .. theme })
 
-    -- TODO: https://docs.helix-editor.com/keymap.html#selection-manipulation
     map("n", "<Plug>(VM-Disable-Mappings)", ":call b:VM_Selection.Maps.disable(1)<cr>", { silent = true })
     map("n", "<Plug>(VM-Enable-Mappings)", ":call b:VM_Selection.Maps.enable()<cr>", { silent = true })
     map("n", "<Plug>(VM-Motion-()", "<Plug>(VM-Transpose)")
+
+    -- TODO: https://docs.helix-editor.com/keymap.html#selection-manipulation
   end,
   lazy = false,
 }

@@ -19,6 +19,7 @@ function M.n_repeat()
   -- vim.cmd [[normal! m']]
   if custom_n_repeat == nil then
     feedkeys("n", "n")
+    vim.opt.wrapscan = true
   elseif type(custom_n_repeat) == "string" then
     feedkeys(custom_n_repeat)
   else
@@ -30,6 +31,7 @@ function M.N_repeat()
   -- vim.cmd [[normal! m']]
   if custom_N_repeat == nil then
     feedkeys("N", "n")
+    vim.opt.wrapscan = true
   elseif type(custom_N_repeat) == "string" then
     feedkeys(custom_N_repeat)
   else
@@ -106,7 +108,6 @@ local expr = { silent = true, expr = true }
 local function op_from(lhs, rhs, opts)
   opts = opts or {}
   rhs = rhs or lhs
-
   map("o", lhs, "<cmd>normal v" .. rhs .. "<cr>", opts)
 end
 
@@ -257,9 +258,6 @@ function M.setup()
 
   -- Preserve register on pasting in visual mode
   -- TODO: use the correct register
-  -- map("x", "p", "pgvy", nore)
-  map("x", "p", '"_dP', nore)
-  map("x", "P", "p", nore) -- for normal p behaviour
   map("x", "<M-p>", "pgv", nore) -- Paste and keep selection
 
   -- Add meta version that doesn't affect the clipboard
@@ -416,42 +414,28 @@ function M.setup()
   -- map("n", O.goto_previous .. "p", para_nN[2], { desc = "Para" })
   repeatable("p", "Paragraph", { "}", "{" }, {})
 
-  local function undotree(body)
-    require "hydra" {
-      name = "undotree",
-      body = body,
-      on_enter = function() vim.cmd.UndotreeShow() end,
-      on_exit = function() vim.cmd.UndotreeHide() end,
-      config = {},
-      heads = {
-        { "u", "u", { desc = false } },
-        { "<C-r>", "<C-r>", { desc = false } },
-        { "+", "g+", { desc = false } },
-        { "-", "g-", { desc = false } },
-        { "q", nil, { exit = true } },
-      },
-    }
-  end
-  undotree "g+"
-  undotree "g-"
-
+  require "hydra" {
+    name = "undotree",
+    body = "g",
+    on_enter = function() vim.cmd.UndotreeShow() end,
+    on_exit = function() vim.cmd.UndotreeHide() end,
+    config = {
+      invoke_on_body = false,
+    },
+    heads = {
+      { "u", "u", { desc = false, private = true } },
+      { "<C-r>", "<C-r>", { desc = false, private = true } },
+      { "+", "g+", { desc = false } },
+      { "-", "g-", { desc = false } },
+    },
+  }
   -- Close window
+  map("n", "<c-c>", "<C-w>q", nore)
   map("n", "<c-q>", "<C-w>q", nore)
   map("n", "<c-s-q>", ":wqa", nore)
 
-  map("n", "zz", "za", { desc = "Fold" })
-  map("n", "zm", "zM", { desc = "Close under cursor" })
-  map("n", "zr", "zR", { desc = "Close under cursor" })
-  map("n", "zM", "zm", { desc = "Close one fold" })
-  map("n", "zR", "zr", { desc = "Close under cursor" })
-
   -- Search textobject
   map("n", "<leader>*", operatorfunc_keys "*", { desc = "Search (op)" })
-
-  -- Search for last edited text
-  map("n", 'g"', [[/\V<C-r>"<CR>]], { desc = "Search for last cdy" })
-  -- map("x", 'g"', [[:keepjumps normal! /\V<C-r>"<CR>gn]])
-  map("x", 'g"', '<ESC>g"gn', { remap = true, desc = "Search for last cdy" })
 
   -- Start search and replace from search
   map("c", "<M-r>", function()
@@ -554,7 +538,7 @@ function M.setup()
     }
   end
   quick_toggle("<leader>T", "d", utils.lsp.toggle_diagnostics)
-  quick_toggle("<leader>T", "i", F "utils.lsp.inlay_hints(0)")
+  quick_toggle("<leader>T", "i", function() vim.lsp.inlay_hint.enable(bufnr, not vim.lsp.inlay_hint.is_enabled()) end)
   quick_toggle("<leader>T", "b", "<cmd>ToggleBlame virtual<cr>")
 
   -- Select last pasted
@@ -643,7 +627,7 @@ function M.setup()
   map("s", "<M-i>", "<ESC>I", {})
   map("s", "<M-a>", "<ESC>A", {})
 
-  -- Select all matching regex search
+  -- Select all matchching regex search
   -- map("n", "<M-S-/>", "<M-/><M-a>", {remap=true})
 
   -- Keymaps for easier access to 'ci' and 'di'
@@ -690,7 +674,8 @@ function M.setup()
   -- map("x", "L", "g_", { remap = true })
   -- map("n", "H", [[col('.') == match(getline('.'),'\S')+1 ? '0' : '^']], norexpr)
   -- map("n", "L", "$", { remap = true })
-  map("n", "L", "i<C-l>", { remap = true })
+
+  map("n", "L", "a<C-l>", { remap = true })
 
   -- map("n", "m-/", "")
 
@@ -729,9 +714,25 @@ function M.setup()
   map("n", "<leader>K", O.goto_previous_outer, { remap = true, desc = "Jump prev outer ([[)" })
   -- map("n", "<leader>h", ")", { remap = true, desc = "Hop" })
 
-  map({ "n", "x" }, "<cr><cr>", "<cmd>wa<cr>", { desc = "Write" })
-
   map("n", "m", F 'require"which-key".show "m"')
+
+  -- TODO: quickly run short commands
+  -- eg <Key>wa => :wa<cr>
+  -- Use quote? use colon? Use (
+  map("n", "(", function()
+    local esc = t "<esc>"
+    local c = ":"
+    for i = 1, 3 do
+      local k = vim.fn.getcharstr()
+      if k == esc then break end
+      c = c .. k
+      if vim.fn.exists(c) > 0 then
+        vim.cmd(c.sub(2))
+        break
+      end
+    end
+    feedkeys(t(c), "n", true)
+  end, { desc = "Short command" })
 
   -- Selection mode
   if false then
@@ -786,13 +787,14 @@ function M.setup()
     -- TODO: refresh inccomand
     return "i<bs>"
   end, { expr = true })
-  map("ca", "s", function()
-    if vim.fn.getcmdtype() == ":" then
-      return "s//g<left><left><left>"
-    else
-      return "s"
-    end
-  end, { expr = true })
+  -- FIXME: Totally jank
+  -- map("ca", "s", function()
+  --   if vim.fn.getcmdtype() == ":" then
+  --     return "s//g<left><left><left>"
+  --   else
+  --     return "s"
+  --   end
+  -- end, { expr = true })
 
   if false then -- bailing operator pending mode to operator
     for _, k in ipairs { "s", "y", "d", "c", "r", "x", "X", "q", "Q", "u" } do
@@ -872,7 +874,6 @@ function M.setup()
     Q = { function() return pcall(vim.cmd.tabclose) or pcall(vim.cmd.quitall) end, "Quit Tab" },
     e = {
       name = "Edit",
-      m = "Move",
       c = "TextCase",
     },
     o = {
@@ -881,6 +882,7 @@ function M.setup()
       f = { F "MiniFiles.open()", "File Browser" },
       o = { cmd "SymbolsOutline", "Outline" },
       s = {
+        name = "Sidebar",
         e = { cmd "TroubleToggle workspace_diagnostics", "Diagnostics" },
         g = { cmd "TroubleToggle document_diagnostics", "Doc Diagnostics" },
         r = { cmd "TroubleToggle lsp_references", "References" },
@@ -917,8 +919,6 @@ function M.setup()
       n = { utils.conceal_toggle, "Conceal" },
       H = { cmd "ToggleHiLightComments", "Comment Highlights" },
       v = { cmd "NvimContextVtToggle", "Context VT" },
-      -- d = { utils.lsp.toggle_diagnostics, "Toggle Diags" },
-      -- i = { F "utils.lsp.inlay_hints(0)", "Toggle Inlay Hints" },
       d = "Toggle Diags",
       i = "Toggle Inlay Hints",
       fb = {
@@ -962,8 +962,10 @@ function M.setup()
       c = { lspbuf.signature_help, "Signature Help" },
       C = {
         name = "Calls",
-        i = { lspbuf.incoming_calls, "Incoming" },
-        o = { lspbuf.outgoing_calls, "Outgoing" },
+        i = { telescope_cursor "incoming_calls", "Incoming" },
+        o = { telescope_cursor "outgoing_calls", "Outgoing" },
+        l = { telescope_cursor "subtypes", "Subtypes" },
+        u = { telescope_cursor "supertypes", "Supertypes" },
       },
       -- d = { telescope_fn.lsp_definitions, "Definitions" },
       -- D = { lspbuf.decalaration, "Declaration" },
@@ -987,7 +989,7 @@ function M.setup()
         i = { telescope_fn.lsp_implementations, "Implementation" },
         e = { utils.lsp.diag_line, "Diagnostics" },
       },
-      b = {
+      s = {
         name = "Sidebar",
         d = { cmd "TroubleToggle lsp_definitions", "Definitions" },
         r = { cmd "TroubleToggle lsp_references", "References" },
@@ -1033,6 +1035,7 @@ function M.setup()
       ["<CR>"] = { telescope_fn.builtin, "Telescopes" },
       ["+"] = { [[/<C-R>+<cr>]], "Last yank" },
       ["."] = { [[/<C-R>.<cr>]], "Last insert" },
+      ['"'] = { [[/<C-R>"<cr>]], "Last cdy" },
     },
     r = {
       name = "Replace/Refactor",
@@ -1040,6 +1043,7 @@ function M.setup()
       ["/"] = { [[:%s/<C-R>///g<Left><Left>]], "Last search" },
       ["+"] = { [[:%s/<C-R>+//g<Left><Left>]], "Last yank" },
       ["."] = { [[:%s/<C-R>.//g<Left><Left>]], "Last insert" },
+      ['"'] = { [[:%s/<C-R>\"//g<Left><Left>]], "Last cdy" },
       s = { [[:%s///g<Left><Left><Left>]], "Sub In File" },
       i = "Inside",
       r = "Spectre",
@@ -1194,6 +1198,7 @@ utils.lsp.on_attach(function(client, bufnr)
     vim.keymap.set(mode, lhs, rhs, opts)
   end
 
+  -- TODO: clean up the goto-* keybindings (faster, better selection of which window)
   map("n", "gd", utils.lsp.view_location_pick "definition", { desc = "Goto Definition" })
   map("n", O.goto_prefix .. "d", utils.lsp.view_location_pick "definition", { desc = "Goto Definition" })
   -- map("n", "gd", vim.lsp.buf.definition, { desc = "Definition" })
@@ -1206,16 +1211,36 @@ utils.lsp.on_attach(function(client, bufnr)
   map("n", O.goto_prefix .. "pr", telescope_fn.lsp_references, { desc = "Peek references" })
   map("n", O.goto_prefix .. "pi", telescope_fn.lsp_implementations, { desc = "Peek implementation" })
   map("n", O.goto_prefix .. "pe", utils.lsp.diag_line, { desc = "Diags" })
+  map("n", "<leader>rc", function()
+    -- TODO: use treesitter
+    local new_name = vim.fn.expand "<cword>"
+    vim.cmd "undo!"
+    vim.lsp.buf.rename(new_name)
+  end, { desc = "Rename after" })
   -- Hover
   map("n", O.hover_key, utils.lsp.repeatable_hover, { desc = "LSP Hover" })
   map("i", "<C-i>", lspbuf.signature_help, { desc = "LSP Signature Help" })
-  map("n", O.action_key, telescope_fn.code_actions_previewed, { remap = true, desc = "Do Code Action" })
-  map(
-    "x",
-    O.action_key_vis or O.action_key,
-    telescope_fn.code_actions_previewed,
-    { remap = true, desc = "Do Code Action" }
-  )
+  map("n", O.action_key, telescope_fn.code_actions_previewed, { desc = "Do Code Action" })
+  map("x", O.action_key_vis or O.action_key, telescope_fn.code_actions_previewed, { desc = "Do Code Action" })
+  local function quick_code_action(i, name)
+    map(
+      "n",
+      "q" .. i,
+      function()
+        telescope_fn.code_actions_previewed {
+          context = { only = { name } },
+          apply = true,
+        }
+      end,
+      { desc = "Do" .. name }
+    )
+  end
+  quick_code_action("f", "quickfix") -- TODO: collect quickfixes from all diagnostics and let us apply in batches from telescope
+  quick_code_action("i", "refactor.inline")
+  quick_code_action("r", "refactor.rewrite")
+  quick_code_action("e", "refactor.extract")
+
+  -- TODO: operators for the above to use with remote?
   local code_action_op = operatorfunc_keys(O.action_key, "r")
   -- map("n", "<leader>K", code_action_op, { remap = true, desc = "Do Code Action At" })
 end, "lsp_mappings")
@@ -1231,3 +1256,5 @@ return setmetatable(M, {
 -- p x o u . ; - =  ! > <
 -- v is useful but not
 -- op-op combinations
+-- visual Y is free
+-- normal M is free

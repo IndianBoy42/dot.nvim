@@ -161,7 +161,8 @@ local M = {
     end,
   },
 
-  -- https://github.com/roobert/f-string-toggle.nvim
+  -- TODO: https://github.com/roobert/f-string-toggle.nvim
+  -- TODO: https://github.com/jim-at-jibba/micropython.nvim
 }
 
 local get_alt_win = function(term, cmd)

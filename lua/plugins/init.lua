@@ -25,23 +25,6 @@ return {
   },
   { "jghauser/mkdir.nvim", event = "BufWritePre" },
   { "lambdalisue/suda.vim", cmd = { "SudaWrite", "SudaRead" } },
-  {
-    "tpope/vim-eunuch",
-    cmd = {
-      "Delete",
-      "Unlink",
-      "Move",
-      "Rename",
-      "Chmod",
-      "Mkdir",
-      "Cfind",
-      "Clocate",
-      "Lfind",
-      "Wall",
-      "SudoWrite",
-      "SudoEdit",
-    },
-  },
 
   {
     "nacro90/numb.nvim",
@@ -53,6 +36,7 @@ return {
   },
   {
     "EtiamNullam/deferred-clipboard.nvim",
+    enabled = false,
     event = "LazyFile",
     opts = {
       lazy = true,

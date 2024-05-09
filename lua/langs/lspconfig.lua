@@ -73,7 +73,6 @@ return {
     local handlers = vim.lsp.handlers
     local lspwith = vim.lsp.with
     vim.diagnostic.config(require("langs").diagnostic_config)
-    handlers["textDocument/codeLens"] = lspwith(vim.lsp.codelens.on_codelens, require("langs").codelens_config)
     do
       local current_definition_handler = vim.lsp.handlers["textDocument/definition"]
       vim.lsp.handlers["textDocument/definition"] = function(err, result, ctx, config)
@@ -90,6 +89,42 @@ return {
     lsp_sel_rng.update_capabilities(capabilities)
 
     utils.lsp.on_attach(function(client, bufnr) utils.lsp.document_highlight(client, bufnr) end)
+
+    handlers["textDocument/codeLens"] = lspwith(vim.lsp.codelens.on_codelens, require("langs").codelens_config)
+    utils.lsp.on_attach(function(client, bufnr)
+      if client.supports_method "textDocument/codeLens" then
+        vim.api.nvim_create_autocmd(
+          { "CursorHold", "InsertLeave", "BufEnter" },
+          { buffer = bufnr, callback = vim.lsp.codelens.refresh }
+        )
+      end
+    end)
+
+    local inlay_hints = vim.lsp.inlay_hint.enable
+    if inlay_hints then
+      utils.lsp.on_attach(function(client, bufnr)
+        if client.supports_method "textDocument/inlayHint" then
+          inlay_hints(bufnr, true)
+
+          -- TODO: 
+          -- local modes = {
+          --   true, -- Default
+          --   -- n = true,
+          --   -- i = false,
+          -- }
+          --
+          -- if true then
+          --   vim.api.nvim_create_autocmd("ModeChanged", {
+          --     buffer = bufnr,
+          --     group = "lsp_inlay_hints",
+          --     callback = function(args)
+          --       inlay_hint(bufnr, modes[vim.api.nvim_get_mode().mode] or modes[0])
+          --     end,
+          --   })
+          -- end
+        end
+      end, "lsp_inlay_hints")
+    end
 
     local function setup(server)
       local server_opts = vim.tbl_deep_extend("force", {

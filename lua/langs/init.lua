@@ -67,37 +67,13 @@ local configs = {
 configs.inlay_hints.parameter_hints_prefix = configs.inlay_hints.parameter_hints.prefix
 configs.inlay_hints.other_hints_prefix = configs.inlay_hints.type_hints.prefix
 
-local inlay_hints = vim.lsp.inlay_hint.enable 
-if inlay_hints then
-  utils.lsp.on_attach(function(client, bufnr)
-    if client.server_capabilities.inlayHintProvider then
-      inlay_hints(bufnr, true)
-
-      -- local modes = {
-      --   true, -- Default
-      --   -- n = true,
-      --   -- i = false,
-      -- }
-      --
-      -- if true then
-      --   vim.api.nvim_create_autocmd("ModeChanged", {
-      --     buffer = bufnr,
-      --     group = "lsp_inlay_hints",
-      --     callback = function(args)
-      --       inlay_hint(bufnr, modes[vim.api.nvim_get_mode().mode] or modes[0])
-      --     end,
-      --   })
-      -- end
-    end
-  end, "lsp_inlay_hints")
-end
-
 local plugins = {
   -- TODO: https://github.com/lukas-reineke/lsp-format.nvim
   -- Languages
   { "kmonad/kmonad-vim", ft = "kmonad" },
   { "janet-lang/janet.vim", ft = "kmonad" },
   { "gennaro-tedesco/nvim-jqx", ft = "json" },
+  { "Myzel394/jsonfly.nvim", ft = "json" },
   {
     "LhKipp/nvim-nu",
     build = ":TSInstall nu",

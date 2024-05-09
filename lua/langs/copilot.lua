@@ -18,14 +18,14 @@ return {
         },
         cond = source == "codeium",
         cmd = { "Codeium" },
-        opts = {},
+        opts = { enable_chat = true },
       },
     },
     opts = function(_, opts)
       opts.sources = vim.list_extend({
         {
           name = source,
-          group_index = 2,
+          group_index = 1,
           max_item_count = 5,
         },
       }, opts.sources)
