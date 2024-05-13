@@ -1,12 +1,14 @@
 -- TODO:
-local pair = require("mini.ai").gen_spec.pair
-vim.b.miniai_config = {
-  custom_textobjects = {
-    ["|"] = pair("|", "|", { type = "non-balanced" }),
-    ["#"] = pair("/*", "*/", { type = "non-balanced" }),
-    d = pair("dbg!(", ")", { type = "non-balanced" }),
-  },
-}
+vim.schedule(function()
+  local pair = require("mini.ai").gen_spec.pair
+  vim.b.miniai_config = {
+    custom_textobjects = {
+      ["|"] = pair("|", "|", { type = "non-balanced" }),
+      ["#"] = pair("/*", "*/", { type = "non-balanced" }),
+      d = pair("dbg!(", ")", { type = "non-balanced" }),
+    },
+  }
+end)
 vim.b.minisurround_config = {
   custom_surroundings = {
     ["|"] = { output = { left = "|", right = "|" }, input = { "|().-()|" } },

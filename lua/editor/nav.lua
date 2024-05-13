@@ -65,7 +65,7 @@ local jump_mappings = function()
     --   -- require("which-key").register({ [sym] = { name = desc } }, { mode = "x" })
     -- end
   end
-  mapall("f", nil, "|")
+  mapall("f", nil, "_") -- TODO: what can this keybinding be??
   mapall("a", nil, ",")
   -- mapall("b", nil, ")")
   -- mapall("q", nil)
@@ -432,6 +432,7 @@ return {
     opts = {
       labels = O.hint_labels,
       search = {
+        enabled = true,
         incremental = true,
       },
       highlight = { backdrop = false },
@@ -569,18 +570,18 @@ return {
         desc = "Remote Node",
         function() require("flash").jump { mode = "remote_ts" } end,
       },
-      {
-        O.goto_next .. O.select_remote_dynamic,
-        mode = { "o", "x" },
-        function() require("flash").jump { mode = "remote_ts", treesitter = { starting_from_pos = true } } end,
-        desc = "Select node",
-      },
-      {
-        O.goto_prev .. O.select_remote_dynamic,
-        mode = { "o", "x" },
-        function() require("flash").jump { mode = "remote_ts", treesitter = { ending_at_pos = true } } end,
-        desc = "Select node",
-      },
+      -- {
+      --   O.goto_next .. O.select_remote_dynamic,
+      --   mode = { "o", "x" },
+      --   function() require("flash").jump { mode = "remote_ts", treesitter = { starting_from_pos = true } } end,
+      --   desc = "Select node",
+      -- },
+      -- {
+      --   O.goto_prev .. O.select_remote_dynamic,
+      --   mode = { "o", "x" },
+      --   function() require("flash").jump { mode = "remote_ts", treesitter = { ending_at_pos = true } } end,
+      --   desc = "Select node",
+      -- },
       {
         O.goto_next .. O.select_remote_dynamic,
         mode = "n",
@@ -737,13 +738,13 @@ return {
         desc = "Leap v T",
       },
       {
-        O.goto_prefix, -- semi-inclusive
+        "<tab>", -- semi-inclusive
         function() require("leap").leap { inclusive_op = true } end,
         mode = "x",
         desc = "Leap f",
       },
       {
-        "<tab>", -- semi-inclusive
+        "<s-tab>", -- semi-inclusive
         function() require("leap").leap { backward = true, offset = 1, inclusive_op = true } end,
         mode = "x",
         desc = "Leap F",
@@ -917,8 +918,9 @@ return {
   {
     "echasnovski/mini.ai",
     event = "VeryLazy",
-    opts = function()
-      return {
+    config = function(_, opts)
+      local ai = require "mini.ai"
+      opts = {
         n_lines = 1000,
         custom_textobjects = custom_textobjects(require "mini.ai"),
         search_method = "cover",
@@ -938,9 +940,6 @@ return {
         },
         silent = true,
       }
-    end,
-    config = function(_, opts)
-      local ai = require "mini.ai"
       ai.setup(opts)
 
       jump_mappings()

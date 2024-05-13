@@ -13,14 +13,16 @@ vim.b.minisurround_config = {
     },
   },
 }
-local pair = require("mini.ai").gen_spec.pair
-vim.b.miniai_config = {
-  custom_textobjects = {
-    Q = pair("[[", "]]", { type = "non-balanced" }),
-    ["#"] = pair([[--[[]], "]]", { type = "non-balanced" }),
-  },
-}
--- TODO: text objects for lua raw strings
+vim.schedule(function()
+  local pair = require("mini.ai").gen_spec.pair
+  -- TODO: text objects for lua raw strings
+  vim.b.miniai_config = {
+    custom_textobjects = {
+      Q = pair("[[", "]]", { type = "non-balanced" }),
+      ["#"] = pair([[--[[]], "]]", { type = "non-balanced" }),
+    },
+  }
+end)
 
 local map = vim.keymap.setl
 

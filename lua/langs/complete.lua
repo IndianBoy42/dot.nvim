@@ -95,6 +95,7 @@ end
 local function t(str) return vim.api.nvim_replace_termcodes(str, true, true, true) end
 local feedkeys = vim.api.nvim_feedkeys
 
+-- FIXME: is this wrong?
 function M.supertab(when_cmp_visible)
   local cmp = require "cmp"
   local function check_back_space()
@@ -226,11 +227,22 @@ M.opts = function()
       end,
       c = cmp.mapping.close(),
     },
-    ["<Tab>"] = cmp.mapping {
+    ["<F1>"] = cmp.mapping {
+      i = function()
+        if cmp.visible() then
+          cmp.confirm(confirmopts, function() return "<m-l>" end)
+        elseif require("luasnip").choice_active() then
+          require("plugins.snippets.luasnips_choices").popup_close()
+        else
+          if check_back_space() then
+            feedkeys(t "<tab>", "n", false)
+          else
+            feedkeys(t "<Plug>(Tabout)", "", false)
+          end
+        end
+      end,
       c = cmp.mapping.confirm(cmdline_confirm, function() return "<tab>" end),
-      -- c = cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Insert },
-      -- i = M.supertab(cmp.select_next_item),
-      i = M.supertab(cmp.mapping.confirm(confirmopts, function() return "<tab>" end)),
+      -- i = M.supertab(cmp.mapping.confirm(confirmopts, function() return "<tab>" end)),
     },
     ["<S-TAB>"] = cmp.mapping {
       c = function()
@@ -249,6 +261,7 @@ M.opts = function()
   maps["<C-u>"] = maps["<M-u>"]
   maps["<C-h>"] = maps["<M-h>"]
   maps["<C-l>"] = maps["<M-l>"]
+  maps["<tab>"] = maps["<M-l>"]
 
   return {
     snippet = {

@@ -126,7 +126,6 @@ M.setup = function()
   }
 
   -- Tab management keybindings
-  -- TODO: make this a hydra
   local tab_mgmt = {
     t = {
       M.tab_new_or_last,

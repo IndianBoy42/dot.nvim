@@ -456,10 +456,8 @@ end
   s("bufnr", t "bufnr = vim.api.nvim_get_current_buf()"),
   s("winnr", t "winnr = vim.api.nvim_get_current_win()"),
   s("tabnr", t "tabnr = vim.api.nvim_get_current_tab()"),
-  s(
-    { trig = "([%w_]+)%+%+", regTrig = true, wordTrig = false },
-    fmt("{} = {} + 1", { l(l.CAPTURE1, {}), l(l.CAPTURE1, {}) })
-  ),
+  postfix({ trig = "++", desc = "increment" }, fmt("{} = {} + 1", { l(l.POSTFIX_MATCH, {}), l(l.POSTFIX_MATCH, {}) })),
+  postfix({ trig = "--", desc = "increment" }, fmt("{} = {} - 1", { l(l.POSTFIX_MATCH, {}), l(l.POSTFIX_MATCH, {}) })),
 }
 local autosnippets = {
   s("!=", t "~="),

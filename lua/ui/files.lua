@@ -30,7 +30,7 @@ return {
       "CopyDirectoryPath",
       "CopyRelativeDirectoryPath",
       -- TODO: Remove/Delete?
-      "Trash"
+      "Trash",
     },
   },
   {
@@ -41,6 +41,17 @@ return {
       { "antosha417/nvim-lsp-file-operations", opts = {} },
     },
     main = "mini.files",
+    keys = {
+      {
+        "<leader>of",
+        function()
+          MiniFiles.open(vim.api.nvim_buf_get_name(0))
+          MiniFiles.reveal_cwd()
+        end,
+        desc = "File Browser",
+      },
+      { "<leader>oF", F "MiniFiles.open()", desc = "File Browser CWD" },
+    },
     opts = {
       windows = {
         preview = true,
@@ -122,9 +133,10 @@ return {
           vim.keymap.set("n", "<localleader>.", toggle_dotfiles, { buffer = bufnr })
           vim.keymap.set("n", "<localleader>p", set_from_picker, { buffer = bufnr })
           vim.keymap.set("n", "<localleader>L", open_from_picker, { buffer = bufnr })
+
+          require "ui.files.git"
         end,
       })
-      require "ui.files.git"
     end,
   },
   {

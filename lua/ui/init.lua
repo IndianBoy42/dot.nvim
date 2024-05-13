@@ -107,7 +107,7 @@ return {
     event = { "CursorHold", "CursorHoldI" },
   },
   { -- "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
-    "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
+    "IndianBoy42/lsp_lines.nvim",
     config = function() require("lsp_lines").setup() end,
     event = "LazyFile",
     keys = {
@@ -209,6 +209,7 @@ return {
   -- TODO: https://github.com/shellRaining/hlchunk.nvim
   {
     "ray-x/lsp_signature.nvim",
+    enabled = false,
     config = false,
     init = function()
       local opts = {
@@ -225,13 +226,14 @@ return {
         handler_opts = { border = "rounded" },
         --     hint_scheme = "String",
         --     hi_parameter = "Search",
-        toggle_key = "<C-S-space>", -- TODO: Can I add this to C-Space as well?
+        toggle_key = "<C-i>", -- TODO: Can I add this to C-Space as well?
         timer_interval = 100,
         --     zindex = 1,
         --     check_client_handlers = false,
       }
 
       utils.lsp.on_attach(function(client, bufnr) require("lsp_signature").on_attach(opts, bufnr) end)
+      utils.lsp.on_attach()
     end,
   },
   -- TODO: { "amrbashir/nvim-docs-view" },

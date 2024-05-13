@@ -123,25 +123,20 @@ M.sel_map = sel_map
 
 function M.setup()
   local wk = require "which-key"
-
-  -- Make CTRL-i work separate to <TAB>
-  if vim.env.TERM == "xterm-kitty" then
-    vim.cmd [[autocmd UIEnter * if v:event.chan ==# 0 | call chansend(v:stderr, "\x1b[>1u") | endif]]
-    vim.cmd [[autocmd UILeave * if v:event.chan ==# 0 | call chansend(v:stderr, "\x1b[<1u") | endif]]
-  end
-  -- map("n", "<C-o>", "<NOP>", {})
+  map("i", "<C-i>", "<C-i>", {})
 
   -- custom_n_repeat
   map("n", "n", M.n_repeat, nore)
   map("n", "N", M.N_repeat, nore)
-  map("n", "<C-n>", function()
-    M.n_repeat()
-    vim.schedule(function() feedkeys "+" end)
-  end, { desc = "Add Cursor at Next" })
-  map("n", "<C-S-n>", function()
-    M.N_repeat()
-    vim.schedule(function() feedkeys "+" end)
-  end, { desc = "Add Cursor at Prev" })
+  -- TODO: this broke
+  -- map("n", "<C-n>", function()
+  --   M.n_repeat()
+  --   vim.schedule(function() feedkeys "+" end)
+  -- end, { desc = "Add Cursor at Next" })
+  -- map("n", "<C-S-n>", function()
+  --   M.N_repeat()
+  --   vim.schedule(function() feedkeys "+" end)
+  -- end, { desc = "Add Cursor at Prev" })
   local function srchrpt(k, op)
     return function()
       register_nN_repeat { nil, nil }
@@ -245,8 +240,6 @@ function M.setup()
 
   -- Tab switch buffer
   map("n", "<tab>", cmd "b#", { desc = "Last Buffer" })
-  map("n", "<C-tab>", cmd "BufferLineCycleNext", { desc = "Next Buffer" })
-  map("n", "<C-S-tab>", cmd "BufferLineCyclePrev", { desc = "Prev Buffer" })
   map("n", "<S-tab>", require("keymappings.buffer_mode").tab_new_or_next, { desc = "Next Tab" })
   -- map("n", "<S-cr><S-tab>", require("keymappings.buffer_mode").tab_new_or_prev, { desc = "Prev Tab" })
 
@@ -538,13 +531,13 @@ function M.setup()
     }
   end
   quick_toggle("<leader>T", "d", utils.lsp.toggle_diagnostics)
-  quick_toggle("<leader>T", "i", function() vim.lsp.inlay_hint.enable(bufnr, not vim.lsp.inlay_hint.is_enabled()) end)
+  quick_toggle("<leader>T", "i", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
   quick_toggle("<leader>T", "b", "<cmd>ToggleBlame virtual<cr>")
 
   -- Select last pasted
-  map("x", O.goto_prefix .. "p", "`[o`]", { desc = "Select Last Paste" })
-  map("x", O.goto_prefix .. "P", "<esc>gP", { remap = true, desc = "SelLine Last Paste" })
-  map("x", O.goto_prefix .. "<C-p>", "<esc>g<C-p>", { remap = true, desc = "SelBlock Last Paste" })
+  map("x", "<leader>p", "`[o`]", { desc = "Select Last Paste" })
+  map("x", "<leader>P", "<esc>gP", { remap = true, desc = "SelLine Last Paste" })
+  map("x", "<leader><C-p>", "<esc>g<C-p>", { remap = true, desc = "SelBlock Last Paste" })
   -- Use reselect as an operator
   op_from "<leader>p"
   op_from "<leader>P"
@@ -665,7 +658,6 @@ function M.setup()
   -- quick_inside "<"
   -- quick_inside ">"
   -- quick_inside "q"
-  -- map("n", ",", "viw")
 
   -- "better" end and beginning of line
   map("o", "H", "^", { remap = true })
@@ -718,20 +710,26 @@ function M.setup()
 
   -- TODO: quickly run short commands
   -- eg <Key>wa => :wa<cr>
-  -- Use quote? use colon? Use (
-  map("n", "(", function()
+  -- Use quote? use colon? Use (?
+  -- Or generate a whole tree of keymappings?
+  map("n", "'", function()
     local esc = t "<esc>"
     local c = ":"
+    -- TODO: how can I add !
     for i = 1, 3 do
       local k = vim.fn.getcharstr()
       if k == esc then break end
       c = c .. k
+      -- 1  for match with start of a command
+      -- 2  full match with a command
+      -- 3  matches several user commands
       if vim.fn.exists(c) > 0 then
-        vim.cmd(c.sub(2))
+        feedkeys(c .. "<cr>", "n")
         break
       end
     end
-    feedkeys(t(c), "n", true)
+    -- Let the user complete it manually
+    feedkeys(c, "n")
   end, { desc = "Short command" })
 
   -- Selection mode
@@ -870,7 +868,7 @@ function M.setup()
       replace_keycodes = true,
     }, -- w = { cmd "noau up", "Write" },
     q = { "<cmd>wq<cr>", "Quit" },
-    ["<C-q>"] = { "<cmd>qa<cr>", "Quit All" },
+    ["<C-q>"] = { "<cmd>wqa<cr>", "Quit All" },
     Q = { function() return pcall(vim.cmd.tabclose) or pcall(vim.cmd.quitall) end, "Quit Tab" },
     e = {
       name = "Edit",
@@ -878,8 +876,8 @@ function M.setup()
     },
     o = {
       name = "Open window",
+      -- TODO: some of these should be in plugin files
       u = { cmd "UndotreeToggle", "Undo tree" },
-      f = { F "MiniFiles.open()", "File Browser" },
       o = { cmd "SymbolsOutline", "Outline" },
       s = {
         name = "Sidebar",
@@ -1046,7 +1044,7 @@ function M.setup()
       ['"'] = { [[:%s/<C-R>\"//g<Left><Left>]], "Last cdy" },
       s = { [[:%s///g<Left><Left><Left>]], "Sub In File" },
       i = "Inside",
-      r = "Spectre",
+      g = "Global Replace",
       c = "Rename with TextCase",
     },
     n = {
@@ -1211,7 +1209,7 @@ utils.lsp.on_attach(function(client, bufnr)
   map("n", O.goto_prefix .. "pr", telescope_fn.lsp_references, { desc = "Peek references" })
   map("n", O.goto_prefix .. "pi", telescope_fn.lsp_implementations, { desc = "Peek implementation" })
   map("n", O.goto_prefix .. "pe", utils.lsp.diag_line, { desc = "Diags" })
-  map("n", "<leader>rc", function()
+  map("n", "<M-r>", function()
     -- TODO: use treesitter
     local new_name = vim.fn.expand "<cword>"
     vim.cmd "undo!"
@@ -1220,6 +1218,7 @@ utils.lsp.on_attach(function(client, bufnr)
   -- Hover
   map("n", O.hover_key, utils.lsp.repeatable_hover, { desc = "LSP Hover" })
   map("i", "<C-i>", lspbuf.signature_help, { desc = "LSP Signature Help" })
+  map("i", "<tab>", "<m-l>", {}) -- FIXME: i don't like this hardcoding
   map("n", O.action_key, telescope_fn.code_actions_previewed, { desc = "Do Code Action" })
   map("x", O.action_key_vis or O.action_key, telescope_fn.code_actions_previewed, { desc = "Do Code Action" })
   local function quick_code_action(i, name)
@@ -1235,15 +1234,25 @@ utils.lsp.on_attach(function(client, bufnr)
       { desc = "Do" .. name }
     )
   end
-  quick_code_action("f", "quickfix") -- TODO: collect quickfixes from all diagnostics and let us apply in batches from telescope
+  quick_code_action("u", "quickfix") -- TODO: collect quickfixes from all diagnostics and let us apply in batches from telescope
   quick_code_action("i", "refactor.inline")
   quick_code_action("r", "refactor.rewrite")
   quick_code_action("e", "refactor.extract")
+  map("n", "qr", "<leader>rn", { desc = "Rename" })
 
-  -- TODO: operators for the above to use with remote?
+  -- TODO: operators for all the above to use with remote?
   local code_action_op = operatorfunc_keys(O.action_key, "r")
-  -- map("n", "<leader>K", code_action_op, { remap = true, desc = "Do Code Action At" })
+  map("n", "<leader>c", code_action_op, { remap = true, desc = "Do Code Action At" })
 end, "lsp_mappings")
+
+-- JUST FYI
+M.weird_mappings = {
+  { "<BS>", "<C-h>" },
+  { "<Tab>", "<C-i>" },
+  { "<CR>", "<C-m>" },
+  -- {"<NL>", "<C-m>"},
+  -- {"<Del>", "<C-m>"},
+}
 
 return setmetatable(M, {
   __call = function(tbl, ...) return map(unpack(...)) end,

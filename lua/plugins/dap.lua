@@ -116,15 +116,15 @@ return {
 
       dap.listeners.after.event_initialized.virt_diags = function()
         utils.lsp.disable_diagnostic()
-        vim.lsp.inlay_hint.enable(0, false)
+        vim.lsp.inlay_hint.enable(false)
       end
       dap.listeners.before.event_terminated.virt_diags = function()
         utils.lsp.enable_diagnostic()
-        vim.lsp.inlay_hint.enable(0, true)
+        vim.lsp.inlay_hint.enable(true)
       end
       dap.listeners.before.event_exited.virt_diags = function()
         utils.lsp.enable_diagnostic()
-        vim.lsp.inlay_hint.enable(0, true)
+        vim.lsp.inlay_hint.enable(true)
       end
 
       vim.api.nvim_create_autocmd("FileType", {

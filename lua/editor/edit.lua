@@ -36,8 +36,7 @@ return {
     },
   },
   {
-    -- "bennypowers/splitjoin.nvim",
-    "Wansmer/treesj",
+    "IndianBoy42/treesj",
     dependencies = { "nvim-treesitter" },
     opts = {
       use_default_keymaps = false,
@@ -46,14 +45,14 @@ return {
     keys = {
       { "<C-s>", function() require("treesj").toggle() end, desc = "SplitJoin", mode = { "n", "i", "x" } },
       {
-        "<C-S-s>",
+        "<leader>ej",
         function() require("treesj").nested_toggle "flash" end,
         desc = "SplitJoin Nested",
-        mode = { "n", "i", "x" },
+        mode = { "n", "x" },
       },
       -- TODO: make this a hydra for repeatability
-      { "<leader>eJ", function() require("treesj").split() end, desc = "Split" },
-      { "<leader>ej", function() require("treesj").join() end, desc = "Join" },
+      -- { "<leader>eJ", function() require("treesj").split() end, desc = "Split" },
+      -- { "<leader>ej", function() require("treesj").join() end, desc = "Join" },
     },
   },
   {
@@ -215,6 +214,7 @@ return {
       if false then
         require("textcase").setup {}
       else
+        -- TODO: i need a better hint string
         local hydra = require "hydra"
 
         local head = function(key, func, operator_name, desc)
@@ -249,6 +249,7 @@ return {
           mode = "n",
           body = "cu",
           heads = heads "quick_replace",
+          color = "blue",
         }
         -- hydra {
         --   config = { invoke_on_body = true },
@@ -263,6 +264,7 @@ return {
           mode = "x",
           body = "<leader>rc",
           heads = heads "visual",
+          color = "blue",
         }
       end
     end,
@@ -320,11 +322,10 @@ return {
       exchange = { prefix = "" },
       multiply = { prefix = "" },
       replace = { prefix = "" },
-      -- Sort text
     },
-    setup = function(_, opts)
+    config = function(_, opts)
       require("mini.operators").setup(opts)
-      require("mini.operators").make_mappings("multiple", { textobject = "yd", line = "ydd", selection = "D" })
+      require("mini.operators").make_mappings("multiply", { textobject = "yd", line = "ydd", selection = "D" })
     end,
     keys = {
       { "gs", mode = { "n", "x" }, desc = "Sort" },
@@ -335,5 +336,94 @@ return {
       { "ydd", desc = "Duplicate Line" },
       { mode = "x", "D", desc = "Duplicate" },
     },
+  },
+  {
+    "gbprod/substitute.nvim",
+    dev = true,
+    keys = function()
+      -- Replace selection with register
+      local substitute = function(fn, opts)
+        return function()
+          local substitute = require "substitute"
+          substitute[fn](opts)
+        end
+      end
+      -- Replace all in range
+      local substitute_range = function(fn, opts)
+        opts = vim.tbl_extend("keep", { group_substituted_text = true }, opts or {})
+        return function()
+          local range = require "substitute.range"
+          range[fn](opts)
+        end
+      end
+      local exchange = function(fn, opts)
+        return function()
+          local exchange = require "substitute.exchange"
+          exchange[fn](opts)
+        end
+      end
+
+      return {
+        { "r", substitute "operator", mode = "n", desc = "Replace" },
+        { "rr", substitute "line", mode = "n", desc = "Replace Line" },
+        -- { "R", substitute "eol", mode = "n", desc = "Replace EOL" },
+        -- { "r", substitute("visual", { yank_substituted_text = true }), mode = "x", desc = "Replace" },
+        -- TODO: fuck these, just use vim-visual-multi?
+        {
+          "<leader>rI",
+          substitute_range "operator",
+          mode = "n",
+          desc = "Replace all (motion1) in (motion2)",
+        },
+        {
+          "<leader>rA",
+          substitute_range("operator", { range = "%" }),
+          mode = "n",
+          desc = "Replace all (motion) in file",
+        },
+        {
+          "ri",
+          substitute_range("visual", {}),
+          mode = "x",
+          desc = "Replace all (sel) in (motion)",
+        },
+        -- {
+        --   "cr",
+        --   substitute_range("visual_range", {
+        --     -- text1 = { last_search = true },
+        --   }),
+        --   mode = { "x", "n" },
+        --   desc = "Replace all (motion) in (sel)",
+        -- },
+        {
+          "ra",
+          substitute_range("visual", { range = "%" }),
+          mode = "x",
+          desc = "Replace all (sel) in file",
+        },
+        {
+          "<leader>ro",
+          substitute_range "word",
+          mode = "n",
+          desc = "Replace all iw in (motion)",
+        },
+        {
+          "<leader>rO",
+          substitute_range("word", { range = "%" }),
+          mode = "n",
+          desc = "Replace all iw in file",
+        },
+        { "cx", exchange "operator", mode = "n", desc = "Exchange" },
+        { "cxx", exchange "line", mode = "n", desc = "Exchange Line" },
+        { "x", exchange "visual", mode = "x", desc = "Exchange" },
+        -- { "<leader>X", exchange "cancel", mode = "n", desc = "Cancel Exchange" },
+      }
+    end,
+    config = function()
+      local opts = {
+        on_substitute = require("yanky.integration").substitute(),
+      }
+      require("substitute").setup(opts)
+    end,
   },
 }

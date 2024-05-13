@@ -19,6 +19,12 @@ vim.opt.rtp:prepend(lazypath)
 --   return
 -- end
 
+-- Make CTRL-i work separate to <TAB>
+if false and vim.env.TERM == "xterm-kitty" then
+  vim.cmd [[autocmd UIEnter * if v:event.chan ==# 0 | call chansend(v:stderr, "\x1b[>1u") | endif]]
+  vim.cmd [[autocmd UILeave * if v:event.chan ==# 0 | call chansend(v:stderr, "\x1b[<1u") | endif]]
+end
+
 F = loadstring
 _G.utils = require "utils"
 -- _G.O = utils.setproxy(require "config") -- TODO: Phase this out, intercept accesses and log it

@@ -6,6 +6,14 @@ return {
       project_roots = { ".git", ".svn", ".venv" },
     },
     lazy = false,
+    config = function(_, opts)
+      require("remember_me").setup(opts)
+      vim.api.nvim_create_user_command("ForgetQuit", function(args)
+        vim.cmd "Forget"
+        vim.cmd "qa"
+      end, {})
+      vim.api.nvim_create_user_command("Fq", function(args) vim.cmd "ForgetQuit" end, {})
+    end,
   },
   { import = "langs", cond = not vim.g.kitty_scrollback },
   { import = "editor" },

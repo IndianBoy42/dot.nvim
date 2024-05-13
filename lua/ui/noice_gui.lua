@@ -76,7 +76,7 @@ return {
             ["cmp.entry.get_documentation"] = true,
           },
           signature = {
-            enabled = false,
+            enabled = true,
           },
         },
         presets = {

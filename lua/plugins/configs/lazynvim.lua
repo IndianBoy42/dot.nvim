@@ -114,10 +114,7 @@ return {
       },
       ["<localleader>m"] = {
         desc = "Open in Smerge",
-        function(plugin)
-          vim.cmd("!smerge " .. plugin.dir)
-          -- require("kitty").new_os_window({ open_cwd = plugin.dir }, "gitui")
-        end,
+        function(plugin) vim.cmd("!smerge " .. plugin.dir) end,
       },
       ["<localleader>h"] = {
         desc = "Open in github browser",
@@ -126,8 +123,7 @@ return {
           -- require("kitty").new_os_window({ open_cwd = plugin.dir }, "gitui")
         end,
       },
-      ["<localleader>n"] = { desc = "Next plugin", function() feedkeys(t "/[○●]<CR>", "n", false) end },
-      ["<localleader>p"] = { desc = "Prev plugin", function() feedkeys(t "?[○●]<CR>", "n", false) end },
+      ["<localleader>n"] = { desc = "Next plugin", function() feedkeys(t "/[○●]", "m", false) end },
     },
   },
   performance = {

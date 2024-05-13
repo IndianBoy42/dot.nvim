@@ -165,7 +165,7 @@ return {
         event = { "BufRead Cargo.toml" },
         opts = {
           null_ls = { enabled = true, name = "crates.nvim" },
-          src = { cmp = { enabled = true } },
+          completion = { cmp = { enabled = true } },
           popup = {
             border = "rounded",
           },

@@ -386,6 +386,7 @@ end
 M.format_on_save_toggle = function(dict)
   dict = dict or vim.b
   return function()
+    if dict.Format_on_save_mode == nil then dict.Format_on_save_mode = vim.g.Format_on_save_mode end
     if not dict.Format_on_save_mode then
       dict.Format_on_save_mode = dict.Format_on_save_mode_last
     else

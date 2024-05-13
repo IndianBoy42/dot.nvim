@@ -1,3 +1,10 @@
+local function pick_n(n)
+  return function(prompt_bufnr)
+    local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
+    picker.set_selection(n)
+    actions.select_default(prompt_bufnr)
+  end
+end
 local telescope = {
   "nvim-telescope/telescope.nvim",
   dependencies = {
@@ -6,9 +13,7 @@ local telescope = {
       "danielfalk/smart-open.nvim",
       dependencies = { "kkharji/sqlite.lua" },
     },
-    { "nvim-telescope/telescope-frecency.nvim", dependencies = {
-      "kkharji/sqlite.lua",
-    } },
+    { "nvim-telescope/telescope-frecency.nvim" },
     "nvim-telescope/telescope-media-files.nvim",
     "nvim-telescope/telescope-github.nvim",
     "nvim-telescope/telescope-live-grep-args.nvim",
@@ -96,6 +101,16 @@ local telescope = {
             ["<tab>"] = function(prompt_bufnr)
               vim.api.nvim_buf_call(prompt_bufnr, function() vim.cmd "normal! A.*?" end)
             end,
+            ["<C-0>"] = pick_n(0),
+            ["<C-1>"] = pick_n(1),
+            ["<C-2>"] = pick_n(2),
+            ["<C-3>"] = pick_n(3),
+            ["<C-4>"] = pick_n(4),
+            ["<C-5>"] = pick_n(5),
+            ["<C-6>"] = pick_n(6),
+            ["<C-7>"] = pick_n(7),
+            ["<C-8>"] = pick_n(8),
+            ["<C-9>"] = pick_n(9),
           },
           n = {
             -- ["<M-p>"] = action_layout.toggle_preview,
@@ -170,6 +185,10 @@ local telescope = {
               ["<C-S-i>"] = lga_actions.quote_prompt { postfix = " --t " },
             },
           },
+        },
+        frecency = {
+          db_safe_mode = false,
+          auto_validate = true,
         },
       },
     }

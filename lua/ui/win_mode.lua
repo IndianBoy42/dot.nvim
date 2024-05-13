@@ -19,10 +19,10 @@ local function window_hydra_setup()
  ^^^^^^^^^^^^     Move      ^^    Size   ^^   ^^     Split      ^^     Tab
  ^^^^^^^^^^^^-------------  ^^-----------^^   ^^--------------- ^^---------------
  ^ ^ _k_ ^ ^  ^ ^ _K_ ^ ^   ^   _<C-k>_   ^   _s_: horizontally _t_: next _n_: new
- _h_ ^ ^ _l_  _H_ _r_ _L_   _<C-h>_ _<C-l>_   _v_: vertically   _m_: prev
+ _h_ ^ ^ _l_  _H_ _O_ _L_   _<C-h>_ _<C-l>_   _v_: vertically   _m_: prev
  ^ ^ _j_ ^ ^  ^ ^ _J_ ^ ^   ^   _<C-j>_   ^   _c_, _q_: close ^ _C_, _Q_: close
  focus^^^^^^  window^^^^^^  ^_=_: equalize^   _z_: maximize     _P_: list
- _p_: pick buffer ^^^^^^^^^^_w_: pick win ^^  _o_: remain only  _O_: remain only ]]
+ _p_: pick buffer ^^^^^^^^^^_w_: pick win ^^  _o_: remain only  _o_: remain only ]]
 
   local heads = {
     -- TODO: open nvim-tree if we go left far enough
@@ -41,7 +41,7 @@ local function window_hydra_setup()
     { "k", smart_splits "swap_buf_up" },
     { "l", smart_splits "swap_buf_right" },
 
-    { "o", cmd "RotatePanesAnti" }, -- Rotate
+    { "O", cmd "RotatePanesAnti" }, -- Rotate
 
     { "H", smart_splits("resize_left", 2) },
     { "J", smart_splits("resize_down", 2) },
@@ -76,7 +76,7 @@ local function window_hydra_setup()
     { "z", cmd "WindowsMaximize", { exit = true, desc = "maximize" } },
     { "<C-z>", cmd "WindowsMaximize", { exit = true, desc = false } },
     { "Z", cmd "WindowsMaximizeVertically", { exit = true, desc = "maximize" } },
-    { "<C-S-z>", cmd "WindowsMaximizeVertically", { exit = true, desc = false } },
+    { "<C-A-z>", cmd "WindowsMaximizeVertically", { exit = true, desc = false } },
 
     { "o", "<C-w>o", { exit = true, desc = "remain only" } },
     { "<C-o>", "<C-w>o", { exit = true, desc = false } },

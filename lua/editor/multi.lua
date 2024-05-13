@@ -113,7 +113,7 @@ return {
       ["Undo"] = "u",
       ["Redo"] = "<C-r>",
       ["Reselect Last"] = ldr .. ldr,
-      ["Transpose"] = "(",
+      ["Transpose"] = "M",
       ["Split Regions"] = "-",
       ["Toggle Mappings"] = "<S-Esc>",
       ["Surround"] = "s",
@@ -144,6 +144,12 @@ return {
       "+",
       "<Plug>(VM-Add-Cursor-At-Pos)<Plug>(VM-Disable-Mappings)",
       { remap = true, desc = "Add Cursor At Pos" }
+    )
+    map(
+      { "x", "n" },
+      "<C-n>",
+      wrap_vm(nil, "<Plug>(VM-Find-Under)", "<Plug>(VM-Switch-Mode)"),
+      { remap = true, desc = "Add Region" }
     )
     map("x", "+", "<Plug>(VM-Visual-Add)<Plug>(VM-Disable-Mappings)", { remap = true, desc = "Add Region" })
     map("x", "-", "<Plug>(VM-Visual-Add)<Plug>(VM-Split-Regions)", { remap = true, desc = "Split Visual Region" })
@@ -225,7 +231,7 @@ return {
     map(
       "n",
       ldr .. "n",
-      wrap_vm(nil, "Start-Regex-Search", function() return vim.fn.getreg "/" .. "<cr>" end),
+      wrap_vm(nil, "Start-Regex-Search", function() return (vim.fn.getreg "/") end),
       { desc = "From last search" }
     )
 
@@ -239,6 +245,7 @@ return {
         )
         map("n", "<Plug>(VM-Motion-()", "<Plug>(VM-Transpose)")
         map("n", "<Plug>(VM-Motion-))", "<Plug>(VM-Transpose)")
+        map("n", "<C-n>", "<Plug>(VM-Find-Under)")
       end,
     })
     vim.api.nvim_create_autocmd("User", {
