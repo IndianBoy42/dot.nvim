@@ -91,7 +91,6 @@ local VM = setmetatable({ "vm" }, VM_meta)
 return {
   "IndianBoy42/vim-visual-multi",
   api = VM,
-  dev = true,
   init = function()
     vim.g.VM_maps = nil
     -- local ldr = "\\"

@@ -185,7 +185,6 @@ return {
   -- FIXME: breaks when not run inside kitty, make it optional? no
   {
     "IndianBoy42/kitty.lua",
-    dev = true,
     event = "VeryLazy",
     cond = not not vim.env.KITTY_PID and not vim.g.kitty_scrollback,
     config = function() kitty_terms() end,

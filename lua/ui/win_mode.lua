@@ -182,7 +182,6 @@ return {
   },
   {
     "IndianBoy42/ezlayout.nvim",
-    dev = true,
     opts = {},
     cmd = { "RotatePanes", "RotatePanesAnti" },
   },

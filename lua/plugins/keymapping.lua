@@ -43,7 +43,6 @@ return {
   "nvimtools/hydra.nvim",
   {
     "indianboy42/keymap-amend.nvim",
-    dev = true,
     config = function()
       local a = require "keymap-amend"
       vim.keymap.amend = a.amend

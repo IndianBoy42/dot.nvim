@@ -1,7 +1,6 @@
 return {
   {
     "IndianBoy42/remember-me.nvim",
-    dev = true,
     opts = {
       project_roots = { ".git", ".svn", ".venv" },
     },

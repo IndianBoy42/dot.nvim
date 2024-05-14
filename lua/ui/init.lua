@@ -109,6 +109,7 @@ return {
   },
   { -- "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
     "IndianBoy42/lsp_lines.nvim",
+    branch = "main",
     config = function() require("lsp_lines").setup() end,
     event = "LazyFile",
     keys = {
