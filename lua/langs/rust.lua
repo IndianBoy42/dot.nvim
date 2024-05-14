@@ -222,7 +222,18 @@ return {
             },
 
             tools = {
-              -- TODO: executor = require("kitty").rust_tools_executor(),
+              -- TODO:
+              -- executor = require("kitty").rust_tools_executor(),
+              executor = {
+                execute_command = function(command, args, cwd)
+                  local ok, kitty = pcall(require, "kitty")
+                  if ok then
+                    return kitty.rust_tools_executor()(command, args, cwd)
+                  else
+                    require("rust-tools.executors").termopen.execute_command(command, args, cwd)
+                  end
+                end,
+              },
               hover_actions = {
                 auto_focus = true,
                 border = "rounded",

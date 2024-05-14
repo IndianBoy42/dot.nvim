@@ -19,6 +19,7 @@ return {
   "willothy/flatten.nvim",
   lazy = false,
   priority = 1001,
+  cond = not vim.g.kitty_scrollback,
   opts = {
     _pipe_path = function()
       -- If running in a Kitty terminal, all tabs/windows/os-windows in the same instance of kitty will open in the first neovim instance
@@ -54,6 +55,7 @@ return {
       -- end,
       focus = "first",
     },
+    nest_if_no_args = false,
     callbacks = {
       ---@param argv table a list of all the arguments in the nested session
       should_block = function(argv)

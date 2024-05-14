@@ -155,6 +155,8 @@ return {
   },
   {
     "anuvyklack/windows.nvim",
+    event = { "WinLeave" },
+    key = { "<leader>w" },
     opts = {
       autowidth = {
         enable = true,

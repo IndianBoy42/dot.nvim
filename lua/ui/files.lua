@@ -33,13 +33,11 @@ return {
       "Trash",
     },
   },
+  { "antosha417/nvim-lsp-file-operations", opts = {} },
   {
     "echasnovski/mini.files",
     cond = true,
     lazy = false,
-    dependencies = {
-      { "antosha417/nvim-lsp-file-operations", opts = {} },
-    },
     main = "mini.files",
     keys = {
       {
@@ -122,11 +120,11 @@ return {
             },
             body = "<localleader>",
             heads = {
-              { "h", "h", { noremap = true } },
-              { "l", "l", { noremap = true } },
-              { "H", "h", { noremap = false } },
-              { "L", "l", { noremap = false } },
-              { "<localleader>", "", { exit = true } },
+              { "h",             "h", { noremap = true } },
+              { "l",             "l", { noremap = true } },
+              { "H",             "h", { noremap = false } },
+              { "L",             "l", { noremap = false } },
+              { "<localleader>", "",  { exit = true } },
             },
           }
           vim.keymap.set("n", "<localleader>~", files_set_cwd, { buffer = bufnr })
@@ -137,11 +135,19 @@ return {
           require "ui.files.git"
         end,
       })
+
+      vim.api.nvim_create_autocmd("User", {
+        group = group,
+        pattern = "MiniFilesExplorerOpen",
+        callback = function()
+          require "lsp-file-operations" -- This loads it
+        end,
+      })
     end,
   },
   {
     "stevearc/oil.nvim",
-    enabled = false,
+    cond = false,
     lazy = false, -- So that i can do `nvim .` or `nvim <some_directory>`
     opts = {
       columns = { "icon", "permissions", "size", "mtime" },

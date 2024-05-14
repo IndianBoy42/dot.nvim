@@ -138,8 +138,6 @@ function M.operatorfunc_helper_select(lines)
   end
 end
 
-function M.post_operatorfunc(old_func) vim.go.operatorfunc = old_func end
-
 -- wrapper for making operators easily
 function M.operatorfunc_scaffold(operatorfunc, op_pending)
   local old_func = vim.go.operatorfunc
@@ -147,12 +145,16 @@ function M.operatorfunc_scaffold(operatorfunc, op_pending)
   local wrapped = function()
     operatorfunc()
 
-    M.post_operatorfunc(old_func)
+    vim.go.operatorfunc = old_func
   end
 
   return function()
     M.set_opfunc(wrapped)
-    feedkeys("g@" .. (op_pending and type(op_pending) == "string" and op_pending or ""), "n", false)
+    feedkeys(
+      "g@" .. (op_pending and type(op_pending) == "string" and op_pending or ""),
+      op_pending and type(op_pending) == "string" and "m" or "n",
+      false
+    )
     if type(op_pending) == "function" then op_pending() end
   end
 end
@@ -514,7 +516,12 @@ M.on_very_lazy = function(cb)
   })
 end
 M.plugin_spec = function(name) return require("lazy.core.config").plugins[name] end
-M.have_plugin = function(name) return require("lazy.core.config").plugins[name] ~= nil end
+M.have_plugin = function(name)
+  local spec = M.plugin_spec(name)
+  if spec == nil then return false end
+  if spec.cond == false or spec.enabled == false then return false end
+  return true
+end
 
 local mt = {}
 function mt.__index(self, key)

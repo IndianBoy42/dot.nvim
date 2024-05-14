@@ -68,6 +68,7 @@ return {
         vim.bo.winfixheight = true
       end, {})
     end,
+    config = function(_, opts) end,
     keys = {
       { "g:", "<cmd>NeoRepl<cr>", desc = "NeoRepl" },
     },

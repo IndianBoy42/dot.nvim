@@ -25,8 +25,8 @@ return {
   },
   { -- "j-hui/fidget.nvim",
     "j-hui/fidget.nvim",
+    cond = false,
     opts = {},
-    branch = "legacy",
     event = "VeryLazy",
   },
   {
@@ -69,7 +69,11 @@ return {
           },
         },
         lsp = {
-          progress = { enabled = not utils.have_plugin "fidget.nvim" }, -- Using fidget so...
+          progress = {
+            -- Using fidget so...
+            enabled = not utils.have_plugin "fidget.nvim",
+            view = "progress",
+          },
           override = {
             ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
             ["vim.lsp.util.stylize_markdown"] = true,
@@ -98,6 +102,9 @@ return {
           backend = "cmp",
         },
         views = {
+          notify = {
+            merge = true,
+          },
           cmdline_popup = {
             position = {
               row = 3,
@@ -146,6 +153,35 @@ return {
             },
             win_options = {
               winhighlight = { Normal = "Normal", FloatBorder = "NoiceCmdlinePopupBorder" },
+            },
+          },
+          progress = {
+            backend = "mini",
+            relative = "editor",
+            align = "message-right",
+            timeout = 2000,
+            reverse = true,
+            focusable = false,
+            position = {
+              row = -1,
+              col = "100%",
+              -- col = 0,
+            },
+            size = "auto",
+            border = {
+              style = "none",
+            },
+            zindex = 60,
+            win_options = {
+              winbar = "",
+              foldenable = false,
+              winblend = 30,
+              winhighlight = {
+                Normal = "NoiceMini",
+                IncSearch = "",
+                CurSearch = "",
+                Search = "",
+              },
             },
           },
           mini = {

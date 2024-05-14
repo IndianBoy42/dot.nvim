@@ -200,18 +200,6 @@ return {
   {
     "tpope/vim-fugitive",
     config = function() end,
-    in_fugitive_menu = function()
-      vim.o.previewwindow = true
-      -- TODO: hydra.nvim submode?
-      require("plugins.git.keys").fugitive()
-
-      --   vim.cmd [[
-      -- augroup _fugitive
-      --   autocmd! * <buffer>
-      --   autocmd CursorHold,CursorHoldI <buffer> lua require'which-key'.show()
-      -- augroup END
-      -- ]]
-    end,
     cmd = { "G", "Git", "Gdiffsplit", "Gdiff" },
   },
   { "aaronhallaert/advanced-git-search.nvim" },

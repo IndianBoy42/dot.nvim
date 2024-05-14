@@ -1,3 +1,4 @@
+-- LSP extras 
 return {
   {
     "Kasama/nvim-custom-diagnostic-highlight",
@@ -5,7 +6,22 @@ return {
   },
   {
     "yioneko/nvim-type-fmt",
-    lazy = false,
+    event = "LazyFile",
+  },
+  {
+    "hrsh7th/nvim-linkedit",
+    opts = {
+      sources = {
+        {
+          name = "lsp_linked_editing_range",
+          on = { "insert", "operator" },
+        },
+        {
+          name = "lsp_document_highlight",
+          on = { "operator" },
+        },
+      },
+    },
   },
   {
     "joechrisellis/lsp-format-modifications.nvim",

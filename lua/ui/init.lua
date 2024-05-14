@@ -98,7 +98,7 @@ return {
   },
   { -- "kosayoda/nvim-lightbulb",
     "kosayoda/nvim-lightbulb",
-    enabled = false,
+    cond = false,
     config = function()
       vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
         callback = function() require("nvim-lightbulb").update_lightbulb() end,
@@ -117,15 +117,6 @@ return {
         desc = "Toggle lsp_lines",
       },
     },
-  },
-  { -- "VidocqH/lsp-lens.nvim",
-    "VidocqH/lsp-lens.nvim",
-    cond = false,
-    opts = {
-      enable = true,
-      include_declaration = true,
-    },
-    event = "LazyFile",
   },
   { -- "nvim-treesitter/nvim-treesitter-context",
     "nvim-treesitter/nvim-treesitter-context",
@@ -207,35 +198,6 @@ return {
   -- TODO: https://github.com/DNLHC/glance.nvim
   -- TODO: https://github.com/stevearc/qf_helper.nvim
   -- TODO: https://github.com/shellRaining/hlchunk.nvim
-  {
-    "ray-x/lsp_signature.nvim",
-    enabled = false,
-    config = false,
-    init = function()
-      local opts = {
-        bind = true,
-        -- hint_inline = function() return true end,
-        --     doc_lines = 2, -- will show two lines of comment/doc(if there are more than two lines in doc, will be truncated);
-        --     -- Apply indentation for wrapped lines
-        --     floating_window = true, -- show hint in a floating window, set to false for virtual text only mode
-        fix_pos = true, -- set to true, the floating window will not auto-close until finish all parameters
-        --     hint_enable = true, -- virtual hint enable
-        --     hint_prefix = "🐼 ", -- Panda for parameter
-        --     max_height = 12, -- max height of signature floating_window, if content is more than max_height, you can scroll down
-        --     max_width = 120, -- max_width of signature floating_window, line will be wrapped if exceed max_width
-        handler_opts = { border = "rounded" },
-        --     hint_scheme = "String",
-        --     hi_parameter = "Search",
-        toggle_key = "<C-i>", -- TODO: Can I add this to C-Space as well?
-        timer_interval = 100,
-        --     zindex = 1,
-        --     check_client_handlers = false,
-      }
-
-      utils.lsp.on_attach(function(client, bufnr) require("lsp_signature").on_attach(opts, bufnr) end)
-      utils.lsp.on_attach()
-    end,
-  },
   -- TODO: { "amrbashir/nvim-docs-view" },
   {
     "tzachar/highlight-undo.nvim",
@@ -316,7 +278,6 @@ return {
   },
   {
     "winston0410/range-highlight.nvim",
-    enabled = false,
     event = "CmdlineEnter",
     dependencies = { "winston0410/cmd-parser.nvim" },
     opts = {},

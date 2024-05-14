@@ -109,7 +109,7 @@ return function()
   vim.g.neovide_floating_blur = 0
   vim.g.neovide_window_floating_blur = 0
   -- require("utils").set_guifont(O.fontsize, "FiraCode Nerd Font")
-  require("utils").set_guifont(O.fontsize, "Iosevka Term SS05 Md Ex")
+  utils.set_guifont(O.fontsize, "Iosevka Term SS05 Md Ex")
 
   if vim.g.kitty_scrollback then
     opt.signcolumn = "no" -- TODO: more stuff?

@@ -20,6 +20,14 @@ return {
         cmd = { "Codeium" },
         opts = { enable_chat = true },
       },
+      {
+        "sourcegraph/sg.nvim",
+        cond = source == "sg",
+        opts = {
+          enable_cody = true,
+          accept_tos = true,
+        },
+      },
     },
     opts = function(_, opts)
       opts.sources = vim.list_extend({

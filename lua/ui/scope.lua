@@ -48,7 +48,7 @@ return {
   {
     "HampusHauffman/block.nvim",
     cmd = { "Block", "BlockOn", "BlockOff" },
-    opts = { percent = 1.20, depth = 10, automatic = true },
+    opts = { percent = 1.06, depth = 10, automatic = true },
     -- event = "LazyFile",
   },
 }

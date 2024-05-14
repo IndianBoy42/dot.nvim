@@ -1,10 +1,3 @@
-local function pick_n(n)
-  return function(prompt_bufnr)
-    local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
-    picker.set_selection(n)
-    actions.select_default(prompt_bufnr)
-  end
-end
 local telescope = {
   "nvim-telescope/telescope.nvim",
   dependencies = {
@@ -43,6 +36,14 @@ local telescope = {
     local with_rg = require("utils.telescope").with_rg
     local rg = with_rg { ignore = true, hidden = true }
     local fd = with_rg { ignore = true, hidden = true, files = true }
+
+    local function pick_n(n)
+      return function(prompt_bufnr)
+        local picker = require("telescope.actions.state").get_current_picker(prompt_bufnr)
+        picker:set_selection(n)
+        actions.select_default(prompt_bufnr)
+      end
+    end
 
     return {
       defaults = {

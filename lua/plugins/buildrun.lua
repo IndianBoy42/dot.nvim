@@ -1,10 +1,10 @@
 return {
-  -- FIXME: breaks when not run inside kitty, make it optional?
+  -- FIXME: breaks when not run inside kitty, make it optional? no
   {
     "IndianBoy42/kitty.lua",
     dev = true,
     event = "VeryLazy",
-    cond = not not vim.env.KITTY_PID,
+    cond = not not vim.env.KITTY_PID and not vim.g.kitty_scrollback,
     config = function()
       require("kitty.terms").setup {
         dont_attach = not not vim.g.kitty_scrollback,
@@ -32,6 +32,7 @@ return {
       map("n", "mK", function() Terms.get_terminal(0):run() end, { desc = "Kitty Run" })
       map("n", "mk", function() Terms.get_terminal(0):make() end, { desc = "Kitty Make" })
       map("n", "mkk", function() Terms.get_terminal(0):make "last" end, { desc = "Kitty ReMake" })
+      -- This won't send the
       map("n", "mr", function() return Terms.get_terminal(0):send_operator() end, { expr = true, desc = "Kitty Send" })
       map("x", "R", function() return Terms.get_terminal(0):send_operator() end, { expr = true, desc = "Kitty Send" })
       map(
@@ -55,8 +56,13 @@ return {
       },
       {
         "<c-:>",
-        "<cmd>KittyOverlay<cr>",
-        desc = "Kitty Open Overlay",
+        "<cmd>KittyNew<cr>",
+        desc = "Kitty Open New",
+      },
+      {
+        "<leader>oK",
+        "<cmd>KittyNew<cr>",
+        desc = "Kitty Open New",
       },
       { "<leader>C", ":=require'kitty.current_win'", desc = "Kitty Control" },
     },

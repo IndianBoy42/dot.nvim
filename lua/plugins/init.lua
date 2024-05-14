@@ -6,6 +6,7 @@ return {
       project_roots = { ".git", ".svn", ".venv" },
     },
     lazy = false,
+    cond = not vim.g.kitty_scrollback,
     config = function(_, opts)
       require("remember_me").setup(opts)
       vim.api.nvim_create_user_command("ForgetQuit", function(args)
@@ -14,6 +15,14 @@ return {
       end, {})
       vim.api.nvim_create_user_command("Fq", function(args) vim.cmd "ForgetQuit" end, {})
     end,
+  },
+  { -- TODO: https://github.com/mikesmithgh/kitty-scrollback.nvim
+    "mikesmithgh/kitty-scrollback.nvim",
+    cond = vim.g.kitty_scrollback,
+    build = "KittyScrollbackGenerateKittens",
+    cmd = { "KittyScrollbackGenerateKittens", "KittyScrollbackCheckHealth" },
+    event = { "User KittyScrollbackLaunch" },
+    opts = {},
   },
   { import = "langs", cond = not vim.g.kitty_scrollback },
   { import = "editor" },
@@ -44,7 +53,7 @@ return {
   },
   {
     "EtiamNullam/deferred-clipboard.nvim",
-    enabled = false,
+    cond = false,
     event = "LazyFile",
     opts = {
       lazy = true,
@@ -91,5 +100,10 @@ return {
     "axkirillov/hbac.nvim",
     event = "VeryLazy",
     opts = {},
+  },
+  -- ./lua/utils.lua:10
+  {
+    "lewis6991/fileline.nvim",
+    lazy = false,
   },
 }

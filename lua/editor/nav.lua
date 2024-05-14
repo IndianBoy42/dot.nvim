@@ -65,7 +65,7 @@ local jump_mappings = function()
     --   -- require("which-key").register({ [sym] = { name = desc } }, { mode = "x" })
     -- end
   end
-  mapall("f", nil, "_") -- TODO: what can this keybinding be??
+  mapall("f", nil, "\\") -- TODO: what can this keybinding be??
   mapall("a", nil, ",")
   -- mapall("b", nil, ")")
   -- mapall("q", nil)
@@ -122,7 +122,9 @@ local custom_textobjects = function(ai)
       end
       return { from = { line = line_num, col = from_col }, to = { line = line_num, col = to_col } }
     end,
-    B = { "%b{}", "^.%s*().-()%s*.$" },
+    B = { "%b{}", "^.().*().$" },
+    t = { "%b<>", "^.().*().$" },
+    T = { "<(%w-)%f[^<%w][^<>]->.-</%1>", "^<.->().*()</[^/]->$" },
     S = {
       {
         { "%u[%l%d]+[^%l%d]", "^().*()[^%l%d]$" },
@@ -718,7 +720,7 @@ return {
       -- { "<leader>hw", navutils.leap_anywhere, mode = "n", desc = "Leap all windows" },
       { "s", "<Plug>(leap-forward-to)", mode = "n", desc = "Leap Fwd" },
       { "S", "<Plug>(leap-backward-to)", mode = "n", desc = "Leap Bwd" },
-      { O.goto_prefix .. O.goto_prefix, navutils.leap_anywhere, mode = { "n", "x" }, desc = "Leap" },
+      { O.goto_prefix .. O.goto_prefix, navutils.leap_anywhere, mode = { "n", "x" }, desc = "Leap anywhere" },
       {
         "t", -- semi-inclusive
         function()
@@ -740,13 +742,13 @@ return {
       {
         "<tab>", -- semi-inclusive
         function() require("leap").leap { inclusive_op = true } end,
-        mode = "x",
+        mode = { "x", "o" },
         desc = "Leap f",
       },
       {
         "<s-tab>", -- semi-inclusive
         function() require("leap").leap { backward = true, offset = 1, inclusive_op = true } end,
-        mode = "x",
+        mode = { "x", "o" },
         desc = "Leap F",
       },
       { "<leader>f", "<Plug>(leap-forward-to)", mode = "x", desc = "Leap f" },
@@ -799,13 +801,11 @@ return {
         mode = "n",
         desc = "Exchange V<motion1> with V<motion2>",
         function()
-          navutils.swap_with(
-            { exchange = {
+          navutils.swap_with({
+            exchange = {
               visual_mode = "V",
-            } },
-            nil,
-            vim.schedule_wrap(navutils.leap_remote)
-          )
+            },
+          }, nil, vim.schedule_wrap(navutils.leap_remote))
         end,
       },
       {

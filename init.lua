@@ -19,11 +19,7 @@ vim.opt.rtp:prepend(lazypath)
 --   return
 -- end
 
--- Make CTRL-i work separate to <TAB>
-if false and vim.env.TERM == "xterm-kitty" then
-  vim.cmd [[autocmd UIEnter * if v:event.chan ==# 0 | call chansend(v:stderr, "\x1b[>1u") | endif]]
-  vim.cmd [[autocmd UILeave * if v:event.chan ==# 0 | call chansend(v:stderr, "\x1b[<1u") | endif]]
-end
+vim.g.kitty_scrollback = vim.env.KITTY_SCROLLBACK_NVIM == "true"
 
 F = loadstring
 _G.utils = require "utils"

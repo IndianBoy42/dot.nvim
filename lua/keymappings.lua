@@ -9,9 +9,10 @@ local custom_n_repeat = nil
 local custom_N_repeat = nil
 local nvim_feedkeys = vim.api.nvim_feedkeys
 local termcode = vim.api.nvim_replace_termcodes
+local function t(k) return termcode(k, true, true, true) end
 local function feedkeys(keys, o)
   if o == nil then o = "m" end
-  nvim_feedkeys(termcode(keys, true, true, true), o, false)
+  nvim_feedkeys(t(keys), o, false)
 end
 vim.feedkeys = feedkeys
 
@@ -459,7 +460,7 @@ function M.setup()
     pcall(function() require("blinker").blink_cursorline() end)
     vim.o.spell = false
     local ok, notify = pcall(require, "notify")
-    if ok then notify.dismiss { silent = true } end
+    if ok then notify.dismiss { pending = true, silent = true } end
   end, sile)
 
   -- Go Back
@@ -544,7 +545,6 @@ function M.setup()
   op_from "<leader><C-p>"
 
   -- Swap the mark jump keys
-  map("n", "<cr>'", "`", nore)
   map("n", "<cr>`", "'", nore)
   map("n", "<cr>m", "m", nore)
 
@@ -709,28 +709,9 @@ function M.setup()
   map("n", "m", F 'require"which-key".show "m"')
 
   -- TODO: quickly run short commands
-  -- eg <Key>wa => :wa<cr>
-  -- Use quote? use colon? Use (?
-  -- Or generate a whole tree of keymappings?
-  map("n", "'", function()
-    local esc = t "<esc>"
-    local c = ":"
-    -- TODO: how can I add !
-    for i = 1, 3 do
-      local k = vim.fn.getcharstr()
-      if k == esc then break end
-      c = c .. k
-      -- 1  for match with start of a command
-      -- 2  full match with a command
-      -- 3  matches several user commands
-      if vim.fn.exists(c) > 0 then
-        feedkeys(c .. "<cr>", "n")
-        break
-      end
-    end
-    -- Let the user complete it manually
-    feedkeys(c, "n")
-  end, { desc = "Short command" })
+  local short_cmd = require "keymappings.short_cmd"
+  map({ "x", "n" }, "'", short_cmd(), { desc = "Short command" })
+  map({ "x", "n" }, "!", short_cmd "!", { desc = "Short command" })
 
   -- Selection mode
   if false then
@@ -1198,15 +1179,20 @@ utils.lsp.on_attach(function(client, bufnr)
 
   -- TODO: clean up the goto-* keybindings (faster, better selection of which window)
   map("n", "gd", utils.lsp.view_location_pick "definition", { desc = "Goto Definition" })
-  map("n", O.goto_prefix .. "d", utils.lsp.view_location_pick "definition", { desc = "Goto Definition" })
-  -- map("n", "gd", vim.lsp.buf.definition, { desc = "Definition" })
+  map("n", "gt", utils.lsp.view_location_pick "typeDefinition", { desc = "Goto TypeDefinition" })
   map("n", "gD", utils.lsp.view_location_pick "declaration", { desc = "Goto Declaration" })
+  map("n", O.goto_prefix .. "d", utils.lsp.view_location_pick "definition", { desc = "Goto Definition" })
+  map("n", O.goto_prefix .. "t", utils.lsp.view_location_pick "typeDefinition", { desc = "Goto TypeDefinition" })
   map("n", O.goto_prefix .. "D", utils.lsp.view_location_pick "declaration", { desc = "Goto Declaration" })
-  map("n", O.goto_prefix .. "r", utils.lsp.view_location_pick "references", { desc = "Goto References" })
+  map("n", O.goto_prefix .. "id", vim.lsp.buf.definition, { desc = "Definition" })
+  map("n", O.goto_prefix .. "it", vim.lsp.buf.type_definition, { desc = "TypeDefinition" })
+  map("n", O.goto_prefix .. "iD", vim.lsp.buf.declaration, { desc = "Declaration" })
   -- Preview variants -- TODO: preview and then open new window
-  map("n", O.goto_prefix .. "pd", utils.lsp.preview_location_at "definition", { desc = "Peek definition" }) -- TODO: replace with glance.nvim?
-  map("n", O.goto_prefix .. "pD", utils.lsp.preview_location_at "declaration", { desc = "Peek declaration" })
-  map("n", O.goto_prefix .. "pr", telescope_fn.lsp_references, { desc = "Peek references" })
+  map("n", O.goto_prefix .. "r", utils.lsp.view_location_pick "references", { desc = "Goto References" })
+  map("n", O.goto_prefix .. "pd", utils.lsp.preview_location_at "definition", { desc = "Peek Definition" }) -- TODO: replace with glance.nvim?
+  map("n", O.goto_prefix .. "pt", utils.lsp.preview_location_at "typeDefinition", { desc = "Peek TypeDefinition" })
+  map("n", O.goto_prefix .. "pD", utils.lsp.preview_location_at "declaration", { desc = "Peek Declaration" })
+  map("n", O.goto_prefix .. "pr", telescope_fn.lsp_references, { desc = "Peek References" })
   map("n", O.goto_prefix .. "pi", telescope_fn.lsp_implementations, { desc = "Peek implementation" })
   map("n", O.goto_prefix .. "pe", utils.lsp.diag_line, { desc = "Diags" })
   map("n", "<M-r>", function()
@@ -1241,8 +1227,10 @@ utils.lsp.on_attach(function(client, bufnr)
   map("n", "qr", "<leader>rn", { desc = "Rename" })
 
   -- TODO: operators for all the above to use with remote?
-  local code_action_op = operatorfunc_keys(O.action_key, "r")
-  map("n", "<leader>c", code_action_op, { remap = true, desc = "Do Code Action At" })
+  local code_action_op = operatorfunc_keys("<esc>" .. O.action_key, ".")
+  map("n", "<leader>c", code_action_op, { desc = "Do Code Action At" })
+  local quickfix_op = operatorfunc_keys("<esc>" .. "qu", ".")
+  map("n", "<leader>q", quickfix_op, { desc = "Quickfix" })
 end, "lsp_mappings")
 
 -- JUST FYI
