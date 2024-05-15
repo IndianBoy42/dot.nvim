@@ -80,6 +80,11 @@ M.hydra = function(bufnr)
       { "/", gitsigns.show, { exit = true, desc = "show base file" } }, -- show the base of the file
       { "o", utils.telescope.git_status, { desc = "Open" } },
       { "g", function() vim.cmd "Neogit" end, { exit_before = true, desc = "Fugitive" } },
+      {
+        "i",
+        function() require("kitty.terms").new_os_window({}, "gitui", "gitui") end,
+        { exit_before = true, desc = "GitUI" },
+      },
       -- { "<Space>", ":tab G ", { exit = true, desc = false } },
       { "q", nil, { exit = true, nowait = true, desc = "exit" } },
       { "<esc>", nil, { exit = true, nowait = true, desc = "exit" } },

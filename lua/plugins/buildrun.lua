@@ -31,7 +31,7 @@ return {
       -- TODO: move upstream
       map("n", "mK", function() Terms.get_terminal(0):run() end, { desc = "Kitty Run" })
       map("n", "mk", function() Terms.get_terminal(0):make() end, { desc = "Kitty Make" })
-      map("n", "mkk", function() Terms.get_terminal(0):make "last" end, { desc = "Kitty ReMake" })
+      map("n", "mkk", function() Terms.get_terminal(0):make_last()  end, { desc = "Kitty ReMake" })
       -- This won't send the
       map("n", "mr", function() return Terms.get_terminal(0):send_operator() end, { expr = true, desc = "Kitty Send" })
       map("x", "R", function() return Terms.get_terminal(0):send_operator() end, { expr = true, desc = "Kitty Send" })

@@ -106,11 +106,13 @@ return {
       ["<localleader>l"] = false,
       ["<localleader>t"] = {
         desc = "Open in new Kitty",
-        function(plugin) require("kitty.current_win").new_os_window { open_cwd = plugin.dir } end,
+        function(plugin)
+          require'kitty.terms'.new_os_window{ open_cwd = plugin.dir }
+        end,
       },
       ["<localleader>g"] = {
         desc = "Open gitui in new Kitty",
-        function(plugin) require("kitty.current_win").new_os_window({ open_cwd = plugin.dir }, "gitui") end,
+        function(plugin) require("kitty.terms").new_os_window({ open_cwd = plugin.dir }, "gitui") end,
       },
       ["<localleader>m"] = {
         desc = "Open in Smerge",
