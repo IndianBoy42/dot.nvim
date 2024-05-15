@@ -47,7 +47,6 @@ return {
       -- ["*"] = function(server, opts) end,
     },
   },
-  init = function() require("lsp.fswatch").setup() end,
   config = function(_, opts)
     if vim.env.NVIM_LSP_LOG_DEBUG ~= nil and vim.env.NVIM_LSP_LOG_DEBUG ~= "" then
       -- vim.lsp.set_log_level(vim.log.levels.DEBUG)
@@ -91,13 +90,15 @@ return {
     lsp_sel_rng.update_capabilities(capabilities)
 
     -- TODO: has limitations on linux apparently
-    vim.tbl_extend("force", capabilities, {
-      workspace = {
-        didChangeWatchedFiles = {
-          dynamicRegistration = true,
+    if true then
+      vim.tbl_extend("force", capabilities, {
+        workspace = {
+          didChangeWatchedFiles = {
+            dynamicRegistration = true,
+          },
         },
-      },
-    })
+      })
+    end
 
     utils.lsp.on_attach(function(client, bufnr) utils.lsp.document_highlight(client, bufnr) end)
 
