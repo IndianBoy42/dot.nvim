@@ -140,15 +140,10 @@ function M.view_location_pick(name)
   end
 end
 
-function M.toggle_diagnostics(b)
-  if vim.diagnostic.is_disabled(b) then
-    diags.enable(b or 0)
-  else
-    diags.disable(b or 0)
-  end
-end
-function M.disable_diagnostic(b) diags.disable(b or 0) end
-function M.enable_diagnostic(b) diags.enable(b or 0) end
+-- TODO: Use show/hide instead?
+function M.toggle_diagnostics(b) diags.enable(not diags.is_enabled { bufnr = b or 0 }, { bufnr = b or 0 }) end
+function M.disable_diagnostic(b) diags.enable(false, { bufnr = b or 0 }) end
+function M.enable_diagnostic(b) diags.enable(true, { bufnr = b or 0 }) end
 
 function M.toggle_diag_lines(enable)
   if enable == nil then enable = not vim.diagnostic.config().virtual_lines end
