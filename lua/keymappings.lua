@@ -233,6 +233,12 @@ function M.setup()
   map("x", "<", "<gv", nore)
   map("x", ">", ">gv", nore)
 
+  -- make gf follow line number as well
+  -- TODO: use window-picker
+  map({ "x", "n" }, "gf", "gF", { desc = "Goto File:Nr" })
+  map({ "x", "n" }, "gF", "gf", { desc = "Goto File" })
+  map({ "x", "n" }, O.goto_prefix .. "pf", function() end, { desc = "Peek File:Nr" })
+  map({ "x", "n" }, O.goto_prefix .. "pF", function() end, { desc = "Peek File" })
   -- for _, v in pairs { "h", "j", "k", "l" } do
   --   for _, m in pairs { "x", "n" } do
   --     map(m, v .. v, "<Nop>", sile)
@@ -879,6 +885,7 @@ function M.setup()
       H = { cmd "DiffviewFileHistory", "File History" },
       h = { cmd "NoiceHistory", "Noice History" },
       g = { cmd "!smerge '%:p:h'", "Sublime Merge" },
+      i = { function() require("ui.win_pick").gf() end, "Open file in <window>" },
     },
     m = { name = "Make" },
     x = { name = "Run" },

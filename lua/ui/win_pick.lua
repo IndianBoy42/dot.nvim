@@ -28,6 +28,27 @@ local M = {
   end,
 }
 
+M.gf = function(gf)
+  gf = gf or "gF" -- with lines
+  local origv = vim.fn.winsaveview()
+  local origw = vim.api.nvim_get_current_win()
+  local origb = vim.api.nvim_win_get_buf(origw)
+  vim.cmd("keepj norm! " .. gf)
+  local bufnr = vim.api.nvim_get_current_buf()
+  local view = vim.fn.winsaveview()
+  vim.api.nvim_win_set_buf(origw, origb)
+  vim.fn.winrestview(origv)
+
+  M.pick_or_create(function(id)
+    vim.api.nvim_set_current_win(id)
+    vim.api.nvim_win_set_buf(id, bufnr)
+    vim.fn.winrestview(view)
+    vim.cmd.normal { "zz", bang = true }
+
+    -- vim.api.nvim_win_call(origw, function() end)
+  end)
+end
+
 M.init = function()
   local function cmd_in_picked(cmd, trans)
     return function(args)
