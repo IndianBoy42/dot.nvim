@@ -244,10 +244,10 @@ return {
       map("n", "q/", split_open(nil, { type = "vim/search/forward" }), { desc = "Cmdwin Search Forward" })
       map("n", "q?", split_open(nil, { type = "vim/search/backward" }), { desc = "Cmdwin Search Backward" })
       map("n", "ql", split_open(nil, { type = "lua/cmd" }), { desc = "Cmdwin Lua" })
-      map("c", "<c-f>", function()
+      map("c", "<M-e>", function()
         require("cmdbuf").split_open(vim.o.cmdwinheight, { line = vim.fn.getcmdline(), column = vim.fn.getcmdpos() })
         vim.api.nvim_feedkeys(vim.keycode "<C-c>", "n", true)
-      end)
+      end, { desc = "Open in cmdwin" })
 
       -- Custom buffer mappings
       vim.api.nvim_create_autocmd({ "User" }, {

@@ -260,9 +260,5 @@ local M = {
     },
     opts = {},
   },
-  {
-    "filNaj/tree-setter",
-    event = "InsertEnter",
-  },
 }
 return M

@@ -83,7 +83,7 @@ M.hydra = function(bufnr)
       { "m", function() vim.cmd "!smerge '%:p:h'" end, { exit_before = true, desc = "Subl merge" } },
       {
         "i",
-        function() require("kitty.terms").new_os_window({}, "gitui", "gitui") end,
+        function() require("kitty.terms").os_window({}, "gitui", "gitui") end,
         { exit_before = true, desc = "GitUI" },
       },
       -- { "<Space>", ":tab G ", { exit = true, desc = false } },

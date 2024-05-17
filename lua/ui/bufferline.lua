@@ -15,8 +15,8 @@ function M.config()
       close_icon = "",
       show_tab_indicators = true,
       show_close_icon = false,
-      close_command = "Bdelete %d",
-      right_mouse_command = "Bdelete %d",
+      -- close_command = function(bufnum) require("bufdelete").bufdelete(bufnum, true) end,
+      -- right_mouse_command = function(bufnum) require("bufdelete").bufdelete(bufnum, true) end,
       hover = {
         enabled = true,
         delay = 200,

@@ -44,15 +44,15 @@ M.setup = function()
     name = "Buffers",
     -- TODO:
     hint = [[
-         ^ ^^S^^w^^i^^t^^c^^h^^ ^^ ^   ^ ^    Sort       ^ ^   Close
-      ---^-^^-^^-^^-^^-^^-^^-^^-^^-^-- ^-^-------------- ^-^--------------
-      <- _h_^ ^^P^^e^^e^^k^^ ^_l_^ ^-> _D_: by Directory _d_: This Buf
-      <- _j_^S^^w^^i^^t^^c^^h^_k_^ ^-> _E_: by Extension _c_: This+Win
-         _1__2__3__4__5__6__7__8__9_   _p_: Toggle Pin   _H_, _L_: Left/Right
+         ^ ^^S^^w^^i^^t^^c^^h^^ ^^ ^   ^ ^    Sort        ^ ^   Close
+      ---^-^^-^^-^^-^^-^^-^^-^^-^^-^-- ^-^--------------  ^-^--------------
+      <- _h_^ ^^P^^e^^e^^k^^ ^_l_^ ^-> _SD_: by Directory _d_: This Buf
+      <- _j_^S^^w^^i^^t^^c^^h^_k_^ ^-> _SE_: by Extension _c_: This+Win
+         _1__2__3__4__5__6__7__8__9_   _p_: Toggle Pin    _H_, _L_: Left/Right
       <- _J_^ ^^M^^o^^v^^e^^ ^_K_^ ^-> ^ ^    Exit       
-      ^^^^^^^^^^^^^^^ _<tab>_: Last ^  ^-^-------------- _O_: Others
-      ^^^^^^^^^^^^^^^ _n_: New      ^  _<ESC>_: Peek     _U_: Unpinned
-      ^^^^^^^^^^^^^^^ _s_: Telescope^  _<CR>_: Switch    _G_: Group ]],
+      ^^^^^^^^^^^^^^^ _<tab>_: Last ^  ^-^--------------  _O_: Others
+      ^^^^^^^^^^^^^^^ _n_: New      ^  _<ESC>_: Peek      _U_: Unpinned
+      ^^^^^^^^^^^^^^^ _s_: Telescope^  _<CR>_: Switch     _G_: Group ]],
 
     config = {
       on_key = function()
@@ -74,8 +74,10 @@ M.setup = function()
     },
     body = "<leader>b",
     heads = {
-      { "c", function() switch_buffer(vim.cmd.bdelete) end, { desc = "Close+Win" } },
-      { "d", function() switch_buffer(vim.cmd.Bdelete) end, { desc = "Delete" } },
+      { "C", function() switch_buffer(vim.cmd.bdelete) end, { desc = false } },
+      { "D", function() switch_buffer(vim.cmd.Bdelete) end, { desc = false } },
+      { "c", function() switch_buffer(vim.cmd.bdelete) end, { exit = true, desc = "Close+Win" } },
+      { "d", function() switch_buffer(vim.cmd.Bdelete) end, { exit = true, desc = "Delete" } },
       { "p", cmd "BufferLineTogglePin", { desc = "Pin" } },
       -- { "P", function() hydra_peek:activate() end, { desc = "Peek", exit_before = true } },
       { "n", cmd "enew", { desc = "New", exit_before = true } },
@@ -105,23 +107,15 @@ M.setup = function()
       { "j", function() switch_buffer(vim.cmd.BufferLineCyclePrev) end, { desc = "Prev" } },
       { "J", cmd "BufferLineMoveNext", { desc = "Move Next" } },
       { "K", cmd "BufferLineMovePrev", { desc = "Move Prev" } },
-      { "D", cmd "BufferLineSortByDirectory", { desc = "sort directory" } },
-      { "E", cmd "BufferLineSortByExtension", { desc = "sort language" } },
+      { "SD", cmd "BufferLineSortByDirectory", { desc = "sort directory" } },
+      { "SE", cmd "BufferLineSortByExtension", { desc = "sort language" } },
       { "H", cmd "BufferLineCloseLeft", { desc = "close left" } },
       { "L", cmd "BufferLineCloseRight", { desc = "close right" } },
-      { "O", (cmd "BufferLineCloseLeft") .. (cmd "BufferLineCloseRight"), { desc = "close others" } },
+      { "O", cmd "BufferLineCloseOthers", { desc = "close others" } },
       { "G", cmd "BufferLineGroupClose", { desc = "close group" } },
-      {
-        "U",
-        function() require("bufferline").group_action("pinned", "close") end,
-        { desc = "close unpinned" },
-      },
+      { "U", function() require("bufferline").group_action("pinned", "close") end, { desc = "close unpinned" } },
       { "<ESC>", nil, { exit = true, nowait = true, desc = "exit" } },
-      {
-        "<CR>",
-        switch_buffer,
-        { exit = true, nowait = true, desc = "exit" },
-      },
+      { "<CR>", switch_buffer, { exit = true, nowait = true, desc = "exit" } },
     },
   }
 

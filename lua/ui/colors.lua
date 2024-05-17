@@ -64,6 +64,11 @@ return {
     event = "LazyFile",
   },
   {
+    "rrethy/vim-illuminate",
+    cond = false,
+    config = function() require("illuminate").configure {} end,
+  },
+  {
     "nullchilly/fsread.nvim",
     cmd = { "FSRead", "FSClear", "FSToggle" },
     keys = { { "<leader>Tsf", "<cmd>FSToggle<cr>", desc = "Flow State Read" } },

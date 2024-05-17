@@ -430,6 +430,8 @@ function M.setup()
     },
   }
   -- Close window
+  -- TODO: for certain buffer types we can delete the buffer too
+  -- unlisted, noname, etc
   map("n", "<c-c>", "<C-w>q", nore)
   map("n", "<c-q>", "<C-w>q", nore)
   map("n", "<c-s-q>", ":wqa", nore)
@@ -542,9 +544,12 @@ function M.setup()
   quick_toggle("<leader>T", "b", "<cmd>ToggleBlame virtual<cr>")
 
   -- Select last pasted
-  map("x", "<leader>p", "`[o`]", { desc = "Select Last Paste" })
-  map("x", "<leader>P", "<esc>gP", { remap = true, desc = "SelLine Last Paste" })
-  map("x", "<leader><C-p>", "<esc>g<C-p>", { remap = true, desc = "SelBlock Last Paste" })
+  map("x", "<leader>vp", "`[o`]", { desc = "Select Last Paste" })
+  map("x", "<leader>vP", "V`[o`]", { desc = "SelLine Last Paste" })
+  map("x", "<leader>v<C-p>", "<C-v>`[o`]", { desc = "SelBlock Last Paste" })
+  map("n", "<leader>vp", "v`[o`]", { desc = "Select Last Paste" })
+  map("n", "<leader>vP", "V`[o`]", { desc = "SelLine Last Paste" })
+  map("n", "<leader>v<C-p>", "<C-v>`[o`]", { desc = "SelBlock Last Paste" })
   -- Use reselect as an operator
   op_from "<leader>p"
   op_from "<leader>P"
@@ -989,6 +994,7 @@ function M.setup()
       -- n = { telescope_fn.notify.notify, "Notifications" },
       -- f = { telescope_fn.find_files, "Find File" },
       -- c = { telescope_fn.colorscheme, "Colorscheme" },
+      -- TODO: fallback to treesitter
       s = { telescope_fn.lsp_document_symbols, "Document Symbols" },
       w = { telescope_fn.lsp_dynamic_workspace_symbols, "Workspace Symbols" },
       d = { telescope_fn.diagnostics, "Document Diagnostics" },
@@ -1211,7 +1217,7 @@ utils.lsp.on_attach(function(client, bufnr)
   -- Hover
   map("n", O.hover_key, utils.lsp.repeatable_hover, { desc = "LSP Hover" })
   map("i", "<C-i>", lspbuf.signature_help, { desc = "LSP Signature Help" })
-  map("i", "<tab>", "<m-l>", {}) -- FIXME: i don't like this hardcoding
+  map("i", "<tab>", "<m-l>", { remap = true }) -- FIXME: i don't like this hardcoding
   map("n", O.action_key, telescope_fn.code_actions_previewed, { desc = "Do Code Action" })
   map("x", O.action_key_vis or O.action_key, telescope_fn.code_actions_previewed, { desc = "Do Code Action" })
   local function quick_code_action(i, name)

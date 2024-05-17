@@ -19,16 +19,29 @@ function M.lazy_file()
   -- Add support for the LazyFile event
   local Event = require "lazy.core.handler.event"
 
-  if M.use_lazy_file then
-    -- We'll handle delayed execution of events ourselves
-    Event.mappings.LazyFile = { id = "LazyFile", event = "User", pattern = "LazyFile" }
-    Event.mappings["User LazyFile"] = Event.mappings.LazyFile
-  else
-    -- Don't delay execution of LazyFile events, but let lazy know about the mapping
-    Event.mappings.LazyFile = { id = "LazyFile", event = { "BufReadPost", "BufNewFile", "BufWritePre" } }
-    Event.mappings["User LazyFile"] = Event.mappings.LazyFile
-    return
-  end
+  -- This autocmd will only trigger when a file was loaded from the cmdline.
+  -- It will render the file as quickly as possible.
+  vim.api.nvim_create_autocmd("BufReadPost", {
+    once = true,
+    callback = function(event)
+      -- Skip if we already entered vim
+      if vim.v.vim_did_enter == 1 then return end
+
+      -- Try to guess the filetype (may change later on during Neovim startup)
+      local ft = vim.filetype.match { buf = event.buf }
+      if ft then
+        -- Add treesitter highlights and fallback to syntax
+        local lang = vim.treesitter.language.get_lang(ft)
+        if not (lang and pcall(vim.treesitter.start, event.buf, lang)) then vim.bo[event.buf].syntax = ft end
+
+        -- Trigger early redraw
+        vim.cmd [[redraw]]
+      end
+    end,
+  })
+  -- We'll handle delayed execution of events ourselves
+  Event.mappings.LazyFile = { id = "LazyFile", event = { "BufReadPost", "BufNewFile", "BufWritePre" } }
+  Event.mappings["User LazyFile"] = Event.mappings.LazyFile
 
   local events = {} ---@type {event: string, buf: number, data?: any}[]
 
@@ -106,9 +119,7 @@ return {
       ["<localleader>l"] = false,
       ["<localleader>t"] = {
         desc = "Open in new Kitty",
-        function(plugin)
-          require'kitty.terms'.new_os_window{ open_cwd = plugin.dir }
-        end,
+        function(plugin) require("kitty.terms").new_os_window { open_cwd = plugin.dir } end,
       },
       ["<localleader>g"] = {
         desc = "Open gitui in new Kitty",

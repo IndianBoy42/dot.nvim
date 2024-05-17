@@ -32,7 +32,8 @@ return {
   {
     "folke/noice.nvim",
     cond = enable, -- and not vim.g.neovide,
-    event = "VeryLazy",
+    -- event = "VeryLazy",
+    lazy = false,
     dependencies = { "MunifTanjim/nui.nvim" },
     config = function()
       local focused = true

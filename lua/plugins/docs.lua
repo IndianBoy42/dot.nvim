@@ -4,7 +4,7 @@ return {
     "frabjous/knap",
     keys = {
       {
-        "<leader>vk",
+        "<leader>op",
         function()
           require("knap").toggle_autopreviewing()
           vim.keymap.set("n", "<localleader>v", require("knap").forward_jump, { desc = "Fwd Jump" })

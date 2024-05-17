@@ -65,7 +65,7 @@ return {
         }
         -- resize repl window and make it fixed height
         vim.cmd "resize 10"
-        vim.bo.winfixheight = true
+        vim.wo.winfixheight = true
       end, {})
     end,
     config = function(_, opts) end,

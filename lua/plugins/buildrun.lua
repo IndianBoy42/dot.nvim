@@ -1,3 +1,134 @@
+local function kitty_terms()
+  -- TODO: handle this situation better
+  if vim.g.flatten_is_nested then return end
+  local kutils = require "kitty.utils"
+  Terms = require "kitty.terms"
+  Terms.setup {
+    dont_attach = not not vim.g.kitty_scrollback,
+    attach = {
+      default_launch_location = "os-window",
+      -- create_new_win = "os-window",
+      target_providers = {
+        function(T) T.helloworld = { desc = "Hello world", cmd = "echo hello world" } end,
+        "just",
+        "cargo",
+      },
+      current_win_setup = {},
+      on_attach = function(_, K, _)
+        K.setup_make()
+
+        -- TODO:
+        -- require("rust-tools").config.options.tools.executor = K.rust_tools_executor()
+        Term = kutils.staticify(Terms.get_terminal(0), {})
+        Term.make_cmd "Make"
+      end,
+      bracketed_paste = true,
+    },
+  }
+
+  if vim.g.neovide then require("kitty.current_win").focus = function() pcall(vim.cmd.NeovideFocus) end end
+
+  local map = vim.keymap.set
+  -- TODO: move upstream
+  map("n", "mK", function() Term.run() end, { desc = "Kitty Run" })
+  map("n", "mk", function() Term.make() end, { desc = "Kitty Make" })
+  map("n", "mkk", function() Term.make_last() end, { desc = "Kitty ReMake" })
+  -- This won't send the
+  map("n", "mr", function() return Term.send_operator() end, { expr = true, desc = "Kitty Send" })
+  map("x", "R", function() return Term.send_operator() end, { expr = true, desc = "Kitty Send" })
+  map(
+    "n",
+    "mrr",
+    function() return Term.send_operator { type = "line", range = "$" } end,
+    { expr = true, desc = "Kitty Send Line" }
+  )
+  map("n", "yu", function() Term.get_selection() end, { desc = "Yank selection From Kitty" })
+  -- TODO:
+  map("n", "yh", function() Term.hints { output = "+" } end, { desc = "Yank hinted From Kitty" })
+  map("n", "<c-;>", "<cmd>Kitty<cr>", { desc = "Kitty Open" })
+  map("n", "<leader>ok", "<cmd>Kitty<cr>", { desc = "Kitty Open" })
+  map("n", "<leader>oKT", function() Term.move "this-tab" end, { desc = "Kitty To This Tab" })
+  map("n", "<leader>oKN", function() Term.move "new-tab" end, { desc = "Kitty To New Tab" })
+  map("n", "<leader>oKW", function() Term.move "new-window" end, { desc = "Kitty To New OSWin" })
+  map("ca", "K", ":=require'kitty.current_win'", { desc = "Kitty Control" })
+  map("ca", "T", ":=Term", { desc = "Kitty Control" })
+  map("ca", "KT", ":=require'kitty.terms'", { desc = "Kitty Control" })
+  map("ca", "KK", ":=require'kitty'", { desc = "Kitty Control" })
+
+  -- TODO:
+  local function scroll(opts)
+    return function() Term.scroll(opts) end
+  end
+  local vert_spd = require("keymappings.scroll_mode").vert_spd
+  local scroll_hydra = require "hydra" {
+    name = "Scroll Terminal",
+    hint = "",
+    config = {
+      invoke_on_body = true,
+      hint = {
+        float_opts = { border = "rounded" },
+        offset = -1,
+      },
+    },
+    mode = "n",
+    body = "<leader>vv",
+    heads = {
+      -- TODO: emulate this
+      -- { "b", "zb", {exit = true, desc = "Center this Line" } },
+      -- { "t", "zt", {exit = true, desc = "Bottom this Line" } },
+      -- { "c", "zz", {exit = true, desc = "Top this Line" } },
+      { "j", scroll { down = vert_spd } },
+      { "k", scroll { up = vert_spd } },
+      { "J", scroll { prompts = "1" } },
+      { "K", scroll { prompts = "-1" } },
+      { "d", scroll { down = "0.5p" } },
+      { "u", scroll { up = "0.5p" } },
+      { "G", scroll "end" },
+      { "gg", scroll "start" },
+      { "p", scroll { prompts = "0" } },
+      { "<esc>", nil, { exit = true, nowait = true, desc = "exit" } },
+    },
+  }
+  local key = function(from, to, opts)
+    to = to or from:sub(2, -2) -- strip the <>
+    return { from, function() Term:send_key(to) end, { desc = from } }
+  end
+  map("n", "mtt", function() Term:send_key { "up", "enter" } end, { desc = "Kitty Redo Cmd" })
+  local cmdline_hydra = require "hydra" {
+    name = "Remote Cmdline",
+    hint = "",
+    config = {
+      invoke_on_body = false,
+      hint = {
+        float_opts = { border = "rounded" },
+        offset = -1,
+      },
+    },
+    mode = "n",
+    body = "mt",
+    heads = {
+      key("k", "up"),
+      key("j", "down"),
+      key("h", "left"),
+      key("l", "right"),
+      { "K", scroll { prompts = "1" } },
+      { "J", scroll { prompts = "-1" } },
+      { "p", scroll { prompts = "0" } },
+      { "d", scroll { down = "0.5p" } },
+      { "u", scroll { up = "0.5p" } },
+      { "G", scroll "end" },
+      { "gg", scroll "start" },
+      key "<esc>",
+      key "<enter>",
+      key "<tab>",
+      key("c", "ctrl+c"),
+      key("d", "ctrl+d"),
+      key("z", "ctrl+z"),
+      { "f", function() Term:hints { yank = "" } end },
+      { "<esc>", nil, { exit = true, nowait = true, desc = "exit" } },
+    },
+  }
+end
 return {
   -- FIXME: breaks when not run inside kitty, make it optional? no
   {
@@ -5,67 +136,7 @@ return {
     dev = true,
     event = "VeryLazy",
     cond = not not vim.env.KITTY_PID and not vim.g.kitty_scrollback,
-    config = function()
-      require("kitty.terms").setup {
-        dont_attach = not not vim.g.kitty_scrollback,
-        attach = {
-          default_launch_location = "os-window",
-          -- create_new_win = "os-window",
-          target_providers = {
-            function(T) T.helloworld = { desc = "Hello world", cmd = "echo hello world" } end,
-            "just",
-            "cargo",
-          },
-          current_win_setup = {},
-          on_attach = function(_, K, _)
-            K.setup_make()
-
-            -- TODO:
-            -- require("rust-tools").config.options.tools.executor = K.rust_tools_executor()
-          end,
-          bracketed_paste = true,
-        },
-      }
-      local Terms = require "kitty.terms"
-      local map = vim.keymap.set
-      -- TODO: move upstream
-      map("n", "mK", function() Terms.get_terminal(0):run() end, { desc = "Kitty Run" })
-      map("n", "mk", function() Terms.get_terminal(0):make() end, { desc = "Kitty Make" })
-      map("n", "mkk", function() Terms.get_terminal(0):make_last()  end, { desc = "Kitty ReMake" })
-      -- This won't send the
-      map("n", "mr", function() return Terms.get_terminal(0):send_operator() end, { expr = true, desc = "Kitty Send" })
-      map("x", "R", function() return Terms.get_terminal(0):send_operator() end, { expr = true, desc = "Kitty Send" })
-      map(
-        "n",
-        "mrr",
-        function() return Terms.get_terminal(0):send_operator { type = "line", range = "$" } end,
-        { expr = true, desc = "Kitty Send Line" }
-      )
-      map("n", "yu", function() Terms.get_terminal(0):get_selection() end, { desc = "Yank From Kitty" })
-    end,
-    keys = {
-      {
-        "<c-;>", -- TODO: bind in kitty to make this come back
-        "<cmd>Kitty<cr>",
-        desc = "Kitty Open",
-      },
-      {
-        "<leader>ok",
-        "<cmd>Kitty<cr>",
-        desc = "Kitty Open",
-      },
-      {
-        "<c-:>",
-        "<cmd>KittyNew<cr>",
-        desc = "Kitty Open New",
-      },
-      {
-        "<leader>oK",
-        "<cmd>KittyNew<cr>",
-        desc = "Kitty Open New",
-      },
-      { "<leader>C", ":=require'kitty.current_win'", desc = "Kitty Control" },
-    },
+    config = function() kitty_terms() end,
   },
   -- TODO: https://github.com/Olical/conjure
   {

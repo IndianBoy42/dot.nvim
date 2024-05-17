@@ -15,7 +15,7 @@ M.setup = function()
       },
     },
     mode = "n",
-    body = "z",
+    body = "<leader>v",
     heads = {
       { "h", M.horz_spd .. "zh" },
       { "l", M.horz_spd .. "zl" },
@@ -23,23 +23,18 @@ M.setup = function()
       { "L", "zL" },
       { "^", "ze" },
       { "$", "zs" },
-      { "<c-j>", "zb" },
-      { "<c-k>", "zt" },
-      { "<c-h>", "zz" },
       { "j", M.vert_spd .. "<C-e>" },
       { "k", M.vert_spd .. "<C-y>" },
       { "J", "<C-d>" },
       { "K", "<C-u>" },
-      { "z", nil, { exit = true, nowait = true, desc = "exit" } },
+      { "<esc>", nil, { exit = true, nowait = true, desc = "exit" } },
     },
   }
 
   local map = vim.keymap.set
-  map("n", "--", "zz", { desc = "Center this Line" })
-  map("n", "-_", "zb", { desc = "Bottom this Line" })
-  map("n", "-+", "zt", { desc = "Top this Line" })
-  map("n", "-/", "zs", { desc = "Right this Line" })
-  map("n", "-<", "ze", { desc = "Left this Line" })
+  map("n", "<leader>vc", "zz", { desc = "Center this Line" })
+  map("n", "<leader>vb", "zb", { desc = "Bottom this Line" })
+  -- map("n", "<leader>vt", "zt", { desc = "Top this Line" })
 
   return hydra
 end

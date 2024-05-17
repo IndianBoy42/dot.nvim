@@ -8,7 +8,11 @@ local function feedkeys(keys, o)
 end
 local getcompl = vim.fn.getcompletion
 local aliases = {
-  bc = ":Bdelete",
+  bd = ":Bdelete<cr>",
+  bc = ":bdelete<cr>",
+  qq = ":quitall<cr>",
+  ww = ":writeall<cr>",
+  en = ":enew<cr>",
   k = function()
     local c = vim.fn.getcharstr()
     return ":k " .. c

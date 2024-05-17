@@ -3,7 +3,7 @@ return {
   keys = {
     { "<leader>re", desc = "Esearch", "<Plug>(esearch)" },
     { "<leader>R", desc = "Esearch (op)", "<Plug>(operator-esearch-prefill)", mode = { "n", "x" } },
-    { "<M-e>", desc = "Esearch", "<cr><Plug>(esearch)", mode = "c" },
+    { "<C-e>", desc = "Esearch", "<cr><Plug>(esearch)", mode = "c" },
     -- TODO: full suite of keymaps
   },
   init = function()
