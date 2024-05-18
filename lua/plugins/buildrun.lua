@@ -44,7 +44,40 @@ local function kitty_terms()
   )
   map("n", "yu", function() Term.get_selection() end, { desc = "Yank selection From Kitty" })
   -- TODO:
-  map("n", "yh", function() Term.hints { output = "+" } end, { desc = "Yank hinted From Kitty" })
+  map("n", "yhu", function() Term.hints { type = "url", yank = "register" } end, { desc = "Yank hinted url From Kitty" })
+  map("n", "yhf", function() Term.hints { type = "path", yank = "register" } end, { desc = "Yank hinted path From Kitty" })
+  map("n", "yhl", function() Term.hints { type = "line", yank = "register" } end, { desc = "Yank hinted line From Kitty" })
+  map(
+    "n",
+    "yhe",
+    function() Term.hints { type = "linenum", yank = "register" } end,
+    { desc = "Yank hinted linenum From Kitty" }
+  )
+  map("n", "yhw", function() Term.hints { type = "word", yank = "register" } end, { desc = "Yank hinted word From Kitty" })
+  map(
+    "n",
+    "<leader>ohu",
+    function() Term.hints { type = "url", program = true } end,
+    { desc = "hinted url From Kitty" }
+  )
+  map(
+    "n",
+    "<leader>ohf",
+    function() Term.hints { type = "path", launch = "nvim" } end,
+    { desc = "hinted file From Kitty in Nvim" }
+  )
+  map(
+    "n",
+    "<leader>ohp",
+    function() Term.hints { type = "path", program = true } end,
+    { desc = "hinted file From Kitty" }
+  )
+  map(
+    "n",
+    "<leader>ohe",
+    function() Term.hints { type = "linenum", launch = "nvim" } end,
+    { desc = "hinted linenum From Kitty" }
+  )
   map("n", "<c-;>", "<cmd>Kitty<cr>", { desc = "Kitty Open" })
   map("n", "<leader>ok", "<cmd>Kitty<cr>", { desc = "Kitty Open" })
   map("n", "<leader>oKT", function() Term.move "this-tab" end, { desc = "Kitty To This Tab" })
