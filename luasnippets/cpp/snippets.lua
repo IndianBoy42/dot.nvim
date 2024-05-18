@@ -6,7 +6,7 @@ if not ts_utils_ok then return {} end
 
 local query = vim.treesitter.query
 
-local cpp_classes = vim.treesitter.parse_query(
+local cpp_classes = vim.treesitter.query.parse(
   "cpp",
   [[
     [
