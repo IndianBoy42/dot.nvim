@@ -434,7 +434,6 @@ return {
     opts = {
       labels = O.hint_labels,
       search = {
-        enabled = true,
         incremental = true,
       },
       highlight = { backdrop = false },
@@ -451,6 +450,7 @@ return {
       },
       modes = {
         search = {
+          enabled = false,
           label = { min_pattern_length = 3 },
         },
         char = {
