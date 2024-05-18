@@ -4,9 +4,12 @@ local termcodes = vim.api.nvim_replace_termcodes
 local function t(k) return termcodes(k, true, true, true) end
 
 Au.grp("lazy_filetype", function(au)
-  au("Filetype", {
+  au("FileType", {
     pattern = "lazy",
-    callback = function() utils.lsp.toggle_diag_lines() end,
+    callback = function()
+      utils.lsp.toggle_diag_lines()
+      vim.keymap.setl("n", "<localleader>n", "/[○●]<cr>", { desc = "Next plugin" })
+    end,
   })
 end)
 
@@ -136,7 +139,6 @@ return {
           -- require("kitty").new_os_window({ open_cwd = plugin.dir }, "gitui")
         end,
       },
-      ["<localleader>n"] = { desc = "Next plugin", function() feedkeys(t "/[○●]", "m", false) end },
     },
   },
   performance = {
