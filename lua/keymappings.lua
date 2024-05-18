@@ -148,10 +148,11 @@ function M.setup()
   map("n", "/", srchrpt "/", { desc = "Search" })
   map("x", "g/", "/", { desc = "Search motion" })
   map("n", "<C-/>", srchrpt "?", { desc = "Search bwd" })
-  map("n", "*", srchrpt "g*", { desc = "Search cword" }) -- Swap g* and *
-  map("n", "<C-*>", srchrpt "g*", { desc = "Search cword" }) -- TODO: this could be used for something else
-  map("n", "g*", srchrpt "*", { desc = "Search cword whole" })
-  map("n", "g<C-*>", srchrpt "#", { desc = "Search cword whole" })
+  -- Swap g* and * ?
+  map("n", "*", srchrpt "*", { desc = "Search cword" })
+  map("n", "<C-*>", srchrpt "#", { desc = "Search cword" })
+  map("n", "g*", srchrpt "g*", { desc = "Search cword whole" })
+  map("n", "<C-g><C-*>", srchrpt "g#", { desc = "Search cword whole" })
   map("n", "g.", [[/\V<C-r>"<CR>]] .. "cgn<C-a><ESC>", { desc = "Repeat change" }) -- Repeat the recent edit with cgn
 
   -- Command mode typos of wq
@@ -190,12 +191,6 @@ function M.setup()
   map("n", "<C-S-ScrollWheelDown>", cmd "FontDown", sile)
   map("n", "<C-->", cmd "FontDown", sile)
   map("n", "<C-+>", cmd "FontUp", sile)
-
-  -- More convenient incr/decr
-  -- map("n", "+", "<C-a>", sile) -- recursive so we get dial.nvim
-  -- map("n", "-", "<C-x>", sile)
-  -- map("x", "+", "g<C-a>", sile)
-  -- map("x", "-", "g<C-x>", sile)
 
   -- map("n", "<C-w><C-q>", function()
   --   for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -544,12 +539,12 @@ function M.setup()
   quick_toggle("<leader>T", "b", "<cmd>ToggleBlame virtual<cr>")
 
   -- Select last pasted
-  map("x", "<leader>vp", "`[o`]", { desc = "Select Last Paste" })
-  map("x", "<leader>vP", "V`[o`]", { desc = "SelLine Last Paste" })
-  map("x", "<leader>v<C-p>", "<C-v>`[o`]", { desc = "SelBlock Last Paste" })
-  map("n", "<leader>vp", "v`[o`]", { desc = "Select Last Paste" })
-  map("n", "<leader>vP", "V`[o`]", { desc = "SelLine Last Paste" })
-  map("n", "<leader>v<C-p>", "<C-v>`[o`]", { desc = "SelBlock Last Paste" })
+  map("x", "<leader>vp", "`[o`]", { desc = "Select Last Paste/Op" })
+  map("x", "<leader>vP", "V`[o`]", { desc = "SelLine Last Paste/Op" })
+  map("x", "<leader>v<C-p>", "<C-v>`[o`]", { desc = "SelBlock Last Paste/Op" })
+  map("n", "<leader>vp", "v`[o`]", { desc = "Select Last Paste/Op" })
+  map("n", "<leader>vP", "V`[o`]", { desc = "SelLine Last Paste/Op" })
+  map("n", "<leader>v<C-p>", "<C-v>`[o`]", { desc = "SelBlock Last Paste/Op" })
   -- Use reselect as an operator
   op_from "<leader>p"
   op_from "<leader>P"
@@ -671,7 +666,7 @@ function M.setup()
   -- quick_inside "q"
 
   -- "better" end and beginning of line
-  map("o", "H", "^", { remap = true })
+  map({ "o", "x" }, "H", "^", { remap = true })
   map({ "o", "x" }, "L", "$", { remap = true })
   -- map("x", "H", "^", { remap = true })
   -- map("x", "L", "g_", { remap = true })
@@ -798,6 +793,29 @@ function M.setup()
     end
   end
 
+  for _, v in ipairs {
+    { "cp", '"+p', mode = "n", desc = "Clipboard p", remap = true },
+    { "cP", '"+P', mode = "n", desc = "Clipboard P", remap = true },
+    { "cr", '"+r', mode = "n", desc = "Clipboard r", remap = true },
+    { "crr", '"+rr', mode = "n", desc = "Clipboard rr", remap = true },
+    { "<leader>p", '"+P', mode = "x", desc = "Clipboard p", remap = true },
+    { "<leader>P", '"+p', mode = "x", desc = "Clipboard P", remap = true },
+    { "cy", '"+y', mode = "n", desc = "Clipboard y", remap = true },
+    { "cyy", '"+yy', mode = "n", desc = "Clipboard yy", remap = true },
+    { "cY", '"+Y', mode = "n", desc = "Clipboard Y", remap = true },
+    { "cd", '"+d', mode = "n", desc = "Clipboard d" },
+    { "cdd", '"+dd', mode = "n", desc = "Clipboard dd" },
+    { "cD", '"+D', mode = "n", desc = "Clipboard D" },
+  } do
+    map(v.mode or "n", v[1], v[2], { desc = v.desc, remap = v.remap })
+  end
+  map(
+    "n",
+    "<leader>oc",
+    function() vim.fn.setreg("+", vim.fn.getreg(vim.v.register)) end,
+    { desc = "To System Clipboard" }
+  )
+
   -- -- Open new line with a count
   -- map("n", "o", function()
   --   local count = vim.v.count
@@ -887,10 +905,11 @@ function M.setup()
       E = { cmd "!open '%:p:h'", "Open File Explorer" },
       M = { vim.g.goneovim and cmd "GonvimMiniMap" or cmd "MinimapToggle", "Minimap" },
       d = { cmd "DiffviewOpen", "Diffview" },
-      H = { cmd "DiffviewFileHistory", "File History" },
-      h = { cmd "NoiceHistory", "Noice History" },
+      H = { cmd "DiffviewFileHistory", "File History Git" },
+      N = { cmd "NoiceHistory", "Noice History" },
       g = { cmd "!smerge '%:p:h'", "Sublime Merge" },
       i = { function() require("ui.win_pick").gf() end, "Open file in <window>" },
+      h = { name =  "Kitty Hints" },
     },
     m = { name = "Make" },
     x = { name = "Run" },
@@ -1025,7 +1044,7 @@ function M.setup()
       m = { telescope_fn.marks, "Marks" },
       _ = { ":Telescope ", "Telescope ..." },
       ["<CR>"] = { telescope_fn.builtin, "Telescopes" },
-      ["+"] = { [[/<C-R>+<cr>]], "Last yank" },
+      ["+"] = { [[/<C-R>+<cr>]], "Last clipboard" },
       ["."] = { [[/<C-R>.<cr>]], "Last insert" },
       ['"'] = { [[/<C-R>"<cr>]], "Last cdy" },
     },
@@ -1033,9 +1052,9 @@ function M.setup()
       name = "Replace/Refactor",
       -- n = { utils.lsp.rename, "Rename" }, -- Use IncRename
       ["/"] = { [[:%s/<C-R>///g<Left><Left>]], "Last search" },
-      ["+"] = { [[:%s/<C-R>+//g<Left><Left>]], "Last yank" },
+      ["+"] = { [[:%s/<C-R>+//g<Left><Left>]], "Last clipboard" },
       ["."] = { [[:%s/<C-R>.//g<Left><Left>]], "Last insert" },
-      ['"'] = { [[:%s/<C-R>\"//g<Left><Left>]], "Last cdy" },
+      ['"'] = { [[:%s/<C-R>"//g<Left><Left>]], "Last cdy" },
       s = { [[:%s///g<Left><Left><Left>]], "Sub In File" },
       i = "Inside",
       g = "Global Replace",
@@ -1081,13 +1100,12 @@ function M.setup()
     },
     r = {
       name = "Replace/Refactor",
-      i = {
-        name = "In",
-        s = { ":s///g<Left><Left><Left>", "In Selection" },
-      },
+      s = { ":s///g<Left><Left><Left>", "In Selection" },
+      -- TODO: I, A versions using substitute.nvim
       ["/"] = { [[:%s/<C-R>///g<Left><Left>]], "Last search" },
-      ["+"] = { [[:%s/<C-R>+//g<Left><Left>]], "Last yank" },
+      ["+"] = { [[:%s/<C-R>+//g<Left><Left>]], "Last clipboard" },
       ["."] = { [[:%s/<C-R>.//g<Left><Left>]], "Last insert" },
+      ['"'] = { [[:%s/<C-R>"//g<Left><Left>]], "Last cdy" },
     },
     -- c = {
     --   [["z<M-y>:%s/<C-r>z//g<Left><Left>]],
