@@ -40,16 +40,6 @@ local M = {
       },
     },
     "marko-cerovac/material.nvim",
-    {
-      "roobert/action-hints.nvim",
-      opts = {
-        template = {
-          definition = { text = " ⊛", color = "#add8e6" },
-          references = { text = " ↱%s", color = "#ff6666" },
-        },
-        use_virtual_text = false,
-      },
-    },
   },
 }
 M.config = function()
@@ -157,7 +147,7 @@ M.config = function()
       lualine_a = { "mode" },
       lualine_b = {
         filename,
-        navic_st, --[[ require("statusline-action-hints").statusline ]]
+        navic_st,
       },
       -- lualine_c = { ts_statusline },
       lualine_c = { noice "ruler", noice "command", noice "mode", noice "search" },
