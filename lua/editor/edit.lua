@@ -280,6 +280,7 @@ return {
       require("yanky").setup(opts)
       require("telescope").load_extension "yank_history"
     end,
+    event = { "FocusLost", "FocusGained" }, -- To sync with clipboard
     keys = {
       { "y", "<Plug>(YankyYank)", mode = { "n", "x" } },
       { "Y", '"+<Plug>(YankyYank)', mode = { "x" } },
