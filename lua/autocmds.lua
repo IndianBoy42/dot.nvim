@@ -114,11 +114,15 @@ return {
         end
 
         do
-          local clients = lsp.get_active_clients { bufnr = 0 }
+          local clients = lsp.get_clients { bufnr = 0 }
 
+          local lsp_dir
           for _, client in ipairs(clients) do
             local dir = client.config.root_dir
-            if dir and dir ~= "." then return dir end
+            -- TODO: choose the highest cwd
+            if dir and dir ~= "." then
+              return dir
+            end
           end
         end
 

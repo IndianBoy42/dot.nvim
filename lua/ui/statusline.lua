@@ -74,7 +74,7 @@ M.config = function()
   local function get_lsp_clients()
     local msg = "LSP Inactive"
     local buf_ft = vim.api.nvim_buf_get_option(0, "filetype")
-    local clients = vim.lsp.get_active_clients()
+    local clients = vim.lsp.get_clients()
     if next(clients) == nil then return msg end
     local lsps = ""
     for _, client in ipairs(clients) do
