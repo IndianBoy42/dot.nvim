@@ -8,6 +8,10 @@ _G.LSP_INSTALL_PATH = DATA_PATH .. "/lspinstall"
 -- TODO: Cleanup this config struct
 local O = {
   format_on_save = true,
+  format_on_save_mod = {
+    vim.fs.dirname(DATA_PATH),
+    "~/git-builds/",
+  },
   format_on_save_timeout = 1000,
   auto_close_tree = false,
   fold_columns = "0",

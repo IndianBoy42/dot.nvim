@@ -751,7 +751,7 @@
         c6aeb2f Merge branch 'master' of github.com:ray-x/lsp_signature.nvim (4 days ago)
         b963a39 #302  some LSP may send multiple empty spaces in signature label. Trim inside the string. (4 days ago)
         1b32f64 fix: "Attempt to call field 'get_clients' (a nil value)" error for some 0.10 versions (#315) (11 days ago)
-        e92b4e7 fix: Use get_active_clients if Neovim <0.10 (#312) (2 weeks ago)
+        e92b4e7 fix: Use get_clients if Neovim <0.10 (#312) (2 weeks ago)
         fc7231f stylua (2 weeks ago)
         6216eec lint (2 weeks ago)
         a02d7c7 deprecate nvim-0.6 (2 weeks ago)
@@ -962,7 +962,7 @@
         c43c247 Fix typo in doc/dap.txt (#1174) (6 days ago)
         fc880e8 Use async.run in event_stopped for error handler (5 weeks ago)
         e48c811 Try to fetch frames in frames widget if they're missing (5 weeks ago)
-        0406598 Update threads at most once on stopped events (5 weeks ago)
+ks ago)
         3b4bdea Ensure dap.status() shows start progress (5 weeks ago)
 
     ● nvim-dap-ui 1.98ms  nvim-dap

@@ -9,7 +9,6 @@ local function kitty_terms()
       default_launch_location = "os-window",
       -- create_new_win = "os-window",
       target_providers = {
-        function(T) T.helloworld = { desc = "Hello world", cmd = "echo hello world" } end,
         "just",
         "cargo",
       },
@@ -19,7 +18,7 @@ local function kitty_terms()
 
         -- TODO:
         -- require("rust-tools").config.options.tools.executor = K.rust_tools_executor()
-        Term = kutils.staticify(Terms.get_terminal(0), {})
+        _G.Term = kutils.staticify(Terms.get_terminal(0), {})
         Term.make_cmd "Make"
       end,
       bracketed_paste = true,
@@ -33,7 +32,7 @@ local function kitty_terms()
   map("n", "mK", function() Term.run() end, { desc = "Kitty Run" })
   map("n", "mk", function() Term.make() end, { desc = "Kitty Make" })
   map("n", "mkk", function() Term.make_last() end, { desc = "Kitty ReMake" })
-  -- This won't send the
+  -- TODO: S-CR and C-CR can be used
   map("n", "mr", function() return Term.send_operator() end, { expr = true, desc = "Kitty Send" })
   map("x", "R", function() return Term.send_operator() end, { expr = true, desc = "Kitty Send" })
   map(
@@ -43,17 +42,36 @@ local function kitty_terms()
     { expr = true, desc = "Kitty Send Line" }
   )
   map("n", "yu", function() Term.get_selection() end, { desc = "Yank selection From Kitty" })
-  -- TODO:
-  map("n", "yhu", function() Term.hints { type = "url", yank = "register" } end, { desc = "Yank hinted url From Kitty" })
-  map("n", "yhf", function() Term.hints { type = "path", yank = "register" } end, { desc = "Yank hinted path From Kitty" })
-  map("n", "yhl", function() Term.hints { type = "line", yank = "register" } end, { desc = "Yank hinted line From Kitty" })
+  map(
+    "n",
+    "yhu",
+    function() Term.hints { type = "url", yank = "register" } end,
+    { desc = "Yank hinted url From Kitty" }
+  )
+  map(
+    "n",
+    "yhf",
+    function() Term.hints { type = "path", yank = "register" } end,
+    { desc = "Yank hinted path From Kitty" }
+  )
+  map(
+    "n",
+    "yhl",
+    function() Term.hints { type = "line", yank = "register" } end,
+    { desc = "Yank hinted line From Kitty" }
+  )
   map(
     "n",
     "yhe",
     function() Term.hints { type = "linenum", yank = "register" } end,
     { desc = "Yank hinted linenum From Kitty" }
   )
-  map("n", "yhw", function() Term.hints { type = "word", yank = "register" } end, { desc = "Yank hinted word From Kitty" })
+  map(
+    "n",
+    "yhw",
+    function() Term.hints { type = "word", yank = "register" } end,
+    { desc = "Yank hinted word From Kitty" }
+  )
   map(
     "n",
     "<leader>ohu",
@@ -80,6 +98,7 @@ local function kitty_terms()
   )
   map("n", "<c-;>", "<cmd>Kitty<cr>", { desc = "Kitty Open" })
   map("n", "<leader>ok", "<cmd>Kitty<cr>", { desc = "Kitty Open" })
+  map("n", "<leader>oKC", function() Term.cmd("cd " .. vim.fn.getpwd()) end, { desc = "Kitty CWD" })
   map("n", "<leader>oKT", function() Term.move "this-tab" end, { desc = "Kitty To This Tab" })
   map("n", "<leader>oKN", function() Term.move "new-tab" end, { desc = "Kitty To New Tab" })
   map("n", "<leader>oKW", function() Term.move "new-window" end, { desc = "Kitty To New OSWin" })
@@ -104,7 +123,7 @@ local function kitty_terms()
       },
     },
     mode = "n",
-    body = "<leader>vv",
+    body = "<leader>vt",
     heads = {
       -- TODO: emulate this
       -- { "b", "zb", {exit = true, desc = "Center this Line" } },
@@ -154,7 +173,7 @@ local function kitty_terms()
       key "<esc>",
       key "<enter>",
       key "<tab>",
-      key("c", "ctrl+c"),
+      key("c", "ctrl+c"), -- TODO: use signal_child instead
       key("d", "ctrl+d"),
       key("z", "ctrl+z"),
       { "f", function() Term:hints { yank = "" } end },

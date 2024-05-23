@@ -12,6 +12,7 @@ M.repeatable = function(ch, desc, fwdbwd, _opts)
   local opts = {
     name = desc,
     config = {
+      buffer = _opts.buffer,
       color = "red",
       invoke_on_body = false,
       timeout = 5000, -- millis
@@ -59,44 +60,44 @@ M.repeatable = function(ch, desc, fwdbwd, _opts)
   hydra_fwd = hydra(vim.tbl_deep_extend("keep", _opts, {
     body = next_pre,
     config = cfg,
-    heads = {
+    heads = vim.list_extend({
       { s_ch, bwd, { desc = "opposite", private = true } },
       { ch, fwd, { desc = desc } },
       fwdend and { c_ch, fwdend, { desc = "end", private = true } },
       bwdend and { cs_ch, bwdend, { desc = "opp end", private = true } },
-    },
+    }, _opts.heads or {}),
   }, opts))
   hydra_bwd = hydra(vim.tbl_deep_extend("keep", _opts, {
     body = prev_pre,
     config = cfg,
-    heads = {
+    heads = vim.list_extend({
       { s_ch, fwd, { desc = "opposite", private = true } },
       { ch, bwd, { desc = desc } },
       fwdend and { c_ch, bwdend, { desc = "end", private = true } },
       bwdend and { cs_ch, fwdend, { desc = "opp end", private = true } },
-    },
+    }, _opts.heads or {}),
   }, opts))
   hydra_fwd_end = fwdend
     and hydra(vim.tbl_deep_extend("keep", _opts, {
       body = next_end,
       config = cfg,
-      heads = {
+      heads = vim.list_extend({
         { s_ch, bwdend, { desc = "opposite", private = true } },
         { ch, fwdend, { desc = desc } },
         { cs_ch, bwd, { desc = "opp begin", private = true } },
         { c_ch, fwd, { desc = "begin", private = true } },
-      },
+      }, _opts.heads or {}),
     }, opts))
   hydra_bwd_end = bwdend
     and hydra(vim.tbl_deep_extend("keep", _opts, {
       body = prev_end,
       config = cfg,
-      heads = {
+      heads = vim.list_extend({
         { cs_ch, fwdend, { desc = "opposite", private = true } },
         { ch, bwdend, { desc = desc } },
         { cs_ch, fwd, { desc = "opp begin", private = true } },
         { c_ch, bwd, { desc = "begin", private = true } },
-      },
+      }, _opts.heads or {}),
     }, opts))
   return hydra_fwd, hydra_bwd, hydra_fwd_end, hydra_bwd_end
 end

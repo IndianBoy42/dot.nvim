@@ -1,49 +1,44 @@
 return {
   {
     "MagicDuck/grug-far.nvim",
-    opts = {},
+    opts = {
+      keymaps = {
+        close = "<C-c>",
+      },
+    },
     cmd = { "GrugFar" },
     keys = {
       { "<leader>rp", "<cmd>GrugFar<cr>", desc = "GrugFar Project" },
-      { "<leader>rg*", function() require("spectre").open_visual { select_word = true } end, desc = "cword" },
       {
-        "<leader>rg/",
-        function() require("spectre").open { search_text = vim.fn.getreg "/" } end,
+        "<leader>rr*",
+        function() require("grug-far").grug_far { prefills = { search = vim.fn.expand "<cword>" } } end,
         desc = "Last search",
       },
       {
-        "<leader>rg+",
-        function() require("spectre").open { search_text = vim.fn.getreg "+" } end,
+        "<leader>rr/",
+        function() require("grug-far").grug_far { prefills = { search = vim.fn.getreg "/" } } end,
+        desc = "Last search",
+      },
+      {
+        "<leader>rr+",
+        function() require("grug-far").grug_far { prefills = { search = vim.fn.getreg "+" } } end,
         desc = "Last yank",
       },
       {
-        "<leader>rg.",
-        function() require("spectre").open { search_text = vim.fn.getreg "." } end,
+        "<leader>rr.",
+        function() require("grug-far").grug_far { prefills = { search = vim.fn.getreg "." } } end,
         desc = "Last insert",
+      },
+      {
+        "<Plug>(GrugFarFile)",
+        function() require("grug-far").grug_far { prefills = { flags = vim.fn.expand "%" } } end,
+        desc = "GrugFar File",
       },
     },
   },
   {
     "windwp/nvim-spectre",
-    keys = {
-      { "<leader>rp", function() require("spectre").open() end, desc = "Spectre Project" },
-      { "<leader>rr*", function() require("spectre").open_visual { select_word = true } end, desc = "cword" },
-      {
-        "<leader>rr/",
-        function() require("spectre").open { search_text = vim.fn.getreg "/" } end,
-        desc = "Last search",
-      },
-      {
-        "<leader>rr+",
-        function() require("spectre").open { search_text = vim.fn.getreg "+" } end,
-        desc = "Last yank",
-      },
-      {
-        "<leader>rr.",
-        function() require("spectre").open { search_text = vim.fn.getreg "." } end,
-        desc = "Last insert",
-      },
-    },
+    keys = {},
     opts = {
       find_engine = {
         -- rg is map with finder_cmd
@@ -262,7 +257,7 @@ return {
       vim.api.nvim_create_autocmd("FileType", {
         pattern = "qf",
         callback = function() vim.keymap.setl("n", "i", utils.lazy_require("replacer").run, { desc = "Replacer" }) end,
-       })
+      })
     end,
   },
 }

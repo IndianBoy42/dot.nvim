@@ -13,18 +13,8 @@ vim.b.minisurround_config = {
     },
   },
 }
-vim.schedule(function()
-  local pair = require("mini.ai").gen_spec.pair
-  -- TODO: text objects for lua raw strings
-  vim.b.miniai_config = {
-    custom_textobjects = {
-      Q = pair("[[", "]]", { type = "non-balanced" }),
-      ["#"] = pair([[--[[]], "]]", { type = "non-balanced" }),
-    },
-  }
-end)
 
-local map = vim.keymap.setl
+require("editor.nav.ai").lazy(function(spec) return { Q = spec.pair("[[", "]]", { type = "non-balanced" }) } end)
 
 vim.o.shiftwidth = 2
 vim.o.tabstop = 2

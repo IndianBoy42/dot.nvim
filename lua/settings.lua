@@ -37,6 +37,17 @@ return function()
   opt.backspace = "indent,eol,start"
   opt.backup = false -- creates a backup file
   opt.clipboard = O.clipboard -- allows neovim to access the system clipboard
+  vim.g.__osc52_clipboard = {
+    name = "OSC 52",
+    copy = {
+      ["+"] = require("vim.ui.clipboard.osc52").copy "+",
+      ["*"] = require("vim.ui.clipboard.osc52").copy "*",
+    },
+    paste = {
+      ["+"] = require("vim.ui.clipboard.osc52").paste "+",
+      ["*"] = require("vim.ui.clipboard.osc52").paste "*",
+    },
+  }
   opt.cmdheight = O.cmdheight -- more space in the neovim command line for displaying messages
   opt.colorcolumn = O.colorcolumn
   opt.completeopt = { "menuone", "noselect" }

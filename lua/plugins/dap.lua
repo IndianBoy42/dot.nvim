@@ -101,6 +101,7 @@ return {
           -- virt_lines = true,
         },
       },
+      { "LiadOz/nvim-dap-repl-highlights" },
     },
     config = function()
       local dap = require "dap"

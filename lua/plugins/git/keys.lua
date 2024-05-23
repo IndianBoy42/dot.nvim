@@ -9,7 +9,7 @@ M.hydra = function(bufnr)
 ]]
   local Hydra = require "hydra"
   local gitsigns = require "gitsigns"
-  Hydra {
+  local hydra = Hydra {
     name = "Git",
     hint = hint,
     config = {
@@ -73,7 +73,7 @@ M.hydra = function(bufnr)
       },
       { "u", gitsigns.undo_stage_hunk, { desc = "undo last stage" } },
       { "S", gitsigns.stage_buffer, { desc = "stage buffer" } },
-      { "p", gitsigns.preview_hunk, { desc = "preview hunk" } },
+      { "p", gitsigns.preview_hunk_inline, { desc = "preview hunk" } },
       { "d", gitsigns.toggle_deleted, { nowait = true, desc = "toggle deleted" } },
       { "b", gitsigns.blame_line, { desc = "blame" } },
       { "B", function() gitsigns.blame_line { full = true } end, { desc = "blame show full" } },
@@ -83,7 +83,7 @@ M.hydra = function(bufnr)
       { "m", function() vim.cmd "!smerge '%:p:h'" end, { exit_before = true, desc = "Subl merge" } },
       {
         "i",
-        function() require("kitty.terms").os_window({}, "gitui", "gitui") end,
+        function() require("kitty.terms").use_os_window({}, "gitui", "gitui") end,
         { exit_before = true, desc = "GitUI" },
       },
       -- { "<Space>", ":tab G ", { exit = true, desc = false } },
@@ -92,20 +92,26 @@ M.hydra = function(bufnr)
     },
   }
   local repeatable = mappings.repeatable
-  repeatable("g", "Git Hunk", { vim.schedule_wrap(gitsigns.next_hunk), vim.schedule_wrap(gitsigns.prev_hunk) }, {
-    config = {
-      on_key = function() vim.wait(50) end,
-      on_enter = function()
-        gitsigns.toggle_signs(true)
-        gitsigns.toggle_linehl(true)
-        gitsigns.toggle_deleted(true)
-      end,
-      on_exit = function()
-        gitsigns.toggle_linehl(false)
-        gitsigns.toggle_deleted(false)
-      end,
-    },
-  })
+  local hunks = repeatable(
+    "g",
+    "Git Hunk",
+    { vim.schedule_wrap(gitsigns.next_hunk), vim.schedule_wrap(gitsigns.prev_hunk) },
+    {
+      config = {
+        on_key = function() vim.wait(50) end,
+        on_enter = function()
+          gitsigns.toggle_signs(true)
+          gitsigns.toggle_linehl(true)
+          gitsigns.toggle_deleted(true)
+        end,
+        on_exit = function()
+          gitsigns.toggle_linehl(false)
+          gitsigns.toggle_deleted(false)
+        end,
+      },
+    }
+  )
+  return hydra, hunks
 end
 M.diffview = require "plugins.git.diffview"
 M.fugitive = require "plugins.git.fugitive"

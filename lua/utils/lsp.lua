@@ -66,7 +66,7 @@ function M.view_location_split_callback(split_cmd)
 
     if split_cmd then cmd(split_cmd) end
 
-    if vim.tbl_islist(result) then
+    if vim.islist(result) then
       util.jump_to_location(result[1], oe)
 
       if #result > 1 then
@@ -103,7 +103,7 @@ function M.view_location_pick_callback(title)
     local oe = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
 
     local res = result
-    if vim.tbl_islist(result) then
+    if vim.islist(result) then
       if #result > 1 then
         local opts = {
           prompt_title = title,
@@ -173,7 +173,7 @@ function M.show_codelens()
   --   false
   -- )
 
-  local clients = vim.lsp.get_active_clients { bufnr = 0 }
+  local clients = vim.lsp.get_clients { bufnr = 0 }
   local codelens = lsp.codelens
   for k, v in pairs(clients) do
     codelens.display(nil, 0, k)
@@ -341,19 +341,40 @@ end)()
 -- M.rename = M.renamer.keymap
 
 function M.format(opts)
-  opts = opts or { async = true }
+  opts = opts or {}
+  opts.async = opts.async == nil and true or false
+  if opts.modifications == nil then
+    local mode = vim.b.Format_on_save_mode
+    if mode == nil then mode = vim.g.Format_on_save_mode end
+    opts.modifications = type(mode) == "string" and mode:sub(1, 3) == "mod"
+  end
   local buf = vim.api.nvim_get_current_buf()
   local ft = vim.bo[buf].filetype
   local have_nls = #require("null-ls.sources").get_available(ft, "NULL_LS_FORMATTING") > 0
 
-  vim.lsp.buf.format(vim.tbl_extend("force", {
-    bufnr = buf,
-    filter = function(client)
-      if have_nls then return client.name == "null-ls" end
-      return client.name ~= "null-ls"
-    end,
-  }, opts))
+  if not opts.modifications then
+    vim.lsp.buf.format(vim.tbl_extend("force", {
+      bufnr = buf,
+      filter = function(client) return have_nls == (client.name == "null-ls") end,
+    }, opts))
+  else
+    local client
+    if vim.b.lsp_format_modifications_client then
+      client = vim.lsp.get_clients { id = vim.b.lsp_format_modifications_client }
+      client = client[1]
+    else
+      client = vim
+        .iter(vim.lsp.get_clients { bufnr = buf })
+        :find(function(client) return client.supports_method "textDocument/rangeFormatting" end)
+    end
+    if client then
+      vim.b.lsp_format_modifications_client = client.id
+      if client.server_capabilities == nil then vim.print { name = client.name, id = client.id } end
+      require("lsp-format-modifications").format_modifications(client, buf, {})
+    end
+  end
 end
+M.format_all = function(opts) M.format(vim.tbl_extend("force", { modifications = true }, opts or {})) end
 
 M.format_on_save = function(m)
   vim.g.Format_on_save_mode = m
@@ -362,14 +383,17 @@ M.format_on_save = function(m)
   local cb = function()
     local mode = vim.b.Format_on_save_mode
     if mode == nil then mode = vim.g.Format_on_save_mode end
-    if type(mode) == "string" and mode:sub(1, 3) == "mod" then
-      cmd "FormatModifications"
-    elseif mode == true or mode == "all" then
-      local ok, _ = pcall(M.format, { timeout_ms = O.format_on_save_timeout })
-      if not ok then
-        vim.notify("Error running format on save", vim.log.levels.ERROR)
-        vim.b.Format_on_save_mode = false
-      end
+    local modifications = type(mode) == "string" and mode:sub(1, 3) == "mod"
+    if mode then
+      M.format {
+        async = false,
+        timeout_ms = O.format_on_save_timeout,
+        modifications = modifications,
+      }
+      -- if not ok then
+      --   vim.notify("Error running format on save", vim.log.levels.ERROR)
+      --   M.format_on_save_toggle()
+      -- end
     end
   end
   vim.api.nvim_create_autocmd("BufWritePre", {
@@ -394,7 +418,7 @@ end
 vim.lsp.buf.cancel_formatting = function(bufnr)
   vim.schedule(function()
     bufnr = (bufnr == nil or bufnr == 0) and vim.api.nvim_get_current_buf() or bufnr
-    for _, client in ipairs(vim.lsp.get_active_clients { bufnr = bufnr }) do
+    for _, client in ipairs(vim.lsp.get_clients { bufnr = bufnr }) do
       for id, request in pairs(client.requests or {}) do
         if request.type == "pending" and request.bufnr == bufnr and request.method == "textDocument/formatting" then
           client.cancel_request(id)
@@ -439,7 +463,7 @@ function M.rename_file(new_name)
   local function prepare_rename(data)
     local bufnr = vfn.bufnr(data.old_name)
     local done_rename = false
-    for _, client in pairs(lsp.get_active_clients { bufnr = bufnr }) do
+    for _, client in pairs(lsp.get_clients { bufnr = bufnr }) do
       if vim.tbl_get(client, "server_capabilities", "workspace", "fileOperations", "willRename") then
         local params = {
           files = { { newUri = "file://" .. data.new_name, oldUri = "file://" .. data.old_name } },

@@ -199,14 +199,19 @@ local telescope = {
     telescope.setup(opts)
 
     -- telescope.load_extension('fzy_native')
-    telescope.load_extension "noice"
-    telescope.load_extension "fzf"
-    telescope.load_extension "smart_open"
-    telescope.load_extension "frecency"
-    telescope.load_extension "luasnip"
-    telescope.load_extension "undo"
-    telescope.load_extension "live_grep_args"
-    -- telescope.load_extension('project')
+    for _, extension in ipairs {
+      "noice",
+      "fzf",
+      "smart_open",
+      "frecency",
+      "luasnip",
+      "undo",
+      "live_grep_args",
+      "yank_history",
+      -- 'project'
+    } do
+      telescope.load_extension(extension)
+    end
   end,
 }
 local M = {

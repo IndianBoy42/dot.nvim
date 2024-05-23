@@ -149,6 +149,12 @@ return {
       local actions = require "diffview.actions"
       require("diffview").setup {
         key_bindings = require("plugins.git.keys").diffview(actions),
+        hooks = {
+          view_opened = function() vim.cmd.WindowsDisableAutowidth() end,
+          view_entered = function() vim.cmd.WindowsDisableAutowidth() end,
+          view_closed = function() vim.cmd.WindowsEnableAutowidth() end,
+          view_leave = function() vim.cmd.WindowsEnableAutowidth() end,
+        },
       }
     end,
     ft = "diff",
@@ -165,6 +171,7 @@ return {
       integrations = {
         diffview = true,
       },
+      graph_style = "unicode",
       disable_commit_confirmation = true,
       disable_builtin_notifications = true,
       disable_insert_on_commit = "auto",
@@ -175,9 +182,19 @@ return {
           a = "Stage",
           A = "StageUnstaged",
           ["<C-a>"] = "StageAll",
-          C = "CherryPickPopup",
           h = "Toggle",
           l = "Toggle",
+          ["<C-q>"] = "Close",
+        },
+        rebase_editor = {
+          ["<C-q>"] = "Close",
+        },
+        commit_editor = {
+          ["<C-q>"] = "Close",
+        },
+        popup = {
+          A = false,
+          C = "CherryPickPopup",
         },
       },
     },
@@ -186,7 +203,7 @@ return {
 
       local group = vim.api.nvim_create_augroup("NeogitUserAucmds", {})
       vim.api.nvim_create_autocmd("FileType", {
-        group = "NeogitUserAucmds",
+        group = group,
         pattern = "NeogitPopup",
         callback = function()
           -- require("which-key").register({
@@ -207,7 +224,7 @@ return {
   {
     "lewis6991/gitsigns.nvim",
     opts = {
-      on_attach = function(bufnr) require("plugins.git.keys").hydra(bufnr) end,
+      on_attach = function(bufnr) vim.b.gitsigns_attached = true end,
     },
     event = "LazyFile",
     -- keys = function()

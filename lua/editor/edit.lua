@@ -5,7 +5,7 @@ local cmt_to = O.commenting.obj
 return {
   { -- mizlan/iswap.nvim
     "IndianBoy42/iswap.nvim",
-    branch = "wip",
+    branch = "master",
     dev = true,
     opts = {
       keys = O.hint_labels .. O.hint_labels:upper(),
@@ -275,11 +275,12 @@ return {
   },
   {
     "gbprod/yanky.nvim",
-    opts = {},
-    config = function(_, opts)
-      require("yanky").setup(opts)
-      require("telescope").load_extension "yank_history"
-    end,
+    opts = {
+      system_clipboard = {
+        clipboard_register = "+",
+      },
+    },
+    config = function(_, opts) require("yanky").setup(opts) end,
     event = { "FocusLost", "FocusGained" }, -- To sync with clipboard
     keys = {
       { "y", "<Plug>(YankyYank)", mode = { "n", "x" } },

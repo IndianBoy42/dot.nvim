@@ -678,8 +678,8 @@ function M.setup()
   -- map("n", "m-/", "")
 
   -- Select whole file
-  map("o", "ie", "<cmd>normal! mzggVG<cr>`z", nore)
-  sel_map("ie", "gg0oG$", nore)
+  -- map("o", "ie", "<cmd>normal! mzggVG<cr>`z", nore)
+  -- sel_map("ie", "gg0oG$", nore)
 
   -- Operator for current line
   -- sel_map("il", "g_o^")
@@ -743,6 +743,8 @@ function M.setup()
     { desc = "Visual Select", expr = true }
   )
 
+  require("plugins.git.keys").hydra(nil)
+
   map("c", "<c-a>", function()
     local line = vim.fn.getcmdline()
     local pos = vim.fn.getcmdpos()
@@ -796,10 +798,10 @@ function M.setup()
   for _, v in ipairs {
     { "cp", '"+p', mode = "n", desc = "Clipboard p", remap = true },
     { "cP", '"+P', mode = "n", desc = "Clipboard P", remap = true },
-    { "cr", '"+r', mode = "n", desc = "Clipboard r", remap = true },
-    { "crr", '"+rr', mode = "n", desc = "Clipboard rr", remap = true },
     { "<leader>p", '"+P', mode = "x", desc = "Clipboard p", remap = true },
     { "<leader>P", '"+p', mode = "x", desc = "Clipboard P", remap = true },
+    { "r+", '"+r', mode = "n", desc = "Clipboard r", remap = true },
+    { "r+", '"+rr', mode = "n", desc = "Clipboard rr", remap = true },
     { "cy", '"+y', mode = "n", desc = "Clipboard y", remap = true },
     { "cyy", '"+yy', mode = "n", desc = "Clipboard yy", remap = true },
     { "cY", '"+Y', mode = "n", desc = "Clipboard Y", remap = true },
@@ -809,12 +811,7 @@ function M.setup()
   } do
     map(v.mode or "n", v[1], v[2], { desc = v.desc, remap = v.remap })
   end
-  map(
-    "n",
-    "<leader>oc",
-    function() vim.fn.setreg("+", vim.fn.getreg(vim.v.register)) end,
-    { desc = "To System Clipboard" }
-  )
+  map("n", "yC", function() vim.fn.setreg("+", vim.fn.getreg(vim.v.register)) end, { desc = "To System Clipboard" })
 
   -- -- Open new line with a count
   -- map("n", "o", function()
@@ -909,7 +906,7 @@ function M.setup()
       N = { cmd "NoiceHistory", "Noice History" },
       g = { cmd "!smerge '%:p:h'", "Sublime Merge" },
       i = { function() require("ui.win_pick").gf() end, "Open file in <window>" },
-      h = { name =  "Kitty Hints" },
+      h = { name = "Kitty Hints" },
     },
     m = { name = "Make" },
     x = { name = "Run" },
@@ -954,7 +951,8 @@ function M.setup()
     --   -- s = { cmd "Telescope buffers", "Search" },
     -- },
     b = "+Buffers",
-    g = { name = "Git" },
+    g = "Git",
+
     i = {
       name = "Info",
       l = { cmd "LspInfo", "LSP" },
@@ -969,6 +967,7 @@ function M.setup()
       a = { telescope_fn.code_actions_previewed, "Code Action (K)" },
       k = { vim.lsp.codelens.run, "Run Code Lens (gK)" },
       f = { utils.lsp.format, "Format" },
+      F = { utils.lsp.format_all, "Format" },
       c = { lspbuf.signature_help, "Signature Help" },
       C = {
         name = "Calls",
@@ -1227,7 +1226,7 @@ utils.lsp.on_attach(function(client, bufnr)
   map("n", O.goto_prefix .. "pi", telescope_fn.lsp_implementations, { desc = "Peek implementation" })
   map("n", O.goto_prefix .. "pe", utils.lsp.diag_line, { desc = "Diags" })
   map("n", "<M-r>", function()
-    -- TODO: use treesitter
+    -- TODO: use treesitter to detect identifiers
     local new_name = vim.fn.expand "<cword>"
     vim.cmd "undo!"
     vim.lsp.buf.rename(new_name)

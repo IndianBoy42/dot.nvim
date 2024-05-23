@@ -31,25 +31,63 @@ local M = {
         pattern = "python",
         callback = function()
           local srcs = require("langs.complete").sources
-          srcs(vim.list_extend(srcs(), { name = "jupyter", group_index = 2 }))
+          srcs(vim.list_extend(srcs(), { name = "jupyter", group_index = 1 }))
           local map = vim.keymap.setl
           map("n", O.hover_key, "<cmd>JupyterInspect<cr>", {})
           map("n", "<localleader>i", "<cmd>JupyterInspect<cr>", {})
-          map("n", "<localleader>x", "<cmd>JupyterExecute<cr>", {})
-          map("x", "<localleader>x", ":JupyterExecute<cr>", {})
-          map("n", "<localleader>ja", "<cmd>JupyterAttach<cr>", {})
+          -- map("n", "<localleader>x", "<cmd>JupyterExecute<cr>", {})
+          -- map("x", "<localleader>x", ":JupyterExecute<cr>", {})
         end,
         group = vim.api.nvim_create_augroup("jupyter_kernel_setup", {}),
       })
     end,
-    cmd = { "JupyterAttach", "JupyterInspect", "JupyterExecute" },
+    cmd = { "JupyterAttach" },
     build = ":UpdateRemotePlugins",
     opts = {},
   },
-  -- {
-  --   "WhiteBlackGoose/magma-nvim-goose",
-  --   run = ":UpdateRemotePlugins",
-  -- },
+  {
+    "GCBallesteros/NotebookNavigator.nvim",
+    dependencies = {
+      -- {
+      --   "benlubas/molten-nvim",
+      --   build = ":UpdateRemotePlugins",
+      -- },
+    },
+    ft = "python",
+    config = function()
+      local nn = require "notebook-navigator"
+      nn.setup {}
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "Python",
+        callback = function()
+          local map = vim.keymap.setl
+          require("keymappings").repeatable("c", "Notebook Cells", {
+            function() nn.move_cell "d" end,
+            function() nn.move_cell "u" end,
+          }, {
+            buffer = 0,
+            heads = {
+              { "x", nn.run_cell, { desc = "Run", nowait = true, private = true } },
+              { "X", nn.run_and_move, { desc = "Run & Move", nowait = true, private = true } },
+              { "a", nn.add_cell_below, { desc = "Run & Move", nowait = true, private = true } },
+              { "i", nn.add_cell_above, { desc = "Run & Move", nowait = true, private = true } },
+              { "o", nn.split_cell, { desc = "Run & Move", nowait = true, private = true } },
+              { O.commenting.op, nn.comment_cell, { desc = "Run & Move", nowait = true, private = true } },
+            },
+          })
+          for _, v in ipairs {
+            { "<localleader>X", function() nn.run_cell() end },
+            { "<localleader>x", function() nn.run_and_move() end },
+          } do
+            map("n", v[1], v[2], v[3])
+          end
+          vim.b.miniai_config = vim.b.miniai_config or {}
+          vim.b.miniai_config.custom_textobjects = vim.b.miniai_config.custom_textobjects or {}
+          vim.b.miniai_config.custom_textobjects.C = nn.miniai_spec
+        end,
+      })
+    end,
+  },
   -- {
   --   "untitled-ai/jupyter_ascending.vim",
   --   build = "pipx install jupyter_ascending",
@@ -164,70 +202,5 @@ local M = {
   -- TODO: https://github.com/roobert/f-string-toggle.nvim
   -- TODO: https://github.com/jim-at-jibba/micropython.nvim
 }
-
-local get_alt_win = function(term, cmd)
-  -- TODO: get existing alternate window automatically
-  if not term then
-    require("kitty.terms").new_terminal("window", {
-      launch_cmd = cmd,
-      bracketed_paste = true,
-      send_text_prefix = "\\cc",
-      send_text_suffix = require("kitty.utils").unkeycode "<c-cr>",
-    })
-  else
-    term:send(table.concat(cmd, " "))
-  end
-end
-
-local function get_jupyter_kernel(bufnr)
-  return (vim.fn.stdpath "cache") .. "/" .. vim.fn.fnamemodify(vim.v.servername, ":t") .. bufnr .. ".json"
-end
-
-local function get_euporie_cmd(bufnr, cmd)
-  local kern = get_jupyter_kernel(bufnr)
-  local M = { cmd = {
-    "euporie",
-    cmd,
-    "--connection-file",
-    kern,
-  }, kern = kern }
-  if cmd == "notebook" then M.cmd[#M.cmd + 1] = vim.api.nvim_buf_get_name(bufnr) end
-  return M
-end
-
-local function start_euporie(bufnr, term, type)
-  local eu = get_euporie_cmd(bufnr, type)
-  eu.term = get_alt_win(term, eu.cmd)
-  vim.b[bufnr].euporie_console = eu
-  -- TODO: better scheduling
-  -- vim.defer_fn(function() vim.cmd.JupyterAttach(eu.kern) end, 2000)
-
-  vim.api.nvim_create_user_command("EuporieAttach", function() vim.cmd.JupyterAttach(eu.kern) end, {})
-
-  return eu
-end
-
-M.euporie_notebook = function(term)
-  local bufnr = vim.api.nvim_get_current_buf()
-  local eu = start_euporie(bufnr, term, "notebook")
-
-  Au.grp("euporie_term-" .. bufnr, function(au)
-    au("BufWritePost", {
-      buffer = bufnr,
-      callback = function()
-        -- Reload the euporie notebook view
-        term:send ""
-      end,
-    })
-  end)
-end
-
-M.euporie_console = function(term)
-  local bufnr = vim.api.nvim_get_current_buf()
-  start_euporie(bufnr, term, "console")
-end
-
-vim.api.nvim_create_user_command("EuporieConsole", function() M.euporie_console() end, {})
-vim.api.nvim_create_user_command("EuporieNotebook", function() M.euporie_notebook() end, {})
 
 return M

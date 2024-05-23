@@ -65,6 +65,7 @@ return {
         go_out_plus = "-",
         reset = "<localleader>R",
         close = "<C-q>",
+        synchronize = "<spc><spc>",
       },
     },
     config = function(_, opts)
@@ -120,11 +121,11 @@ return {
             },
             body = "<localleader>",
             heads = {
-              { "h",             "h", { noremap = true } },
-              { "l",             "l", { noremap = true } },
-              { "H",             "h", { noremap = false } },
-              { "L",             "l", { noremap = false } },
-              { "<localleader>", "",  { exit = true } },
+              { "h", "h", { noremap = true } },
+              { "l", "l", { noremap = true } },
+              { "H", "h", { noremap = false } },
+              { "L", "l", { noremap = false } },
+              { "<localleader>", "", { exit = true } },
             },
           }
           vim.keymap.set("n", "<localleader>~", files_set_cwd, { buffer = bufnr })

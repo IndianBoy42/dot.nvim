@@ -1,4 +1,4 @@
--- LSP extras 
+-- LSP extras
 return {
   {
     "Kasama/nvim-custom-diagnostic-highlight",
@@ -16,29 +16,27 @@ return {
           name = "lsp_linked_editing_range",
           on = { "insert", "operator" },
         },
-        {
-          name = "lsp_document_highlight",
-          on = { "operator" },
-        },
       },
     },
   },
   {
     "joechrisellis/lsp-format-modifications.nvim",
+    lazy = true,
     init = function()
       utils.lsp.on_attach(function(client, bufnr)
-        local have = client.server_capabilities.documentRangeFormattingProvider
-        if have and client.name == "null-ls" then
-          local ft = vim.bo[bufnr].filetype
-          have = #require("null-ls.sources").get_available(ft, "NULL_LS_RANGE_FORMATTING") > 0
-        end
-        if have then
-          local lsp_format_modifications = require "lsp-format-modifications"
-          lsp_format_modifications.attach(
-            client,
-            bufnr,
-            { format_on_save = false, format_callback = utils.lsp.format, experimental_empty_line_handling = true }
-          )
+        if client.supports_method "textDocument/rangeFormatting" then
+          vim.api.nvim_buf_create_user_command(bufnr, "FormatModifications", function()
+            local lsp_format_modifications = require "lsp-format-modifications"
+            lsp_format_modifications.format_modifications(client, bufnr)
+          end, {})
+
+          local cwd = vim.fn.getcwd()
+          for dir in vim.fs.parents(cwd) do
+            if vim.tbl_contains(O.format_on_save_mod, dir) then
+              vim.b[bufnr].Format_on_save_mode = vim.g.Format_on_save_mode == true and "mod"
+              break
+            end
+          end
         end
       end)
     end,

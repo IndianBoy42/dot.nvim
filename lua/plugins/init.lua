@@ -18,8 +18,7 @@ return {
   },
   { -- TODO: https://github.com/mikesmithgh/kitty-scrollback.nvim
     "mikesmithgh/kitty-scrollback.nvim",
-    cond = vim.g.kitty_scrollback,
-    build = "KittyScrollbackGenerateKittens",
+    build = ":KittyScrollbackGenerateKittens",
     cmd = { "KittyScrollbackGenerateKittens", "KittyScrollbackCheckHealth" },
     event = { "User KittyScrollbackLaunch" },
     opts = {},
@@ -49,15 +48,6 @@ return {
     opts = {
       show_numbers = true, -- Enable 'number' for the window while peeking
       show_cursorline = true, -- Enable 'cursorline' for the window while peeking
-    },
-  },
-  {
-    "EtiamNullam/deferred-clipboard.nvim",
-    cond = false,
-    event = "LazyFile",
-    opts = {
-      lazy = true,
-      fallback = O.clipboard,
     },
   },
   {

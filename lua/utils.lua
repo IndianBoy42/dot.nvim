@@ -44,7 +44,7 @@ end
 vim.api.nvim_create_user_command("Lua", function(opts) dump(opts.args) end, { nargs = "+" })
 
 function M.check_lsp_client_active(name)
-  local clients = vim.lsp.get_active_clients()
+  local clients = vim.lsp.get_clients()
   for _, client in pairs(clients) do
     if client.name == name then return true end
   end

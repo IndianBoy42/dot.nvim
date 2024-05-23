@@ -45,7 +45,7 @@ M.flash_references = function(opts)
   local first = true
   local bufnr = vim.api.nvim_get_current_buf()
   vim.lsp.buf_request(bufnr, "textDocument/references", params, function(_, result, ctx)
-    if not vim.tbl_islist(result) then result = { result } end
+    if not vim.islist(result) then result = { result } end
     if first and result ~= nil and not vim.tbl_isempty(result) then
       first = false
     else
@@ -377,7 +377,7 @@ local function node_proc(bwd, fwd, m, matches, n, opts, state)
   local tsopts = state.opts.treesitter or {}
   if tsopts.starting_from_pos then ok = ok and (m.pos == n.pos) end
   if tsopts.ending_at_pos then ok = ok and (m.end_pos == n.end_pos) end
-  if tsopts.containing_end_pos then ok = ok and (m.end_pos <= n.end_pos) end
+  if tsopts.containing_end_pos or tsopts.containing_end_pos == nil then ok = ok and (m.end_pos <= n.end_pos) end
   if fwd ~= 0 or bwd ~= 0 then
     local node = n.node
     local parent = n.node:parent()
@@ -441,6 +441,7 @@ local function node_proc(bwd, fwd, m, matches, n, opts, state)
 end
 
 -- TODO: Full on almost arbitrary node selection (iswap.nvim style)
+-- TODO: "outer" variation by extending to sibling nodes
 M.custom_ts = function(win, state, opts)
   local fwd = state.remote_ts_fwd or 0
   local bwd = state.remote_ts_bwd or 0
@@ -456,14 +457,8 @@ M.custom_ts = function(win, state, opts)
 end
 M.remote_ts = function(win, state, opts)
   if state.pattern.pattern == " " then
-    -- TODO: completely switch to `custom_ts`
-    -- state.pattern.pattern = (" "):rep(state.opts.search.max_length)
     state.opts.search.max_length = 1
-    local matches = require("flash.plugins.treesitter").matcher(win, state)
-    for _, m in ipairs(matches) do
-      m.highlight = false
-    end
-    return matches
+    return M.custom_ts(win, state, opts)
   end
 
   local Search = require "flash.search"
@@ -494,7 +489,9 @@ local function ts_shift(state, fwdincr, bwdincr)
 
   -- Force update
   -- state.pattern:set(state.remote_ts_fwd .. state.remote_ts_bwd)
-  state:update { dirty_cache = true }
+  -- state:update { force = true }
+  require("flash.cache").cache = {}
+  state:_update()
 end
 M.ts_actions = {
   -- Extend right
@@ -506,22 +503,40 @@ M.ts_actions = {
   -- Move
   [")"] = function(state) ts_shift(state, 1, -1) end,
   ["("] = function(state) ts_shift(state, -1, 1) end,
+  -- TODO: Expand/Shrink
+  ["<tab>"] = function(state) state:jump { match = current, forward = false } end,
+  ["<S-tab>"] = function(state) state:jump { forward = true, match = current } end,
 }
+-- TODO: this needs a lot of work
 M.remote_sel = function(win, state, opts)
-  local pat = state.pattern
-  state.pattern = pat:sub(1, 1)
+  local pat = state.pattern.pattern
+  state.pattern:set(#pat == 1 and pat or pat:sub(1, -2))
   local search = require("flash.search").new(win, state)
   local matches = {}
-  for _, m in ipairs(search:get(opts)) do
-    state.pattern = pat:sub(2)
-    for _, n in ipairs(search:get { from = m.pos, to = m.end_pos }) do
+  vim.print(state.pattern)
+  local starts = search:get(opts)
+  for i, m in ipairs(starts) do
+    if #pat <= 1 then
+      matches[#matches + 1] = m
+    else
+      state.pattern:set(pat:sub(-1))
+      vim.print(state.pattern)
+      for _, n in
+        ipairs(search:get {
+          from = m.pos,
+          to = starts[i + 1] and starts[i + 1].pos,
+        })
+      do
+        -- n.end_pos = n.pos
+        n.pos = m.pos
+        n.highlight = false
+        matches[#matches + 1] = n
+      end
     end
   end
+  state.pattern:set(pat)
   return matches
 end
-
--- TODO: iswap
-M.iswap = function(opts) end
 
 M.move_by_ts = function()
   local iter = {

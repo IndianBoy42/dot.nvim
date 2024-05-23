@@ -220,38 +220,6 @@ local M = {
     },
   },
   {
-    "ziontee113/SnippetGenie",
-    opts = {
-      regex = [[-\+ Snippets goes here]],
-      -- A line that matches this regex looks like:
-      ------------------------------------------------ Snippets goes here
-
-      -- this must be configured
-      snippets_directory = _G.CONFIG_PATH .. "/luasnippets/",
-
-      -- let's say you're creating a snippet for Lua,
-      -- SnippetGenie will look for the file at `/path/to/my/LuaSnip/snippet/folder/lua/generated.lua`
-      -- and add the new snippet there.
-      file_name = "generated",
-    },
-    keys = {
-      {
-        "<CR>",
-        function()
-          require("SnippetGenie").create_new_snippet_or_add_placeholder()
-          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<esc>", true, false, true), "x", true)
-        end,
-        mode = "x",
-      },
-      {
-        "<leader>ns",
-        function() require("SnippetGenie").finalize_snippet() end,
-        mode = "n",
-        desc = "Genie Finalize",
-      },
-    },
-  },
-  {
     "LudoPinelli/comment-box.nvim",
     -- TODO: configure this better
     keys = {
@@ -260,5 +228,6 @@ local M = {
     },
     opts = {},
   },
+  -- TODO: https://github.com/chrisgrieser/nvim-scissors
 }
 return M

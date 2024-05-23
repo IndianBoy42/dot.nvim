@@ -383,9 +383,10 @@ end
     fmta([[<> vim.api.nvim_create_augroup("<>")]], {
       d(2, function(_, parent)
         local line = parent.env.POSTFIX_MATCH
-        vim.g.snip_test_line = line
-        if line:find "group%s*=%s*$" then return sn(nil, { t "" }) end
-        if line:find "local%s+$" then return sn(nil, { t "augroup = " }) end
+        if line then
+          if line:find "group%s*=%s*$" then return sn(nil, { t "" }) end
+          if line:find "local%s+$" then return sn(nil, { t "augroup = " }) end
+        end
         -- if line:find "local%s+$" then return sn(nil, { l(l._1, { 1 }) }) end
         return sn(nil, { t "group = " })
       end),

@@ -75,6 +75,7 @@ end
 local custom_textobjects = function(ai)
   local s = ai.gen_spec
   local ts = s.treesitter
+  local ex = require("mini.extra").gen_ai_spec
 
   return {
     k = ts({
@@ -105,23 +106,7 @@ local custom_textobjects = function(ai)
     c = ts({ a = "@call.outer", i = "@call.inner" }, {}),
     -- c = s.function_call(),
     -- line textobject
-    l = function(ai_type)
-      local line_num = vim.fn.line "."
-      local line = vim.fn.getline(line_num)
-      -- Select `\n` past the line for `a` to delete it whole
-      local from_col, to_col = 1, line:len() + 1
-      if ai_type == "i" then
-        if line:len() == 0 then
-          -- Don't remove empty line
-          from_col, to_col = 0, 0
-        else
-          -- Ignore indentation for `i` textobject and don't remove `\n` past the line
-          from_col = line:match "^%s*()"
-          to_col = line:len()
-        end
-      end
-      return { from = { line = line_num, col = from_col }, to = { line = line_num, col = to_col } }
-    end,
+    l = ex.line(),
     B = { "%b{}", "^.().*().$" },
     t = { "%b<>", "^.().*().$" },
     T = { "<(%w-)%f[^<%w][^<>]->.-</%1>", "^<.->().*()</[^/]->$" },
@@ -143,8 +128,10 @@ local custom_textobjects = function(ai)
       },
       "^().*()$",
     },
-    -- Number
-    n = { "%u[%l%d]+%f[^%l%d]", "" },
+    i = ex.indent(),
+    e = ex.buffer(),
+    d = ex.diagnostic(),
+    N = ex.number(),
     -- B = function(ai_type)
     --   local n_lines = vim.fn.line "$"
     --   local start_line, end_line = 1, n_lines
@@ -466,10 +453,10 @@ return {
           search = { multi_window = false, wrap = true, incremental = false, max_length = 0 },
           config = function(opts)
             if false and vim.fn.mode() == "v" then
-              opts.labels:gsub("[cdyrx]", "") -- TODO: Remove all operations
+              opts.labels:gsub("[cdyrxCDYRX]", "") -- TODO: Remove all operations
             end
           end,
-          treesitter = { containing_end_pos = true },
+          treesitter = {},
           matcher = navutils.custom_ts,
           actions = navutils.ts_actions,
         },
@@ -485,20 +472,39 @@ return {
           },
           jump = { pos = "range", register = false },
           highlight = { matches = true },
-          treesitter = { containing_end_pos = true },
-          actions = navutils.ts_actions,
+          treesitter = {},
           remote_op = {
             restore = true,
             motion = true,
           },
           matcher = navutils.remote_ts,
+          actions = navutils.ts_actions,
+        },
+        remote_sel = {
+          mode = "treesitter",
+          search = {
+            -- mode = "fuzzy",
+            -- mode = navutils.remote_ts_search,
+            max_length = 4,
+            incremental = false,
+          },
+          label = { min_pattern_length = 2 },
+          jump = { pos = "range", register = false },
+          highlight = { matches = true },
+          treesitter = {},
+          remote_op = {
+            restore = true,
+            motion = true,
+          },
+          matcher = navutils.remote_sel,
+          actions = navutils.ts_actions,
         },
         fuzzy = {
           search = { mode = "fuzzy", max_length = 9999 },
           label = { min_pattern_length = 4 },
           -- label = { before = true, after = false },
         },
-        leap = {
+        leap = { -- Is this even possible really?
           search = {
             max_length = 2,
           },
@@ -537,7 +543,6 @@ return {
           search = { mode = "fuzzy" },
           jump = { autojump = true },
         },
-        -- TODO: implement iswap and some hop-extensions in this?
       },
     },
     keys = {
@@ -918,7 +923,9 @@ return {
   {
     "echasnovski/mini.ai",
     event = "VeryLazy",
+    dependencies = { "echasnovski/mini.extra" },
     config = function(_, opts)
+      _G.config_traceback = debug.traceback()
       local ai = require "mini.ai"
       opts = {
         n_lines = 1000,

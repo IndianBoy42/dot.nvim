@@ -198,7 +198,8 @@ return {
 
   require("langs").mason_ensure_installed { "codelldb", "rust-analyzer", "taplo" },
 
-  -- TODO: rustaceanvim https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/plugins/extras/lang/rust.lua
+    -- TODO: rustaceanvim
+  -- https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/plugins/extras/lang/rust.lua
   -- https://github.com/mrcjkb/rustaceanvim/discussions/122
   {
     "neovim/nvim-lspconfig",
@@ -223,12 +224,12 @@ return {
 
             tools = {
               -- TODO:
-              -- executor = require("kitty").rust_tools_executor(),
               executor = {
                 execute_command = function(command, args, cwd)
                   local ok, kitty = pcall(require, "kitty")
-                  if ok then
-                    return kitty.rust_tools_executor()(command, args, cwd)
+                  if ok and kitty.rust_tool_executor then
+                    require("rust-tools.config").options.tools.executor = kitty.rust_tools_executor()
+                    return kitty.rust_tools_executor().execute_command(command, args, cwd)
                   else
                     require("rust-tools.executors").termopen.execute_command(command, args, cwd)
                   end

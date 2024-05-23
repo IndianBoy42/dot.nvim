@@ -519,7 +519,11 @@ return setmetatable(M, {
     -- end
     --     end
 
-    return function(...) return require("telescope.builtin")[k](...) end
+    -- TODO: can be lazier?
+    return function(...)
+      -- vim.print(debug.traceback(k))
+      return require("telescope.builtin")[k](...)
+    end
     -- local builtin = require("telescope.builtin")[k]
     -- if builtin then
     --   return builtin

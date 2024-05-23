@@ -34,7 +34,7 @@ M.setup = function()
   local map = vim.keymap.set
   map("n", "<leader>vc", "zz", { desc = "Center this Line" })
   map("n", "<leader>vb", "zb", { desc = "Bottom this Line" })
-  -- map("n", "<leader>vt", "zt", { desc = "Top this Line" })
+  map("n", "<leader>vv", "zt", { desc = "Top this Line" })
 
   return hydra
 end

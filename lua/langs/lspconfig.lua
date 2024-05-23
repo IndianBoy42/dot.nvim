@@ -110,33 +110,28 @@ return {
           { buffer = bufnr, callback = vim.lsp.codelens.refresh }
         )
       end
-    end)
 
-    local inlay_hints = vim.lsp.inlay_hint.enable
-    if inlay_hints then
-      utils.lsp.on_attach(function(client, bufnr)
-        if client.supports_method "textDocument/inlayHint" then
-          inlay_hints(true)
+      if client.supports_method "textDocument/inlayHint" then
+        vim.lsp.inlay_hint.enable(true)
 
-          -- TODO:
-          -- local modes = {
-          --   true, -- Default
-          --   -- n = true,
-          --   -- i = false,
-          -- }
-          --
-          -- if true then
-          --   vim.api.nvim_create_autocmd("ModeChanged", {
-          --     buffer = bufnr,
-          --     group = "lsp_inlay_hints",
-          --     callback = function(args)
-          --       inlay_hint(bufnr, modes[vim.api.nvim_get_mode().mode] or modes[0])
-          --     end,
-          --   })
-          -- end
-        end
-      end, "lsp_inlay_hints")
-    end
+        -- TODO:
+        -- local modes = {
+        --   true, -- Default
+        --   -- n = true,
+        --   -- i = false,
+        -- }
+        --
+        -- if true then
+        --   vim.api.nvim_create_autocmd("ModeChanged", {
+        --     buffer = bufnr,
+        --     group = "lsp_inlay_hints",
+        --     callback = function(args)
+        --       inlay_hint(bufnr, modes[vim.api.nvim_get_mode().mode] or modes[0])
+        --     end,
+        --   })
+        -- end
+      end
+    end, "lsp_inlay_hints")
 
     local function setup(server)
       local server_opts = vim.tbl_deep_extend("force", {

@@ -37,6 +37,7 @@ local M = {
     end,
     cmd = "DistantLaunch",
   },
+  -- https://github.com/amitds1997/remote-nvim.nvim
   -- TODO: https://github.com/jbyuki/instant.nvim (collaborative editing)
   {
     "jbyuki/instant.nvim",
