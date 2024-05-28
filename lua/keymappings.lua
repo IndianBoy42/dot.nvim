@@ -9,7 +9,7 @@ local custom_n_repeat = nil
 local custom_N_repeat = nil
 local nvim_feedkeys = vim.api.nvim_feedkeys
 local termcode = vim.api.nvim_replace_termcodes
-local function t(k) return termcode(k, true, true, true) end
+local t = vim.keycode
 local function feedkeys(keys, o)
   if o == nil then o = "m" end
   nvim_feedkeys(t(keys), o, false)
@@ -149,6 +149,7 @@ function M.setup()
   map("x", "g/", "/", { desc = "Search motion" })
   map("n", "<C-/>", srchrpt "?", { desc = "Search bwd" })
   -- Swap g* and * ?
+  -- TODO: the visual mode versions need repeating
   map("n", "*", srchrpt "*", { desc = "Search cword" })
   map("n", "<C-*>", srchrpt "#", { desc = "Search cword" })
   map("n", "g*", srchrpt "g*", { desc = "Search cword whole" })
@@ -284,8 +285,45 @@ function M.setup()
   -- dont_clobber_by_default("n", "c")
   -- dont_clobber_by_default("x", "c")
   -- dont_clobber_by_default("n", "C")
-  dont_clobber_by_default("n", "x")
-  -- dont_clobber_by_default("x", "x")
+
+  if true then
+    local xcount = 0
+    local reg = '"x'
+    local not_repeat = true
+    local op = "v:lua.__merging_single_char_del"
+    _G.__merging_single_char_del = function()
+      if not_repeat then
+        not_repeat = false
+      else
+        vim.cmd("normal! " .. tostring(xcount) .. reg .. "x")
+      end
+    end
+    local plug = vim.keycode "<Plug>(del-single-char)"
+    map("n", "x", function()
+      vim.go.operatorfunc = op
+      xcount = 1
+      vim.api.nvim_feedkeys(reg .. "x", "n", false)
+      vim.api.nvim_feedkeys(plug, "m", false)
+    end, { desc = "del single char" })
+    -- timed out, clear
+    map("n", "<Plug>(del-single-char)", function()
+      not_repeat = true
+      return "g@l"
+    end, { expr = true })
+    -- x was hit within the timeout
+    local cont = function()
+      vim.cmd.undojoin()
+      xcount = xcount + 1
+      vim.api.nvim_feedkeys(reg:upper() .. "x", "n", false)
+      vim.api.nvim_feedkeys(plug, "m", false)
+    end
+    map("n", "<Plug>(del-single-char)x", cont, {})
+    map("n", "<Plug>(del-single-char)i", function()
+      vim.cmd.undojoin()
+      vim.api.nvim_feedkeys("i", "n", false)
+    end, {})
+  end
+  -- TODO: merge d<motion>i to be like c<motion>
 
   -- -- move along visual lines, not numbered ones
   -- -- without interferring with {count}<down|up>
@@ -351,11 +389,14 @@ function M.setup()
     { "d", "D", "e", "E" },
     "Diags",
     { utils.lsp.diag_next, utils.lsp.diag_prev, utils.lsp.error_next, utils.lsp.error_prev },
-    {
-      body = { O.goto_next, O.goto_previous, O.goto_next_outer, O.goto_previous_outer },
-    }
+    {}
   )
-  repeatable("e", "Error", { utils.lsp.error_next, utils.lsp.error_prev }, {})
+  repeatable(
+    { "e", "E", "d", "D" },
+    "Error",
+    { utils.lsp.error_next, utils.lsp.error_prev, utils.lsp.diag_next, utils.lsp.diag_prev },
+    {}
+  )
 
   local on_list_gen = function(pair)
     local on_list_next = {
@@ -457,14 +498,47 @@ function M.setup()
   -- Escape key clears search and spelling highlights
   -- FIXME: why do you delete yourself??
   map("n", "<esc>", function()
-    local ok, _ = pcall(function() return vim.cmd "FzClear" end)
     vim.cmd "nohlsearch"
 
-    pcall(function() require("blinker").blink_cursorline() end)
     vim.o.spell = false
+
     local ok, notify = pcall(require, "notify")
     if ok then notify.dismiss { pending = true, silent = true } end
-  end, sile)
+
+    return "<Plug>(double-esc)"
+  end, { silent = true, expr = true, remap = true })
+  map("i", "<esc>", function()
+    vim.cmd.stopinsert()
+    -- vim.cmd.normal { bang = true, "==" } -- Reindent line
+    return "<Plug>(double-esc)"
+  end, { silent = true, expr = true, remap = true })
+  map("n", "<Plug>(double-esc)<esc>", function()
+    -- TODO: close floating windows
+    pcall(vim.cmd.write)
+    pcall(function() require("blinker").blink_cursorline() end)
+  end)
+
+  map("n", "<c-f>", function()
+    local wins = vim
+      .iter(vim.api.nvim_list_wins())
+      :map(function(w)
+        local cfg = vim.api.nvim_win_get_config(w)
+        cfg.id = w
+        vim.print(cfg)
+        return cfg
+      end)
+      :filter(function(w)
+        -- TODO: actually compute the position because they may not use cursor
+        return w.focusable and w.relative == "cursor"
+      end)
+      :totable()
+    vim.print(wins)
+    for _, win in ipairs(wins) do
+      if (not win.row or win.row == 0) and (not win.col or win.col == 0) then
+        vim.api.nvim_tabpage_set_win(0, win.id)
+      end
+    end
+  end)
 
   -- Go Back
   if true then
@@ -514,31 +588,12 @@ function M.setup()
   map("n", "<M-h>", "<c-o>", nore)
   map("n", "<M-l>", "<c-i>", nore)
 
-  local function quick_toggle(prefix, suffix, callback, name)
-    require "hydra" {
-      name = name,
-      body = prefix,
-      mode = "n",
-      config = {
-        timeout = 5000,
-        on_key = function()
-          -- Preserve animation
-          vim.wait(50, function()
-            vim.cmd "redraw!"
-            return false
-          end, 30, false)
-        end,
-      },
-      heads = {
-        { suffix, callback, { desc = name } },
-      },
-    }
-  end
-  quick_toggle("<leader>T", "d", utils.lsp.toggle_diagnostics)
-  quick_toggle("<leader>T", "i", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
-  quick_toggle("<leader>T", "b", "<cmd>ToggleBlame virtual<cr>")
+  M.quick_toggle("<leader>T", "d", utils.lsp.toggle_diagnostics)
+  M.quick_toggle("<leader>T", "i", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
+  M.quick_toggle("<leader>T", "b", "<cmd>ToggleBlame virtual<cr>")
 
   -- Select last pasted
+  -- TODO: use yanky
   map("x", "<leader>vp", "`[o`]", { desc = "Select Last Paste/Op" })
   map("x", "<leader>vP", "V`[o`]", { desc = "SelLine Last Paste/Op" })
   map("x", "<leader>v<C-p>", "<C-v>`[o`]", { desc = "SelBlock Last Paste/Op" })
@@ -577,10 +632,11 @@ function M.setup()
   -- map("n", "/", "/\v", nore)
 
   -- Split line
+  map("n", "o", "A<cr>")
+  map("n", "O", "^kA<cr>")
   map("n", "go", "i<cr><ESC>k<cmd>sil! keepp s/\v +$//<cr><cmd>noh<cr>j^", { desc = "Split Line" })
-
-  -- Quick activate macro
-  -- map({ "n", "x" }, "Q", "@q", nore)
+  map("n", "<M-o>", "o<esc>", { remap = true, desc = "Split Line" })
+  map("n", "<M-S-o>", "O<esc>", { remap = true, desc = "Split Line" })
 
   -- Reselect visual linewise
   map("n", "gV", "'<V'>", nore)
@@ -666,8 +722,8 @@ function M.setup()
   -- quick_inside "q"
 
   -- "better" end and beginning of line
-  map({ "o", "x" }, "H", "^", { remap = true })
-  map({ "o", "x" }, "L", "$", { remap = true })
+  -- map({ "o", "x" }, "H", "^", { remap = true })
+  -- map({ "o", "x" }, "L", "$", { remap = true })
   -- map("x", "H", "^", { remap = true })
   -- map("x", "L", "g_", { remap = true })
   -- map("n", "H", [[col('.') == match(getline('.'),'\S')+1 ? '0' : '^']], norexpr)
@@ -1200,6 +1256,26 @@ function M.vlocalleader(maps, opts)
 end
 
 M.repeatable = require("keymappings.jump_mode").repeatable
+function M.quick_toggle(prefix, suffix, callback, name)
+  require "hydra" {
+    name = name,
+    body = prefix,
+    mode = "n",
+    config = {
+      timeout = 5000,
+      on_key = function()
+        -- Preserve animation
+        vim.wait(50, function()
+          vim.cmd "redraw!"
+          return false
+        end, 30, false)
+      end,
+    },
+    heads = {
+      { suffix, callback, { desc = name } },
+    },
+  }
+end
 
 utils.lsp.on_attach(function(client, bufnr)
   local map = function(mode, lhs, rhs, opts)
@@ -1231,8 +1307,9 @@ utils.lsp.on_attach(function(client, bufnr)
     vim.cmd "undo!"
     vim.lsp.buf.rename(new_name)
   end, { desc = "Rename after" })
+  map("i", "<M-r>", "<esc><M-r>", { remap = true, desc = "Rename after" })
   -- Hover
-  map("n", O.hover_key, utils.lsp.repeatable_hover, { desc = "LSP Hover" })
+  map({ "x", "n" }, O.hover_key, utils.lsp.repeatable_hover, { desc = "LSP Hover" })
   map("i", "<C-i>", lspbuf.signature_help, { desc = "LSP Signature Help" })
   map("i", "<tab>", "<m-l>", { remap = true }) -- FIXME: i don't like this hardcoding
   map("n", O.action_key, telescope_fn.code_actions_previewed, { desc = "Do Code Action" })
@@ -1241,16 +1318,19 @@ utils.lsp.on_attach(function(client, bufnr)
     map(
       "n",
       "q" .. i,
-      function()
-        telescope_fn.code_actions_previewed {
-          context = { only = { name } },
-          apply = true,
-        }
-      end,
+      utils.repeatable(
+        function()
+          telescope_fn.code_actions_previewed {
+            context = { only = { name } },
+            apply = true,
+          }
+        end
+      ),
       { desc = "Do" .. name }
     )
   end
   quick_code_action("u", "quickfix") -- TODO: collect quickfixes from all diagnostics and let us apply in batches from telescope
+  quick_code_action("w", "quickfix") -- TODO: collect quickfixes from all diagnostics and let us apply in batches from telescope
   quick_code_action("i", "refactor.inline")
   quick_code_action("r", "refactor.rewrite")
   quick_code_action("e", "refactor.extract")

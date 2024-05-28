@@ -2,7 +2,7 @@ return {
   {
     "neovim/nvim-lspconfig",
     dependencies = {
-      { "folke/neodev.nvim", opts = {} },
+      { "folke/neodev.nvim", opts = { pathStrict = true } },
     },
     opts = {
       servers = {

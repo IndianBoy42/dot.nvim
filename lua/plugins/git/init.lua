@@ -25,6 +25,129 @@ return {
     },
   },
   {
+    "sindrets/diffview.nvim",
+    config = function(_, opts)
+      local actions = require "diffview.actions"
+      require("diffview").setup {
+        key_bindings = require("plugins.git.keys").diffview(actions),
+        hooks = {
+          view_opened = function() vim.cmd.WindowsDisableAutowidth() end,
+          view_entered = function() vim.cmd.WindowsDisableAutowidth() end,
+          view_closed = function() vim.cmd.WindowsEnableAutowidth() end,
+          view_leave = function() vim.cmd.WindowsEnableAutowidth() end,
+        },
+      }
+    end,
+    ft = "diff",
+    cmd = { "DiffviewOpen", "DiffviewFileHistory" },
+  },
+  -- TODO: neogit
+  {
+    "NeogitOrg/neogit",
+    cmd = "Neogit",
+    dependencies = "nvim-lua/plenary.nvim",
+    opts = {
+      use_telescope = true,
+      telescope_sorter = function() return require("telescope").extensions.fzf.native_fzf_sorter() end,
+      integrations = {
+        diffview = true,
+      },
+      graph_style = "unicode",
+      disable_commit_confirmation = true,
+      disable_builtin_notifications = true,
+      disable_insert_on_commit = "auto",
+      mappings = {
+        status = {
+          s = false,
+          S = false,
+          a = "Stage",
+          A = "StageUnstaged",
+          ["<C-a>"] = "StageAll",
+          h = "Toggle",
+          l = "Toggle",
+          ["<C-q>"] = "Close",
+        },
+        rebase_editor = {
+          ["<C-q>"] = "Close",
+        },
+        commit_editor = {
+          ["<C-q>"] = "Close",
+        },
+        popup = {
+          A = false,
+          C = "CherryPickPopup",
+        },
+      },
+    },
+    config = function(_, opts)
+      require("neogit").setup(opts)
+
+      local group = vim.api.nvim_create_augroup("NeogitUserAucmds", {})
+      vim.api.nvim_create_autocmd("FileType", {
+        group = group,
+        pattern = "NeogitPopup",
+        callback = function()
+          -- require("which-key").register({
+          --   ["-"] = "Options",
+          --   ["="] = "Arguments",
+          -- }, { buffer = 0 })
+        end,
+      })
+    end,
+  },
+  { "aaronhallaert/advanced-git-search.nvim" },
+  -- TODO: https://github.com/anuvyklack/hydra.nvim/wiki/Git
+  {
+    "lewis6991/gitsigns.nvim",
+    opts = {
+      on_attach = function(bufnr) vim.b.gitsigns_attached = true end,
+    },
+    event = "LazyFile",
+    -- keys = function()
+    --   local repeatable = mappings.repeatable
+    --   local gs = utils.lazy_require "gitsigns"
+    --   repeatable("g", "Git Hunk", { vim.schedule_wrap(gs.next_hunk), vim.schedule_wrap(gs.prev_hunk) }, {
+    --   local p = utils.partial
+    --   return {
+    --     { "<leader>gl", gs.blame_line, "Blame" },
+    --     { "<leader>gp", gs.preview_hunk, "Preview Hunk" },
+    --     { "<leader>grh", gs.reset_hunk, "Reset Hunk" },
+    --     { "<leader>grb", gs.reset_buffer, "Reset Buffer" },
+    --     { "<leader>gS", gs.stage_buffer, "Stage Buffer" },
+    --     { "<leader>gs", gs.stage_hunk, "Stage Hunk" },
+    --     { "<leader>gd", gs.diffthis, "Diff Hunk" },
+    --     { "<leader>gD", p(gs.diffthis, "~"), "Diff ~" },
+    --     { "<leader>gu", gs.undo_stage_hunk, "Undo Stage Hunk" },
+    --     { "ig", ":<C-U>Gitsigns select_hunk<CR>", "Git Hunk", mode = { "o", "x" } },
+    --   }
+    -- end,
+  },
+  {
+    "FabijanZulj/blame.nvim",
+    cmd = "BlameToggle",
+    config = function() mappings.quick_toggle("<leader>T", "b", "<cmd>ToggleBlame virtual<cr>") end,
+    keys = {
+      { "<leader>Tb", desc = "ToggleBlame virtual" },
+    },
+  },
+  {
+    "akinsho/git-conflict.nvim",
+    opts = {
+      default_mappings = false,
+    },
+    config = function(_, opts)
+      require("git-conflict").setup(opts)
+
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "GitConflictDetected",
+        callback = function()
+          vim.notify("Conflict detected in " .. vim.fn.expand "<afile>")
+        end,
+      })
+    end,
+    event = "LazyFile",
+  },
+  {
     "pwntester/octo.nvim",
     cmd = "Octo",
     opts = {
@@ -142,119 +265,5 @@ return {
         },
       },
     },
-  },
-  {
-    "sindrets/diffview.nvim",
-    config = function(_, opts)
-      local actions = require "diffview.actions"
-      require("diffview").setup {
-        key_bindings = require("plugins.git.keys").diffview(actions),
-        hooks = {
-          view_opened = function() vim.cmd.WindowsDisableAutowidth() end,
-          view_entered = function() vim.cmd.WindowsDisableAutowidth() end,
-          view_closed = function() vim.cmd.WindowsEnableAutowidth() end,
-          view_leave = function() vim.cmd.WindowsEnableAutowidth() end,
-        },
-      }
-    end,
-    ft = "diff",
-    cmd = { "DiffviewOpen", "DiffviewFileHistory" },
-  },
-  -- TODO: neogit
-  {
-    "NeogitOrg/neogit",
-    cmd = "Neogit",
-    dependencies = "nvim-lua/plenary.nvim",
-    opts = {
-      use_telescope = true,
-      telescope_sorter = function() return require("telescope").extensions.fzf.native_fzf_sorter() end,
-      integrations = {
-        diffview = true,
-      },
-      graph_style = "unicode",
-      disable_commit_confirmation = true,
-      disable_builtin_notifications = true,
-      disable_insert_on_commit = "auto",
-      mappings = {
-        status = {
-          s = false,
-          S = false,
-          a = "Stage",
-          A = "StageUnstaged",
-          ["<C-a>"] = "StageAll",
-          h = "Toggle",
-          l = "Toggle",
-          ["<C-q>"] = "Close",
-        },
-        rebase_editor = {
-          ["<C-q>"] = "Close",
-        },
-        commit_editor = {
-          ["<C-q>"] = "Close",
-        },
-        popup = {
-          A = false,
-          C = "CherryPickPopup",
-        },
-      },
-    },
-    config = function(_, opts)
-      require("neogit").setup(opts)
-
-      local group = vim.api.nvim_create_augroup("NeogitUserAucmds", {})
-      vim.api.nvim_create_autocmd("FileType", {
-        group = group,
-        pattern = "NeogitPopup",
-        callback = function()
-          -- require("which-key").register({
-          --   ["-"] = "Options",
-          --   ["="] = "Arguments",
-          -- }, { buffer = 0 })
-        end,
-      })
-    end,
-  },
-  {
-    "tpope/vim-fugitive",
-    config = function() end,
-    cmd = { "G", "Git", "Gdiffsplit", "Gdiff" },
-  },
-  { "aaronhallaert/advanced-git-search.nvim" },
-  -- TODO: https://github.com/anuvyklack/hydra.nvim/wiki/Git
-  {
-    "lewis6991/gitsigns.nvim",
-    opts = {
-      on_attach = function(bufnr) vim.b.gitsigns_attached = true end,
-    },
-    event = "LazyFile",
-    -- keys = function()
-    --   local repeatable = mappings.repeatable
-    --   local gs = utils.lazy_require "gitsigns"
-    --   repeatable("g", "Git Hunk", { vim.schedule_wrap(gs.next_hunk), vim.schedule_wrap(gs.prev_hunk) }, {
-    --   local p = utils.partial
-    --   return {
-    --     { "<leader>gl", gs.blame_line, "Blame" },
-    --     { "<leader>gp", gs.preview_hunk, "Preview Hunk" },
-    --     { "<leader>grh", gs.reset_hunk, "Reset Hunk" },
-    --     { "<leader>grb", gs.reset_buffer, "Reset Buffer" },
-    --     { "<leader>gS", gs.stage_buffer, "Stage Buffer" },
-    --     { "<leader>gs", gs.stage_hunk, "Stage Hunk" },
-    --     { "<leader>gd", gs.diffthis, "Diff Hunk" },
-    --     { "<leader>gD", p(gs.diffthis, "~"), "Diff ~" },
-    --     { "<leader>gu", gs.undo_stage_hunk, "Undo Stage Hunk" },
-    --     { "ig", ":<C-U>Gitsigns select_hunk<CR>", "Git Hunk", mode = { "o", "x" } },
-    --   }
-    -- end,
-  },
-  {
-    "FabijanZulj/blame.nvim",
-    cmd = "ToggleBlame",
-  },
-  {
-    "f-person/git-blame.nvim",
-    cond = false,
-    init = function() vim.g.gitblame_enabled = 0 end,
-    cmd = "GitBlameToggle",
-    -- keys = { "<leader>gL", "<cmd>GitBlameToggle<cr>", desc = "Blame Toggle" },
   },
 }

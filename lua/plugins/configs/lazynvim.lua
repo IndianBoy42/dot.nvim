@@ -7,7 +7,7 @@ Au.grp("lazy_filetype", function(au)
   au("FileType", {
     pattern = "lazy",
     callback = function()
-      utils.lsp.toggle_diag_lines()
+      pcall(function() utils.lsp.toggle_diag_lines() end)
       vim.keymap.setl("n", "<localleader>n", "/[○●]<cr>", { desc = "Next plugin" })
     end,
   })

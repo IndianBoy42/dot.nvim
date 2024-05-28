@@ -244,6 +244,7 @@ return {
         end
 
         hydra {
+          -- TODO: the hint doesn't show properly
           config = { invoke_on_body = true },
           name = "Change case",
           mode = "n",
@@ -300,6 +301,7 @@ return {
       { "<leader>P", "<Plug>(YankyPutIndentBeforeLinewise)", mode = "n", desc = "Put before line" },
       { "yp", "<Plug>(YankyPutIndentAfterCharwise)", mode = "n", desc = "Put after char" },
       { "yP", "<Plug>(YankyPutIndentBeforeCharwise)", mode = "n", desc = "Put before char" },
+      -- TODO: function() require("yanky.textobj").last_put() end,
     },
   },
   {

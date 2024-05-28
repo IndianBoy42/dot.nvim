@@ -26,7 +26,7 @@ local ops = {
   ["g~"] = "~",
   ["v:lua.require'substitute'.operator_callback"] = "p",
   -- ["v:lua.Duplicate.operator"] = "yd",
-  -- ["v:lua.MiniSurround.add"] = "ys",
+  ["v:lua.MiniSurround.add"] = "s",
 }
 local function multiop(select, find)
   return function()
@@ -57,6 +57,7 @@ local function multiop(select, find)
           end)
         else
           -- operatorfunc doesnt work in general so youre out of luck
+          vim.go.operatorfunc = opfunc
           vim.cmd [[call b:VM_Selection.Edit.run_visual("g@", 1)]]
         end
       end,
@@ -128,14 +129,12 @@ return {
     vim.g.VM_user_operators = {
       "yd",
       "cx",
+      "yc",
     }
     vim.g.VM_surround_mapping = "s"
   end,
   config = function()
-    -- require("which-key").register(
-    --   { [vim.g.VM_leader .. "g"] = "which_key_ignore", [vim.g.VM_leader] = "which_key_ignore" },
-    --   { mode = "n" }
-    -- )
+    -- TODO: yolo and merge this into the github lol, i forked it anyway, could be implemented better anyway
     vim.cmd.VMTheme(vim.g.VM_theme)
     local ldr = vim.g.VM_leader
     local map = vim.keymap.set
@@ -179,6 +178,8 @@ return {
         end
       end
     end, { expr = true })
+    -- TODO: subsume visual block mode
+    -- TODO: add selection downward
 
     -- Multi select object
     local find_under_operator = utils.operatorfunc_keys "<Plug>(VM-Find-Subword-Under)"
@@ -256,10 +257,6 @@ return {
       pattern = "visual_multi_end",
       callback = function() end,
     })
-
-    -- map("n", "co", wrap_vm(nil, "Find-Under", "<Plug>(VM-Find-Operator)"), {})
-    -- map("n", "co", utils.operatorfunc_keys("<esc><M-n>mgv"), {})
-    -- vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufNewFile" }, { command = "VMTheme " .. theme })
 
     map("n", "<Plug>(VM-Disable-Mappings)", ":call b:VM_Selection.Maps.disable(1)<cr>", { silent = true })
     map("n", "<Plug>(VM-Enable-Mappings)", ":call b:VM_Selection.Maps.enable()<cr>", { silent = true })

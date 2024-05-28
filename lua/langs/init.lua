@@ -10,11 +10,48 @@ local diagnostic_config_all = {
   virtual_text = {
     spacing = 4,
     prefix = "",
-    severity_limit = "Warning",
   },
-  virtual_lines = { highlight_whole_line = false },
-  signs = true,
-  underline = { severity = "Error" },
+  _virtual_text = {
+    -- TODO: this looks bad, has too much extra space
+    spacing = 0,
+    prefix = "",
+    format = function() return "" end,
+    suffix = "",
+    hl_mode = "replace",
+    virt_text_pos = "inline",
+  },
+  virtual_text_w_lines = {
+    spacing = 4,
+    prefix = "",
+    format = function() return "" end,
+    _format = function(diagnostic)
+      local lnum = vim.api.nvim_win_get_cursor(0)[1] - 1
+      local curr_line = diagnostic.end_lnum and (lnum >= diagnostic.lnum and lnum <= diagnostic.end_lnum)
+        or (lnum == diagnostic.lnum)
+      if curr_line then
+        return ""
+      else
+        return diagnostic.message
+      end
+    end,
+    severity = { max = vim.diagnostic.severity.WARN },
+  },
+  virtual_lines = {
+    highlight_whole_line = false,
+    severity = { min = vim.diagnostic.severity.ERROR },
+    arrow_width = 0,
+    current_line_opts = {
+      severity = false,
+    },
+  },
+  signs = false,
+  underline = {
+    -- severity = {
+    --   vim.diagnostic.severity.ERROR,
+    --   vim.diagnostic.severity.INFO,
+    --   vim.diagnostic.severity.HINT,
+    -- },
+  },
   severity_sort = true,
   update_in_insert = true,
   float = {
@@ -52,8 +89,10 @@ local configs = {
     }
   end,
   diagnostic_config = vim.tbl_extend("keep", {
-    virtual_text = false,
-    signs = false,
+    virtual_text = diagnostic_config_all.virtual_text_w_lines,
+    virtual_lines_all = vim.tbl_extend("keep", {
+      severity = false,
+    }, diagnostic_config_all.virtual_lines),
   }, diagnostic_config_all),
   diagnostic_config_all = diagnostic_config_all,
   codelens_config = {

@@ -84,7 +84,7 @@ return {
     local servers = opts.servers
     local capabilities = vim.lsp.protocol.make_client_capabilities()
 
-    capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
+    capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
 
     local lsp_sel_rng = require "lsp-selection-range"
     lsp_sel_rng.update_capabilities(capabilities)
@@ -100,7 +100,7 @@ return {
       })
     end
 
-    -- utils.lsp.on_attach(function(client, bufnr) utils.lsp.document_highlight(client, bufnr) end)
+    utils.lsp.on_attach(function(client, bufnr) utils.lsp.document_highlight(client, bufnr) end)
 
     handlers["textDocument/codeLens"] = lspwith(vim.lsp.codelens.on_codelens, require("langs").codelens_config)
     utils.lsp.on_attach(function(client, bufnr)

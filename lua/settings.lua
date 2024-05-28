@@ -65,7 +65,7 @@ return function()
   opt.smartindent = true -- make indenting smarter again
   opt.splitbelow = true -- force all horizontal splits to go below current window
   opt.splitright = true -- force all vertical splits to go to the right of current window
-  opt.splitkeep = "screen" -- keeps the same screen lines when splitting
+  opt.splitkeep = "cursor" -- keeps the same screen lines when splitting
   opt.swapfile = false -- creates a swapfile
   opt.termguicolors = true -- set term gui colors (most terminals support this)
   opt.timeoutlen = O.timeoutlen -- time to wait for a mapped sequence to complete (in milliseconds)

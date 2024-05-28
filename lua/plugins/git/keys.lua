@@ -9,6 +9,21 @@ M.hydra = function(bufnr)
 ]]
   local Hydra = require "hydra"
   local gitsigns = require "gitsigns"
+  local conflict_hydra = Hydra {
+    name = "Git Conflicts",
+    config = {
+      color = "pink",
+      invoke_on_body = false,
+    },
+    heads = {
+      { "o", "<Plug>(git-conflict-ours)", { desc = "ours" } },
+      { "t", "<Plug>(git-conflict-theirs)", { desc = "theirs" } },
+      { "b", "<Plug>(git-conflict-both)", { desc = "both" } },
+      { "0", "<Plug>(git-conflict-none)", { desc = "none" } },
+      { "]", "<Plug>(git-conflict-prev-conflict)", { desc = "prev conflict" } },
+      { "[", "<Plug>(git-conflict-next-conflict)", { desc = "next conflict" } },
+    },
+  }
   local hydra = Hydra {
     name = "Git",
     hint = hint,
@@ -85,6 +100,11 @@ M.hydra = function(bufnr)
         "i",
         function() require("kitty.terms").use_os_window({}, "gitui", "gitui") end,
         { exit_before = true, desc = "GitUI" },
+      },
+      {
+        "c",
+        function() conflict_hydra:activate() end,
+        { exit_before = true, desc = "Git Conflicts" },
       },
       -- { "<Space>", ":tab G ", { exit = true, desc = false } },
       { "q", nil, { exit = true, nowait = true, desc = "exit" } },

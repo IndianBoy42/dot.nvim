@@ -35,19 +35,18 @@ return {
         "<cmd>TodoTrouble<cr>",
         desc = "TODOs sidebar",
       },
-      {
-        "[T",
-        utils.partial_require("todo-comments", "jump_prev"),
-        desc = "Todo",
-      },
-      {
-        "]T",
-        utils.partial_require("todo-comments", "jump_next"),
-        desc = "Todo",
-      },
+      { "[T" },
+      { "]T" },
     },
     opts = {},
     event = "LazyFile",
+    config = function(_, opts)
+      require("todo-comments").setup(opts)
+      mappings.repeatable("T", "Todo Comments", {
+        require("todo-comments").jump_next,
+        require("todo-comments").jump_prev,
+      })
+    end,
   },
   { --tzachar/local-highlight.nvim
     "tzachar/local-highlight.nvim",

@@ -1,5 +1,5 @@
 local partial = utils.partial
-local navutils = require "editor.nav.lib"
+local nav = require "editor.nav.lib"
 local legend = {
   [" "] = "Whitespace",
   ['"'] = 'Balanced "',
@@ -457,8 +457,8 @@ return {
             end
           end,
           treesitter = {},
-          matcher = navutils.custom_ts,
-          actions = navutils.ts_actions,
+          matcher = nav.custom_ts,
+          actions = nav.ts_actions,
         },
         remote_ts = {
           -- TODO: use `;,<cr><tab><spc` to extend the selection to sibling nodes
@@ -477,8 +477,8 @@ return {
             restore = true,
             motion = true,
           },
-          matcher = navutils.remote_ts,
-          actions = navutils.ts_actions,
+          matcher = nav.remote_ts,
+          actions = nav.ts_actions,
         },
         remote_sel = {
           mode = "treesitter",
@@ -496,8 +496,8 @@ return {
             restore = true,
             motion = true,
           },
-          matcher = navutils.remote_sel,
-          actions = navutils.ts_actions,
+          matcher = nav.remote_sel,
+          actions = nav.ts_actions,
         },
         fuzzy = {
           search = { mode = "fuzzy", max_length = 9999 },
@@ -510,11 +510,11 @@ return {
           },
         },
         textcase = {
-          search = { mode = navutils.mode_textcase },
+          search = { mode = nav.mode_textcase },
         },
         search_diagnostics = {
           search = { mode = "fuzzy" },
-          action = navutils.there_and_back(utils.lsp.diag_line),
+          action = nav.there_and_back(utils.lsp.diag_line),
         },
         hover = {
           search = { mode = "fuzzy" },
@@ -568,11 +568,23 @@ return {
       {
         O.select_dynamic,
         mode = { "o", "x" },
-        function() require("flash").jump { mode = "treesitter" } end,
+        "<Plug>(flash-treesitter)",
         desc = "Cursor Node",
       },
       {
+        "<Plug>(flash-treesitter)",
+        mode = { "o", "x" },
+        desc = "Remote Node",
+        function() require("flash").jump { mode = "treesitter" } end,
+      },
+      {
         O.select_remote_dynamic,
+        mode = { "o", "x" },
+        desc = "Remote Node",
+        "<Plug>(flash-remote-ts)",
+      },
+      {
+        "<Plug>(flash-remote-ts)",
         mode = { "o", "x" },
         desc = "Remote Node",
         function() require("flash").jump { mode = "remote_ts" } end,
@@ -624,7 +636,7 @@ return {
       {
         O.goto_prefix .. "hr",
         desc = "References",
-        navutils.flash_references,
+        nav.flash_references,
       },
       {
         O.goto_prefix .. "hh",
@@ -635,84 +647,39 @@ return {
         "<leader>df",
         -- O.goto_prefix .. "hd",
         desc = "Diagnostics",
-        navutils.flash_diagnostics,
+        nav.flash_diagnostics,
       },
       {
         "<leader>dF",
         desc = "Diagnostics + Code Action",
-        function() navutils.flash_diagnostics { action = utils.telescope.code_actions_previewed } end,
+        function() nav.flash_diagnostics { action = utils.telescope.code_actions_previewed } end,
       },
       {
-        "rix", -- TODO: better keymap?
+        "rxv", -- TODO: better keymap?
         -- FIXME: its broken??
         mode = { "x", "n" },
-        desc = "Exchange <motion1> with <node>",
-        function() navutils.swap_with { mode = "remote_ts" } end,
+        desc = "Exchange <node> with <node>",
+        -- TODO: use substitute.exchange
+        function() nav.swap_with({ mode = "remote_ts" }, "v") end,
       },
-      -- TODO: y<motion><something><leap><motion>
-      -- {
-      --   "rx",
-      --   mode = { "n", "x" },
-      --   desc = "Exchange <motion1> with <motion2>",
-      --   -- TODO: use leap?
-      --   function() navutils.swap_with() end,
-      -- },
-      -- {
-      --   "rxx",
-      --   mode = { "n", "x" },
-      --   desc = "Exchange V<motion1> with V<motion2>",
-      --   -- TODO: use leap?
-      --   function()
-      --     navutils.swap_with { exchange = {
-      --       visual_mode = "V",
-      --     } }
-      --   end,
-      -- },
-      -- {
-      --   "R",
-      --   mode = { "n" },
-      --   desc = "Remote Replace",
-      --   function()
-      --     vim.api.nvim_feedkeys("r", "m", false)
-      --     vim.schedule(function() require("flash").jump {} end)
-      --   end,
-      -- },
       -- TODO: Copy there, Paste here
-      { -- FIXME: this
-        "ry",
-        mode = { "x", "n" },
-        desc = "Replace with <remote-motion>",
-        function() navutils.swap_with { exchange = { not_there = true } } end,
-      },
-      { -- FIXME: this
-        "rd",
-        mode = { "x", "n" },
-        desc = "Replace with d<remote-motion>",
-        function() navutils.swap_with { exchange = { not_there = true } } end,
-      },
-      { -- FIXME: this
-        "rc",
-        mode = { "x", "n" },
-        desc = "Replace with c<remote-motion>",
-        function() navutils.swap_with { exchange = { not_there = true } } end,
-      },
       { -- FIXME: this
         "rY",
         mode = { "n" },
         desc = "Replace with <node>",
-        function() navutils.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
+        function() nav.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
       },
       { -- FIXME: this
         "rD",
         mode = { "x", "n" },
         desc = "Replace with d<node>",
-        function() navutils.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
+        function() nav.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
       },
       { -- FIXME: this
         "rC",
         mode = { "x", "n" },
         desc = "Replace with c<node>",
-        function() navutils.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
+        function() nav.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
       },
       -- TODO: Copy this, Paste there
     },
@@ -725,7 +692,8 @@ return {
       -- { "<leader>hw", navutils.leap_anywhere, mode = "n", desc = "Leap all windows" },
       { "s", "<Plug>(leap-forward-to)", mode = "n", desc = "Leap Fwd" },
       { "S", "<Plug>(leap-backward-to)", mode = "n", desc = "Leap Bwd" },
-      { O.goto_prefix .. O.goto_prefix, navutils.leap_anywhere, mode = { "n", "x" }, desc = "Leap anywhere" },
+      { O.goto_prefix .. O.goto_prefix, nav.leap_anywhere, mode = { "n", "x" }, desc = "Leap anywhere" },
+      { "<Plug>(leap-anywhere)", nav.leap_anywhere, mode = { "n", "x" }, desc = "Leap anywhere" },
       {
         "t", -- semi-inclusive
         function()
@@ -770,62 +738,69 @@ return {
       { "<leader>t", leap_bi_o(0), mode = "o", desc = "Leap Exc" },
       {
         O.select_remote,
-        function() navutils.leap_remote() end,
+        "<Plug>(leap-remote)",
         desc = "Leap Remote",
         mode = "o",
+      },
+      {
+        "<Plug>(leap-remote)",
+        function() nav.leap_remote() end,
+        desc = "Leap Remote",
+        mode = { "o", "x" },
       },
       {
         "rp",
         mode = "n",
         desc = "Remote Paste",
-        navutils.remote_paste "h",
+        nav.remote_paste(vim.keycode "<leader>t"),
       },
       {
         "rP",
         mode = "n",
         desc = "Remote Paste line",
-        navutils.remote_paste("h", "<leader>p"),
+        nav.remote_paste(vim.keycode "<leader>t", "<leader>p"),
       },
+      -- [cdy]<>rp<>
+      -- [cdy]<>R<>
+      -- [cdy]r<>[pP]
+      -- [cdy]r<>r<>
       -- TODO: y<motion><something><leap><motion>
-      -- TODO: why is this not working??
       {
         "rx",
-        mode = "n",
+        mode = { "n", "x" },
         desc = "Exchange <motion1> with <motion2>",
-        function()
-          navutils.swap_with(
-            {},
-            nil,
-            -- "r"
-            vim.schedule_wrap(navutils.leap_remote)
-          )
-        end,
+        function() nav.exch_with {} end,
       },
       {
         "rX",
-        mode = "n",
+        mode = { "n", "x" },
         desc = "Exchange V<motion1> with V<motion2>",
-        function()
-          navutils.swap_with({
-            exchange = {
-              visual_mode = "V",
-            },
-          }, nil, vim.schedule_wrap(navutils.leap_remote))
-        end,
+        function() nav.exch_with { exchange = { visual_mode = "V" } } end,
       },
-      {
-        "rx",
-        mode = "x",
-        -- TODO: figure this out
+      { -- FIXME: swap the order of this
+        "ry",
+        mode = { "x", "n" },
+        desc = "Replace with <remote-motion>",
+        function() nav.swap_with { exchange = { not_there = true } } end,
+      },
+      { -- FIXME: swap the order of this
+        "rd",
+        mode = { "x", "n" },
+        desc = "Replace with d<remote-motion>",
+        function() nav.swap_with { exchange = { not_there = true } } end,
+      },
+      { -- FIXME: swap the order of this
+        "rc",
+        mode = { "x", "n" },
+        desc = "Replace with c<remote-motion>",
+        function() nav.swap_with { exchange = { not_there = true } } end,
       },
       {
         "R",
         mode = { "n" },
         desc = "Remote Replace",
-        function()
-          vim.api.nvim_feedkeys("r", "m", false)
-          vim.schedule(navutils.leap_remote)
-        end,
+        "r<Plug>(leap-remote)",
+        remap = true,
       },
     },
     -- TODO: unlazy me
@@ -885,12 +860,14 @@ return {
         height = 5,
       },
       select_first = true,
+      max_results = 5,
       labels = O.hint_labels_array,
     },
     cmd = "Portal",
     keys = {
       { "<C-i>", function() require("portal.builtin").jumplist.tunnel_forward() end, desc = "portal fwd" },
-      { "[o", function() require("portal.builtin").jumplist.tunnel_backward() end, desc = "portal fwd" },
+      { "[j", function() require("portal.builtin").jumplist.tunnel_backward() end, desc = "portal bwd" },
+      { "]j", function() require("portal.builtin").jumplist.tunnel_forward() end, desc = "portal fwd" },
       { "<C-o>", function() require("portal.builtin").jumplist.tunnel_backward() end, desc = "portal bwd" },
       -- TODO: use other queries?
     },

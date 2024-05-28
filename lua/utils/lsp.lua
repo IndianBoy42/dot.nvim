@@ -146,16 +146,18 @@ function M.disable_diagnostic(b) diags.enable(false, { bufnr = b or 0 }) end
 function M.enable_diagnostic(b) diags.enable(true, { bufnr = b or 0 }) end
 
 function M.toggle_diag_lines(enable)
-  if enable == nil then enable = not vim.diagnostic.config().virtual_lines end
+  local lines_config = vim.diagnostic.config().virtual_lines
+  local config = require("langs").diagnostic_config_all
+  if enable == nil then enable = not lines_config or lines_config.severity ~= config.virtual_lines_all.severity end
   if enable then
     vim.diagnostic.config {
-      virtual_lines = require("langs").diagnostic_config_all.virtual_lines,
-      virtual_text = false,
+      virtual_lines = lines_config and config.virtual_lines_all or config.virtual_lines,
+      virtual_text = config.virtual_text_w_lines or false,
     }
   else
     vim.diagnostic.config {
       virtual_lines = false,
-      virtual_text = require("langs").diagnostic_config_all.virtual_text,
+      virtual_text = config.virtual_text,
     }
   end
 end
@@ -205,7 +207,7 @@ function M.run_any_codelens(select)
 end
 
 -- Jump between diagnostics
--- TODO: clean up and remove the deprecate functions
+-- TODO: repeatable to enter the floating window
 function M.diag_line(opts) diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "line" })) end
 function M.diag_cursor(opts) diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "cursor" })) end
 function M.diag_buffer(opts) diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "buffer" })) end
@@ -279,14 +281,15 @@ function M.get_highest_diag(ns, bufnr)
   -- return highest
 end
 function M.diag_next(opts)
+  -- TODO: use vim.diagnostic.jump
   diags.goto_next(vim.tbl_extend("keep", opts or {}, {
-    enable_popup = true,
+    enable_popup = false,
     severity = M.get_highest_diag(),
   }))
 end
 function M.diag_prev(opts)
   diags.goto_prev(vim.tbl_extend("keep", opts or {}, {
-    enable_popup = true,
+    enable_popup = false,
     severity = M.get_highest_diag(),
   }))
 end
@@ -363,9 +366,11 @@ function M.format(opts)
       client = vim.lsp.get_clients { id = vim.b.lsp_format_modifications_client }
       client = client[1]
     else
-      client = vim
-        .iter(vim.lsp.get_clients { bufnr = buf })
-        :find(function(client) return client.supports_method "textDocument/rangeFormatting" end)
+      client = vim.iter(vim.lsp.get_clients { bufnr = buf }):find(
+        function(client)
+          return (have_nls == (client.name == "null-ls")) and client.supports_method "textDocument/rangeFormatting"
+        end
+      )
     end
     if client then
       vim.b.lsp_format_modifications_client = client.id

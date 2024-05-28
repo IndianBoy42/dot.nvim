@@ -236,6 +236,7 @@ return {
       end)
     end
 
+    -- TODO: there is a better way with Plug continuations, hydra style
     do -- wiggle keys
       local buflen = 4
       local buf = {}

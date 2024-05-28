@@ -17,17 +17,8 @@ local function on_attach()
     mode = { "n" },
     body = "<localleader>",
     heads = {
-      {
-        "l",
-        move_item "j",
-        { desc = "Move Item Down" },
-      },
-      {
-        "h",
-        move_item "k",
-        { desc = "Move Item Up" },
-      },
-      { "q", nil, { exit = true, nowait = true, desc = "exit" } },
+      { "l", move_item "j", { desc = "Move Item Down" } },
+      { "h", move_item "k", { desc = "Move Item Up" } },
       { "<ESC>", nil, { exit = true, nowait = true, desc = "exit" } },
     },
   }
@@ -155,6 +146,58 @@ local snippets = {
     scope = "expr",
   },
 }
+local server_opts = {
+  -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#rust_analyzer
+  -- https://rust-analyzer.github.io/manual.html#configuration
+  cargo = {
+    features = "all",
+  },
+  -- Add clippy lints for Rust.
+  checkOnSave = true,
+  check = {
+    enable = true,
+    command = "clippy",
+    features = "all",
+    extraArgs = {
+      { "--all-targets" },
+    },
+  },
+  completion = {
+    snippets = snippets,
+    postfix = { enable = true },
+    fullFunctionSignatures = { enable = true },
+    termSearch = { enable = true },
+  },
+  procMacro = {
+    enable = true,
+  },
+  diagnostics = {
+    experimental = {
+      enable = false,
+    },
+  },
+  hover = {
+    actions = {
+      references = { enable = true },
+    },
+  },
+  -- imports = {},
+  workspace = { symbol = { search = { kind = "all_symbols" } } },
+  inlayHints = {
+    -- bindingModeHints = { enable = true },
+    -- closureCaptureHints = { enable = true },
+    -- closureReturnTypeHints = { enable = true },
+    -- discriminantHints = { enable = true },
+    -- expressionAdjustmentHints = { enable = true },
+    -- lifetimeElisionHints = { enable = true },
+  },
+  rustfmt = {
+    rangeFormatting = { enable = true },
+  },
+  typing = {
+    autoClosingAngleBrackets = { enable = true },
+  },
+}
 
 return {
   {
@@ -198,7 +241,7 @@ return {
 
   require("langs").mason_ensure_installed { "codelldb", "rust-analyzer", "taplo" },
 
-    -- TODO: rustaceanvim
+  -- TODO: rustaceanvim
   -- https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/plugins/extras/lang/rust.lua
   -- https://github.com/mrcjkb/rustaceanvim/discussions/122
   {
@@ -209,25 +252,13 @@ return {
     opts = {
       setup = {
         rust_analyzer = function(_, opts)
-          local mason_registry = require "mason-registry"
-          -- rust tools configuration for debugging support
-          local codelldb = mason_registry.get_package "codelldb"
-          local extension_path = codelldb:get_install_path() .. "/extension/"
-          local codelldb_path = extension_path .. "adapter/codelldb"
-          local liblldb_path = vim.fn.has "mac" == 1 and extension_path .. "lldb/lib/liblldb.dylib"
-            or extension_path .. "lldb/lib/liblldb.so"
-
-          local rust_tools_opts = vim.tbl_deep_extend("force", opts, {
-            dap = {
-              adapter = require("rust-tools.dap").get_codelldb_adapter(codelldb_path, liblldb_path),
-            },
-
+           opts = vim.tbl_deep_extend("force", opts, {
             tools = {
               -- TODO:
               executor = {
                 execute_command = function(command, args, cwd)
                   local ok, kitty = pcall(require, "kitty")
-                  if ok and kitty.rust_tool_executor then
+                  if ok and kitty.rust_tools_executor then
                     require("rust-tools.config").options.tools.executor = kitty.rust_tools_executor()
                     return kitty.rust_tools_executor().execute_command(command, args, cwd)
                   else
@@ -260,61 +291,11 @@ return {
               on_attach = on_attach,
               cmd = { "ra-multiplex", "client" },
               settings = {
-                ["rust-analyzer"] = {
-                  -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#rust_analyzer
-                  -- https://rust-analyzer.github.io/manual.html#configuration
-                  cargo = {
-                    features = "all",
-                  },
-                  -- Add clippy lints for Rust.
-                  checkOnSave = true,
-                  check = {
-                    enable = true,
-                    command = "clippy",
-                    features = "all",
-                    extraArgs = {
-                      { "--all-targets" },
-                    },
-                  },
-                  completion = {
-                    snippets = snippets,
-                    postfix = { enable = true },
-                    fullFunctionSignatures = { enable = true },
-                  },
-                  procMacro = {
-                    enable = true,
-                  },
-                  diagnostics = {
-                    experimental = {
-                      enable = false,
-                    },
-                  },
-                  hover = {
-                    actions = {
-                      references = { enable = true },
-                    },
-                  },
-                  -- imports = {},
-                  workspace = { symbol = { search = { kind = "all_symbols" } } },
-                  inlayHints = {
-                    -- bindingModeHints = { enable = true },
-                    -- closureCaptureHints = { enable = true },
-                    -- closureReturnTypeHints = { enable = true },
-                    -- discriminantHints = { enable = true },
-                    -- expressionAdjustmentHints = { enable = true },
-                    -- lifetimeElisionHints = { enable = true },
-                  },
-                  rustfmt = {
-                    rangeFormatting = { enable = true },
-                  },
-                  typing = {
-                    autoClosingAngleBrackets = { enable = true },
-                  },
-                },
+                ["rust-analyzer"] = server_opts,
               },
             },
           })
-          require("rust-tools").setup(rust_tools_opts)
+          require("rust-tools").setup(opts)
           return true
         end,
         taplo = function(_, opts)

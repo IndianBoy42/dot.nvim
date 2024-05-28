@@ -18,10 +18,10 @@ local function window_hydra_setup()
   local window_hint = [[
  ^^^^^^^^^^^^     Move      ^^    Size   ^^   ^^     Split      ^^     Tab
  ^^^^^^^^^^^^-------------  ^^-----------^^   ^^--------------- ^^---------------
- ^ ^ _k_ ^ ^  ^ ^ _K_ ^ ^   ^   _<C-k>_   ^   _s_: horizontally _t_: next _n_: new
- _h_ ^ ^ _l_  _H_ _R_ _L_   _<C-h>_ _<C-l>_   _v_: vertically   _m_: prev
- ^ ^ _j_ ^ ^  ^ ^ _J_ ^ ^   ^   _<C-j>_   ^   _c_, _q_: close ^ _C_, _Q_: close
- focus^^^^^^  window^^^^^^  ^_=_: equalize^   _z_: maximize     _P_: list
+ ^ ^ _k_ ^ ^  ^   _<C-k>_   ^  ^ ^ _K_ ^ ^    _s_: horizontally _t_: next _n_: new
+ _h_ ^ ^ _l_  _<C-h>_ _<C-l>_  _H_ _R_ _L_    _v_: vertically   _m_: prev
+ ^ ^ _j_ ^ ^  ^   _<C-j>_   ^  ^ ^ _J_ ^ ^    _c_, _q_: close ^ _C_, _Q_: close
+ window^^^^^^  focus^^^^^^  ^_=_: equalize^   _z_: maximize     _P_: list
  _p_: pick buffer ^^^^^^^^^^_w_: pick win ^^  _o_: remain only  _O_: remain only ]]
 
   local heads = {

@@ -143,9 +143,9 @@ local function kitty_terms()
   }
   local key = function(from, to, opts)
     to = to or from:sub(2, -2) -- strip the <>
-    return { from, function() Term:send_key(to) end, { desc = from } }
+    return { from, function() Term.send_key(to) end, { desc = from } }
   end
-  map("n", "mtt", function() Term:send_key { "up", "enter" } end, { desc = "Kitty Redo Cmd" })
+  map("n", "mtt", function() Term.send_key { "up", "enter" } end, { desc = "Kitty Redo Cmd" })
   local cmdline_hydra = require "hydra" {
     name = "Remote Cmdline",
     hint = "",
@@ -176,7 +176,7 @@ local function kitty_terms()
       key("c", "ctrl+c"), -- TODO: use signal_child instead
       key("d", "ctrl+d"),
       key("z", "ctrl+z"),
-      { "f", function() Term:hints { yank = "" } end },
+      { "f", function() Term.hints { yank = "" } end },
       { "<esc>", nil, { exit = true, nowait = true, desc = "exit" } },
     },
   }
