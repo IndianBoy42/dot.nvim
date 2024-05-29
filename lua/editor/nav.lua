@@ -103,7 +103,7 @@ local custom_textobjects = function(ai)
     -- a = ts({ a = "@parameter.outer", i = "@parameter.inner" }, {}),
     f = ts({ a = "@function.outer", i = "@function.inner" }, {}),
     -- C = ts({ a = "@class.outer", i = "@class.inner" }, {}),
-    c = ts({ a = "@call.outer", i = "@call.inner" }, {}),
+    -- c = ts({ a = "@call.outer", i = "@call.inner" }, {}),
     -- c = s.function_call(),
     -- line textobject
     l = ex.line(),

@@ -91,6 +91,7 @@ local O = {
   commenting = {
     op = "yc",
     vi = "C",
+    obj = "ic",
   },
 }
 
@@ -99,6 +100,7 @@ do
   if c.vi == nil then c.vi = c.op end
   if c.line == nil then c.line = c.op .. c.op:sub(-1) end
   if c.obj == nil then c.obj = "i" .. c.op end
+
   if c.copy == nil then c.copy = {} end
   local cc = c.copy
   if cc.op == nil then cc.op = "<leader>" .. c.op end

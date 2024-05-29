@@ -509,9 +509,10 @@ function M.setup()
   end, { silent = true, expr = true, remap = true })
   map("i", "<esc>", function()
     vim.cmd.stopinsert()
+    feedkeys(t "<esc>", "n")
+    feedkeys(t "<Plug>(double-esc)", "n")
     -- vim.cmd.normal { bang = true, "==" } -- Reindent line
-    return "<Plug>(double-esc)"
-  end, { silent = true, expr = true, remap = true })
+  end, sile)
   map("n", "<Plug>(double-esc)<esc>", function()
     -- TODO: close floating windows
     pcall(vim.cmd.write)
@@ -594,12 +595,12 @@ function M.setup()
 
   -- Select last pasted
   -- TODO: use yanky
-  map("x", "<leader>vp", "`[o`]", { desc = "Select Last Paste/Op" })
-  map("x", "<leader>vP", "V`[o`]", { desc = "SelLine Last Paste/Op" })
-  map("x", "<leader>v<C-p>", "<C-v>`[o`]", { desc = "SelBlock Last Paste/Op" })
-  map("n", "<leader>vp", "v`[o`]", { desc = "Select Last Paste/Op" })
-  map("n", "<leader>vP", "V`[o`]", { desc = "SelLine Last Paste/Op" })
-  map("n", "<leader>v<C-p>", "<C-v>`[o`]", { desc = "SelBlock Last Paste/Op" })
+  map("x", "<leader>vo", "`[o`]", { desc = "Select Last Paste/Op" })
+  map("x", "<leader>vO", "V`[o`]", { desc = "SelLine Last Paste/Op" })
+  map("x", "<leader>v<C-o>", "<C-v>`[o`]", { desc = "SelBlock Last Paste/Op" })
+  map("n", "<leader>vo", "v`[o`]", { desc = "Select Last Paste/Op" })
+  map("n", "<leader>vO", "V`[o`]", { desc = "SelLine Last Paste/Op" })
+  map("n", "<leader>v<C-o>", "<C-v>`[o`]", { desc = "SelBlock Last Paste/Op" })
   -- Use reselect as an operator
   op_from "<leader>p"
   op_from "<leader>P"
@@ -633,7 +634,7 @@ function M.setup()
 
   -- Split line
   map("n", "o", "A<cr>")
-  map("n", "O", "^kA<cr>")
+  -- map("n", "O", "^kA<cr>")
   map("n", "go", "i<cr><ESC>k<cmd>sil! keepp s/\v +$//<cr><cmd>noh<cr>j^", { desc = "Split Line" })
   map("n", "<M-o>", "o<esc>", { remap = true, desc = "Split Line" })
   map("n", "<M-S-o>", "O<esc>", { remap = true, desc = "Split Line" })

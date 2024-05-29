@@ -66,7 +66,7 @@ return {
     main = "mini.move",
     keys = function()
       local keys = { "<M-h>", "<M-j>", "<M-k>", "<M-l>", "<C-M-h>", "<C-M-j>", "<C-M-k>", "<C-M-l>" }
-      keys = { "<Left>", "<Down>", "<Up>", "<Right>", "<Left>", "<Down>", "<Up>", "<Right>" }
+      keys = { "<S-Left>", "<S-Down>", "<S-Up>", "<S-Right>", "<S-Left>", "<S-Down>", "<S-Up>", "<S-Right>" }
       return {
         { keys[1], mode = "x" },
         { keys[2], mode = "x" },
@@ -80,14 +80,14 @@ return {
     end,
     opts = {
       mappings = {
-        left = "<Left>",
-        right = "<Right>",
-        down = "<Down>",
-        up = "<Up>",
-        line_left = "<Left>",
-        line_right = "<Right>",
-        line_down = "<Down>",
-        line_up = "<Up>",
+        left = "<S-Left>",
+        right = "<S-Right>",
+        down = "<S-Down>",
+        up = "<S-Up>",
+        line_left = "<S-Left>",
+        line_right = "<S-Right>",
+        line_down = "<S-Down>",
+        line_up = "<S-Up>",
       },
     },
     -- config = function(_, opts)
@@ -189,7 +189,7 @@ return {
       map(
         "x",
         O.commenting.copy.vi,
-        '"zy'
+        '"zy' -- Yank it
           .. "mz" -- Remember the original position
           .. "`<" -- Go back to the original position
           .. '"zP' -- Duplicate above
@@ -198,13 +198,8 @@ return {
           .. "`z", -- Go back to the original position
         { desc = "copy and comment" }
       )
-      map("n", O.commenting.copy.op, utils.operatorfuncV_keys("<leader>" .. cmt_op), { desc = "copy and comment op" })
-      map(
-        "n",
-        O.commenting.copy.op .. O.commenting.copy.op:sub(-1),
-        "V<leader>" .. cmt_op,
-        { desc = "copy and comment line" }
-      )
+      map("n", O.commenting.copy.op, utils.operatorfuncV_keys(O.commenting.copy.vi), { desc = "copy and comment op" })
+      map("n", O.commenting.copy.line, "V" .. O.commenting.copy.vi, { remap = true, desc = "copy and comment line" })
     end,
   },
   {
@@ -301,7 +296,8 @@ return {
       { "<leader>P", "<Plug>(YankyPutIndentBeforeLinewise)", mode = "n", desc = "Put before line" },
       { "yp", "<Plug>(YankyPutIndentAfterCharwise)", mode = "n", desc = "Put after char" },
       { "yP", "<Plug>(YankyPutIndentBeforeCharwise)", mode = "n", desc = "Put before char" },
-      -- TODO: function() require("yanky.textobj").last_put() end,
+      { "iy", function() require("yanky.textobj").last_put() end, mode = { "o", "x" }, desc = "Last Put" },
+      { "ay", "Viy", remap = true, mode = { "o", "x" }, desc = "Last VPut" },
     },
   },
   {
