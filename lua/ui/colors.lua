@@ -26,14 +26,9 @@ return {
     cmd = { "TodoTrouble", "TodoTelescope" },
     keys = {
       {
-        "<leader>oT",
+        "<leader>ost",
         "<cmd>TodoTrouble<cr>",
-        desc = "TODOs sidebar",
-      },
-      {
-        "<leader>sT",
-        "<cmd>TodoTrouble<cr>",
-        desc = "TODOs sidebar",
+        desc = "TODOs",
       },
       { "[T" },
       { "]T" },

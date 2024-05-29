@@ -94,7 +94,8 @@ local telescope = {
               actions.send_to_qflist(...)
               actions.open_qflist(...)
             end,
-            ["<C-l>"] = function(...) require("trouble.providers.telescope").open_with_trouble(...) end,
+            ["<C-l>"] = function(...) require("trouble.sources.telescope").open(...) end,
+            ["<C-S-l>"] = function(...) require("trouble.sources.telescope").add(...) end,
             -- ["<C-y>"] = functions.set_prompt_to_entry_value,
             ["<C-cr>"] = utils.telescope.select_pick_window,
             ["<M-cr>"] = utils.telescope.select_pick_window,

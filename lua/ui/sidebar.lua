@@ -1,33 +1,44 @@
 return {
   {
     "folke/trouble.nvim",
-    cmd = "TroubleToggle",
+    branch = "dev",
+    cmd = "Trouble",
+    keys = {
+
+      { "<leader>osD", "<cmd>Trouble diagnostics open<cr>", desc = "Diagnostics workspace" },
+      { "<leader>osd", "<cmd>Trouble diagnostics_buffer open<cr>", desc = "Diagnostics" },
+      { "<leader>osr", "<cmd>Trouble lsp_references open<cr>", desc = "References" },
+      { "<leader>osi", "<cmd>Trouble lsp_implementations open<cr>", desc = "Implementations" },
+      { "<leader>osq", "<cmd>Trouble qflist open<cr>", desc = "Quick Fix" },
+      { "<leader>osL", "<cmd>Trouble loclist open<cr>", desc = "Loc List" },
+      { "<leader>osl", "<cmd>Trouble lsp open<cr>", desc = "All LSP" },
+      { "<leader>oss", "<cmd>Trouble symbols<cr>", desc = "LSP Symbols" },
+    },
     opts = {
-      -- your configuration comes here
-      -- or leave it empty to use the default settings
-      position = "right",
-      auto_preview = true,
-      auto_fold = true,
-      action_keys = { -- key mappings for actions in the trouble list
-        -- map to {} to remove a mapping, for example:
-        -- close = {},
-        close = "q", -- close the list
-        cancel = "<esc>", -- cancel the preview and get back to your last window / buffer / cursor
-        refresh = "r", -- manually refresh
-        jump = { "<cr>", "<tab>" }, -- jump to the diagnostic or open / close folds
-        open_split = { "<c-x>" }, -- open buffer in new split
-        open_vsplit = { "<c-v>" }, -- open buffer in new vsplit
-        open_tab = { "<c-t>" }, -- open buffer in new tab
-        jump_close = { "o" }, -- jump to the diagnostic and close the list
-        toggle_mode = "m", -- toggle between "workspace" and "document" diagnostics mode
-        toggle_preview = "P", -- toggle auto_preview
-        hover = O.hover_key, -- opens a small popup with the full multiline message
-        preview = "p", -- preview the diagnostic location
-        close_folds = { "zm", "h" }, -- close all folds
-        open_folds = { "zr", "l" }, -- open all folds
-        toggle_fold = { "zZ", "zz" }, -- toggle fold of current file
-        previous = "k", -- previous item
-        next = "j", -- next item
+      -- Defaults are opposite
+      focus = true, -- Focus the window when opened
+      pinned = true, -- When pinned, the opened trouble window will be bound to the current buffer
+      win = { position = "right", size = { width = 80 } },
+      keys = { -- key mappings for actions in the trouble list
+        ["<Down>"] = "next",
+        ["<Up>"] = "prev",
+        h = "fold_close_recursive",
+        l = "fold_open_recursive",
+        a = "jump",
+      },
+      modes = {
+        diagnostics = {
+          win = {
+            size = { width = 80 },
+          },
+        },
+        diagnostics_buffer = {
+          mode = "diagnostics", -- inherit from diagnostics mode
+          filter = { buf = 0 }, -- filter diagnostics to the current buffer
+        },
+        -- TODO: add custom contextual keys 
+        -- TODO: rename in symbols
+        -- TODO: codeaction in diagnostics
       },
     },
     config = function(_, opts)
@@ -66,4 +77,6 @@ return {
     },
     cmd = "SymbolsOutline",
   },
+  -- TODO: quickfix helpers
+  -- https://github.com/kevinhwang91/nvim-bqf
 }
