@@ -44,6 +44,13 @@ local diagnostic_config_all = {
       severity = false,
     },
   },
+  virtual_lines_all = {
+    highlight_whole_line = false,
+    arrow_width = 0,
+    current_line_opts = {
+      severity = false,
+    },
+  },
   signs = false,
   underline = {
     -- severity = {
@@ -90,9 +97,6 @@ local configs = {
   end,
   diagnostic_config = vim.tbl_extend("keep", {
     virtual_text = diagnostic_config_all.virtual_text_w_lines,
-    virtual_lines_all = vim.tbl_extend("keep", {
-      severity = false,
-    }, diagnostic_config_all.virtual_lines),
   }, diagnostic_config_all),
   diagnostic_config_all = diagnostic_config_all,
   codelens_config = {
