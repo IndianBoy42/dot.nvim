@@ -183,23 +183,23 @@ return {
 
     -- Multi select object
     local find_under_operator = utils.operatorfunc_keys "<Plug>(VM-Find-Subword-Under)"
-    map("n", "<M-v>", find_under_operator, { desc = "Find Under (op)" })
+    map("n", "<M-v>", find_under_operator, { desc = "Find Under (op)", expr = true })
     -- map("n", "m", find_under_operator, { desc = "Find Under (op)" })
     -- Multi select all
     local select_all_operator = utils.operatorfunc_fn(
       vim.schedule_wrap(function() wrap_vm_call(nil, "Find-Subword-Under", "<Plug>(VM-Select-All)") end)
     )
-    map("n", "mA", select_all_operator, { desc = "Select all (op)" })
+    map("n", "mA", select_all_operator, { desc = "Select all (op)", expr = true })
     local select_in_operator = utils.operatorfunc_fn(
       vim.schedule_wrap(function() wrap_vm_call(nil, "Find-Subword-Under", "<Plug>(VM-Find-Operator)") end)
     )
-    map("n", "mI", select_in_operator, { desc = "Select (op) in" })
+    map("n", "mI", select_in_operator, { desc = "Select (op) in", expr = true })
     local add_selection_operator = utils.operatorfunc_keys "<Plug>(VM-Visual-Add)<Plug>(VM-Disable-Mappings)"
-    map("n", ldr .. "+", add_selection_operator, { desc = "Add Selection (op)" })
+    map("n", ldr .. "+", add_selection_operator, { desc = "Add Selection (op)", expr = true })
     map("n", ldr .. "r", function()
       add_selection_operator()
       feedkeys("r", "m")
-    end, { desc = "Add Selection Remote (op)" })
+    end, { desc = "Add Selection Remote (op)", expr = true })
 
     map(
       "n",

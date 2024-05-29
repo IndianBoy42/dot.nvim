@@ -189,16 +189,36 @@ return {
       map(
         "x",
         O.commenting.copy.vi,
+        -- TODO: dot repeatable
         '"zy' -- Yank it
           .. "mz" -- Remember the original position
           .. "`<" -- Go back to the original position
           .. '"zP' -- Duplicate above
           .. "`[V`]" -- reselect original
           .. ":<C-u>lua MiniComment.operator('visual')<CR>" -- Comment it
-          .. "`z", -- Go back to the original position
+          .. "`z",
+        -- function()
+        --   _G.__commenting_copy_opfunc = vim.schedule_wrap(function()
+        --     local keys = '"zy' -- Yank it
+        --       .. "mz" -- Remember the original position
+        --       .. "`<" -- Go back to the original position
+        --       .. '"zP' -- Duplicate above
+        --       .. "`[V`]" -- reselect original
+        --       .. ":<C-u>lua MiniComment.operator('visual')<CR>" -- Comment it
+        --       .. "`z"
+        --     vim.api.nvim_feedkeys(vim.keycode(keys), "n", false)
+        --   end)
+        --   vim.go.operatorfunc = "v:lua.__commenting_copy_opfunc"
+        --   return "g@"
+        -- end, -- Go back to the original position
         { desc = "copy and comment" }
       )
-      map("n", O.commenting.copy.op, utils.operatorfuncV_keys(O.commenting.copy.vi), { desc = "copy and comment op" })
+      map(
+        "n",
+        O.commenting.copy.op,
+        utils.operatorfuncV_keys(O.commenting.copy.vi),
+        { desc = "copy and comment op", expr = true }
+      )
       map("n", O.commenting.copy.line, "V" .. O.commenting.copy.vi, { remap = true, desc = "copy and comment line" })
     end,
   },

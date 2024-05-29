@@ -148,14 +148,21 @@ function M.operatorfunc_scaffold(operatorfunc, op_pending)
     vim.go.operatorfunc = old_func
   end
 
-  return function()
-    M.set_opfunc(wrapped)
-    feedkeys(
-      "g@" .. (op_pending and type(op_pending) == "string" and op_pending or ""),
-      op_pending and type(op_pending) == "string" and "m" or "n",
-      false
-    )
-    if type(op_pending) == "function" then op_pending() end
+  if op_pending == nil then
+    return function()
+      M.set_opfunc(wrapped)
+      return "g@"
+    end
+  else
+    return function()
+      M.set_opfunc(wrapped)
+      feedkeys(
+        "g@" .. (op_pending and type(op_pending) == "string" and op_pending or ""),
+        op_pending and type(op_pending) == "string" and "m" or "n",
+        false
+      )
+      if type(op_pending) == "function" then op_pending() end
+    end
   end
 end
 

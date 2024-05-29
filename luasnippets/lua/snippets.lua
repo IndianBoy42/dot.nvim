@@ -139,6 +139,7 @@ local function snip_node()
 end
 
 local snippets = {
+  s("opfunc", fmt("vim.go.operatorfunc = 'v:lua.__{}_opfunc'", i(1, "my"))),
   s("luasnippets_preamble", t(vim.split(preamble, "\n"))),
   s("stylua_toml", t(vim.split(stylua_toml, "\n"))),
   s(

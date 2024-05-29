@@ -473,7 +473,7 @@ function M.setup()
   map("n", "<c-s-q>", ":wqa", nore)
 
   -- Search textobject
-  map("n", "<leader>*", operatorfunc_keys "*", { desc = "Search (op)" })
+  map("n", "<leader>*", operatorfunc_keys "*", { desc = "Search (op)", expr = true })
 
   -- Start search and replace from search
   map("c", "<M-r>", function()
@@ -1338,9 +1338,9 @@ utils.lsp.on_attach(function(client, bufnr)
   map("n", "qr", "<leader>rn", { desc = "Rename" })
 
   -- TODO: operators for all the above to use with remote?
-  local code_action_op = operatorfunc_keys("<esc>" .. O.action_key, ".")
+  local code_action_op = operatorfunc_keys("<esc>" .. O.action_key, "<Plug>(leap-remote)")
   map("n", "<leader>c", code_action_op, { desc = "Do Code Action At" })
-  local quickfix_op = operatorfunc_keys("<esc>" .. "qu", ".")
+  local quickfix_op = operatorfunc_keys("<esc>" .. "qu", "<Plug>(leap-remote)")
   map("n", "<leader>q", quickfix_op, { desc = "Quickfix" })
 end, "lsp_mappings")
 

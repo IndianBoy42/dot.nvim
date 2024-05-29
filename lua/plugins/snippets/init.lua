@@ -60,8 +60,8 @@ local M = {
         map("s", "k", "<Plug>luasnip-prev-choice", { silent = true })
       end
 
-      map("x", "<M-s>", "<TAB><ESC>", { silent = true })
-      map("n", "<M-s>", utils.operatorfunc_keys "<TAB>", { silent = true })
+      map("x", "<M-s>", "S<ESC>", { silent = true })
+      map("n", "<M-s>", utils.operatorfunc_keys "<M-s>", { silent = true, expr = true })
       for _, v in ipairs { "a", "b", "c" } do
         map(
           "v",
