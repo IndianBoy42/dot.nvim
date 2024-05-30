@@ -23,7 +23,8 @@ local legend = {
   k = "Block",
   l = "Line",
   q = "Quote `, \", '",
-  t = "Tag",
+  t = "Balanced <>",
+  x = "xml tag",
   E = "Everything",
   C = "Code Cell",
 }
@@ -109,7 +110,7 @@ local custom_textobjects = function(ai)
     l = ex.line(),
     B = { "%b{}", "^.().*().$" },
     t = { "%b<>", "^.().*().$" },
-    T = { "<(%w-)%f[^<%w][^<>]->.-</%1>", "^<.->().*()</[^/]->$" },
+    x = { "<(%w-)%f[^<%w][^<>]->.-</%1>", "^<.->().*()</[^/]->$" },
     S = {
       {
         { "%u[%l%d]+[^%l%d]", "^().*()[^%l%d]$" },

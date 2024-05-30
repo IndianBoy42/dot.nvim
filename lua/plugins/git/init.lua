@@ -76,6 +76,7 @@ return {
         popup = {
           A = false,
           C = "CherryPickPopup",
+          L = "LogPopup",
         },
       },
     },
