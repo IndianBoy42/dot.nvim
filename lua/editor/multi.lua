@@ -116,7 +116,7 @@ return {
       ["Reselect Last"] = ldr .. ldr,
       ["Transpose"] = "M",
       ["Split Regions"] = "-",
-      ["Toggle Mappings"] = "<S-Esc>",
+      ["Toggle Mappings"] = ldr .. "<Esc>",
       ["Surround"] = "s",
       -- ["Select Operator"] = ldr .. "s",
       ["Select Operator"] = "<C-v>",

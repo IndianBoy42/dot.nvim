@@ -345,7 +345,7 @@ end)()
 
 function M.format(opts)
   opts = opts or {}
-  opts.async = opts.async == nil and true or false
+  if opts.async == nil then opts.async = true end
   if opts.modifications == nil then
     local mode = vim.b.Format_on_save_mode
     if mode == nil then mode = vim.g.Format_on_save_mode end
@@ -353,12 +353,18 @@ function M.format(opts)
   end
   local buf = vim.api.nvim_get_current_buf()
   local ft = vim.bo[buf].filetype
-  local have_nls = #require("null-ls.sources").get_available(ft, "NULL_LS_FORMATTING") > 0
+  local have_nls = vim.b.null_ls_format
+  if have_nls == nil then
+    have_nls = #require("null-ls.sources").get_available(ft, "NULL_LS_FORMATTING") > 0
+    vim.b.null_ls_format = have_nls
+  end
 
   if not opts.modifications then
     vim.lsp.buf.format(vim.tbl_extend("force", {
       bufnr = buf,
-      filter = function(client) return have_nls == (client.name == "null-ls") end,
+      filter = function(client)
+        return have_nls == (client.name == "null-ls")
+      end,
     }, opts))
   else
     local client

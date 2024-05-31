@@ -12,9 +12,10 @@ return {
           "isort",
           "prettierd",
           "shfmt",
-          "stylua",
+          -- "stylua", -- DONT install this because we want `cargo install stylua --features lua52`
           "markdownlint",
           "yamllint",
+          "mdformat",
         },
       },
     },

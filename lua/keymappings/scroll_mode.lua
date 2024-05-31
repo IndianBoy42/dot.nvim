@@ -19,8 +19,8 @@ M.setup = function()
     heads = {
       { "h", M.horz_spd .. "zh", { desc = "Scroll left" } },
       { "l", M.horz_spd .. "zl", { desc = "Scroll right" } },
-      { "H", "ze", { desc == "Scroll leftmost" } },
-      { "L", "zs", { desc == "Scroll rightmost" } },
+      { "H", "ze", { desc = "Scroll leftmost" } },
+      { "L", "zs", { desc = "Scroll rightmost" } },
       { "j", M.vert_spd .. "<C-e>", { desc = "Scroll down" } },
       { "k", M.vert_spd .. "<C-y>", { desc = "Scroll up" } },
       { "J", "<C-d>", { desc = "Scroll big down" } },

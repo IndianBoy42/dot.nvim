@@ -54,7 +54,8 @@ return {
     cmd = { "Navbuddy" },
   },
   { -- "aznhe21/actions-preview.nvim",
-    "aznhe21/actions-preview.nvim",
+    "IndianBoy42/actions-preview.nvim",
+    branch = "ui_select_shim",
     config = function()
       require("actions-preview").setup {
         telescope = require("utils.telescope").cursor_menu(),

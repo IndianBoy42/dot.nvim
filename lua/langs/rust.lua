@@ -230,12 +230,6 @@ return {
         -- end,
       },
     },
-    ---@param opts cmp.ConfigSchema
-    opts = function(_, opts)
-      opts.sources = vim.list_extend(opts.sources, {
-        { name = "crates", group_index = 1 },
-      })
-    end,
   },
   -- correctly setup mason lsp / dap extensions
 
@@ -252,7 +246,7 @@ return {
     opts = {
       setup = {
         rust_analyzer = function(_, opts)
-           opts = vim.tbl_deep_extend("force", opts, {
+          opts = vim.tbl_deep_extend("force", opts, {
             tools = {
               -- TODO:
               executor = {
@@ -302,6 +296,11 @@ return {
           local function is_cargo() return vim.fn.expand "%:t" == "Cargo.toml" end
           local function show_popup()
             if vim.fn.expand "%:t" == "Cargo.toml" and require("crates").popup_available() then
+              require("cmp").setup.buffer {
+                sources = {
+                  { name = "vimtex" },
+                },
+              }
               require("crates").show_popup()
             else
               vim.lsp.buf.hover()

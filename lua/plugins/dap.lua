@@ -1,4 +1,5 @@
 -- TODO: ALL OF THIS IS TODO
+--https://stefka.eu/posts/2023/07/platformio+nvim/
 
 local function dap_hydra_setup()
   local dap = require "dap"

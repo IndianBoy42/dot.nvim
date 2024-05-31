@@ -3,6 +3,7 @@ local function load_all()
   require("luasnip.loaders.from_vscode").lazy_load()
   require("luasnip.loaders.from_snipmate").lazy_load()
 end
+-- TODO https://github.com/TwIStOy/luasnip-snippets/tree/master
 local M = {
   {
     "L3MON4D3/LuaSnip",

@@ -432,6 +432,15 @@ return {
 
   require("langs").mason_ensure_installed { "texlab", "latexindent" },
   {
+
+    "hrsh7th/nvim-cmp",
+    dependencies = {
+      {
+        "micangl/cmp-vimtex",
+      },
+    },
+  },
+  {
     "neovim/nvim-lspconfig",
     opts = {
       servers = {
@@ -542,6 +551,11 @@ return {
     -- utils.define_augroups { _vimtex_event = {
     --   { "InsertLeave", "*.tex", "VimtexCompile" },
     -- } }
+    require("cmp").setup.buffer {
+      sources = {
+        { name = "vimtex" },
+      },
+    }
 
     vim.b.knap_settings = {
       textopdfviewerlaunch = "zathura"

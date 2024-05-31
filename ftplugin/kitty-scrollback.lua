@@ -1,5 +1,8 @@
-bufnr = vim.api.nvim_get_current_buf()
-local map = function(mode, lhs, rhs, opts) opts = vim.tbl_extend("force", { buffer = bufnr }, opts or {}) end
+local bufnr = vim.api.nvim_get_current_buf()
+local map = function(mode, lhs, rhs, opts)
+  opts = vim.tbl_extend("force", { nowait = true, buffer = bufnr }, opts or {})
+  vim.keymap.set(mode, lhs, rhs, opts)
+end
 
 -- <Plug>(KsbExecuteCmd)	      <C-CR>	    n,i	   execute_command()	Execute the contents of the paste window in Kitty
 -- <Plug>(KsbPasteCmd)	        <S-CR>	    n,i	   paste_command()	Paste the contents of the paste window to Kitty without executing

@@ -16,18 +16,25 @@ local M = {
     "dmitmel/cmp-cmdline-history",
     "saadparwaiz1/cmp_luasnip",
     "hrsh7th/cmp-nvim-lsp-document-symbol",
+    "lukas-reineke/cmp-rg",
     "amarakon/nvim-cmp-lua-latex-symbols",
+    "hrsh7th/cmp-emoji",
     {
       "tzachar/cmp-fuzzy-buffer",
       dependencies = { "tzachar/fuzzy.nvim" },
     },
+    {
+      "tzachar/cmp-fuzzy-path",
+      dependencies = { "tzachar/fuzzy.nvim" },
+        },
+"davidsierradz/cmp-conventionalcommits"
   },
 }
 M.default_sources = {
   { name = "luasnip", group_index = 1 },
   { name = "nvim_lsp", group_index = 1 },
-  -- { name = "buffer" , group_index = 2},
-  { name = "path", group_index = 2 },
+  { name = "buffer", group_index = 1 },
+  { name = "path", group_index = 2 }, -- TODO: fuzzy_path
   -- { name = "latex_symbols" , group_index = 2},
   { name = "calc", group_index = 2 },
   -- { name = "cmp_yanky", group_index = 2 },
@@ -52,6 +59,7 @@ M.config = function(_, opts)
     -- mapping = cmp.mapping.preset.cmdline(),
     sources = cmp.config.sources {
       { name = "fuzzy_buffer" },
+      { name = "fuzzy_path" },
       -- { name = "nvim_lsp_document_symbol" },
       -- { name = "buffer" },
       { name = "cmdline_history" },

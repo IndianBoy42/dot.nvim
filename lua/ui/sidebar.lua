@@ -1,7 +1,6 @@
 return {
   {
     "folke/trouble.nvim",
-    branch = "dev",
     cmd = "Trouble",
     keys = {
 
@@ -26,6 +25,10 @@ return {
         l = "fold_open_recursive",
         a = "jump",
       },
+      preview = {
+        type = "vertical",
+        scratch = false,
+      },
       modes = {
         diagnostics = {
           win = {
@@ -36,7 +39,7 @@ return {
           mode = "diagnostics", -- inherit from diagnostics mode
           filter = { buf = 0 }, -- filter diagnostics to the current buffer
         },
-        -- TODO: add custom contextual keys 
+        -- TODO: add custom contextual keys
         -- TODO: rename in symbols
         -- TODO: codeaction in diagnostics
       },

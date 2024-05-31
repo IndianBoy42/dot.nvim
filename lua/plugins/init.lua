@@ -18,10 +18,34 @@ return {
   },
   { -- TODO: https://github.com/mikesmithgh/kitty-scrollback.nvim
     "mikesmithgh/kitty-scrollback.nvim",
+    branch = "feat-command-line-editing-mode",
     build = ":KittyScrollbackGenerateKittens",
-    cmd = { "KittyScrollbackGenerateKittens", "KittyScrollbackCheckHealth" },
+    cmd = {
+      "KittyScrollbackGenerateKittens",
+      "KittyScrollbackCheckHealth",
+      "KittyScrollbackGenerateCommandLineEditing",
+    },
     event = { "User KittyScrollbackLaunch" },
-    opts = {},
+    opts = {
+      {
+        callbacks = {
+          after_paste_window_ready = (function()
+            local once = true
+            return function(paste_window_data, kitty_data, opts)
+              if once then
+                once = false
+                vim.keymap.set(
+                  "n",
+                  "<esc>",
+                  "<C-w>k",
+                  { desc = "Back to the scrollback", buffer = paste_window_data.paste_window.bufid }
+                )
+              end
+            end
+          end)(),
+        },
+      },
+    },
   },
   { import = "langs", cond = not vim.g.kitty_scrollback },
   { import = "editor" },

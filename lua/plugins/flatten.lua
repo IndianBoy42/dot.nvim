@@ -17,7 +17,7 @@ local function FNV_hash(s)
 end
 
 return {
-  "willothy/flatten.nvim",
+  "indianboy42/flatten.nvim",
   lazy = false,
   priority = 1001,
   cond = not vim.g.kitty_scrollback,
