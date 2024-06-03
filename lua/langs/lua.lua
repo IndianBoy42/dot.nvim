@@ -2,7 +2,37 @@ return {
   {
     "neovim/nvim-lspconfig",
     dependencies = {
-      { "folke/neodev.nvim", opts = { pathStrict = true } },
+      {
+        "folke/lazydev.nvim",
+        ft = "lua", -- only load on lua files
+        opts = {
+          library = {
+            -- Library items can be absolute paths
+            -- "~/projects/my-awesome-lib",
+            -- Or relative, which means they will be resolved as a plugin
+            -- "LazyVim",
+            -- When relative, you can also provide a path to the library in the plugin dir
+            "luvit-meta/library", -- see below
+          },
+        },
+        config = function(_, opts)
+          require("lazydev").setup(opts)
+          vim.api.nvim_create_autocmd("FileType", {
+            pattern = "lua",
+            callback = function()
+              require("langs.complete").sources {
+                {
+                  name = "lazydev",
+                  group_index = 0, -- set group index to 0 to skip loading LuaLS completions
+                },
+              }
+            end,
+          })
+        end,
+        dependencies = {
+          { "Bilal2453/luvit-meta", lazy = true }, -- optional `vim.uv` typings
+        },
+      },
     },
     opts = {
       servers = {

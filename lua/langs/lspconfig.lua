@@ -3,7 +3,6 @@ return {
   event = "LazyFile",
   dependencies = {
     -- { "folke/neoconf.nvim", cmd = "Neoconf",                                config = true },
-    -- { "folke/neodev.nvim",  opts = { experimental = { pathStrict = true } } },
     {
       "williamboman/mason.nvim",
       cmd = "Mason",

@@ -213,21 +213,6 @@ return {
             border = "rounded",
           },
         },
-        -- config = function(_, opts)
-        --   require("crates").setup(opts)
-        --   local sources = vim.deepcopy(require("langs.complete").default_sources)
-        --   sources[#sources + 1] = { name = "crates", group_index = 1 }
-        --   local setup = function()
-        --     require("cmp").setup.buffer {
-        --       sources = sources,
-        --     }
-        --   end
-        --   vim.api.nvim_create_autocmd("BufRead", {
-        --     pattern = "Cargo.toml",
-        --     callback = setup,
-        --   })
-        --   setup()
-        -- end,
       },
     },
   },
@@ -296,7 +281,7 @@ return {
           local function is_cargo() return vim.fn.expand "%:t" == "Cargo.toml" end
           local function show_popup()
             if vim.fn.expand "%:t" == "Cargo.toml" and require("crates").popup_available() then
-              require("cmp").setup.buffer {
+              require("langs.complete").sources {
                 sources = {
                   { name = "vimtex" },
                 },

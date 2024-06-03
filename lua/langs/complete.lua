@@ -26,8 +26,8 @@ local M = {
     {
       "tzachar/cmp-fuzzy-path",
       dependencies = { "tzachar/fuzzy.nvim" },
-        },
-"davidsierradz/cmp-conventionalcommits"
+    },
+    "davidsierradz/cmp-conventionalcommits",
   },
 }
 M.default_sources = {
@@ -302,7 +302,8 @@ function M.autocomplete(enable) require("cmp").setup.buffer { completion = { aut
 
 function M.sources(list)
   local cmp = require "cmp"
-  if not list then return M.default_sources end
+  if not list then return vim.deepcopy(M.default_sources) end
+  list = vim.list_extend(list, M.default_sources)
   cmp.setup.buffer { sources = list }
 end
 
