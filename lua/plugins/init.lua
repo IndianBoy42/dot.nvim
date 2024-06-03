@@ -16,7 +16,7 @@ return {
       vim.api.nvim_create_user_command("Fq", function(args) vim.cmd "ForgetQuit" end, {})
     end,
   },
-  { -- TODO: https://github.com/mikesmithgh/kitty-scrollback.nvim
+  {
     "mikesmithgh/kitty-scrollback.nvim",
     branch = "feat-command-line-editing-mode",
     build = ":KittyScrollbackGenerateKittens",

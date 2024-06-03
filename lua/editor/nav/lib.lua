@@ -327,6 +327,8 @@ M.remote_paste = function(key, paste_key)
         vim.api.nvim_win_set_cursor(winnr, pos)
       end)
     end
+    -- FIXME: this doesnt work across windows
+    -- can use Leap directly but it is less flexible
     vim.go.operatorfunc = "v:lua.__remote_op_opfunc"
     vim.api.nvim_feedkeys("g@" .. key, "m", false)
   end

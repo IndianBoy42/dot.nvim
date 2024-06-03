@@ -554,6 +554,14 @@ return {
         function() require("flash").jump { mode = "fuzzy" } end,
         desc = "Fuzzy search",
       },
+      { O.goto_prefix .. "/", "/<Plug>(flash-search-toggle)", desc = "Flash search(/)" },
+      { "<C-s>", mode = "c", "<Plug>(flash-search-toggle)", desc = "Flash search(/)" },
+      {
+        "<Plug>(flash-search-toggle)",
+        mode = { "n", "c" },
+        function() require("flash").toggle() end,
+        desc = "Flash search(/)",
+      },
       -- {
       --   "?",
       --   mode = { "o" },
@@ -694,7 +702,8 @@ return {
       { "s", "<Plug>(leap-forward-to)", mode = "n", desc = "Leap Fwd" },
       { "S", "<Plug>(leap-backward-to)", mode = "n", desc = "Leap Bwd" },
       { O.goto_prefix .. O.goto_prefix, nav.leap_anywhere, mode = { "n", "x" }, desc = "Leap anywhere" },
-      { "<Plug>(leap-anywhere)", nav.leap_anywhere, mode = { "n", "x" }, desc = "Leap anywhere" },
+      { O.goto_prefix, nav.leap_anywhere, mode = { "o" }, desc = "Leap anywhere" },
+      { "<Plug>(leap-anywhere)", nav.leap_anywhere, mode = { "n", "x", "o", "i" }, desc = "Leap anywhere" },
       {
         "t", -- semi-inclusive
         function()
@@ -714,13 +723,13 @@ return {
         desc = "Leap v T",
       },
       {
-        "<tab>", -- semi-inclusive
+        "q", -- semi-inclusive
         function() require("leap").leap { inclusive_op = true } end,
         mode = { "x", "o" },
         desc = "Leap f",
       },
       {
-        "<s-tab>", -- semi-inclusive
+        "Q", -- semi-inclusive
         function() require("leap").leap { backward = true, offset = 1, inclusive_op = true } end,
         mode = { "x", "o" },
         desc = "Leap F",
@@ -733,7 +742,7 @@ return {
       -- { "f", leap_bi_x(1), mode = "x", desc = "Leap" },
       -- { "<leader>f", leap_bi_x(2), mode = "x", desc = "Leap Inc" },
       -- { "<leader>t", leap_bi_x(0), mode = "x", desc = "Leap Exc" },
-      { O.goto_prefix, leap_bi_o(1), mode = "o", desc = "Leap SemiInc" },
+      { ";", leap_bi_o(1), mode = "o", desc = "Leap SemiInc" },
       { ".", leap_bi_o(2), mode = "o", desc = "Leap Incl." },
       { "<leader>f", leap_bi_o(2), mode = "o", desc = "Leap Inc" },
       { "<leader>t", leap_bi_o(0), mode = "o", desc = "Leap Exc" },
@@ -759,7 +768,7 @@ return {
         "rP",
         mode = "n",
         desc = "Remote Paste line",
-        nav.remote_paste(vim.keycode "<leader>t", "<leader>p"),
+        nav.remote_paste(vim.keycode "<leader>t", "<Plug>(YankyPutIndentAfterLinewise)"),
       },
       -- [cdy]<>rp<>
       -- [cdy]<>R<>
@@ -824,7 +833,8 @@ return {
         "h", "j", "k", "l",
         "b", "e", "w",
         ",", "-",
-      }
+            }
+      -- TODO: make this n/N for repeating motions
       require("leap").add_repeat_mappings("}", "{", {})
     end,
   },

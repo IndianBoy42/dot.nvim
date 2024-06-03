@@ -61,7 +61,7 @@ local M = {
         pattern = "Python",
         callback = function()
           local map = vim.keymap.setl
-          require("keymappings").repeatable("c", "Notebook Cells", {
+          require("keymappings").repeatable("n", "Notebook Cells", {
             function() nn.move_cell "d" end,
             function() nn.move_cell "u" end,
           }, {

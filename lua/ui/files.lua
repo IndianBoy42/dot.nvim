@@ -65,7 +65,7 @@ return {
         go_out_plus = "-",
         reset = "<localleader>R",
         close = "<C-q>",
-        synchronize = "<spc><spc>",
+        synchronize = "<space><space>",
       },
     },
     config = function(_, opts)

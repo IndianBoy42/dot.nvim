@@ -1,0 +1,15 @@
+2024-05-14 16:57:51 - Neovide panicked with the message 'called `Result::unwrap()` on an `Err` value: Error { kind: Io(Os { code: 24, kind: Uncategorized, message: "Too many open files" }), paths: [] }'. (File: src/settings/config.rs; Line: 141, Column: 14)
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: <unknown>
+  11: <unknown>
+  12: <unknown>
+

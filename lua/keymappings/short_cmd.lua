@@ -13,6 +13,7 @@ local aliases = {
   qq = ":quitall<cr>",
   ww = ":writeall<cr>",
   en = ":enew<cr>",
+  te = ":Telescope",
   k = function()
     local c = vim.fn.getcharstr()
     return ":k " .. c
@@ -59,6 +60,8 @@ local function short_cmd(exlm)
               feedkeys(c2 .. exlm .. "<cr>", "n")
               return
             end
+          else
+            -- TODO: Fuzzy search all possible commands?
           end
         end
       end

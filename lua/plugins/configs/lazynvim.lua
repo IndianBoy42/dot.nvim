@@ -6,10 +6,7 @@ local function t(k) return termcodes(k, true, true, true) end
 Au.grp("lazy_filetype", function(au)
   au("FileType", {
     pattern = "lazy",
-    callback = function()
-      pcall(function() utils.lsp.toggle_diag_lines() end)
-      vim.keymap.setl("n", "<localleader>n", "/[○●]<cr>", { desc = "Next plugin" })
-    end,
+    callback = function() vim.keymap.setl("n", "<localleader>n", "/[○●]<cr>", { desc = "Next plugin" }) end,
   })
 end)
 
@@ -125,6 +122,7 @@ return {
         function(plugin)
           require("kitty.terms").new_os_window(
             { open_cwd = plugin.dir },
+            -- TODO: don't hardcode fish
             { "fish", "-C", "ls", "-C", "commandline -f repaint" }
           )
         end,
@@ -135,7 +133,7 @@ return {
       },
       ["<localleader>m"] = {
         desc = "Open in Smerge",
-        function(plugin) vim.cmd("!smerge " .. plugin.dir) end,
+        function(plugin) vim.system { "smerge", plugin.dir } end,
       },
       ["<localleader>h"] = {
         desc = "Open in github browser",

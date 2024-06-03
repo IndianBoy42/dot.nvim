@@ -617,7 +617,7 @@ function M.setup()
   map("i", "<M-i>", cmd "normal! I", nore)
 
   -- Slightly easier commands
-  map({ "n", "x", "o" }, ";", ":", {})
+  map({ "n", "x" }, ";", ":", {})
   -- map('c', ';', "<cr>", sile)
 
   -- Add semicolon TODO: make this smarter
@@ -815,8 +815,8 @@ function M.setup()
     vim.fn.setcmdline(line, pos)
     -- TODO: refresh inccomand
     return "i<bs>"
-  end, { expr = true })
-  map("c", "<c-s>", function()
+  end, { expr = true, desc = "Toggle file range" })
+  map("c", "<c-v>", function()
     local line = vim.fn.getcmdline()
     local pos = vim.fn.getcmdpos()
     local prefix = "'<,'>"
@@ -830,7 +830,7 @@ function M.setup()
     vim.fn.setcmdline(line, pos)
     -- TODO: refresh inccomand
     return "i<bs>"
-  end, { expr = true })
+  end, { expr = true, desc = "Toggle visual range" })
   -- FIXME: Totally jank
   -- map("ca", "s", function()
   --   if vim.fn.getcmdtype() == ":" then

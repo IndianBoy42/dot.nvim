@@ -126,7 +126,10 @@ return {
   {
     "FabijanZulj/blame.nvim",
     cmd = "BlameToggle",
-    config = function() mappings.quick_toggle("<leader>T", "b", "<cmd>ToggleBlame virtual<cr>") end,
+    config = function(_, opts)
+      require("blame").setup(opts)
+      mappings.quick_toggle("<leader>T", "b", "<cmd>ToggleBlame virtual<cr>")
+    end,
     keys = {
       { "<leader>Tb", desc = "ToggleBlame virtual" },
     },
@@ -141,9 +144,7 @@ return {
 
       vim.api.nvim_create_autocmd("User", {
         pattern = "GitConflictDetected",
-        callback = function()
-          vim.notify("Conflict detected in " .. vim.fn.expand "<afile>")
-        end,
+        callback = function() vim.notify("Conflict detected in " .. vim.fn.expand "<afile>") end,
       })
     end,
     event = "LazyFile",

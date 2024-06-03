@@ -112,7 +112,7 @@ return {
               end
               ufo.closeFoldsWith(vim.v.count or vim.w.ufo_foldlevel)
             end,
-            { desc = "Close more" },
+            { desc = "Close More" },
           },
           {
             "R",
@@ -124,26 +124,35 @@ return {
               end
               ufo.closeFoldsWith(vim.v.count or vim.w.ufo_foldlevel)
             end,
-            { desc = "Open more" },
+            { desc = "Open More" },
+          },
+          { "h", "zc", { desc = "Close this line" } },
+          { "l", "zo", { desc = "Open this line" } },
+          { "]", ufo.goNextClosedFold, { desc = "Next Fold" } },
+          { "[", ufo.goPreviousClosedFold, { desc = "Previous Fold" } },
+          {
+            "p",
+            function()
+              local winid = require("ufo").peekFoldedLinesUnderCursor()
+              if winid then
+                local bufnr = vim.api.nvim_win_get_buf(winid)
+                local keys = { "a", "i", "o", "A", "I", "O", "gd", "gr" }
+                for _, k in ipairs(keys) do
+                  -- Add a prefix key to fire `trace` action,
+                  map("n", k, O.localleader .. k, { noremap = false, buffer = bufnr })
+                end
+              else
+                -- nvimlsp
+                vim.lsp.buf.hover()
+              end
+            end,
           },
         },
       }
-      map("n", "]z", ufo.goNextClosedFold, { desc = "Closed Fold" })
-      map("n", "[z", ufo.goPreviousClosedFold, { desc = "Closed Fold" })
-      map("n", "zp", function()
-        local winid = require("ufo").peekFoldedLinesUnderCursor()
-        if winid then
-          local bufnr = vim.api.nvim_win_get_buf(winid)
-          local keys = { "a", "i", "o", "A", "I", "O", "gd", "gr" }
-          for _, k in ipairs(keys) do
-            -- Add a prefix key to fire `trace` action,
-            map("n", k, O.localleader .. k, { noremap = false, buffer = bufnr })
-          end
-        else
-          -- nvimlsp
-          vim.lsp.buf.hover()
-        end
-      end, { desc = "peekFoldedLinesUnderCursor" })
+      mappings.repeatable("z", "Fold", {
+        ufo.goNextClosedFold,
+        ufo.goPreviousClosedFold,
+      })
     end,
   },
 }

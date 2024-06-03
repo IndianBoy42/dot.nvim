@@ -32,9 +32,9 @@ M.repeatable = function(ch, desc, fwdbwd, _opts)
   if type(ch) == "table" then
     ch, s_ch, c_ch, cs_ch = unpack(ch)
   else
-    c_ch = "<C-" .. ch .. ">"
-    s_ch = ch:upper()
-    cs_ch = "<C-S-" .. ch .. ">"
+    c_ch = ch == ch:upper() and ("<C-" .. ch .. ">") or ("<C-S-" .. ch .. ">")
+    s_ch = ch == ch:upper() and ch:upper() or ch:lower()
+    cs_ch = ch == ch:upper() and ("<C-S-" .. ch .. ">") or ("<C-" .. ch .. ">")
   end
   local prev_pre, next_pre, prev_end, next_end
   prev_pre, next_pre, prev_end, next_end = O.goto_previous, O.goto_next, O.goto_previous_end, O.goto_next_end

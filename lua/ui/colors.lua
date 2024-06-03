@@ -30,14 +30,14 @@ return {
         "<cmd>TodoTrouble<cr>",
         desc = "TODOs",
       },
-      { "[T" },
-      { "]T" },
+      { "[c" },
+      { "]c" },
     },
     opts = {},
     event = "LazyFile",
     config = function(_, opts)
       require("todo-comments").setup(opts)
-      mappings.repeatable("T", "Todo Comments", {
+      mappings.repeatable("c", "Todo Comments", {
         require("todo-comments").jump_next,
         require("todo-comments").jump_prev,
       })
