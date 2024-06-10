@@ -33,7 +33,7 @@ local M = {
 M.default_sources = {
   { name = "luasnip", group_index = 1 },
   { name = "nvim_lsp", group_index = 1 },
-  { name = "buffer", group_index = 1 },
+  { name = "buffer", group_index = 2 },
   { name = "path", group_index = 2 }, -- TODO: fuzzy_path
   -- { name = "latex_symbols" , group_index = 2},
   { name = "calc", group_index = 2 },

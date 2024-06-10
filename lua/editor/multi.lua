@@ -6,9 +6,11 @@ end
 local function wrap_vm(prefix, vm, suffix)
   prefix = prefix or ""
   vm = vm and ("<Plug>(VM-" .. vm .. ")") or ""
-  local first = prefix .. vm
+  local first = vm
   if suffix == nil then return first end
   return function()
+    if type(prefix) == "function" then prefix = prefix() end
+    if type(prefix) == "string" then first = first .. vm end
     feedkeys(first, "m")
     -- Defer to avoid `<Plug>(VM-Hls)`
     vim.defer_fn(function()
@@ -229,10 +231,11 @@ return {
     map("o", "A", multiop(true, "<Plug>(VM-Select-All)"), { desc = "op all of <>" })
 
     -- map("n", ldr .. "n", "<Plug>(VM-Start-Regex-Search)<C-r>/<cr>", { desc = "Select all (op)" })
+    local last_search
     map(
       "n",
       ldr .. "n",
-      wrap_vm(nil, "Start-Regex-Search", function() return (vim.fn.getreg "/") end),
+      wrap_vm(function() last_search = vim.fn.getreg "/" end, "Start-Regex-Search", function() return last_search end),
       { desc = "From last search" }
     )
 

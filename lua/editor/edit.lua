@@ -296,6 +296,9 @@ return {
       system_clipboard = {
         clipboard_register = "+",
       },
+      textobj = {
+        enabled = true,
+      },
     },
     config = function(_, opts) require("yanky").setup(opts) end,
     event = { "FocusLost", "FocusGained" }, -- To sync with clipboard
@@ -343,6 +346,7 @@ return {
       { "<leader>==", mode = { "n" }, desc = "Evaluate line" },
       { "yd", desc = "Duplicate" },
       { "ydd", desc = "Duplicate Line" },
+      { "yD", "ydV", remap = true, desc = "Duplicate Linewise" },
       { mode = "x", "D", desc = "Duplicate" },
     },
   },
