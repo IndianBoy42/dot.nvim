@@ -43,7 +43,7 @@ return {
       max_join_length = 120,
     },
     keys = {
-      -- { "<C-s>", function() require("treesj").toggle() end, desc = "SplitJoin", mode = { "n", "i", "x" } },
+      { "<C-s>", function() require("treesj").toggle() end, desc = "SplitJoin", mode = { "n", "i", "x" } },
       { "<leader>es", function() require("treesj").toggle() end, desc = "SplitJoin", mode = { "n", "x" } },
       {
         "<leader>ej",
