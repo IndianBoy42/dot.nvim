@@ -20,8 +20,8 @@ M.hydra = function(bufnr)
       { "t", "<Plug>(git-conflict-theirs)", { desc = "theirs" } },
       { "b", "<Plug>(git-conflict-both)", { desc = "both" } },
       { "0", "<Plug>(git-conflict-none)", { desc = "none" } },
-      { "]", "<Plug>(git-conflict-prev-conflict)", { desc = "prev conflict" } },
-      { "[", "<Plug>(git-conflict-next-conflict)", { desc = "next conflict" } },
+      { "[", "<Plug>(git-conflict-prev-conflict)", { desc = "prev conflict" } },
+      { "]", "<Plug>(git-conflict-next-conflict)", { desc = "next conflict" } },
     },
   }
   local hydra = Hydra {
