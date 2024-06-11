@@ -19,8 +19,14 @@ local function switch_source_header_splitcmd(bufnr, splitcmd)
   )
 end
 
-local clangd_flags =
-  { "--background-index", "--query-driver=**/arm-none-eabi-*,**/x86_64-linux-*", "--cross-file-rename" }
+local clangd_cmd =
+  -- TODO: can we automate the query drivers finding? Use env variables
+  {
+    "clangd",
+    "--background-index",
+    "--query-driver=**/arm-none-eabi-*,**/x86_64-linux-*",
+    "--cross-file-rename",
+  }
 -- table.insert(clangd_flags, "--cross-file-rename")
 -- table.insert(clangd_flags, "--header-insertion=never")
 
@@ -38,8 +44,7 @@ return {
         clangd = {
           -- cmd = require("lsp.config").get_cmd "clangd",
           -- cmd_env = require("lsp.config").get_cmd_env "clangd",
-
-          extra_cmd_args = clangd_flags,
+          cmd = clangd_cmd,
           commands = {
             ClangdSwitchSourceHeader = {
               function() switch_source_header_splitcmd(0, "edit") end,
@@ -99,6 +104,5 @@ return {
       },
     },
   },
-  -- TODO: {"Civitasv/cmake-tools.nvim"}
   -- TODO: https://github.com/Badhi/nvim-treesitter-cpp-tools
 }

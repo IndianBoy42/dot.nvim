@@ -233,6 +233,10 @@ function M.setup()
   -- TODO: use window-picker
   map({ "x", "n" }, "gf", "gF", { desc = "Goto File:Nr" })
   map({ "x", "n" }, "gF", "gf", { desc = "Goto File" })
+  map({ "x", "n" }, O.goto_prefix .. "f", "gF", { desc = "Goto File:Nr" })
+  map({ "x", "n" }, O.goto_prefix .. "F", "gf", { desc = "Goto File" })
+  map({ "x", "n" }, O.goto_prefix .. "x", "gx", { desc = "Open URL" })
+  -- TODO:
   map({ "x", "n" }, O.goto_prefix .. "pf", function() end, { desc = "Peek File:Nr" })
   map({ "x", "n" }, O.goto_prefix .. "pF", function() end, { desc = "Peek File" })
   -- for _, v in pairs { "h", "j", "k", "l" } do

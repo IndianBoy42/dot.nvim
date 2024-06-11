@@ -12,6 +12,7 @@
   "catppuccin": { "branch": "main", "commit": "5215ea59df6d0a7e27da9a5cd1165e06d1b04cbe" },
   "circles.nvim": { "branch": "main", "commit": "01b9ac1dc6c181f6982eddd57deb1fc7f92d7a70" },
   "clangd_extensions.nvim": { "branch": "main", "commit": "f36d788f05cfb73d4fd2e606e6ad15f8b842124f" },
+  "cmake-tools.nvim": { "branch": "master", "commit": "56b448e839ee0aa1ff488b2c1f76971bcab9fe8b" },
   "cmd-parser.nvim": { "branch": "master", "commit": "6363b8bddef968c3ec51a38172af44f675f01ef3" },
   "cmdbuf.nvim": { "branch": "main", "commit": "1ee1e39859711b8cf2b2b2816f65101460dccc0b" },
   "cmp-buffer": { "branch": "main", "commit": "3022dbc9166796b644a841a02de8dd1cc1d311fa" },

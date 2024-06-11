@@ -6,6 +6,7 @@ return {
     {
       "williamboman/mason.nvim",
       opts = {
+        -- TODO: split these to lang files
         ensure_installed = {
           "black",
           -- "cmake_format",
@@ -42,6 +43,7 @@ return {
     return {
       -- debug = true,
       diagnostics_format = diagnostics_format,
+      -- TODO: split these to lang files
       sources = {
         -- Formatters
         formatters.stylua,
@@ -60,6 +62,7 @@ return {
         formatters.nixfmt,
         formatters.mdformat,
         formatters.markdownlint,
+        formatters.gersemi,
 
         -- -- Diagnostics
         -- -- diagnostics.chktex, -- vimtex?
