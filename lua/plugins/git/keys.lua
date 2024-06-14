@@ -43,7 +43,7 @@ M.hydra = function(bufnr)
       end,
       on_exit = function()
         local cursor_pos = vim.api.nvim_win_get_cursor(0)
-        vim.cmd "loadview"
+        pcall(vim.cmd.loadview)
         vim.api.nvim_win_set_cursor(0, cursor_pos)
         vim.cmd "normal! zv"
         gitsigns.toggle_signs(false)

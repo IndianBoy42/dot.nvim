@@ -56,7 +56,7 @@ local function get_surrounding_class(linenr)
   return min_name
 end
 
-return {
+local snippets = {
   s("for", {
     t "for (",
     c(1, {
@@ -311,3 +311,19 @@ return {
   }, { stored = { header = i(1, "header") } }),
   parse("cinit", "auto const $1 = [&] {\n\t$0\n}();"),
 }
+
+local autosnippets = {
+  s(
+    "loop{",
+    fmta(
+      [[while(true) {
+  <>
+  }]],
+      {
+        i(0),
+      }
+    )
+  ),
+}
+
+return snippets, autosnippets
