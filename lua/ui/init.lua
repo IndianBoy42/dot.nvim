@@ -284,6 +284,13 @@ return {
     opts = {},
   },
   { "seandewar/nvimesweeper", cmd = "Nvimesweeper" },
+
+  {
+    "joshuadanpeterson/typewriter",
+    opts = {},
+    cmd = { "TWCenter" },
+    keys = { { "M", "<cmd>TWCenter<cr>" } },
+  },
   -- TODO: https://github.com/altermo/nwm
   --  could be useful for showing zathura pdf inside nvim? but why?
 }
