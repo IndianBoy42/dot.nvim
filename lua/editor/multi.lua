@@ -10,7 +10,7 @@ local function wrap_vm(prefix, vm, suffix)
   if suffix == nil then return first end
   return function()
     if type(prefix) == "function" then prefix = prefix() end
-    if type(prefix) == "string" then first = first .. vm end
+    if type(prefix) == "string" then first = prefix .. first end
     feedkeys(first, "m")
     -- Defer to avoid `<Plug>(VM-Hls)`
     vim.defer_fn(function()
