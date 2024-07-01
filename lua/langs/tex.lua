@@ -551,10 +551,8 @@ return {
     -- utils.define_augroups { _vimtex_event = {
     --   { "InsertLeave", "*.tex", "VimtexCompile" },
     -- } }
-    require("cmp").setup.buffer {
-      sources = {
-        { name = "vimtex" },
-      },
+    require("langs.complete").sources {
+      { name = "vimtex", group_index = 0 },
     }
 
     vim.b.knap_settings = {

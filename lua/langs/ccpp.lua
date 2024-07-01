@@ -20,7 +20,7 @@ local function switch_source_header_splitcmd(bufnr, splitcmd)
 end
 
 local clangd_flags =
-  { "--background-index", "--query-driver=**/arm-none-eabi-*,**/x86_64-linux-*", "--cross-file-rename" }
+  { "clangd", "--background-index", "--query-driver=**/arm-none-eabi-*,**/x86_64-linux-*", "--cross-file-rename" }
 -- table.insert(clangd_flags, "--cross-file-rename")
 -- table.insert(clangd_flags, "--header-insertion=never")
 
@@ -36,10 +36,7 @@ return {
       -- make sure mason installs the server
       servers = {
         clangd = {
-          -- cmd = require("lsp.config").get_cmd "clangd",
-          -- cmd_env = require("lsp.config").get_cmd_env "clangd",
-
-          extra_cmd_args = clangd_flags,
+          cmd = clangd_flags,
           commands = {
             ClangdSwitchSourceHeader = {
               function() switch_source_header_splitcmd(0, "edit") end,

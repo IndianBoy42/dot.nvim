@@ -435,6 +435,7 @@ return {
     config = function()
       local opts = {
         on_substitute = require("yanky.integration").substitute(),
+        yank_substituted_text = true,
       }
       require("substitute").setup(opts)
     end,

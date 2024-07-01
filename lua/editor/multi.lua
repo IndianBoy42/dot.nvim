@@ -133,7 +133,6 @@ return {
       "cx",
       "yc",
     }
-    vim.g.VM_surround_mapping = "s"
   end,
   config = function()
     -- TODO: yolo and merge this into the github lol, i forked it anyway, could be implemented better anyway
