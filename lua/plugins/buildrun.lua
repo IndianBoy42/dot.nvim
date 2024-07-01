@@ -7,7 +7,7 @@ local function kitty_terms()
     dont_attach = not not vim.g.kitty_scrollback,
     attach = {
       default_launch_location = "os-window",
-      -- create_new_win = "os-window",
+      create_new_win = "os-window",
       target_providers = {
         "just",
         "cargo",

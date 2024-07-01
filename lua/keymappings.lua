@@ -637,7 +637,7 @@ function M.setup()
   -- map("n", "/", "/\v", nore)
 
   -- Split line
-  map("n", "o", "A<cr>")
+  map("n", "<M-a>", "A<cr>")
   -- map("n", "O", "^kA<cr>")
   map("n", "go", "a<cr><ESC>k<cmd>sil! keepp s/\v +$//<cr><cmd>noh<cr>j^", { desc = "Split Line" })
   map("n", "<M-o>", "o<esc>", { remap = true, desc = "Split Line" })
