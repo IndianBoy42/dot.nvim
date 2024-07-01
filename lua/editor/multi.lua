@@ -121,9 +121,11 @@ return {
       ["Surround"] = "s",
       -- ["Select Operator"] = ldr .. "s",
       ["Select Operator"] = "<C-v>",
+      ["Add Cursor At Pos"] = "+",
     }
     if ldr == "<Del>" then vim.g.VM_maps["Del"] = "" end
-    vim.g.VM_mouse_mappings = true
+    vim.g.VM_mouse_mappings = 1
+    vim.g.VM_add_cursor_at_pos_no_mappings = 1
 
     local theme = "codedark"
     vim.g.VM_theme = theme
@@ -139,12 +141,6 @@ return {
     vim.cmd.VMTheme(vim.g.VM_theme)
     local ldr = vim.g.VM_leader
     local map = vim.keymap.set
-    map(
-      "n",
-      "+",
-      "<Plug>(VM-Add-Cursor-At-Pos)<Plug>(VM-Disable-Mappings)",
-      { remap = true, desc = "Add Cursor At Pos" }
-    )
     map(
       { "x", "n" },
       "<C-n>",
