@@ -32,6 +32,7 @@ local clangd_cmd =
 
 return {
   -- correctly setup lspconfig
+  require("langs").mason_ensure_installed { "gersemi" },
   {
     -- TODO: hhttps://github.com/LazyVim/LazyVim/blob/f086bcde253c29be9a2b9c90b413a516f5d5a3b2/lua/lazyvim/plugins/extras/lang/clangd.lua#L89
     "neovim/nvim-lspconfig",
