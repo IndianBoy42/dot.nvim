@@ -528,25 +528,22 @@ return {
 
     -- Localleader
     local cmd = utils.cmd
-    mappings.localleader {
-      f = { cmd "call vimtex#fzf#run()", "Fzf Find" },
-      i = { cmd "VimtexInfo", "Project Information" },
-      s = { cmd "VimtexStop", "Stop Project Compilation" },
-      t = { cmd "VimtexTocToggle", "Toggle Table Of Content" },
-      v = { cmd "VimtexView", "View PDF" },
-      c = { utils.conceal_toggle, "Toggle Conceal" },
-      b = { cmd "VimtexCompile", "Compile" },
-      o = { cmd "VimtexCompileOutput", "Compile Output" },
-      e = { cmd "VimtexErrors", "Errors" },
-      l = { cmd "TexlabBuild", "Texlab Build" },
-      n = { function() require("nabla").popup() end, "Nabla" },
-      m = { cmd "VimtexToggleMain", "Toggle Main File" },
-      a = { cmd "AirLatex", "Air Latex" },
-    }
-    mappings.ftleader {
-      ot = { cmd "VimtexTocToggle", "Table of Contents" },
-      ol = { cmd "VimtexLabelsToggle", "Latex Labels" },
-    }
+    local map = vim.keymap.localleader
+    map("n", "f", cmd "call vimtex#fzf#run()", { desc = "Fzf Find" })
+    map("n", "i", cmd "VimtexInfo", { desc = "Project Information" })
+    map("n", "s", cmd "VimtexStop", { desc = "Stop Project Compilation" })
+    map("n", "t", cmd "VimtexTocToggle", { desc = "Toggle Table Of Content" })
+    map("n", "v", cmd "VimtexView", { desc = "View PDF" })
+    map("n", "c", utils.conceal_toggle, { desc = "Toggle Conceal" })
+    map("n", "b", cmd "VimtexCompile", { desc = "Compile" })
+    map("n", "o", cmd "VimtexCompileOutput", { desc = "Compile Output" })
+    map("n", "e", cmd "VimtexErrors", { desc = "Errors" })
+    map("n", "l", cmd "TexlabBuild", { desc = "Texlab Build" })
+    map("n", "n", function() require("nabla").popup() end, { desc = "Nabla" })
+    map("n", "m", cmd "VimtexToggleMain", { desc = "Toggle Main File" })
+    map("n", "a", cmd "AirLatex", { desc = "Air Latex" })
+    vim.keymap.leader("n", "ot", cmd "VimtexTocToggle", { buffer = 0, desc = "Table of Contents" })
+    vim.keymap.leader("n", "ol", cmd "VimtexLabelsToggle", { buffer = 0, desc = "Latex Labels" })
 
     -- utils.define_augroups { _vimtex_event = {
     --   { "InsertLeave", "*.tex", "VimtexCompile" },

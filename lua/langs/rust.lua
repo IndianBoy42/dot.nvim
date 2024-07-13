@@ -41,29 +41,20 @@ local function on_attach()
   end
 
   -- map("n", "KK", require("rust-tools").code_action_group.code_action_group, { desc = "Code Actions" })
-  mappings.localleader {
-    m = { "<Cmd>RustExpandMacro<CR>", "Expand Macro" },
-    -- TODO: Integrate with Kitty.lua
-    e = { "<Cmd>RustRunnables<CR>", "Runnables" },
-    i = { code_action "refactor.inline", "Inline" },
-    r = { code_action "refactor.rewrite", "Rewrite" },
-    d = { "<Cmd>RustDebuggables<CR>", "Debuggables" },
-    -- a = { require("rust-tools").code_action_group.code_action_group, "Code Actions" },
-    s = { ":RustSSR  ==>> <Left><Left><Left><Left><Left><Left>", "Structural S&R" },
-  }
-  mappings.vlocalleader {
-    h = { "<cmd>RustHoverRange<CR>", "Hover Range" },
-    e = {
-      name = "Refactoring",
-      f = { code_action("refactor.extract", "function"), "Extract Function" },
-      v = { code_action("refactor.extract", "variable"), "Extract Variable" },
-      -- TODO: the rest of these actions
-    },
-  }
-  mappings.ftleader {
-    pR = { "<CMD>RustRunnables<CR>", "Rust Run" },
-    pd = { "<CMD>RustDebuggables<CR>", "Rust Debug" },
-  }
+  map = vim.keymap.localleader
+  map("n", "m", "<Cmd>RustExpandMacro<CR>", { desc = "Expand Macro" })
+  -- TODO: Integrate with Kitty.lua
+  map("n", "e", "<Cmd>RustRunnables<CR>", { desc = "Runnables" })
+  map("n", "i", code_action "refactor.inline", { desc = "Inline" })
+  map("n", "r", code_action "refactor.rewrite", { desc = "Rewrite" })
+  map("n", "d", "<Cmd>RustDebuggables<CR>", { desc = "Debuggables" })
+  map("n", "s", ":RustSSR  ==>> <Left><Left><Left><Left><Left><Left>", { desc = "Structural S&R" })
+  map("x", "h", "<cmd>RustHoverRange", { desc = "LSP Hover" })
+  map("x", "ef", code_action("refactor.extract", "function"), { desc = "Extract function" })
+  map("x", "ev", code_action("refactor.extract", "variable"), { desc = "Extract variable" })
+  -- TODO: the rest of these actions
+  vim.keymap.leader("n", "pR", "<CMD>RustRunnables<CR>", { buffer = 0, desc = "Rust Run" })
+  vim.keymap.leader("n", "pd", "<CMD>RustDebuggables<CR>", { buffer = 0, desc = "Rust Debug" })
 end
 local function postfix_wrap_call(trig, call, requires)
   return {
@@ -296,20 +287,17 @@ return {
             if is_cargo() then
               vim.keymap.set("n", O.hover_key, show_popup, { buffer = buffer })
               local crates = require "crates"
-              mappings.localleader {
-                t = { crates.toggle, "Toggle" },
-                r = { crates.reload, "Reload" },
-                u = { crates.update_crate, "Update Crate" },
-                a = { crates.update_all_crates, "Update All" },
-                U = { crates.upgrade_crate, "Upgrade Crate" },
-                A = { crates.upgrade_all_crates, "Upgrade All" },
-                d = { crates.open_documentation, "Docs" },
-                ["<localleader>"] = { crates.show_versions_popup, "Versions" },
-              }
-              mappings.vlocalleader {
-                u = { crates.update_crates, "Update" },
-                U = { crates.upgrade_crates, "Upgrade" },
-              }
+              local map = vim.keymap.localleader
+              map("n", "t", crates.toggle, { desc = "Toggle" })
+              map("n", "r", crates.reload, { desc = "Reload" })
+              map("n", "u", crates.update_crate, { desc = "Update Crate" })
+              map("n", "a", crates.update_all_crates, { desc = "Update All" })
+              map("n", "U", crates.upgrade_crate, { desc = "Upgrade Crate" })
+              map("n", "A", crates.upgrade_all_crates, { desc = "Upgrade All" })
+              map("n", "d", crates.open_documentation, { desc = "Docs" })
+              map("n", "<localleader>", crates.show_versions_popup, { desc = "Versions" })
+              map("x", "u", crates.update_crates, { desc = "Update" })
+              map("x", "U", crates.upgrade_crates, { desc = "Upgrade" })
             end
           end
           -- require("utils.lsp").on_attach(taplo_on_attach)

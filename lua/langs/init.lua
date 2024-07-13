@@ -212,6 +212,8 @@ local plugins = {
         })
       end
 
+      vim.tbl_extend("force", capabilities, require("lsp-file-operations").default_capabilities())
+
       utils.lsp.on_attach(function(client, bufnr) utils.lsp.document_highlight(client, bufnr) end)
 
       handlers["textDocument/codeLens"] = lspwith(vim.lsp.codelens.on_codelens, require("langs").codelens_config)

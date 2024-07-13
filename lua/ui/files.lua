@@ -15,22 +15,15 @@ return {
   {
     "chrisgrieser/nvim-genghis",
     dependencies = "stevearc/dressing.nvim",
+    init = function()
+      local function abbr(lhs, rhs) vim.keymap.set("ca", lhs, "Genghis " .. rhs) end
+      abbr("New", "createNewFile")
+      abbr("Move", "moveAndRenameFile")
+      abbr("Rename", "renameFile")
+      abbr("Trash", "trashFile")
+    end,
     cmd = {
-      "New",
-      "Duplicate",
-      "NewFromSelection",
-      "Rename",
-      "Move",
-      "MoveToFolderInCwd",
-      "Chmodx",
-      "CopyFilename",
-      "CopyFilepath",
-      "CopyFilepathWithTilde",
-      "CopyRelativePath",
-      "CopyDirectoryPath",
-      "CopyRelativeDirectoryPath",
-      -- TODO: Remove/Delete?
-      "Trash",
+      "Genghis",
     },
   },
   { "antosha417/nvim-lsp-file-operations", opts = {} },

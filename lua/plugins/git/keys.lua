@@ -134,5 +134,4 @@ M.hydra = function(bufnr)
   return hydra, hunks
 end
 M.diffview = require "plugins.git.diffview"
-M.fugitive = require "plugins.git.fugitive"
 return M

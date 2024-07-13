@@ -101,6 +101,18 @@ end
 vim.keymap.setl = function(mode, lhs, rhs, opts)
   keyset(mode, lhs, rhs, vim.tbl_extend("keep", opts or {}, { buffer = 0, silent = true }))
 end
+vim.keymap.prefixed = function(prefix)
+  return function(mode, lhs, rhs, opts)
+    keyset(mode, prefix .. lhs, rhs, vim.tbl_extend("keep", opts or {}, { silent = true }))
+  end
+end
+vim.keymap.prefixedl = function(prefix)
+  return function(mode, lhs, rhs, opts)
+    keyset(mode, prefix .. lhs, rhs, vim.tbl_extend("keep", opts or {}, { buffer = 0, silent = true }))
+  end
+end
+vim.keymap.leader = vim.keymap.prefixed "<leader>"
+vim.keymap.localleader = vim.keymap.prefixedl "<localleader>"
 local mapl = vim.keymap.setl
 local sile = { silent = true, remap = true }
 local nore = { noremap = true, silent = true }
@@ -1161,7 +1173,7 @@ function M.setup()
     e = { name = "Edit" },
   }
 
-  -- TODO: move these to different modules?
+  -- TODO: migrate to which-key v3
   wk.register(leaderMappings, leaderOpts)
   wk.register(vLeaderMappings, vLeaderOpts)
 
@@ -1180,13 +1192,7 @@ function M.setup()
   -- end
   -- wk.register(iLeaderMappings, iLeaderOpts)
 
-  local ops = { mode = "n" }
-  wk.register({
-    ["z="] = {
-      telescope_fn.spell_suggest,
-      "Spelling suggestions",
-    },
-  }, ops)
+  map("n", "z=", telescope_fn.spell_suggest, { desc = "Spelling suggestions" })
 
   -- TODO: register all g prefix keys in whichkey
 
@@ -1215,11 +1221,13 @@ M.wkopts = {
   nowait = false,
 }
 function M.whichkey(maps, opts)
+  vim.deprecate("Which-key v3", "Use vim.keymap.set", "0", "indianboy42")
   if opts == nil then opts = {} end
   require("which-key").register(maps, vim.tbl_extend("keep", opts, M.wkopts))
 end
 
 function M.localleader(maps, opts)
+  vim.deprecate("Which-key v3", "Use vim.keymap.localleader", "0", "indianboy42")
   if opts == nil then opts = {} end
   M.whichkey(
     maps,
@@ -1231,6 +1239,7 @@ function M.localleader(maps, opts)
 end
 
 function M.ftleader(maps, opts)
+  vim.deprecate("Which-key v3", "Use vim.keymap.leader", "0", "indianboy42")
   if opts == nil then opts = {} end
   M.whichkey(
     maps,
@@ -1242,6 +1251,7 @@ function M.ftleader(maps, opts)
 end
 
 function M.vlocalleader(maps, opts)
+  vim.deprecate("Which-key v3", "Use vim.keymap.localleader", "0", "indianboy42")
   if opts == nil then opts = {} end
   M.localleader(maps, vim.tbl_extend("keep", opts, { mode = "v" }))
 end

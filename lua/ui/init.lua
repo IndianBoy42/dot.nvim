@@ -18,17 +18,7 @@ return {
           g = true, -- bindings for prefixed with g
         },
       },
-      operators = { ["yc"] = "Comments", r = "Replace", cx = "Exchange" },
-      icons = {
-        breadcrumb = "»", -- symbol used in the command line area that shows your active key combo
-        separator = "➜", -- symbol used between a key and it's label
-        group = "+", -- symbol prepended to a group
-      },
-      window = {
-        border = "rounded", -- none, single, double, shadow
-        position = "bottom", -- bottom, top
-        margin = { 0, 0, 0, 0 }, -- extra window margin [top, right, bottom, left] padding = { 0, 0, 0, 0 }, -- extra window padding [top, right, bottom, left]
-      },
+      preset = "helix",
       layout = {
         height = { min = 4, max = 25 }, -- min and max height of the columns
         width = { min = 20, max = 50 }, -- min and max width of the columns
@@ -41,6 +31,13 @@ return {
       require("which-key").setup(opts)
       mappings.setup()
     end,
+    keys = {
+      {
+        "<leader>?",
+        function() require("which-key").show { global = false } end,
+        desc = "Buffer Local Keymaps (which-key)",
+      },
+    },
   },
   { -- "SmiteshP/nvim-navbuddy",
     "SmiteshP/nvim-navbuddy",

@@ -84,16 +84,6 @@ return {
       require("neogit").setup(opts)
 
       local group = vim.api.nvim_create_augroup("NeogitUserAucmds", {})
-      vim.api.nvim_create_autocmd("FileType", {
-        group = group,
-        pattern = "NeogitPopup",
-        callback = function()
-          -- require("which-key").register({
-          --   ["-"] = "Options",
-          --   ["="] = "Arguments",
-          -- }, { buffer = 0 })
-        end,
-      })
     end,
   },
   { "aaronhallaert/advanced-git-search.nvim" },

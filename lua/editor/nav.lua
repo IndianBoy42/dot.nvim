@@ -54,17 +54,6 @@ local jump_mappings = function()
       jump_mode.move_by(sym, jump_mode.move_by_suffixes, { w, b, e, ge, W, B, E, gE, vi, va, vin, vip, van, vap }, desc)
     -- TODO: enable these hydras in visual mode after selection, ie
     -- viaeee should select argument and then extend the selection 3 arguments ahead.
-
-    -- require("which-key").register({ [O.goto_prefix .. id] = desc }, {})
-    -- if sym then
-    --   vim.keymap.set("n", sym, function() return hydra[1]:activate() end, { desc = desc })
-    --   for _, suffix in ipairs(jump_mode.move_by_suffixes) do
-    --     vim.keymap.set("o", sym .. suffix, O.goto_prefix .. id .. suffix, { remap = true, desc = desc })
-    --     vim.keymap.set("x", sym .. suffix, O.goto_prefix .. id .. suffix, { remap = true, desc = desc })
-    --   end
-    --   -- require("which-key").register({ [sym] = { name = desc } }, { mode = "o" })
-    --   -- require("which-key").register({ [sym] = { name = desc } }, { mode = "x" })
-    -- end
   end
   mapall("f", nil, "\\") -- TODO: what can this keybinding be??
   mapall("a", nil, ",")
@@ -699,10 +688,10 @@ return {
       { "}" }, -- Repeat mappings
       { "{" },
       -- { "<leader>hw", navutils.leap_anywhere, mode = "n", desc = "Leap all windows" },
-      { "s", "<Plug>(leap-forward-to)", mode = "n", desc = "Leap Fwd" },
-      { "S", "<Plug>(leap-backward-to)", mode = "n", desc = "Leap Bwd" },
+      { "s", "<Plug>(leap)", mode = "n", desc = "Leap" },
+      { "S", function() require("leap.remote").action() end, mode = "n", desc = "Leap Remote" },
       { O.goto_prefix .. O.goto_prefix, nav.leap_anywhere, mode = { "n", "x" }, desc = "Leap anywhere" },
-      { O.goto_prefix, nav.leap_anywhere, mode = { "o" }, desc = "Leap anywhere" },
+      { "S", nav.leap_anywhere, mode = { "o" }, desc = "Leap anywhere" },
       { "<Plug>(leap-anywhere)", nav.leap_anywhere, mode = { "n", "x", "o", "i" }, desc = "Leap anywhere" },
       {
         "t", -- semi-inclusive
@@ -754,9 +743,32 @@ return {
       },
       {
         "<Plug>(leap-remote)",
-        function() nav.leap_remote() end,
+        -- function() nav.leap_remote() end,
+        function() require("leap.remote").action() end,
         desc = "Leap Remote",
         mode = { "o", "x" },
+      },
+      {
+        "ar",
+        function()
+          local ok, char = pcall(vim.fn.getcharstr)
+          if not ok or char == "\27" or not char then return end
+
+          require("leap.remote").action { input = "a" .. char }
+        end,
+        mode = { "o", "x" },
+        desc = "Leap Remote (inside)",
+      },
+      {
+        "ir",
+        function()
+          local ok, char = pcall(vim.fn.getcharstr)
+          if not ok or char == "\27" or not char then return end
+
+          require("leap.remote").action { input = "i" .. char }
+        end,
+        mode = { "o", "x" },
+        desc = "Leap Remote (around)",
       },
       {
         "rp",
@@ -939,24 +951,16 @@ return {
 
       jump_mappings()
 
-      local i = legend
+      local wkdescs = {
+        mode = { "o", "x" },
+      }
 
-      local a = vim.deepcopy(i)
-      for k, v in pairs(a) do
-        a[k] = v:gsub(" including.*", "")
+      for k, v in pairs(legend) do
+        wkdescs[#wkdescs + 1] = { "i" .. k, desc = v }
+        wkdescs[#wkdescs + 1] = { "a" .. k, desc = v:gsub(" including.*", "") }
       end
 
-      -- local ic = vim.deepcopy(i)
-      -- local ac = vim.deepcopy(a)
-      -- for key, name in pairs { n = "Next", l = "Last" } do
-      --   i[key] = vim.tbl_extend("force", { name = "Inside " .. name .. " textobject" }, ic)
-      --   a[key] = vim.tbl_extend("force", { name = "Around " .. name .. " textobject" }, ac)
-      -- end
-      require("which-key").register {
-        mode = { "o", "x" },
-        i = i,
-        a = a,
-      }
+      require("which-key").add(wkdescs)
     end,
   },
   {

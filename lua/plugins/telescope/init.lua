@@ -177,6 +177,7 @@ local telescope = {
         undo = {},
         smart_open = {
           match_algorithm = "fzf",
+          cwd_only = true,
         },
         live_grep_args = {
           auto_quoting = true,

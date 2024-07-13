@@ -15,6 +15,7 @@ return {
       }
     end,
   },
+  -- TODO: {"echasnovski/mini.icons"},
   {
     "onsails/lspkind.nvim",
     opts = {

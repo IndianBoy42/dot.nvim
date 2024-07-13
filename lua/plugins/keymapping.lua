@@ -34,10 +34,25 @@ return {
 
   {
     "max397574/better-escape.nvim",
-    opts = {
-      mapping = { "jk", "kj", ";;" },
-      keys = "<Esc>",
-    },
+    opts = function()
+      local kj = {
+        j = {
+          -- These can all also be functions
+          k = "<Esc>",
+          j = "<Esc>",
+        },
+        k = { j = "<Esc>" },
+      }
+      return {
+        default_mappings = false,
+        mappings = {
+          i = kj,
+          c = kj,
+          t = kj,
+          -- TODO: investigate if double-esc can be done here
+        },
+      }
+    end,
     event = "InsertEnter",
   },
   "nvimtools/hydra.nvim",

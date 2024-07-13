@@ -145,12 +145,26 @@ M.setup = function()
     ["9"] = { cmd "tabnext 9", "Tab 9" },
     ["0"] = { cmd "tablast", "Last tab" },
   }
-  require("which-key").register(tab_mgmt, {
-    mode = "n",
-    prefix = "<leader>t",
-    noremap = true,
-    silent = true,
-  })
+  local map = vim.keymap.prefixed "<leader>t"
+  map("n", "t", M.tab_new_or_last, { desc = "New or last" })
+  map("n", "n", cmd "tabnew", { desc = "New" })
+  map("n", "q", cmd "tabclose", { desc = "Close" })
+  map("n", "l", cmd "tabnext", { desc = "Next" })
+  map("n", "h", cmd "tabprev", { desc = "Prev" })
+  map("n", "L", cmd "tabmove +1", { desc = "Move Next" })
+  map("n", "H", cmd "tabmove -1", { desc = "Move Prev" })
+  map("n", "p", cmd "Telescope telescope-tabs list_tabs", { desc = "Search tabs" })
+  map("n", "o", cmd "tabonly", { desc = "Close others" })
+  map("n", "1", cmd "tabfirst", { desc = "Tab 1" })
+  map("n", "2", cmd "tabnext 2", { desc = "Tab 2" })
+  map("n", "3", cmd "tabnext 3", { desc = "Tab 3" })
+  map("n", "4", cmd "tabnext 4", { desc = "Tab 4" })
+  map("n", "5", cmd "tabnext 5", { desc = "Tab 5" })
+  map("n", "6", cmd "tabnext 6", { desc = "Tab 6" })
+  map("n", "7", cmd "tabnext 7", { desc = "Tab 7" })
+  map("n", "8", cmd "tabnext 8", { desc = "Tab 8" })
+  map("n", "9", cmd "tabnext 9", { desc = "Tab 9" })
+  map("n", "0", cmd "tablast", { desc = "Last tab" })
 end
 
 return M
