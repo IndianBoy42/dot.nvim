@@ -3,29 +3,8 @@ return {
     "folke/which-key.nvim",
     event = "VeryLazy",
     opts = {
-      plugins = {
-        marks = true, -- shows a list of your marks on ' and `
-        registers = true, -- shows your registers on " in NORMAL or <C-r> in INSERT mode
-        -- the presets plugin, adds help for a bunch of default keybindings in Neovim
-        -- No actual key bindings are created
-        presets = {
-          operators = true, -- adds help for operators like d, y,...
-          motions = true, -- adds help for motions
-          text_objects = true, -- help for text objects triggered after entering an operator
-          windows = true, -- default bindings on <c-w>
-          nav = true, -- misc bindings to work with windows
-          z = true, -- bindings for folds, spelling and others prefixed with z
-          g = true, -- bindings for prefixed with g
-        },
-      },
       preset = "helix",
-      layout = {
-        height = { min = 4, max = 25 }, -- min and max height of the columns
-        width = { min = 20, max = 50 }, -- min and max width of the columns
-        spacing = 3, -- spacing between columns
-      },
-      hidden = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "call", "lua", "^:", "^ ", "<Plug>" }, -- hide mapping boilerplate
-      show_help = true, -- show help message on the command line when the popup is visible
+      -- FIXME: hidden = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "call", "lua", "^:", "^ ", "<Plug>" }, -- hide mapping boilerplate
     },
     config = function(_, opts)
       require("which-key").setup(opts)
@@ -195,7 +174,6 @@ return {
   },
   -- TODO: https://github.com/DNLHC/glance.nvim
   -- TODO: https://github.com/stevearc/qf_helper.nvim
-  -- TODO: https://github.com/shellRaining/hlchunk.nvim
   -- TODO: { "amrbashir/nvim-docs-view" },
   {
     "tzachar/highlight-undo.nvim",

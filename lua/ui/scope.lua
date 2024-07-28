@@ -51,4 +51,5 @@ return {
     opts = { percent = 1.06, depth = 10, automatic = true },
     -- event = "LazyFile",
   },
+  -- TODO: https://github.com/shellRaining/hlchunk.nvim
 }

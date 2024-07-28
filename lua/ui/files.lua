@@ -22,6 +22,7 @@ return {
       abbr("Rename", "renameFile")
       abbr("Trash", "trashFile")
     end,
+    opts = {},
     cmd = {
       "Genghis",
     },

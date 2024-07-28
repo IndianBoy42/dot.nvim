@@ -970,6 +970,7 @@ function M.setup()
       d = { cmd "DiffviewOpen", "Diffview" },
       H = { cmd "DiffviewFileHistory", "File History Git" },
       N = { cmd "NoiceHistory", "Noice History" },
+      c = { cmd "Codeium Chat", "Codeium Chat" },
       g = { cmd "!smerge '%:p:h'", "Sublime Merge" },
       i = { function() require("ui.win_pick").gf() end, "Open file in <window>" },
       h = { name = "Kitty Hints" },

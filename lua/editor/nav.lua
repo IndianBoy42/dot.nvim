@@ -491,7 +491,7 @@ return {
         },
         fuzzy = {
           search = { mode = "fuzzy", max_length = 9999 },
-          label = { min_pattern_length = 4 },
+          label = { min_pattern_length = 10 },
           -- label = { before = true, after = false },
         },
         leap = { -- Is this even possible really?
@@ -930,7 +930,7 @@ return {
       opts = {
         n_lines = 1000,
         custom_textobjects = custom_textobjects(require "mini.ai"),
-        search_method = "cover",
+        -- search_method = "cover",
         mappings = {
           around = "a",
           inside = "i",

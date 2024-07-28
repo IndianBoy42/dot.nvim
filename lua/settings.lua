@@ -19,15 +19,15 @@ return function()
   -- Set leader keys
   local map = vim.keymap.set
   local function t(k) return vim.api.nvim_replace_termcodes(k, true, true, true) end
-  map("n", O.leader_key, "<NOP>")
+  -- map("n", O.leader_key, "<NOP>")
   vim.g.mapleader = t(O.leader_key)
-  map("n", O.local_leader_key, "<NOP>")
+  -- map("n", O.local_leader_key, "<NOP>")
   vim.g.maplocalleader = t(O.local_leader_key)
-  map(
-    { "n", "x", "o" },
-    O.local_leader_key,
-    function() require("which-key").show(vim.g.maplocalleader, { mode = "n" }) end
-  )
+  -- map(
+  --   { "n", "x", "o" },
+  --   O.local_leader_key,
+  --   function() require("which-key").show(vim.g.maplocalleader, { mode = "n" }) end
+  -- )
 
   ---  SETTINGS  ---
   -- https://github.com/tpope/vim-sensible/blob/master/plugin/sensible.vim

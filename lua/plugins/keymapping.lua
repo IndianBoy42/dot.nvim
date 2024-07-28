@@ -56,6 +56,7 @@ return {
     event = "InsertEnter",
   },
   "nvimtools/hydra.nvim",
+  -- TODO: some hydra can be a which-key loop? need to investigate the capabilities
   {
     "indianboy42/keymap-amend.nvim",
     dev = true,

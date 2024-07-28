@@ -138,7 +138,7 @@ return {
           augend.integer.alias.hex,
           augend.integer.alias.octal,
           augend.integer.alias.binary,
-          augend.constant.alias.bool,
+          augend.constant.alias.bool, -- TODO: True, False
           augend.constant.alias.alpha,
           augend.constant.alias.Alpha,
           augend.semver.alias.semver,
@@ -435,7 +435,7 @@ return {
     config = function()
       local opts = {
         on_substitute = require("yanky.integration").substitute(),
-        yank_substituted_text = true,
+        yank_substituted_text = true, -- TODO: a separate keymap for false
       }
       require("substitute").setup(opts)
     end,

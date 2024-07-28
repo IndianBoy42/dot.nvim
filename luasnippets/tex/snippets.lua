@@ -6,9 +6,7 @@ local templates = require "plugins.snippets.texplates"
 local ls = require "luasnip"
 -- TODO: https://github.com/L3MON4D3/LuaSnip/blob/master/DOC.md#extend_decorator
 local pa = ls.parser.parse_snippet
-local ns = function(x)
-  return sn(nil, x)
-end
+local ns = function(x) return sn(nil, x) end
 local types = require "luasnip.util.types"
 local nl = t { "", "" }
 local list_extend = vim.list_extend
@@ -17,56 +15,34 @@ local conds = require "luasnip.extras.expand_conditions"
 
 local function sub(j)
   j = j or 1
-  return f(function(_, args)
-    return string.format("%s", args.captures[j])
-  end, {})
+  return f(function(_, args) return string.format("%s", args.captures[j]) end, {})
 end
 
-local function con(fn)
-  return { condition = fn }
-end
+local function con(fn) return { condition = fn } end
 
 local mathmode_ = vim.fn["vimtex#syntax#in_mathzone"]
 
 local make_condition = require("luasnip.extras.conditions").make_condition
-local mm = make_condition(function()
-  return mathmode_() ~= 0
-end)
+local mm = make_condition(function() return mathmode_() ~= 0 end)
 local mathmode = {
-  condition = function()
-    return mathmode_() ~= 0
-  end,
+  condition = function() return mathmode_() ~= 0 end,
 }
 local nonmathmode = {
-  condition = function()
-    return mathmode_() == 0
-  end,
+  condition = function() return mathmode_() == 0 end,
 }
 local in_env = function(env)
-  return function()
-    return vim.fn["vimtex#env#is_inside"](env)[1] ~= 0
-  end
+  return function() return vim.fn["vimtex#env#is_inside"](env)[1] ~= 0 end
 end
 local in_align = make_condition(in_env "align")
-local function ms(lhs, rhs)
-  return s(lhs, rhs, mathmode)
-end
+local function ms(lhs, rhs) return s(lhs, rhs, mathmode) end
 
-local function nms(lhs, rhs)
-  return s(lhs, rhs, nonmathmode)
-end
+local function nms(lhs, rhs) return s(lhs, rhs, nonmathmode) end
 
-local function nw(k)
-  return { trig = k, wordTrig = false }
-end
+local function nw(k) return { trig = k, wordTrig = false } end
 
-local function re(arg)
-  return { trig = arg, regTrig = true }
-end
+local function re(arg) return { trig = arg, regTrig = true } end
 
-local function renw(arg)
-  return { trig = arg, regTrig = true, wordTrig = false }
-end
+local function renw(arg) return { trig = arg, regTrig = true, wordTrig = false } end
 
 local line_begin = { condition = conds.line_begin }
 local no_backslash = {
@@ -75,9 +51,7 @@ local no_backslash = {
     return (mathmode_() ~= 0) and (line_to_cursor:sub(n, n) ~= "\\")
   end,
 }
-local function lns(lhs, rhs)
-  return s(lhs, rhs, line_begin)
-end
+local function lns(lhs, rhs) return s(lhs, rhs, line_begin) end
 local rec_ls = function(item)
   local inner
   inner = function()
@@ -302,6 +276,11 @@ local intlike = {
   ["lmt^"] = { operator = "", upp = { i(1) } },
 }
 
+local scln_maps = {
+  wid = "\\textwidth",
+  hei = "\\textheight",
+}
+
 local auto = {}
 local snips = {}
 
@@ -325,6 +304,9 @@ end
 for k, v in pairs(trig_fns) do
   local lhs = ("number" == type(k)) and v or k
   list_extend(auto, { s(re([[ar?c?]] .. lhs), t("\\arc" .. v), no_backslash) })
+end
+for k, v in pairs(scln_maps) do
+  list_extend(auto, { s(";" .. k, t(v)) })
 end
 
 list_extend(auto, {
@@ -363,6 +345,7 @@ list_extend(auto, {
     -- })
   ),
   lns("s{", { t "\\section{", sel(), i(1), t "}" }),
+  lns("note{", { t "\\note[item]{", sel(), i(1), t "}" }),
   lns("ss{", { t "\\subsection{", sel(), i(1), t "}" }),
   lns("sss{", { t "\\subsubsection{", sel(), i(1), t "}" }),
   lns(
@@ -588,9 +571,7 @@ list_extend(auto, {
     t "}{",
     f(function(nodes, arg)
       local input = nodes[1]
-      if input:find("\\partial", 1, true) == 1 then
-        return "\\partial "
-      end
+      if input:find("\\partial", 1, true) == 1 then return "\\partial " end
       return ""
     end, { 1 }),
     i(2),
@@ -941,9 +922,7 @@ list_extend(snips, {
     t { "\\begin{itemize}", "" },
     f(function(_, snip)
       local text = snip and snip.env and snip.env.TM_SELECTED_TEXT
-      if text == nil then
-        return ""
-      end
+      if text == nil then return "" end
       local list = {}
       for _, line in pairs(text) do
         vim.list_extend(list, { "\\item " .. line })
