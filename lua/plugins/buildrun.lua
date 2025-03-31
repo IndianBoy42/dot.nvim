@@ -141,9 +141,9 @@ local function kitty_terms()
       { "<esc>", nil, { exit = true, nowait = true, desc = "exit" } },
     },
   }
-  local key = function(from, to, opts)
+  local key = function(from, to, desc)
     to = to or from:sub(2, -2) -- strip the <>
-    return { from, function() Term.send_key(to) end, { desc = from } }
+    return { from, function() Term.send_key(to) end, { desc = desc or to } }
   end
   map("n", "mtt", function() Term.send_key { "up", "enter" } end, { desc = "Kitty Redo Cmd" })
   local cmdline_hydra = require "hydra" {
@@ -177,6 +177,7 @@ local function kitty_terms()
       key("d", "ctrl+d"),
       key("z", "ctrl+z"),
       { "f", function() Term.hints { yank = "" } end },
+      { " ", ":Kitty ", { exit_before = true } },
       { "<esc>", nil, { exit = true, nowait = true, desc = "exit" } },
     },
   }

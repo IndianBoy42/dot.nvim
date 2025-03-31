@@ -268,7 +268,7 @@ return {
             },
             server = {
               on_attach = on_attach,
-              cmd = { "ra-multiplex", "client" },
+              -- cmd = { "ra-multiplex", "client" },
               settings = {
                 ["rust-analyzer"] = server_opts,
               },

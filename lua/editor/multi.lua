@@ -94,7 +94,8 @@ return {
   init = function()
     vim.g.VM_maps = nil
     -- local ldr = "\\"
-    local ldr = "<Del>" -- FIXME: a little buggy
+    -- local ldr = "<Del>" -- FIXME: a little buggy
+    local ldr = "_"
     vim.g.VM_leader = ldr
     vim.g.VM_maps = {
       ["Find Under"] = "<M-n>",

@@ -19,6 +19,7 @@ local legend = {
   b = "Brackets ), ], }",
   c = "Call",
   f = "Function",
+  i = "Indent",
   j = "Expression",
   k = "Block",
   l = "Line",

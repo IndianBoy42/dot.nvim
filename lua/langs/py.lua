@@ -30,11 +30,11 @@ local M = {
       vim.api.nvim_create_autocmd("Filetype", {
         pattern = "python",
         callback = function()
-          local srcs = require("langs.complete").sources
-          srcs(vim.list_extend(srcs(), { name = "jupyter", group_index = 1 }))
-          local map = vim.keymap.setl
-          map("n", O.hover_key, "<cmd>JupyterInspect<cr>", {})
-          map("n", "<localleader>i", "<cmd>JupyterInspect<cr>", {})
+          -- local srcs = require("langs.complete").sources
+          -- srcs(vim.list_extend(srcs(), { name = "jupyter", group_index = 1 }))
+          -- local map = vim.keymap.setl
+          -- map("n", O.hover_key, "<cmd>JupyterInspect<cr>", {})
+          -- map("n", "<localleader>i", "<cmd>JupyterInspect<cr>", {})
           -- map("n", "<localleader>x", "<cmd>JupyterExecute<cr>", {})
           -- map("x", "<localleader>x", ":JupyterExecute<cr>", {})
         end,
@@ -111,38 +111,40 @@ local M = {
     "neovim/nvim-lspconfig",
     opts = {
       servers = {
-        ruff_lsp = {},
-        pylsp = {
-          mason = false,
-          before_init = function(_, config)
-            local python_path = get_python_path(config.root_dir)
-            config.settings.python.pythonPath = python_path
-            config.settings.pylsp.plugins.pylsp_mypy.overrides = { "--python-executable", python_path }
-            vim.g.python_host_prog = python_path
-            vim.g.python3_host_prog = python_path
-          end,
-          settings = {
-            pylsp = {
-              plugins = {
-                -- formatter options
-                black = { enabled = true },
-                autopep8 = { enabled = false },
-                yapf = { enabled = false },
-                -- linter options
-                pylint = { enabled = false, executable = "pylint" },
-                pyflakes = { enabled = false },
-                pycodestyle = { enabled = false },
-                -- type checker
-                pylsp_mypy = { enabled = true },
-                -- auto-completion options
-                jedi_completion = { fuzzy = true },
-                -- import sorting
-                pyls_isort = { enabled = false },
-              },
-            },
-          },
+        ruff = {
+          on_attach = function(client, _) client.server_capabilities.hoverProvider = false end,
         },
-        -- pyright = {
+        -- pylsp = {
+        --   mason = false,
+        --   before_init = function(_, config)
+        --     local python_path = get_python_path(config.root_dir)
+        --     config.settings.python.pythonPath = python_path
+        --     config.settings.pylsp.plugins.pylsp_mypy.overrides = { "--python-executable", python_path }
+        --     vim.g.python_host_prog = python_path
+        --     vim.g.python3_host_prog = python_path
+        --   end,
+        --   settings = {
+        --     pylsp = {
+        --       plugins = {
+        --         -- formatter options
+        --         black = { enabled = true },
+        --         autopep8 = { enabled = false },
+        --         yapf = { enabled = false },
+        --         -- linter options
+        --         pylint = { enabled = false, executable = "pylint" },
+        --         pyflakes = { enabled = false },
+        --         pycodestyle = { enabled = false },
+        --         -- type checker
+        --         pylsp_mypy = { enabled = true },
+        --         -- auto-completion options
+        --         jedi_completion = { fuzzy = true },
+        --         -- import sorting
+        --         pyls_isort = { enabled = false },
+        --       },
+        --     },
+        --   },
+        -- },
+        pyright = {},
         --   handlers = {
         --     ["textDocument/publishDiagnostics"] = function() end,
         --   },
@@ -182,7 +184,6 @@ local M = {
         local args = {
           "install",
           "pylsp-rope",
-          "python-lsp-ruff",
           "pyls-isort",
           "python-lsp-black",
           "pylsp-mypy",
