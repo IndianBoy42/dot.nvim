@@ -60,18 +60,29 @@ return {
         Norm = { cmd = "norm" },
         Glive = { cmd = "g" },
         Dlive = { cmd = "d" },
-        Qlive = {
-          cmd = "norm",
-          -- This will transform ":5Qlive a" into ":norm 5@a"
-          args = function(opts)
-            local reg = opts.fargs and opts.fargs[1] or "q"
-            local count = opts.fargs and opts.fargs[2] or (opts.count == -1 and "" or opts.count)
-            return count .. "@" .. reg
-          end,
-          range = "",
-        },
       },
     },
+    config = function(_, opts) 
+    require'live-command'.setup(opts)
+-- Transforms ":5Reg a" into ":norm 5@a"
+local function get_command_string(cmd)
+  local get_range_string = require("live-command").get_range_string
+  local args = (cmd.count == -1 and "" or cmd.count) .. "@" .. cmd.args
+  return get_range_string(cmd) .. "norm " .. args
+end
+
+vim.api.nvim_create_user_command("Reg", function(cmd)
+  vim.cmd(get_command_string(cmd))
+end, {
+  nargs = "?",
+  range = true,
+  preview = function(cmd, preview_ns, preview_buf)
+    local cmd_to_preview = get_command_string(cmd)
+    return require("live-command").preview_callback(cmd_to_preview, preview_ns, preview_buf)
+  end
+})
+    
+    end,
   },
   { -- "kosayoda/nvim-lightbulb",
     "kosayoda/nvim-lightbulb",
@@ -85,6 +96,7 @@ return {
   },
   { -- "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
     "IndianBoy42/lsp_lines.nvim",
+    branch = "main",
     config = function() require("lsp_lines").setup() end,
     event = "LazyFile",
     keys = {
@@ -259,7 +271,6 @@ return {
     opts = {},
   },
   { "seandewar/nvimesweeper", cmd = "Nvimesweeper" },
-
   {
     "joshuadanpeterson/typewriter",
     opts = {},

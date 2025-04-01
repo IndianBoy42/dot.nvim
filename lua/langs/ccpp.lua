@@ -43,6 +43,8 @@ return {
       -- make sure mason installs the server
       servers = {
         clangd = {
+          -- cmd = require("lsp.config").get_cmd "clangd",
+          -- cmd_env = require("lsp.config").get_cmd_env "clangd",
           cmd = clangd_cmd,
           commands = {
             ClangdSwitchSourceHeader = {

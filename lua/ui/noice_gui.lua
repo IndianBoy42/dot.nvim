@@ -88,12 +88,12 @@ return {
           bottom_search = true,
           command_palette = true,
           long_message_to_split = true,
-          inc_rename = true, -- enables an input dialog for inc-rename.nvim
+          inc_rename = true,          -- enables an input dialog for inc-rename.nvim
           lsp_doc_border = "rounded", -- add a border to hover docs and signature help
         },
         messages = {
           enabled = true, -- enables the Noice messages UI
-          view = "mini", -- default view for messages
+          view = "mini",  -- default view for messages
           -- view_error = "notify", -- view for errors
           -- view_warn = "notify", -- view for warnings
           -- view_history = "messages", -- view for :messages
@@ -231,10 +231,10 @@ return {
         desc = "Redirect Cmdline",
       },
       -- { "<C-Enter>",   function() require("noice").redirect(vim.fn.getcmdline()) end,                  mode = "c",                 desc = "Redirect Cmdline" },
-      { "<leader>sm", function() require("noice").cmd "telescope" end, desc = "Noice Telescope" },
-      { "<leader>snl", function() require("noice").cmd "last" end, desc = "Noice Last Message" },
-      { "<leader>snh", function() require("noice").cmd "history" end, desc = "Noice History" },
-      { "<leader>sna", function() require("noice").cmd "all" end, desc = "Noice All" },
+      { "<leader>sm",  function() require("noice").cmd "telescope" end, desc = "Noice Telescope" },
+      { "<leader>snl", function() require("noice").cmd "last" end,      desc = "Noice Last Message" },
+      { "<leader>snh", function() require("noice").cmd "history" end,   desc = "Noice History" },
+      { "<leader>sna", function() require("noice").cmd "all" end,       desc = "Noice All" },
       {
         "<c-f>",
         function()

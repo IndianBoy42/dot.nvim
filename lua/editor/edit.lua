@@ -5,8 +5,6 @@ local cmt_to = O.commenting.obj
 return {
   { -- mizlan/iswap.nvim
     "IndianBoy42/iswap.nvim",
-    branch = "master",
-    dev = true,
     opts = {
       keys = O.hint_labels .. O.hint_labels:upper(),
       autoswap = false,
@@ -352,7 +350,6 @@ return {
   },
   {
     "gbprod/substitute.nvim",
-    dev = true,
     keys = function()
       -- Replace selection with register
       local substitute = function(fn, opts)

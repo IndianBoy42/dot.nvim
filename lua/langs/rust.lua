@@ -217,7 +217,7 @@ return {
   {
     "neovim/nvim-lspconfig",
     dependencies = {
-      { "indianboy42/rust-tools.nvim", dev = true, branch = "fork" },
+      { "indianboy42/rust-tools.nvim", branch = "fork" },
     },
     opts = {
       setup = {

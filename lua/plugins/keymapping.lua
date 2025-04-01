@@ -59,7 +59,6 @@ return {
   -- TODO: some hydra can be a which-key loop? need to investigate the capabilities
   {
     "indianboy42/keymap-amend.nvim",
-    dev = true,
     config = function()
       local a = require "keymap-amend"
       vim.keymap.amend = a.amend

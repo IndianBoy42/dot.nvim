@@ -1,7 +1,6 @@
 return {
   {
     "IndianBoy42/remember-me.nvim",
-    dev = true,
     opts = {
       project_roots = { ".git", ".svn", ".venv" },
     },
@@ -18,7 +17,6 @@ return {
   },
   {
     "mikesmithgh/kitty-scrollback.nvim",
-    branch = "feat-command-line-editing-mode",
     build = ":KittyScrollbackGenerateKittens",
     cmd = {
       "KittyScrollbackGenerateKittens",
