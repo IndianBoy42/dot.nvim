@@ -453,6 +453,7 @@ function M.setup()
   map("n", O.goto_previous .. "r", function() vim.lsp.buf.references(nil, ref_list_prev) end, { desc = "Reference" })
   local impl_n, impl_p = repeatable("i", "Implementation", quickfix_looping, { body = false })
   local impl_list_next, impl_list_prev = on_list_hydra(impl_n, impl_p, quickfix_looping)
+  -- TODO: maybe indent is more useful
   map("n", O.goto_next .. "i", function() vim.lsp.buf.implementation(impl_list_next) end, { desc = "Implementation" })
   map(
     "n",
@@ -972,6 +973,7 @@ function M.setup()
       N = { cmd "NoiceHistory", "Noice History" },
       c = { cmd "Codeium Chat", "Codeium Chat" },
       g = { cmd "!smerge '%:p:h'", "Sublime Merge" },
+      a = { cmd "KittyNew aider --watch-files", "AIder" },
       i = { function() require("ui.win_pick").gf() end, "Open file in <window>" },
       h = { name = "Kitty Hints" },
     },

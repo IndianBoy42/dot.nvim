@@ -6,7 +6,7 @@ return function()
   ---  VIM ONLY COMMANDS  ---
 
   cmd "filetype plugin on"
-  cmd "set iskeyword+=-"
+  -- cmd "set iskeyword+=-"
   cmd "set sessionoptions+=globals"
   cmd "set sessionoptions-=help"
   cmd "set whichwrap+=<,>,[,],h,l"

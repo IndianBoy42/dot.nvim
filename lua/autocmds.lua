@@ -120,9 +120,7 @@ return {
           for _, client in ipairs(clients) do
             local dir = client.config.root_dir
             -- TODO: choose the highest cwd
-            if dir and dir ~= "." then
-              return dir
-            end
+            if dir and dir ~= "." then return dir end
           end
         end
 
@@ -237,7 +235,7 @@ return {
     end
 
     -- TODO: there is a better way with Plug continuations, hydra style
-    do -- wiggle keys
+    if false then -- wiggle keys
       local buflen = 4
       local buf = {}
       for i = 1, buflen do

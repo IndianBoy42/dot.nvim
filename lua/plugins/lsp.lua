@@ -6,10 +6,12 @@ return {
   },
   {
     "yioneko/nvim-type-fmt",
+    enabled = false,
     event = "LazyFile",
   },
   {
     "hrsh7th/nvim-linkedit",
+    enabled = false,
     opts = {
       sources = {
         {

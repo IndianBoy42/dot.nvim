@@ -258,6 +258,14 @@ return {
         pattern = "qf",
         callback = function() vim.keymap.setl("n", "i", utils.lazy_require("replacer").run, { desc = "Replacer" }) end,
       })
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "replacer",
+        callback = function()
+          vim.keymap.del("n", "i", { buffer = 0 })
+          vim.keymap.del("n", "a", { buffer = 0 })
+          vim.keymap.del("n", "A", { buffer = 0 })
+        end,
+      })
     end,
   },
 }
