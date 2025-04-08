@@ -41,7 +41,7 @@ return {
 
     -- TODO: move this to individual files
     return {
-      -- debug = true,
+      debug = true,
       diagnostics_format = diagnostics_format,
       -- TODO: split these to lang files
       sources = {
@@ -81,7 +81,18 @@ return {
         -- -- diagnostics.misspell,
         diagnostics.markdownlint,
         diagnostics.yamllint,
-        -- diagnostics.gccdiag,
+        diagnostics.gccdiag.with {
+          args = {
+            "--default-args",
+            "-S -x $FILEEXT",
+            "-i",
+            "-fdiagnostics-color -O3 -O2",
+            "-a",
+            "-O1 -S -fsyntax-only",
+            "--",
+            "$FILENAME",
+          },
+        },
 
         -- Code Actions
         -- code_actions.gitsigns, -- TODO: reenable when I can lower the priority

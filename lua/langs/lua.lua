@@ -1,4 +1,5 @@
 return {
+  require("langs").mason_ensure_installed { "lua_ls", "stylua" },
   {
     "neovim/nvim-lspconfig",
     dependencies = {
@@ -15,8 +16,7 @@ return {
             "luvit-meta/library", -- see below
           },
         },
-        config = function(_, opts)
-          require("lazydev").setup(opts)
+        init = function()
           vim.api.nvim_create_autocmd("FileType", {
             pattern = "lua",
             callback = function()
@@ -29,9 +29,6 @@ return {
             end,
           })
         end,
-        dependencies = {
-          { "Bilal2453/luvit-meta", lazy = true }, -- optional `vim.uv` typings
-        },
       },
     },
     opts = {
@@ -105,9 +102,11 @@ return {
   },
   {
     "rafcamlet/nvim-luapad",
-    opts = { context = {
-      utils = utils,
-    } },
+    opts = {
+      context = {
+        utils = utils,
+      },
+    },
     cmd = { "Luapad", "LuaRun", "LuaAttach", "LuaDetach", "LuaEval" },
     config = function(_, opts)
       require("luapad").setup(opts)

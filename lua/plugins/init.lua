@@ -16,6 +16,24 @@ return {
     end,
   },
   {
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    opts = {
+      bigfile = { enabled = true },
+      quickfile = { enabled = true },
+      bufdelete = { enabled = true },
+      words = { enabled = true },
+      input = { enabled = true },
+      dashboard = { enabled = true },
+    },
+    init = function()
+      vim.api.nvim_create_user_command("Bdelete", function(args) Snacks.bufdelete() end, {})
+      vim.api.nvim_create_user_command("Bwipeout", function(args) Snacks.bufdelete { wipe = true } end, {})
+      vim.cmd.cnoreabbrev "bd Bdelete"
+    end,
+  },
+  {
     "mikesmithgh/kitty-scrollback.nvim",
     build = ":KittyScrollbackGenerateKittens",
     cmd = {
@@ -55,12 +73,6 @@ return {
     config = function() vim.g.startuptime_tries = 10 end,
   },
   { "nvim-lua/plenary.nvim" },
-
-  {
-    "famiu/bufdelete.nvim",
-    cmd = { "Bdelete", "Bwipeout" },
-    init = function() vim.cmd.cnoreabbrev "bd Bdelete" end,
-  },
   { "jghauser/mkdir.nvim", event = "BufWritePre" },
   { "lambdalisue/suda.vim", cmd = { "SudaWrite", "SudaRead" } },
 

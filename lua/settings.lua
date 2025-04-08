@@ -100,6 +100,7 @@ return function()
   opt.listchars = { extends = ">", precedes = "<", trail = "_" }
   vim.g.python3_host_prog = O.python_interp
   opt.confirm = true
+  -- opt.winborder = "rounded"
 
   if vim.env.NVIM_VERBOSE ~= nil then
     -- opt.verbosefile = "$HOME/.cache/nvim/verbose.log"

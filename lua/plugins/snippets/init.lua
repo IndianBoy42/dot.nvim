@@ -139,7 +139,7 @@ local M = {
         ext_base_prio = 300,
         -- minimal increase in priority.
         ext_prio_increase = 1,
-        store_selection_keys = "S",
+        store_selection_keys = "<Plug>(luasnip-store-selection)",
 
         ext_opts = {
           [types.choiceNode] = {

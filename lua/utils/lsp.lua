@@ -94,6 +94,7 @@ function M.view_location_split(name, split_cmd)
 end
 
 function M.view_location_pick_callback(title)
+  -- TODO: only pick if in a different buffer
   -- note, this handler style is for neovim 0.5.1/0.6, if on 0.5, call with function(_, method, result)
   local function handler(_, result, ctx)
     if result == nil or vim.tbl_isempty(result) then
@@ -121,7 +122,10 @@ function M.view_location_pick_callback(title)
     -- TODO: if res is in the visible screen then just jump
     require("ui.win_pick").pick_or_create(function(id)
       vim.api.nvim_set_current_win(id)
-      vim.lsp.util.jump_to_location(res, oe, false)
+      vim.lsp.util.show_document(res, oe, {
+        reuse_win = false,
+        focus = true,
+      })
     end)
   end
 
@@ -145,19 +149,16 @@ function M.toggle_diagnostics(b) diags.enable(not diags.is_enabled { bufnr = b o
 function M.disable_diagnostic(b) diags.enable(false, { bufnr = b or 0 }) end
 function M.enable_diagnostic(b) diags.enable(true, { bufnr = b or 0 }) end
 
-function M.toggle_diag_lines(enable)
-  local lines_config = vim.diagnostic.config().virtual_lines
-  local config = require("langs").diagnostic_config_all
-  if enable == nil then enable = not lines_config or lines_config.severity ~= config.virtual_lines_all.severity end
-  if enable then
+function M.toggle_diag_vlines(enable)
+  local all = require("langs").diagnostic_config_all
+  local cfg = vim.diagnostic.config()
+  if cfg.virtual_lines or enable == false then
     vim.diagnostic.config {
-      virtual_lines = lines_config and config.virtual_lines_all or config.virtual_lines,
-      virtual_text = config.virtual_text_w_lines or false,
+      virtual_lines = false,
     }
   else
     vim.diagnostic.config {
-      virtual_lines = false,
-      virtual_text = config.virtual_text,
+      virtual_lines = all.virtual_lines,
     }
   end
 end
@@ -208,7 +209,21 @@ end
 
 -- Jump between diagnostics
 -- TODO: repeatable to enter the floating window
+-- TODO: Show using virtual lines
+local diag_line_ns
 function M.diag_line(opts) diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "line" })) end
+function M.diag_vline(opts)
+  diag_line_ns = diag_line_ns or vim.api.nvim_create_namespace "diag_line_temp"
+  local ds = diags.get(0, {
+    lnum = vim.fn.getpos(".")[2] - 1,
+  })
+  -- TODO: also related diagnostics
+  -- TODO: use treesitter block for context
+  if #ds == 0 then diags.hide(diag_line_ns, 0) end
+  for _, d in ipairs(ds) do
+    diags.show(diag_line_ns, d.bufnr, { d }, require("langs").diagnostic_config_all.current_line)
+  end
+end
 function M.diag_cursor(opts) diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "cursor" })) end
 function M.diag_buffer(opts) diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "buffer" })) end
 
@@ -282,14 +297,14 @@ function M.get_highest_diag(ns, bufnr)
 end
 function M.diag_next(opts)
   -- TODO: use vim.diagnostic.jump
-  diags.goto_next(vim.tbl_extend("keep", opts or {}, {
-    enable_popup = false,
+  diags.jump(vim.tbl_extend("keep", opts or {}, {
+    count = 1,
     severity = M.get_highest_diag(),
   }))
 end
 function M.diag_prev(opts)
-  diags.goto_prev(vim.tbl_extend("keep", opts or {}, {
-    enable_popup = false,
+  diags.jump(vim.tbl_extend("keep", opts or {}, {
+    count = -1,
     severity = M.get_highest_diag(),
   }))
 end
@@ -362,9 +377,7 @@ function M.format(opts)
   if not opts.modifications then
     vim.lsp.buf.format(vim.tbl_extend("force", {
       bufnr = buf,
-      filter = function(client)
-        return have_nls == (client.name == "null-ls")
-      end,
+      filter = function(client) return have_nls == (client.name == "null-ls") end,
     }, opts))
   else
     local client
@@ -374,7 +387,7 @@ function M.format(opts)
     else
       client = vim.iter(vim.lsp.get_clients { bufnr = buf }):find(
         function(client)
-          return (have_nls == (client.name == "null-ls")) and client.supports_method "textDocument/rangeFormatting"
+          return (have_nls == (client.name == "null-ls")) and client:supports_method "textDocument/rangeFormatting"
         end
       )
     end
@@ -468,46 +481,5 @@ M.document_highlight = function(client, bufnr)
 end
 
 -- TODO: `:h lsp-on-list-handler`
-
-function M.rename_file(new_name)
-  ---@param data { old_name: string, new_name: string }
-  local function prepare_rename(data)
-    local bufnr = vfn.bufnr(data.old_name)
-    local done_rename = false
-    for _, client in pairs(lsp.get_clients { bufnr = bufnr }) do
-      if vim.tbl_get(client, "server_capabilities", "workspace", "fileOperations", "willRename") then
-        local params = {
-          files = { { newUri = "file://" .. data.new_name, oldUri = "file://" .. data.old_name } },
-        }
-        local resp = client.request_sync("workspace/willRenameFiles", params, 1000)
-        if resp then
-          utils.dump(resp)
-          vim.lsp.util.apply_workspace_edit(resp.result, client.offset_encoding)
-          done_rename = true
-          break
-        end
-      end
-    end
-    if done_rename then vim.notify("No clients support rename files", vim.log.levels.ERROR, { title = "LSP" }) end
-  end
-
-  local old_name = vim.api.nvim_buf_get_name(0)
-
-  local do_rename = function(name)
-    if name == nil then return end
-    local new_name = string.format("%s/%s", vim.fs.dirname(old_name), name)
-    prepare_rename { old_name = old_name, new_name = new_name }
-    vim.lsp.util.rename(old_name, new_name, {})
-  end
-
-  if new_name then
-    do_rename(new_name)
-  else
-    vim.ui.input({
-      prompt = "Rename " .. old_name,
-      default = old_name,
-    }, do_rename)
-  end
-end
 
 return M

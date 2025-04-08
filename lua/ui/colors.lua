@@ -43,22 +43,6 @@ return {
       })
     end,
   },
-  { --tzachar/local-highlight.nvim
-    "tzachar/local-highlight.nvim",
-    opts = {
-      disable_file_types = { "tex", "lua" },
-      -- hlgroup = "Underlined",
-      -- hlgroup = "Search",
-    },
-    config = function(_, opts)
-      require("local-highlight").setup(opts)
-      vim.api.nvim_set_hl(0, "LocalHighlight", {
-        underline = true,
-        -- bold = true,
-      })
-    end,
-    event = "LazyFile",
-  },
   {
     "rrethy/vim-illuminate",
     cond = false,
@@ -67,7 +51,20 @@ return {
   {
     "nullchilly/fsread.nvim",
     cmd = { "FSRead", "FSClear", "FSToggle" },
-    keys = { { "<leader>Tsf", "<cmd>FSToggle<cr>", desc = "Flow State Read" } },
+    keys = { { "<leader>TF", desc = "Flow State Read" } },
+    config = function()
+      Snacks.toggle {
+        name = "Flow State Reading",
+        get = function() return require("fsread").enabled() end,
+        set = function(en)
+          if en then
+            vim.cmd.FSRead()
+          else
+            vim.cmd.FSClear()
+          end
+        end,
+      }
+    end,
   },
   -- TODO: https://github.com/Pocco81/high-str.nvim
 }

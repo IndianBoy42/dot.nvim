@@ -116,13 +116,6 @@ return {
   {
     "FabijanZulj/blame.nvim",
     cmd = "BlameToggle",
-    config = function(_, opts)
-      require("blame").setup(opts)
-      mappings.quick_toggle("<leader>T", "b", "<cmd>ToggleBlame virtual<cr>")
-    end,
-    keys = {
-      { "<leader>Tb", desc = "ToggleBlame virtual" },
-    },
   },
   {
     "akinsho/git-conflict.nvim",

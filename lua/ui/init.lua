@@ -29,9 +29,8 @@ return {
     lazy = false,
     cmd = { "Navbuddy" },
   },
-  { -- "aznhe21/actions-preview.nvim",
-    "IndianBoy42/actions-preview.nvim",
-    branch = "ui_select_shim",
+  { -- "IndianBoy42/actions-preview.nvim",
+    "aznhe21/actions-preview.nvim",
     config = function()
       require("actions-preview").setup {
         telescope = require("utils.telescope").cursor_menu(),
@@ -62,26 +61,23 @@ return {
         Dlive = { cmd = "d" },
       },
     },
-    config = function(_, opts) 
-    require'live-command'.setup(opts)
--- Transforms ":5Reg a" into ":norm 5@a"
-local function get_command_string(cmd)
-  local get_range_string = require("live-command").get_range_string
-  local args = (cmd.count == -1 and "" or cmd.count) .. "@" .. cmd.args
-  return get_range_string(cmd) .. "norm " .. args
-end
+    config = function(_, opts)
+      require("live-command").setup(opts)
+      -- Transforms ":5Reg a" into ":norm 5@a"
+      local function get_command_string(cmd)
+        local get_range_string = require("live-command").get_range_string
+        local args = (cmd.count == -1 and "" or cmd.count) .. "@" .. cmd.args
+        return get_range_string(cmd) .. "norm " .. args
+      end
 
-vim.api.nvim_create_user_command("Reg", function(cmd)
-  vim.cmd(get_command_string(cmd))
-end, {
-  nargs = "?",
-  range = true,
-  preview = function(cmd, preview_ns, preview_buf)
-    local cmd_to_preview = get_command_string(cmd)
-    return require("live-command").preview_callback(cmd_to_preview, preview_ns, preview_buf)
-  end
-})
-    
+      vim.api.nvim_create_user_command("Reg", function(cmd) vim.cmd(get_command_string(cmd)) end, {
+        nargs = "?",
+        range = true,
+        preview = function(cmd, preview_ns, preview_buf)
+          local cmd_to_preview = get_command_string(cmd)
+          return require("live-command").preview_callback(cmd_to_preview, preview_ns, preview_buf)
+        end,
+      })
     end,
   },
   { -- "kosayoda/nvim-lightbulb",
@@ -93,19 +89,6 @@ end, {
       })
     end,
     event = { "CursorHold", "CursorHoldI" },
-  },
-  { -- "https://git.sr.ht/~whynothugo/lsp_lines.nvim",
-    "IndianBoy42/lsp_lines.nvim",
-    branch = "main",
-    config = function() require("lsp_lines").setup() end,
-    event = "LazyFile",
-    keys = {
-      {
-        "<leader>Tl",
-        utils.lsp.toggle_diag_lines,
-        desc = "Toggle lsp_lines",
-      },
-    },
   },
   { -- "nvim-treesitter/nvim-treesitter-context",
     "nvim-treesitter/nvim-treesitter-context",

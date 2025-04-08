@@ -1,28 +1,42 @@
 local enable = true
 return {
-  { -- "rcarriga/nvim-notify",
-    "rcarriga/nvim-notify",
-    cond = enable,
+
+  {
+    "folke/snacks.nvim",
+    opts = {
+      notifier = { enabled = true },
+    },
     keys = {
       {
         "<leader>un",
-        function() require("notify").dismiss { silent = true, pending = true } end,
+        function() Snacks.notifier.hide() end,
         desc = "Delete all Notifications",
       },
     },
-    opts = {
-      timeout = 3000,
-      stages = "fade_in_slide_out",
-      max_height = function() return math.floor(vim.o.lines * 0.75) end,
-      max_width = function() return math.floor(vim.o.columns * 0.75) end,
-    },
-    init = function()
-      -- when noice is not enabled, install notify on VeryLazy
-      if enable and utils.have_plugin "noice.nvim" then
-        utils.on_very_lazy(function() vim.notify = require "notify" end)
-      end
-    end,
   },
+  -- { -- "rcarriga/nvim-notify",
+  --   "rcarriga/nvim-notify",
+  --   cond = enable,
+  --   keys = {
+  --     {
+  --       "<leader>un",
+  --       function() require("notify").dismiss { silent = true, pending = true } end,
+  --       desc = "Delete all Notifications",
+  --     },
+  --   },
+  --   opts = {
+  --     timeout = 3000,
+  --     stages = "fade_in_slide_out",
+  --     max_height = function() return math.floor(vim.o.lines * 0.75) end,
+  --     max_width = function() return math.floor(vim.o.columns * 0.75) end,
+  --   },
+  --   init = function()
+  --     -- when noice is not enabled, install notify on VeryLazy
+  --     if enable and utils.have_plugin "noice.nvim" then
+  --       utils.on_very_lazy(function() vim.notify = require "notify" end)
+  --     end
+  --   end,
+  -- },
   { -- "j-hui/fidget.nvim",
     "j-hui/fidget.nvim",
     cond = false,
@@ -88,12 +102,12 @@ return {
           bottom_search = true,
           command_palette = true,
           long_message_to_split = true,
-          inc_rename = true,          -- enables an input dialog for inc-rename.nvim
+          inc_rename = true, -- enables an input dialog for inc-rename.nvim
           lsp_doc_border = "rounded", -- add a border to hover docs and signature help
         },
         messages = {
           enabled = true, -- enables the Noice messages UI
-          view = "mini",  -- default view for messages
+          view = "mini", -- default view for messages
           -- view_error = "notify", -- view for errors
           -- view_warn = "notify", -- view for warnings
           -- view_history = "messages", -- view for :messages
@@ -231,10 +245,10 @@ return {
         desc = "Redirect Cmdline",
       },
       -- { "<C-Enter>",   function() require("noice").redirect(vim.fn.getcmdline()) end,                  mode = "c",                 desc = "Redirect Cmdline" },
-      { "<leader>sm",  function() require("noice").cmd "telescope" end, desc = "Noice Telescope" },
-      { "<leader>snl", function() require("noice").cmd "last" end,      desc = "Noice Last Message" },
-      { "<leader>snh", function() require("noice").cmd "history" end,   desc = "Noice History" },
-      { "<leader>sna", function() require("noice").cmd "all" end,       desc = "Noice All" },
+      { "<leader>sm", function() require("noice").cmd "telescope" end, desc = "Noice Telescope" },
+      { "<leader>snl", function() require("noice").cmd "last" end, desc = "Noice Last Message" },
+      { "<leader>snh", function() require("noice").cmd "history" end, desc = "Noice History" },
+      { "<leader>sna", function() require("noice").cmd "all" end, desc = "Noice All" },
       {
         "<c-f>",
         function()

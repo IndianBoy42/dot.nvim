@@ -56,6 +56,19 @@ local hilight_comments = {
     return hl
   end,
 }
+Hilight_comments = function()
+  return Snacks.toggle {
+    name = "Hilight Comments",
+    get = function() return not hilight_comments.de_lighted end,
+    set = function(en)
+      if en then
+        vim.cmd.HiLightComments()
+      else
+        vim.cmd.DeLightComments()
+      end
+    end,
+  }
+end
 vim.api.nvim_create_user_command("HiLightComments", function()
   if not hilight_comments.de_lighted then return end
   local hl = vim.api.nvim_get_hl(-1, { name = hilight_comments.comment_hl_name[1] })

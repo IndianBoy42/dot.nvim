@@ -34,7 +34,6 @@ local jump_mappings = function()
   local jump_mode = require "keymappings.jump_mode"
   local function mapall(id, desc, sym)
     desc = desc or legend[id] or ""
-    id = id or id
     -- TODO: this should use mini.bracketed
     local w = function() ai.move_cursor("left", "i", id, { search_method = "next" }) end
     local e = function() ai.move_cursor("right", "i", id, { search_method = "cover_or_next" }) end
@@ -51,12 +50,18 @@ local jump_mappings = function()
     local vip = function() ai.select_textobject("i", id, { search_method = "prev" }) end
     local vap = function() ai.select_textobject("a", id, { search_method = "prev" }) end
     jump_mode.repeatable(id, desc, { w, b, e, ge }, {})
-    local hydra =
-      jump_mode.move_by(sym, jump_mode.move_by_suffixes, { w, b, e, ge, W, B, E, gE, vi, va, vin, vip, van, vap }, desc)
-    -- TODO: enable these hydras in visual mode after selection, ie
-    -- viaeee should select argument and then extend the selection 3 arguments ahead.
+    if sym then
+      local hydra = jump_mode.move_by(
+        sym,
+        jump_mode.move_by_suffixes,
+        { w, b, e, ge, W, B, E, gE, vi, va, vin, vip, van, vap },
+        desc
+      )
+      -- TODO: enable these hydras in visual mode after selection, ie
+      -- viaeee should select argument and then extend the selection 3 arguments ahead.
+    end
   end
-  mapall("f", nil, "\\") -- TODO: what can this keybinding be??
+  mapall("k", nil, "<leader>k")
   mapall("a", nil, ",")
   -- mapall("b", nil, ")")
   -- mapall("q", nil)
@@ -565,15 +570,9 @@ return {
       --   desc = "Fuzzy Sel",
       -- },
       {
-        O.select_dynamic,
-        mode = { "o", "x" },
         "<Plug>(flash-treesitter)",
+        mode = { "n", "o", "x" },
         desc = "Cursor Node",
-      },
-      {
-        "<Plug>(flash-treesitter)",
-        mode = { "o", "x" },
-        desc = "Remote Node",
         function() require("flash").jump { mode = "treesitter" } end,
       },
       {
@@ -616,71 +615,6 @@ return {
         end,
         desc = "Jump to start of node",
       },
-      {
-        O.goto_prefix .. "w", -- TODO: stop verbs from being labels
-        -- TODO: allow searching continuations
-        function() require("flash").jump { mode = "textcase", pattern = vim.fn.expand "<cword>" } end,
-        desc = "Flash <cword>",
-      },
-      {
-        O.goto_prefix .. "W",
-        function() require("flash").jump { mode = "textcase", pattern = vim.fn.expand "<cWORD>" } end,
-        desc = "Flash <cWORD>",
-      },
-      {
-        O.goto_prefix .. "n",
-        function() require("flash").jump { continue = true } end,
-        desc = "Continue Flash",
-      },
-      {
-        O.goto_prefix .. "hr",
-        desc = "References",
-        nav.flash_references,
-      },
-      {
-        O.goto_prefix .. "hh",
-        desc = "Hover",
-        function() require("flash").jump { mode = "hover" } end,
-      },
-      {
-        "<leader>df",
-        -- O.goto_prefix .. "hd",
-        desc = "Diagnostics",
-        nav.flash_diagnostics,
-      },
-      {
-        "<leader>dF",
-        desc = "Diagnostics + Code Action",
-        function() nav.flash_diagnostics { action = utils.telescope.code_actions_previewed } end,
-      },
-      {
-        "rxv", -- TODO: better keymap?
-        -- FIXME: its broken??
-        mode = { "x", "n" },
-        desc = "Exchange <node> with <node>",
-        -- TODO: use substitute.exchange
-        function() nav.swap_with({ mode = "remote_ts" }, "v") end,
-      },
-      -- TODO: Copy there, Paste here
-      { -- FIXME: this
-        "rY",
-        mode = { "n" },
-        desc = "Replace with <node>",
-        function() nav.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
-      },
-      { -- FIXME: this
-        "rD",
-        mode = { "x", "n" },
-        desc = "Replace with d<node>",
-        function() nav.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
-      },
-      { -- FIXME: this
-        "rC",
-        mode = { "x", "n" },
-        desc = "Replace with c<node>",
-        function() nav.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
-      },
-      -- TODO: Copy this, Paste there
     },
   },
   {
@@ -688,12 +622,15 @@ return {
     keys = {
       { "}" }, -- Repeat mappings
       { "{" },
-      -- { "<leader>hw", navutils.leap_anywhere, mode = "n", desc = "Leap all windows" },
       { "s", "<Plug>(leap)", mode = "n", desc = "Leap" },
-      { "S", function() require("leap.remote").action() end, mode = "n", desc = "Leap Remote" },
-      { O.goto_prefix .. O.goto_prefix, nav.leap_anywhere, mode = { "n", "x" }, desc = "Leap anywhere" },
-      { "S", nav.leap_anywhere, mode = { "o" }, desc = "Leap anywhere" },
-      { "<Plug>(leap-anywhere)", nav.leap_anywhere, mode = { "n", "x", "o", "i" }, desc = "Leap anywhere" },
+      { "S", "<Plug>(leap)", mode = { "x", "o" }, desc = "Leap" },
+      { "q", "<Plug>(leap)", mode = "x", desc = "Leap" },
+      { "S", "<Plug>(leap-remote)", mode = "n", desc = "Leap Remote" },
+      { O.goto_prefix .. O.goto_prefix, "<Plug>(leap-anywhere)", mode = { "n", "x", "o" }, desc = "Leap anywhere" },
+      { "/", "<Plug>(leap-forward)", mode = "o", desc = "Leap fwd" },
+      { "?", "<Plug>(leap-backward)", mode = "o", desc = "Leap bwd" },
+      { ";", leap_bi_o(1), mode = "o", desc = "Leap SemiInc" },
+      { ".", leap_bi_o(2), mode = "o", desc = "Leap Incl." },
       {
         "t", -- semi-inclusive
         function()
@@ -713,39 +650,52 @@ return {
         desc = "Leap v T",
       },
       {
-        "q", -- semi-inclusive
-        function() require("leap").leap { inclusive_op = true } end,
-        mode = { "x", "o" },
-        desc = "Leap f",
+        O.select_dynamic,
+        "<Plug>(leap-treesitter)",
+        mode = { "o", "x" },
+        desc = "Cursor Node",
       },
       {
-        "Q", -- semi-inclusive
-        function() require("leap").leap { backward = true, offset = 1, inclusive_op = true } end,
-        mode = { "x", "o" },
-        desc = "Leap F",
+        O.goto_prefix .. "r",
+        "<Plug>(leap-remote)",
+        desc = "Leap Remote",
+        mode = { "n", "x", "o" },
       },
-      { "<leader>f", "<Plug>(leap-forward-to)", mode = "x", desc = "Leap f" },
-      { "<leader>t", "<Plug>(leap-forward-till)", mode = "x", desc = "Leap t" },
-      { "<leader>F", "<Plug>(leap-backward-to)", mode = "x", desc = "Leap F" },
-      { "<leader>T", "<Plug>(leap-backward-till)", mode = "x", desc = "Leap T" },
-      -- -- { "s", leap_bi_n, mode = "n", desc = "Leap" },
-      -- { "f", leap_bi_x(1), mode = "x", desc = "Leap" },
-      -- { "<leader>f", leap_bi_x(2), mode = "x", desc = "Leap Inc" },
-      -- { "<leader>t", leap_bi_x(0), mode = "x", desc = "Leap Exc" },
-      { ";", leap_bi_o(1), mode = "o", desc = "Leap SemiInc" },
-      { ".", leap_bi_o(2), mode = "o", desc = "Leap Incl." },
-      { "<leader>f", leap_bi_o(2), mode = "o", desc = "Leap Inc" },
-      { "<leader>t", leap_bi_o(0), mode = "o", desc = "Leap Exc" },
       {
-        O.select_remote,
+        "r",
         "<Plug>(leap-remote)",
         desc = "Leap Remote",
         mode = "o",
       },
       {
         "<Plug>(leap-remote)",
-        -- function() nav.leap_remote() end,
         function() require("leap.remote").action() end,
+        desc = "Leap Remote",
+        mode = { "o", "x" },
+      },
+      {
+        "<Plug>(leap-treesitter)",
+        function()
+          require("leap.treesitter").select()
+          -- local sk = vim.deepcopy(require("leap").opts.special_keys)
+          -- -- The items in `special_keys` can be both strings or tables - the
+          -- -- shortest workaround might be the below one:
+          -- sk.next_target = vim.fn.flatten(vim.list_extend({ O.select_dynamic }, { sk.next_target }))
+          -- sk.prev_target = vim.fn.flatten(vim.list_extend({ O.select_dynamic:upper() }, { sk.prev_target }))
+          -- require("leap.treesitter").select { opts = { special_keys = sk } }
+        end,
+        mode = { "n", "o", "x" },
+        desc = "Cursor Node",
+      },
+      {
+        "<Plug>(leap-treesitter-line)",
+        'V<cmd>lua require("leap.treesitter").select()<cr>',
+        mode = { "n", "o", "x" },
+        desc = "Cursor V Node",
+      },
+      {
+        "<leader>gx",
+        function() require("leap.remote").action { input = "gx" } end,
         desc = "Leap Remote",
         mode = { "o", "x" },
       },
@@ -753,8 +703,7 @@ return {
         "ar",
         function()
           local ok, char = pcall(vim.fn.getcharstr)
-          if not ok or char == "\27" or not char then return end
-
+          if not ok or char == vim.keycode "<esc>" then return end
           require("leap.remote").action { input = "a" .. char }
         end,
         mode = { "o", "x" },
@@ -764,8 +713,7 @@ return {
         "ir",
         function()
           local ok, char = pcall(vim.fn.getcharstr)
-          if not ok or char == "\27" or not char then return end
-
+          if not ok or char == vim.keycode "<esc>" then return end
           require("leap.remote").action { input = "i" .. char }
         end,
         mode = { "o", "x" },
@@ -819,12 +767,47 @@ return {
         function() nav.swap_with { exchange = { not_there = true } } end,
       },
       {
-        "R",
+        O.goto_prefix .. "r",
         mode = { "n" },
         desc = "Remote Replace",
         "r<Plug>(leap-remote)",
         remap = true,
       },
+      {
+        "rxv", -- TODO: better keymap?
+        -- FIXME: its broken??
+        mode = { "x", "n" },
+        desc = "Exchange <node> with <node>",
+        -- TODO: use substitute.exchange
+        function() nav.swap_with({ mode = "remote_ts" }, "v") end,
+      },
+      -- TODO: Copy there, Paste here
+      { -- FIXME: this
+        "rY",
+        mode = { "n" },
+        desc = "Replace with <node>",
+        function() nav.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
+      },
+      { -- FIXME: this
+        "rD",
+        mode = { "x", "n" },
+        desc = "Replace with d<node>",
+        function() nav.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
+      },
+      { -- FIXME: this
+        "rC",
+        mode = { "x", "n" },
+        desc = "Replace with c<node>",
+        function() nav.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
+      },
+      { "<leader>f", "<Plug>(leap-forward-to)", mode = "x", desc = "Leap f" },
+      { "<leader>t", "<Plug>(leap-forward-till)", mode = "x", desc = "Leap t" },
+      { "<leader>F", "<Plug>(leap-backward-to)", mode = "x", desc = "Leap F" },
+      { "<leader>T", "<Plug>(leap-backward-till)", mode = "x", desc = "Leap T" },
+      -- { "<leader>f", leap_bi_x(2), mode = "x", desc = "Leap Inc" },
+      -- { "<leader>t", leap_bi_x(0), mode = "x", desc = "Leap Exc" },
+      { "<leader>f", leap_bi_o(2), mode = "o", desc = "Leap Inc" },
+      { "<leader>t", leap_bi_o(0), mode = "o", desc = "Leap Exc" },
     },
     -- TODO: unlazy me
     config = function()
@@ -834,7 +817,7 @@ return {
         "(){}[]b",
         "()p",
         "{}[]B",
-        "\"'q",
+        "\"'`q",
         "<>t",
         -- ")]}>",
         -- "([{<",
@@ -848,7 +831,7 @@ return {
         ",", "-",
             }
       -- TODO: make this n/N for repeating motions
-      require("leap").add_repeat_mappings("}", "{", {})
+      require("leap.user").set_repeat_keys("}", "{", {})
     end,
   },
   {

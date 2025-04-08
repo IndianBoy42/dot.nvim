@@ -183,7 +183,7 @@ local M = {
       -- map("x", "'", opts.mappings.vadd .. [[']], { remap = true, silent = true })
 
       -- Make special mapping for "add surrounding for line"
-      map("n", "yss", "ys_", { remap = true, silent = true })
+      map("n", "yss", "ysil", { remap = true, silent = true })
     end,
   },
   -- require("plugins.pairs.sandwich").spec,

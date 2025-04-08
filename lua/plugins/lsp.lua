@@ -11,13 +11,15 @@ return {
   },
   {
     "hrsh7th/nvim-linkedit",
-    enabled = false,
+    event = "LazyFile",
+    enabled = true,
     opts = {
       sources = {
         {
           name = "lsp_linked_editing_range",
           on = { "insert", "operator" },
         },
+        -- { name = "lsp_rename", },
       },
     },
   },
@@ -26,7 +28,7 @@ return {
     lazy = true,
     init = function()
       utils.lsp.on_attach(function(client, bufnr)
-        if client.supports_method "textDocument/rangeFormatting" then
+        if client:supports_method "textDocument/rangeFormatting" then
           vim.api.nvim_buf_create_user_command(bufnr, "FormatModifications", function()
             local lsp_format_modifications = require "lsp-format-modifications"
             lsp_format_modifications.format_modifications(client, bufnr)

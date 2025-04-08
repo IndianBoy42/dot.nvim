@@ -21,13 +21,14 @@ return {
       abbr("Move", "moveAndRenameFile")
       abbr("Rename", "renameFile")
       abbr("Trash", "trashFile")
+      -- TODO: Snacks rename file
+      -- Snacks.rename.on_rename_file(from, to, rename)
     end,
     opts = {},
     cmd = {
       "Genghis",
     },
   },
-  { "antosha417/nvim-lsp-file-operations", opts = {} },
   {
     "echasnovski/mini.files",
     cond = true,
@@ -47,7 +48,7 @@ return {
     opts = {
       windows = {
         preview = true,
-        width_nofocus = 30,
+        -- width_nofocus = 30,
       },
       options = {
         use_as_default_explorer = true,
@@ -132,11 +133,8 @@ return {
       })
 
       vim.api.nvim_create_autocmd("User", {
-        group = group,
-        pattern = "MiniFilesExplorerOpen",
-        callback = function()
-          require "lsp-file-operations" -- This loads it
-        end,
+        pattern = "MiniFilesActionRename",
+        callback = function(event) Snacks.rename.on_rename_file(event.data.from, event.data.to) end,
       })
     end,
   },
@@ -169,6 +167,14 @@ return {
       { "<leader>oe", function() require("oil").open() end, desc = "Open Oil Dir" },
     },
     init = function()
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "OilActionsPost",
+        callback = function(event)
+          if event.data.actions.type == "move" then
+            Snacks.rename.on_rename_file(event.data.actions.src_url, event.data.actions.dest_url)
+          end
+        end,
+      })
       if vim.fn.argc() == 1 then
         local arg = vim.fn.argv(0)
         local stat = vim.loop.fs_stat(arg)

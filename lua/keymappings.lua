@@ -224,7 +224,7 @@ function M.setup()
 
   -- Keep accidentally hitting J instead of j when first going visual mode
   map("x", "J", "j", nore)
-  map("x", "<leader>J", "J", nore)
+  map("x", "<M-j>", "J", nore)
 
   function M.map_fast_indent()
     -- print "Setting up better indenting"
@@ -449,8 +449,9 @@ function M.setup()
 
   local ref_n, ref_p = repeatable("r", "Reference", quickfix_looping, { body = false })
   local ref_list_next, ref_list_prev = on_list_hydra(ref_n, ref_p, quickfix_looping)
-  map("n", O.goto_next .. "r", function() vim.lsp.buf.references(nil, ref_list_next) end, { desc = "Reference" })
-  map("n", O.goto_previous .. "r", function() vim.lsp.buf.references(nil, ref_list_prev) end, { desc = "Reference" })
+  -- map("n", O.goto_next .. "r", function() vim.lsp.buf.references(nil, ref_list_next) end, { desc = "Reference" })
+  map("n", O.goto_next .. "r", Snacks.words.jump, { desc = "Reference" })
+  -- map("n", O.goto_previous .. "r", function() vim.lsp.buf.references(nil, ref_list_prev) end, { desc = "Reference" })
   local impl_n, impl_p = repeatable("i", "Implementation", quickfix_looping, { body = false })
   local impl_list_next, impl_list_prev = on_list_hydra(impl_n, impl_p, quickfix_looping)
   -- TODO: maybe indent is more useful
@@ -500,7 +501,16 @@ function M.setup()
     else
       return ""
     end
-  end, { expr = true })
+  end, { expr = true, desc = "and Replace" })
+  map("c", "<M-t>", function()
+    local mode = vim.fn.getcmdtype()
+    if mode == "/" or mode == "?" then
+      -- TODO: from flash fuzzy search
+      return [[<cr><leader>s/]]
+    else
+      return ""
+    end
+  end, { expr = true, desc = "To Telescope" })
   -- Jump between matches without leaving search mode
   map("c", "<M-n>", [[<C-g>]], { silent = true })
   map("c", "<M-S-n>", [[<C-t>]], { silent = true })
@@ -606,9 +616,30 @@ function M.setup()
   map("n", "<M-h>", "<c-o>", nore)
   map("n", "<M-l>", "<c-i>", nore)
 
-  M.quick_toggle("<leader>T", "d", utils.lsp.toggle_diagnostics)
-  M.quick_toggle("<leader>T", "i", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end)
-  M.quick_toggle("<leader>T", "b", "<cmd>ToggleBlame virtual<cr>")
+  Snacks.toggle.diagnostics():map "<leader>Td"
+  Hilight_comments():map "<leader>TH"
+  Snacks.toggle.inlay_hints():map "<leader>Ti"
+  Snacks.toggle({
+    name = "Blame",
+    get = function() return require("blame").is_open() end,
+    set = function(en)
+      local alr = require("blame").is_open()
+      if alr ~= en then vim.cmd.BlameToggle() end
+    end,
+  }):map "<leader>Tb"
+  Snacks.toggle.option("wrap"):map "<leader>Tw"
+  Snacks.toggle.dim():map "<leader>Tz"
+  Snacks.toggle.profiler():map "<leader>Tpp"
+  Snacks.toggle.profiler_highlights():map "<leader>Tph"
+  map("n", "<leader>Tps", function() Snacks.profiler.scratch() end, { desc = "Profiler Scratch Buffer" })
+  Snacks.toggle.option("spell"):map "<leader>TS"
+  Snacks.toggle.option("cursorcolumn"):map "<leader>Tcc"
+  Snacks.toggle.option("signcolumn"):map "<leader>Tcs"
+  Snacks.toggle.option("cursorline"):map "<leader>Tcl"
+  Snacks.toggle.line_number():map "<leader>Tcn"
+  Snacks.toggle
+    .option("conceallevel", { off = 0, on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2, name = "Conceal Level" })
+    :map "<leader>Tn"
 
   -- Select last pasted
   -- TODO: use yanky
@@ -747,7 +778,7 @@ function M.setup()
   -- map("n", "H", [[col('.') == match(getline('.'),'\S')+1 ? '0' : '^']], norexpr)
   -- map("n", "L", "$", { remap = true })
 
-  map("n", "L", "a<C-l>", { remap = true })
+  map("n", "L", utils.lsp.diag_line, { remap = true })
 
   -- map("n", "m-/", "")
 
@@ -917,6 +948,7 @@ function M.setup()
 
   local leaderMappings = {
     [";"] = { telescope_fn.commands, "Srch Commands" },
+    ["."] = { function() Snacks.scratch() end, "Scratch buffer" },
     -- [";"] = { cmd "Dashboard", "Dashboard" },
     ["/"] = { telescope_fn.live_grep, "Global search" },
     -- f = { telescope_fn.find_files, "Smart Open File" },
@@ -979,24 +1011,15 @@ function M.setup()
     },
     m = { name = "Make" },
     x = { name = "Run" },
-    P = { name = "Project (Tasks)" },
     v = { name = "Visualize" },
     T = {
-      name = "Toggle Opts",
-      w = { cmd "setlocal wrap!", "Wrap" },
-      s = { cmd "setlocal spell!", "Spellcheck" },
+      name = "Toggle",
+      -- TODO: snacks
       c = { name = "Cursor/Column" },
-      cc = { cmd "setlocal cursorcolumn!", "Cursor column" },
-      cn = { cmd "setlocal number!", "Number column" },
-      cs = { cmd "setlocal signcolumn!", "Cursor column" },
-      cl = { cmd "setlocal cursorline!", "Cursor line" },
+      p = { name = "Profiling" },
       h = { cmd "setlocal hlsearch", "hlsearch" },
-      b = { cmd "set buflisted", "buflisted" },
-      n = { utils.conceal_toggle, "Conceal" },
-      H = { cmd "ToggleHiLightComments", "Comment Highlights" },
       v = { cmd "NvimContextVtToggle", "Context VT" },
-      d = "Toggle Diags",
-      i = "Toggle Inlay Hints",
+      f = { name = "Formatting" },
       fb = {
         utils.lsp.format_on_save_toggle(vim.b),
         "Toggle Format on Save",
@@ -1070,6 +1093,7 @@ function M.setup()
     },
     s = {
       name = "Search",
+      ["."] = { function() Snacks.scratch.search() end, "Scratch buffer" },
       [" "] = { telescope_fn.resume, "Redo last" },
       -- n = { telescope_fn.notify.notify, "Notifications" },
       -- f = { telescope_fn.find_files, "Find File" },
@@ -1095,11 +1119,8 @@ function M.setup()
       u = { cmd "Telescope undo", "Telescope Undo" },
       o = { cmd "TodoTelescope", "TODOs search" },
       q = { telescope_fn.quickfix, "Quickfix" },
+      f = { telescope_fn.current_buffer_fuzzy_find, "Fuzzy buffer" },
       ["*"] = { telescope_fn.grep_string, "Curr word" },
-      f = {
-        function() telescope_fn.grep_string(vim.fn.expand "%") end,
-        "Curr word",
-      },
       ["/"] = { telescope_fn.grep_last_search, "Last Search" },
       -- ["."] = { [[:%s/<C-R>.//g<Left><Left>]], "Last insert" },
       m = { telescope_fn.marks, "Marks" },
@@ -1132,11 +1153,11 @@ function M.setup()
     },
     d = {
       name = "Diagnostics/Debug",
-      l = { utils.lsp.diag_line, "Line Diagnostics" },
+      l = { utils.lsp.toggle_diag_vlines, "Toggle VLines" },
+      L = { utils.lsp.diag_line, "Line Diagnostics" },
       b = { cmd "Trouble diagnostics toggle", "Sidebar" },
       s = { telescope_fn.diagnostics, "Document Diagnostics" },
       w = { telescope_fn.workspace_diagnostics, "Workspace Diagnostics" },
-      t = { utils.lsp.toggle_diagnostics, "Toggle Diags" },
       j = { utils.lsp.diag_next, "Next" },
       k = { utils.lsp.diag_prev, "Prev" },
     },
@@ -1215,48 +1236,6 @@ end
 function M.countjk()
   map("n", "j", [[(v:count > ]] .. mincount .. [[ ? "m'" . v:count : '') . 'j']], norexpr)
   map("n", "k", [[(v:count > ]] .. mincount .. [[ ? "m'" . v:count : '') . 'k']], norexpr)
-end
-
-M.wkopts = {
-  mode = "n", -- NORMAL mode
-  silent = true,
-  noremap = false,
-  nowait = false,
-}
-function M.whichkey(maps, opts)
-  vim.deprecate("Which-key v3", "Use vim.keymap.set", "0", "indianboy42")
-  if opts == nil then opts = {} end
-  require("which-key").register(maps, vim.tbl_extend("keep", opts, M.wkopts))
-end
-
-function M.localleader(maps, opts)
-  vim.deprecate("Which-key v3", "Use vim.keymap.localleader", "0", "indianboy42")
-  if opts == nil then opts = {} end
-  M.whichkey(
-    maps,
-    vim.tbl_extend("keep", opts, {
-      prefix = "<localleader>",
-      buffer = 0,
-    })
-  )
-end
-
-function M.ftleader(maps, opts)
-  vim.deprecate("Which-key v3", "Use vim.keymap.leader", "0", "indianboy42")
-  if opts == nil then opts = {} end
-  M.whichkey(
-    maps,
-    vim.tbl_extend("keep", opts, {
-      prefix = "<leader>",
-      buffer = 0,
-    })
-  )
-end
-
-function M.vlocalleader(maps, opts)
-  vim.deprecate("Which-key v3", "Use vim.keymap.localleader", "0", "indianboy42")
-  if opts == nil then opts = {} end
-  M.localleader(maps, vim.tbl_extend("keep", opts, { mode = "v" }))
 end
 
 M.repeatable = require("keymappings.jump_mode").repeatable
@@ -1341,10 +1320,14 @@ utils.lsp.on_attach(function(client, bufnr)
   map("n", "qr", "<leader>rn", { desc = "Rename" })
 
   -- TODO: operators for all the above to use with remote?
-  local code_action_op = operatorfunc_keys("<esc>" .. O.action_key, "<Plug>(leap-remote)")
-  map("n", "<leader>c", code_action_op, { desc = "Do Code Action At" })
-  local quickfix_op = operatorfunc_keys("<esc>" .. "qu", "<Plug>(leap-remote)")
-  map("n", "<leader>q", quickfix_op, { desc = "Quickfix" })
+  map(
+    "n",
+    "<leader>K",
+    function() require("leap.remote").action { input = O.action_key } end,
+    { desc = "Remote Code Action" }
+  )
+  map("n", "<leader>q", function() require("leap.remote").action { input = "qu" } end, { desc = "Remote Quickfix" })
+  map("n", "<leader>H", function() require("leap.remote").action { input = "H" } end, { desc = "Remote Hover" })
 end, "lsp_mappings")
 
 -- JUST FYI

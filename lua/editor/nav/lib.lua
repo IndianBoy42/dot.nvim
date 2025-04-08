@@ -17,8 +17,8 @@ M.flash_diagnostics = function(opts)
   require("flash").jump(vim.tbl_deep_extend("force", {
     matcher = function(win)
       local buf = vim.api.nvim_win_get_buf(win)
-      ---@param diag Diagnostic
       return vim.tbl_map(
+        ---@param diag Diagnostic
         function(diag)
           return {
             pos = { diag.lnum + 1, diag.col },

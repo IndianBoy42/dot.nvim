@@ -180,7 +180,7 @@ return {
     end,
     event = "VeryLazy",
   },
-  {
+  { -- TODO: give up
     "IndianBoy42/ezlayout.nvim",
     opts = {},
     cmd = { "RotatePanes", "RotatePanesAnti" },

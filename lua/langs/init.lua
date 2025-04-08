@@ -1,12 +1,15 @@
 local diagnostic_config_all = {
-  _virtual_text = function(ns, bufnr)
-    local highest = utils.lsp.get_highest_diag(ns, bufnr)
-    return {
-      spacing = 4,
-      prefix = "",
-      severity = { min = highest },
-    }
-  end,
+  current_line = {
+    auto = true,
+    -- FIXME: only additive
+    -- virtual_lines = false,
+    -- virtual_text = { format = function() return "" end },
+    -- signs = false,
+    -- underline = false,
+    virtual_lines = {
+      severity = { max = vim.diagnostic.severity.WARN },
+    },
+  },
   virtual_text = {
     spacing = 4,
     prefix = "",
@@ -23,33 +26,22 @@ local diagnostic_config_all = {
   virtual_text_w_lines = {
     spacing = 4,
     prefix = "",
-    format = function() return "" end,
-    _format = function(diagnostic)
+    _format = function() return "" end,
+    format = function(diagnostic)
       local lnum = vim.api.nvim_win_get_cursor(0)[1] - 1
+      local iswarn = diagnostic.severity == vim.diagnostic.severity.WARN
+      if iswarn then return diagnostic.message end
+      if diagnostic.severity == vim.diagnostic.severity.HINT then return "HINT" end
+      if diagnostic.severity == vim.diagnostic.severity.INFO then return "INFO" end
       local curr_line = diagnostic.end_lnum and (lnum >= diagnostic.lnum and lnum <= diagnostic.end_lnum)
         or (lnum == diagnostic.lnum)
-      if curr_line then
-        return ""
-      else
-        return diagnostic.message
-      end
+      return ""
     end,
     severity = { max = vim.diagnostic.severity.WARN },
   },
   virtual_lines = {
-    highlight_whole_line = false,
+    -- severity = { max = vim.diagnostic.severity.WARN },
     severity = { min = vim.diagnostic.severity.ERROR },
-    arrow_width = 0,
-    current_line_opts = {
-      severity = false,
-    },
-  },
-  virtual_lines_all = {
-    highlight_whole_line = false,
-    arrow_width = 0,
-    current_line_opts = {
-      severity = false,
-    },
   },
   signs = false,
   underline = {
@@ -66,7 +58,14 @@ local diagnostic_config_all = {
     border = "rounded",
     scope = "line",
   },
+  jump = {
+    float = false,
+  },
 }
+local diagnostic_config = vim.tbl_extend("keep", {
+  virtual_text = diagnostic_config_all.virtual_lines and diagnostic_config_all.virtual_text_w_lines
+    or diagnostic_config_all.virtual_text,
+}, diagnostic_config_all)
 local configs = {
   inlay_hints = {
     auto = true,
@@ -95,9 +94,7 @@ local configs = {
       opts = function(_, opts) vim.list_extend(opts.ensure_installed, app) end,
     }
   end,
-  diagnostic_config = vim.tbl_extend("keep", {
-    virtual_text = diagnostic_config_all.virtual_text_w_lines,
-  }, diagnostic_config_all),
+  diagnostic_config = diagnostic_config,
   diagnostic_config_all = diagnostic_config_all,
   codelens_config = {
     virtual_text = { spacing = 0, prefix = "" },
@@ -160,6 +157,7 @@ local plugins = {
       },
     },
     config = function(_, opts)
+      -- TODO: use vim.lsp.config for... whatever
       if vim.env.NVIM_LSP_LOG_DEBUG ~= nil and vim.env.NVIM_LSP_LOG_DEBUG ~= "" then
         -- vim.lsp.set_log_level(vim.log.levels.DEBUG)
         -- require("vim.lsp.log").set_format_func(vim.inspect)
@@ -183,7 +181,17 @@ local plugins = {
       local lsp = vim.lsp
       local handlers = vim.lsp.handlers
       local lspwith = vim.lsp.with
-      vim.diagnostic.config(require("langs").diagnostic_config)
+
+      vim.diagnostic.config(diagnostic_config)
+      vim.api.nvim_create_autocmd("CursorMoved", {
+        group = vim.api.nvim_create_augroup("diag_current_line", { clear = true }),
+        callback = function()
+          local currlineopts = vim.diagnostic.config().current_line
+          if not currlineopts or not currlineopts.auto then return end
+          utils.lsp.diag_vline()
+        end,
+      })
+
       do
         local current_definition_handler = vim.lsp.handlers["textDocument/definition"]
         vim.lsp.handlers["textDocument/definition"] = function(err, result, ctx, config)
@@ -212,20 +220,18 @@ local plugins = {
         })
       end
 
-      vim.tbl_extend("force", capabilities, require("lsp-file-operations").default_capabilities())
-
-      utils.lsp.on_attach(function(client, bufnr) utils.lsp.document_highlight(client, bufnr) end)
+      -- utils.lsp.on_attach(function(client, bufnr) utils.lsp.document_highlight(client, bufnr) end)
 
       handlers["textDocument/codeLens"] = lspwith(vim.lsp.codelens.on_codelens, require("langs").codelens_config)
       utils.lsp.on_attach(function(client, bufnr)
-        if false and client.supports_method "textDocument/codeLens" then
+        if false and client:supports_method "textDocument/codeLens" then
           vim.api.nvim_create_autocmd(
             { "CursorHold", "InsertLeave", "BufEnter" },
             { buffer = bufnr, callback = vim.lsp.codelens.refresh }
           )
         end
 
-        if client.supports_method "textDocument/inlayHint" then
+        if client:supports_method "textDocument/inlayHint" then
           vim.lsp.inlay_hint.enable(true)
 
           -- TODO:

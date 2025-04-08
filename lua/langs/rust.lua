@@ -1,15 +1,18 @@
+-- LSP Server to use for Rust.
+-- Set to "bacon-ls" to use bacon-ls instead of rust-analyzer.
+-- only for diagnostics. The rest of LSP support will still be
+-- provided by rust-analyzer.
+-- local diagnostics = "rust-analyzer"
+local use_diagnostics = "bacon-ls"
 local function on_attach()
-  local rt = require "rust-tools"
   local map = vim.keymap.setl
-  map("x", O.hover_key, "<cmd>RustHoverRange<CR>", { desc = "Hover Range" })
-  map("n", O.hover_key, "<cmd>RustHoverActions<CR>", { desc = "Hover Actions" })
-  map("n", "gj", "<cmd>RustJoinLines<CR>", { desc = "Join Lines" })
+  map("x", O.hover_key, "<cmd>RustLsp hover range<CR>", { desc = "Hover Range" })
+  map("n", O.hover_key, "<cmd>RustLsp hover actions<CR>", { desc = "Hover Actions" })
+  map("n", "gj", "<cmd>RustLsp joinlines<CR>", { desc = "Join Lines" })
+  map("n", "<leader>de", "<cmd>RustLsp explainError cycle<CR>", { desc = "Explain" })
 
   local move_item = function(dir)
-    return function()
-      rt.move_item.move_item(dir == "k")
-      vim.cmd "norm! zz"
-    end
+    return function() vim.cmd.RustLsp { "moveItem", dir } end
   end
   local move_mode = require "hydra" {
     name = "Move Item",
@@ -17,8 +20,8 @@ local function on_attach()
     mode = { "n" },
     body = "<localleader>",
     heads = {
-      { "l", move_item "j", { desc = "Move Item Down" } },
-      { "h", move_item "k", { desc = "Move Item Up" } },
+      { "l", move_item "down", { desc = "Move Item Down" } },
+      { "h", move_item "up", { desc = "Move Item Up" } },
       { "<ESC>", nil, { exit = true, nowait = true, desc = "exit" } },
     },
   }
@@ -42,19 +45,21 @@ local function on_attach()
 
   -- map("n", "KK", require("rust-tools").code_action_group.code_action_group, { desc = "Code Actions" })
   map = vim.keymap.localleader
-  map("n", "m", "<Cmd>RustExpandMacro<CR>", { desc = "Expand Macro" })
+  map("n", "m", "<CMD>RustDebuggables<CR>", { desc = "Expand Macro" })
   -- TODO: Integrate with Kitty.lua
-  map("n", "e", "<Cmd>RustRunnables<CR>", { desc = "Runnables" })
+  map("n", "R", "<CMD>RustRunnables<CR>", { desc = "Runnables" })
   map("n", "i", code_action "refactor.inline", { desc = "Inline" })
   map("n", "r", code_action "refactor.rewrite", { desc = "Rewrite" })
-  map("n", "d", "<Cmd>RustDebuggables<CR>", { desc = "Debuggables" })
-  map("n", "s", ":RustSSR  ==>> <Left><Left><Left><Left><Left><Left>", { desc = "Structural S&R" })
-  map("x", "h", "<cmd>RustHoverRange", { desc = "LSP Hover" })
+  map("n", "D", "<Cmd>RustLsp debuggables<CR>", { desc = "Debuggables" })
+  map("n", "d", "<Cmd>RustLsp relatedDiagnostics<CR>", { desc = "Related" })
+  map("n", "o", "<Cmd>RustLsp openDocs<CR>", { desc = "Open Docs.rs" })
+  map("n", "s", ":RustLsp ssr  ==>> <Left><Left><Left><Left><Left><Left>", { desc = "Structural S&R" })
+  map("x", "h", "<cmd>RustLsp hover range", { desc = "LSP Hover" })
   map("x", "ef", code_action("refactor.extract", "function"), { desc = "Extract function" })
   map("x", "ev", code_action("refactor.extract", "variable"), { desc = "Extract variable" })
   -- TODO: the rest of these actions
-  vim.keymap.leader("n", "pR", "<CMD>RustRunnables<CR>", { buffer = 0, desc = "Rust Run" })
-  vim.keymap.leader("n", "pd", "<CMD>RustDebuggables<CR>", { buffer = 0, desc = "Rust Debug" })
+  vim.keymap.leader("n", "pR", "<Cmd>RustLsp runnables<CR>", { buffer = 0, desc = "Rust Run" })
+  vim.keymap.leader("n", "pd", "<Cmd>RustLsp expandMacro<CR>", { buffer = 0, desc = "Rust Debug" })
 end
 local function postfix_wrap_call(trig, call, requires)
   return {
@@ -137,58 +142,6 @@ local snippets = {
     scope = "expr",
   },
 }
-local server_opts = {
-  -- https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#rust_analyzer
-  -- https://rust-analyzer.github.io/manual.html#configuration
-  cargo = {
-    features = "all",
-  },
-  -- Add clippy lints for Rust.
-  checkOnSave = true,
-  check = {
-    enable = true,
-    command = "clippy",
-    features = "all",
-    extraArgs = {
-      { "--all-targets" },
-    },
-  },
-  completion = {
-    snippets = snippets,
-    postfix = { enable = true },
-    fullFunctionSignatures = { enable = true },
-    termSearch = { enable = true },
-  },
-  procMacro = {
-    enable = true,
-  },
-  diagnostics = {
-    experimental = {
-      enable = false,
-    },
-  },
-  hover = {
-    actions = {
-      references = { enable = true },
-    },
-  },
-  -- imports = {},
-  workspace = { symbol = { search = { kind = "all_symbols" } } },
-  inlayHints = {
-    -- bindingModeHints = { enable = true },
-    -- closureCaptureHints = { enable = true },
-    -- closureReturnTypeHints = { enable = true },
-    -- discriminantHints = { enable = true },
-    -- expressionAdjustmentHints = { enable = true },
-    -- lifetimeElisionHints = { enable = true },
-  },
-  rustfmt = {
-    rangeFormatting = { enable = true },
-  },
-  typing = {
-    autoClosingAngleBrackets = { enable = true },
-  },
-}
 
 return {
   {
@@ -209,69 +162,115 @@ return {
   },
   -- correctly setup mason lsp / dap extensions
 
-  require("langs").mason_ensure_installed { "codelldb", "rust-analyzer", "taplo" },
+  require("langs").mason_ensure_installed { "codelldb", "rust-analyzer", "taplo", "bacon", "bacon-ls" },
 
   -- TODO: rustaceanvim
   -- https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/plugins/extras/lang/rust.lua
   -- https://github.com/mrcjkb/rustaceanvim/discussions/122
   {
-    "neovim/nvim-lspconfig",
-    dependencies = {
-      { "indianboy42/rust-tools.nvim", branch = "fork" },
+    "mrcjkb/rustaceanvim",
+    ft = { "rust" },
+    opts = {
+      tools = {
+        float_win_config = {
+          border = "rounded",
+        },
+      },
+      server = {
+        default_settings = {
+          -- rust-analyzer language server configuration
+          ["rust-analyzer"] = {
+            cargo = {
+              allFeatures = true,
+              loadOutDirsFromCheck = true,
+              buildScripts = {
+                enable = true,
+              },
+            },
+            -- Add clippy lints for Rust if using rust-analyzer
+            checkOnSave = use_diagnostics == "rust-analyzer",
+            -- Enable diagnostics if using rust-analyzer
+            diagnostics = {
+              -- enable = use_diagnostics == "rust-analyzer",
+              experimental = {
+                enable = true,
+              },
+            },
+            completion = {
+              snippets = snippets,
+              postfix = { enable = true },
+              fullFunctionSignatures = { enable = true },
+              termSearch = { enable = true },
+            },
+            procMacro = {
+              enable = true,
+              ignored = {
+                ["async-trait"] = { "async_trait" },
+                ["napi-derive"] = { "napi" },
+                ["async-recursion"] = { "async_recursion" },
+              },
+            },
+            hover = {
+              actions = {
+                references = { enable = true },
+              },
+            },
+            -- imports = {},
+            workspace = { symbol = { search = { kind = "all_symbols" } } },
+            inlayHints = {
+              -- bindingModeHints = { enable = true },
+              -- closureCaptureHints = { enable = true },
+              -- closureReturnTypeHints = { enable = true },
+              -- discriminantHints = { enable = true },
+              -- expressionAdjustmentHints = { enable = true },
+              -- lifetimeElisionHints = { enable = true },
+            },
+            rustfmt = {
+              rangeFormatting = { enable = true },
+            },
+            typing = {
+              autoClosingAngleBrackets = { enable = true },
+            },
+            files = {
+              excludeDirs = {
+                ".direnv",
+                ".git",
+                ".github",
+                ".gitlab",
+                "bin",
+                "node_modules",
+                "target",
+                "venv",
+                ".venv",
+              },
+            },
+          },
+        },
+      },
     },
+    config = function(_, opts)
+      if utils.have_plugin "mason.nvim" then
+        local package_path = require("mason-registry").get_package("codelldb"):get_install_path()
+        local codelldb = package_path .. "/extension/adapter/codelldb"
+        local library_path = package_path .. "/extension/lldb/lib/liblldb.dylib"
+        local uname = io.popen("uname"):read "*l"
+        if uname == "Linux" then library_path = package_path .. "/extension/lldb/lib/liblldb.so" end
+        opts.dap = {
+          adapter = require("rustaceanvim.config").get_codelldb_adapter(codelldb, library_path),
+        }
+      end
+      vim.g.rustaceanvim = vim.tbl_deep_extend("keep", vim.g.rustaceanvim or {}, opts or {})
+      utils.lsp.on_attach(on_attach)
+    end,
+  },
+  {
+    "neovim/nvim-lspconfig",
     opts = {
       setup = {
-        rust_analyzer = function(_, opts)
-          opts = vim.tbl_deep_extend("force", opts, {
-            tools = {
-              -- TODO:
-              executor = {
-                execute_command = function(command, args, cwd)
-                  local ok, kitty = pcall(require, "kitty")
-                  if ok and kitty.rust_tools_executor then
-                    require("rust-tools.config").options.tools.executor = kitty.rust_tools_executor()
-                    return kitty.rust_tools_executor().execute_command(command, args, cwd)
-                  else
-                    require("rust-tools.executors").termopen.execute_command(command, args, cwd)
-                  end
-                end,
-              },
-              hover_actions = {
-                auto_focus = true,
-                border = "rounded",
-              },
-              on_type_formatting = false,
-              inlay_hints = { auto = false },
-              runnables = {
-                use_telescope = true,
-                layout_config = {
-                  width = 0.4,
-                  height = 0.4,
-                },
-              },
-              debuggables = {
-                use_telescope = true,
-                layout_config = {
-                  width = 0.4,
-                  height = 0.4,
-                },
-              },
-            },
-            server = {
-              on_attach = on_attach,
-              -- cmd = { "ra-multiplex", "client" },
-              settings = {
-                ["rust-analyzer"] = server_opts,
-              },
-            },
-          })
-          require("rust-tools").setup(opts)
-          return true
-        end,
         taplo = function(_, opts)
           local function is_cargo() return vim.fn.expand "%:t" == "Cargo.toml" end
           local function show_popup()
-            if vim.fn.expand "%:t" == "Cargo.toml" and require("crates").popup_available() then
+            if is_cargo() and require("crates").popup_available() then
               require("langs.complete").sources {
                 sources = {
                   { name = "vimtex" },
@@ -305,8 +304,13 @@ return {
           -- utils.dump("taplo", opts)
           return false -- make sure the base implementation calls taplo.setup
         end,
+        rust_analyzer = function(_, opts) return true end,
+      },
+      servers = {
+        bacon_ls = {
+          enabled = use_diagnostics == "bacon-ls",
+        },
       },
     },
   },
-  -- TODO: https://github.com/adaszko/tree_climber_rust.nvim
 }
