@@ -49,11 +49,6 @@ return {
     --     callback = function() vim.cmd.wincmd = "=" end,
     --   })
     -- end)
-    local feedkeys = vim.api.nvim_feedkeys
-    local termcodes = vim.api.nvim_replace_termcodes
-    local function t(k) return termcodes(k, true, true, true) end
-    local function f(a, mode) return feedkeys(t(a), mode or "n", false) end
-
     augrp("_focus_lost", function(au)
       au({ "FocusLost", "WinLeave", "TabLeave" }, function()
         if vim.bo.buftype == "" then pcall(vim.cmd.update) end

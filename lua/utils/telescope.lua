@@ -242,11 +242,10 @@ function M.grep_last_search(opts)
 
   -- \<getreg\>\C
   -- -> Subs out the search things
-  -- TODO: properly escape this
+  -- TODO: properly escape this (convert vimregex to real)
   local register = vim.fn.getreg("/"):gsub("\\<", ""):gsub("\\>", ""):gsub("\\C", "")
 
   opts.path_display = { "shorten_path" }
-  opts.word_match = "-w"
   opts.search = register
 
   require("telescope.builtin").grep_string(opts)

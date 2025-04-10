@@ -1,7 +1,6 @@
 -- eg <Key>wa => :wa<cr>
 local nvim_feedkeys = vim.api.nvim_feedkeys
-local termcodes = vim.api.nvim_replace_termcodes
-local function t(k) return termcodes(k, true, true, true) end
+local t = vim.keycode
 local function feedkeys(keys, o)
   if o == nil then o = "m" end
   nvim_feedkeys(t(keys), o, false)

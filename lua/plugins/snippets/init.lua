@@ -23,30 +23,24 @@ local M = {
       -- map("i", "<C-h>", "<Plug>luasnip-expand-snippet", { silent = true })
       -- map("s", "<C-h>", "<Plug>luasnip-expand-snippet", { silent = true })
 
-      local nvim_feedkeys = vim.api.nvim_feedkeys
-      local termcode = vim.api.nvim_replace_termcodes
-      local feedkeys = function(keys, o)
-        if o == nil then o = "m" end
-        nvim_feedkeys(termcode(keys, true, true, true), o, false)
-      end
       local luasnip = require "luasnip"
       local jump_next = function()
         if luasnip.expand_or_jumpable() then
-          feedkeys "<Plug>luasnip-jump-next"
+          return "<Plug>luasnip-jump-next"
         else
-          feedkeys "<Plug>(Tabout)"
+          return "<Plug>(Tabout)"
         end
       end
       local jump_prev = function()
         if luasnip.expand_or_jumpable() then
-          feedkeys "<Plug>luasnip-jump-prev"
+          return "<Plug>luasnip-jump-prev"
         else
-          feedkeys "<Plug>(TaboutBack)"
+          return "<Plug>(TaboutBack)"
         end
       end
 
-      map({ "i", "s" }, "<M-n>", jump_next, { silent = true })
-      map({ "i", "s" }, "<M-p>", jump_prev, { silent = true })
+      map({ "i", "s" }, "<M-n>", jump_next, { expr = true, silent = true })
+      map({ "i", "s" }, "<M-p>", jump_prev, { expr = true, silent = true })
       -- map("i", "<C-u>", require "luasnip.extras.select_choice", { silent = true })
       -- map("i", "<M-n>", "<Plug>luasnip-next-choice", { silent = true })
       map({ "i", "s" }, "<M-j>", "<Plug>luasnip-next-choice", { silent = true })
@@ -54,8 +48,8 @@ local M = {
       map({ "i", "s" }, "<M-k>", "<Plug>luasnip-prev-choice", { silent = true })
       -- map("i", "<C-y>", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
       if false then
-        map("s", "n", jump_next, { silent = true })
-        map("s", "p", jump_prev, { silent = true })
+        map("s", "n", jump_next, { expr = true, silent = true })
+        map("s", "p", jump_prev, { expr = true, silent = true })
         map("s", "j", "<Plug>luasnip-next-choice", { silent = true })
         map("s", "h", require("plugins.snippets.luasnips_choices").popup_close, { silent = true })
         map("s", "k", "<Plug>luasnip-prev-choice", { silent = true })

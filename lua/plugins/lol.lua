@@ -3,8 +3,7 @@ return {
   { --giusgad/pets.nvim
     "giusgad/pets.nvim",
     opts = {
-      random = true,
-      row = 2,
+      popup = { width = "100%" },
     },
     init = function()
       vim.api.nvim_create_user_command("LotsOPets", function()
@@ -16,7 +15,6 @@ return {
         end
       end, {})
     end,
-    config = function(_, opts) require("pets").setup(opts) end,
     dependencies = { "MunifTanjim/nui.nvim", "edluffy/hologram.nvim" },
     cmd = {
       "PetsNew",

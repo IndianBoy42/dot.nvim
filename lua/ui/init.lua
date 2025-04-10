@@ -4,6 +4,10 @@ return {
     event = "VeryLazy",
     opts = {
       preset = "helix",
+      triggers = {
+        { "<auto>", mode = "nxso" },
+        { O.multi_leader_key, mode = "n" },
+      },
       -- FIXME: hidden = { "<silent>", "<cmd>", "<Cmd>", "<CR>", "call", "lua", "^:", "^ ", "<Plug>" }, -- hide mapping boilerplate
     },
     config = function(_, opts)
@@ -212,11 +216,24 @@ return {
         return function() cmdbuf.split_open(h or vim.o.cmdwinheight, opts) end
       end
       map("n", "q:", split_open(nil), { desc = "Cmdwin" })
-      map("n", "q/", split_open(nil, { type = "vim/search/forward" }), { desc = "Cmdwin Search Forward" })
-      map("n", "q?", split_open(nil, { type = "vim/search/backward" }), { desc = "Cmdwin Search Backward" })
+      map(
+        "n",
+        "q/",
+        split_open(nil, { type = "vim/search/forward" }),
+        { desc = "Cmdwin Search Forward" }
+      )
+      map(
+        "n",
+        "q?",
+        split_open(nil, { type = "vim/search/backward" }),
+        { desc = "Cmdwin Search Backward" }
+      )
       map("n", "ql", split_open(nil, { type = "lua/cmd" }), { desc = "Cmdwin Lua" })
       map("c", "<M-e>", function()
-        require("cmdbuf").split_open(vim.o.cmdwinheight, { line = vim.fn.getcmdline(), column = vim.fn.getcmdpos() })
+        require("cmdbuf").split_open(
+          vim.o.cmdwinheight,
+          { line = vim.fn.getcmdline(), column = vim.fn.getcmdpos() }
+        )
         vim.api.nvim_feedkeys(vim.keycode "<C-c>", "n", true)
       end, { desc = "Open in cmdwin" })
 

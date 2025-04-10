@@ -9,8 +9,7 @@ local diags = vim.diagnostic
 
 local getmark = api.nvim_buf_get_mark
 local feedkeys = api.nvim_feedkeys
-local termcodes = vim.api.nvim_replace_termcodes
-local function t(k) return termcodes(k, true, true, true) end
+local t = vim.keycode
 
 -- Format a range using LSP
 function M.format_range_operator()

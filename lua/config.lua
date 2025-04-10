@@ -53,6 +53,7 @@ local O = {
   python_interp = CONFIG_PATH .. "/.venv/bin/python3", -- TODO: make a venv for this
 
   leader_key = "<space>",
+  multi_leader_key = "_",
   local_leader_key = "<bs>",
   goto_prefix = "<cr>",
   goto_next = "]",

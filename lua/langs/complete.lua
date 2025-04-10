@@ -100,7 +100,7 @@ M.config = function(_, opts)
   })
 end
 
-local function t(str) return vim.api.nvim_replace_termcodes(str, true, true, true) end
+local t = vim.keycode
 local feedkeys = vim.api.nvim_feedkeys
 
 -- FIXME: is this wrong?

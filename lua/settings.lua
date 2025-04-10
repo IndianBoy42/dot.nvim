@@ -18,7 +18,7 @@ return function()
 
   -- Set leader keys
   local map = vim.keymap.set
-  local function t(k) return vim.api.nvim_replace_termcodes(k, true, true, true) end
+  local t = vim.keycode
   -- map("n", O.leader_key, "<NOP>")
   vim.g.mapleader = t(O.leader_key)
   -- map("n", O.local_leader_key, "<NOP>")

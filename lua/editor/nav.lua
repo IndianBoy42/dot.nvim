@@ -213,43 +213,6 @@ local hop_fn = setmetatable({}, {
   end,
 })
 
--- TODO: make this every window
-local function leap_to_line(action)
-  local function get_line_starts(winid)
-    local wininfo = vim.fn.getwininfo(winid)[1]
-    local cur_line = vim.fn.line "."
-
-    -- Get targets.
-    local targets = {}
-    local lnum = wininfo.topline
-    while lnum <= wininfo.botline do
-      local fold_end = vim.fn.foldclosedend(lnum)
-      -- Skip folded ranges.
-      if fold_end ~= -1 then
-        lnum = fold_end + 1
-      else
-        if lnum ~= cur_line then table.insert(targets, { pos = { lnum, 1 } }) end
-        lnum = lnum + 1
-      end
-    end
-    -- Sort them by vertical screen distance from cursor.
-    local cur_screen_row = vim.fn.screenpos(winid, cur_line, 1)["row"]
-    local function screen_rows_from_cur(t)
-      local t_screen_row = vim.fn.screenpos(winid, t.pos[1], t.pos[2])["row"]
-      return math.abs(cur_screen_row - t_screen_row)
-    end
-    table.sort(targets, function(t1, t2) return screen_rows_from_cur(t1) < screen_rows_from_cur(t2) end)
-
-    if #targets >= 1 then return targets end
-  end
-  local winid = vim.api.nvim_get_current_win()
-  require("leap").leap {
-    target_windows = { winid },
-    targets = get_line_starts(winid),
-    action = action,
-  }
-end
-
 local function _leap_bi()
   local winnr = vim.api.nvim_get_current_win()
   local pre_leap_pos = vim.api.nvim_win_get_cursor(winnr)
@@ -322,7 +285,7 @@ local function leap_select(kwargs)
     if not ch then return end
     -- Repeat with the previous input?
     local repeat_key = require("leap.opts").special_keys.repeat_search
-    if ch == vim.api.nvim_replace_termcodes(repeat_key, true, true, true) then
+    if ch == vim.keycode(repeat_key) then
       if leap_select_state.prev_input then
         ch = leap_select_state.prev_input
       else
@@ -603,7 +566,11 @@ return {
         O.goto_next .. O.select_remote_dynamic,
         mode = "n",
         function()
-          require("flash").jump { mode = "remote_ts", treesitter = { end_of_node = true }, jump = { pos = "end" } }
+          require("flash").jump {
+            mode = "remote_ts",
+            treesitter = { end_of_node = true },
+            jump = { pos = "end" },
+          }
         end,
         desc = "Jump to end of node",
       },
@@ -611,7 +578,11 @@ return {
         O.goto_prev .. O.select_remote_dynamic,
         mode = "n",
         function()
-          require("flash").jump { mode = "remote_ts", treesitter = { start_of_node = true }, jump = { pos = "start" } }
+          require("flash").jump {
+            mode = "remote_ts",
+            treesitter = { start_of_node = true },
+            jump = { pos = "start" },
+          }
         end,
         desc = "Jump to start of node",
       },
@@ -626,9 +597,24 @@ return {
       { "S", "<Plug>(leap)", mode = { "x", "o" }, desc = "Leap" },
       { "q", "<Plug>(leap)", mode = "x", desc = "Leap" },
       { "S", "<Plug>(leap-remote)", mode = "n", desc = "Leap Remote" },
-      { O.goto_prefix .. O.goto_prefix, "<Plug>(leap-anywhere)", mode = { "n", "x", "o" }, desc = "Leap anywhere" },
-      { "/", "<Plug>(leap-forward)", mode = "o", desc = "Leap fwd" },
-      { "?", "<Plug>(leap-backward)", mode = "o", desc = "Leap bwd" },
+      {
+        O.goto_prefix .. O.goto_prefix,
+        "<Plug>(leap-anywhere)",
+        mode = { "n", "x", "o" },
+        desc = "Leap anywhere",
+      },
+      {
+        "/",
+        function() require("leap").leap { inclusive_op = true } end,
+        mode = "o",
+        desc = "Leap fwd",
+      },
+      {
+        "?",
+        function() require("leap").leap { backward = true, offset = 1, inclusive_op = true } end,
+        mode = "o",
+        desc = "Leap bwd",
+      },
       { ";", leap_bi_o(1), mode = "o", desc = "Leap SemiInc" },
       { ".", leap_bi_o(2), mode = "o", desc = "Leap Incl." },
       {
@@ -872,10 +858,26 @@ return {
     },
     cmd = "Portal",
     keys = {
-      { "<C-i>", function() require("portal.builtin").jumplist.tunnel_forward() end, desc = "portal fwd" },
-      { "[j", function() require("portal.builtin").jumplist.tunnel_backward() end, desc = "portal bwd" },
-      { "]j", function() require("portal.builtin").jumplist.tunnel_forward() end, desc = "portal fwd" },
-      { "<C-o>", function() require("portal.builtin").jumplist.tunnel_backward() end, desc = "portal bwd" },
+      {
+        "<C-i>",
+        function() require("portal.builtin").jumplist.tunnel_forward() end,
+        desc = "portal fwd",
+      },
+      {
+        "[j",
+        function() require("portal.builtin").jumplist.tunnel_backward() end,
+        desc = "portal bwd",
+      },
+      {
+        "]j",
+        function() require("portal.builtin").jumplist.tunnel_forward() end,
+        desc = "portal fwd",
+      },
+      {
+        "<C-o>",
+        function() require("portal.builtin").jumplist.tunnel_backward() end,
+        desc = "portal bwd",
+      },
       -- TODO: use other queries?
     },
   },
@@ -914,7 +916,7 @@ return {
       opts = {
         n_lines = 1000,
         custom_textobjects = custom_textobjects(require "mini.ai"),
-        -- search_method = "cover",
+        search_method = "cover",
         mappings = {
           around = "a",
           inside = "i",
@@ -987,7 +989,12 @@ return {
           map("n", O.select, "v" .. O.select, { remap = true, desc = "LSP Selection Range" })
           map("n", O.select, "v" .. O.select_outer, { remap = true, desc = "LSP Selection Range" })
           map("x", O.select, lsp_sel_rng.expand, { desc = "LSP Selection Range" })
-          map("x", O.select_outer, O.select .. O.select, { remap = true, desc = "LSP Selection Range" }) -- TODO: use folding range
+          map(
+            "x",
+            O.select_outer,
+            O.select .. O.select,
+            { remap = true, desc = "LSP Selection Range" }
+          ) -- TODO: use folding range
         end
       end)
     end,

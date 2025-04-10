@@ -1,10 +1,6 @@
 -- Use a virtual window for 'inline' text input.
 local M = {}
 
-local feedkeys = vim.api.nvim_feedkeys
-local termcodes = vim.api.nvim_replace_termcodes
-local function t(k) return termcodes(k, true, true, true) end
-
 local function mini_window_setwidth(initwidth)
   local wid = 0
   local cword = vim.fn.expand "<cword>"

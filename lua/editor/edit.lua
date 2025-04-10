@@ -189,6 +189,7 @@ return {
         "x",
         O.commenting.copy.vi,
         -- TODO: dot repeatable
+        -- TODO: make it a function
         '"zy' -- Yank it
           .. "mz" -- Remember the original position
           .. "`<" -- Go back to the original position
@@ -215,7 +216,8 @@ return {
       map(
         "n",
         O.commenting.copy.op,
-        utils.operatorfuncV_keys(O.commenting.copy.vi),
+        -- TODO: dot repeatable
+        utils.operatorfunc_Vkeys(O.commenting.copy.vi),
         { desc = "copy and comment op", expr = true }
       )
       map("n", O.commenting.copy.line, "V" .. O.commenting.copy.vi, { remap = true, desc = "copy and comment line" })

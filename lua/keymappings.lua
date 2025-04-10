@@ -2,13 +2,11 @@
 -- TODO: <[cC][mM][dD]>lua
 -- https://github.com/ziontee113/yt-tutorials/tree/nvim_key_combos_in_alacritty_and_kitty
 local M = {}
-local map = vim.keymap.set
 
 -- Custom nN repeats
 local custom_n_repeat = nil
 local custom_N_repeat = nil
 local nvim_feedkeys = vim.api.nvim_feedkeys
-local termcode = vim.api.nvim_replace_termcodes
 local t = vim.keycode
 local function feedkeys(keys, o)
   if o == nil then o = "m" end
@@ -60,7 +58,8 @@ local focus_fn = luareq "focus"
 local lspbuf = vim.lsp.buf
 local operatorfunc_scaffold = utils.operatorfunc_scaffold
 local operatorfunc_keys = utils.operatorfunc_keys
-local operatorfuncV_keys = utils.operatorfuncV_keys
+local operatorfunc_cvkeys = utils.operatorfunc_cvkeys
+local operatorfunc_Vkeys = utils.operatorfunc_Vkeys
 local function make_nN_pair(pair, pre_action)
   return {
     function()
@@ -95,11 +94,15 @@ end
 M.make_nN_pair = make_nN_pair
 
 local keyset = vim.keymap.set
+local keydel = vim.keymap.del
 vim.keymap.set = function(mode, lhs, rhs, opts)
   keyset(mode, lhs, rhs, vim.tbl_extend("keep", opts or {}, { silent = true }))
 end
 vim.keymap.setl = function(mode, lhs, rhs, opts)
   keyset(mode, lhs, rhs, vim.tbl_extend("keep", opts or {}, { buffer = 0, silent = true }))
+end
+vim.keymap.dell = function(mode, lhs, rhs, opts)
+  keydel(mode, lhs, vim.tbl_extend("keep", opts or {}, { buffer = 0, silent = true }))
 end
 vim.keymap.prefixed = function(prefix)
   return function(mode, lhs, rhs, opts)
@@ -108,16 +111,19 @@ vim.keymap.prefixed = function(prefix)
 end
 vim.keymap.prefixedl = function(prefix)
   return function(mode, lhs, rhs, opts)
-    keyset(mode, prefix .. lhs, rhs, vim.tbl_extend("keep", opts or {}, { buffer = 0, silent = true }))
+    keyset(
+      mode,
+      prefix .. lhs,
+      rhs,
+      vim.tbl_extend("keep", opts or {}, { buffer = 0, silent = true })
+    )
   end
 end
 vim.keymap.leader = vim.keymap.prefixed "<leader>"
 vim.keymap.localleader = vim.keymap.prefixedl "<localleader>"
 local mapl = vim.keymap.setl
-local sile = { silent = true, remap = true }
-local nore = { noremap = true, silent = true }
+local map = vim.keymap.set
 local norexpr = { noremap = true, silent = true, expr = true }
-local expr = { silent = true, expr = true }
 local function op_from(lhs, rhs, opts)
   opts = opts or {}
   rhs = rhs or lhs
@@ -139,8 +145,8 @@ function M.setup()
   map("i", "<C-i>", "<C-i>", {})
 
   -- custom_n_repeat
-  map("n", "n", M.n_repeat, nore)
-  map("n", "N", M.N_repeat, nore)
+  map("n", "n", M.n_repeat, {})
+  map("n", "N", M.N_repeat, {})
   -- TODO: this broke
   -- map("n", "<C-n>", function()
   --   M.n_repeat()
@@ -190,20 +196,20 @@ function M.setup()
   -- ]]
 
   vim.o.mousetime = 0
-  -- map("n", "<2-ScrollWheelUp>", "<nop>", sile)
-  -- map("n", "<2-ScrollWheelDown>", "<nop>", sile)
-  -- map("n", "<3-ScrollWheelUp>", "<nop>", sile)
-  -- map("n", "<3-ScrollWheelDown>", "<nop>", sile)
-  -- map("n", "<4-ScrollWheelUp>", "<nop>", sile)
-  -- map("n", "<4-ScrollWheelDown>", "<nop>", sile)
-  -- map("n", "<ScrollWheelUp>", "<C-a>", sile)
-  -- map("n", "<ScrollWheelDown>", "<C-x>", sile)
-  map("n", "<C-ScrollWheelUp>", "<C-a>", sile)
-  map("n", "<C-ScrollWheelDown>", "<C-x>", sile)
-  map("n", "<C-S-ScrollWheelUp>", cmd "FontUp", sile)
-  map("n", "<C-S-ScrollWheelDown>", cmd "FontDown", sile)
-  map("n", "<C-->", cmd "FontDown", sile)
-  map("n", "<C-+>", cmd "FontUp", sile)
+  -- map("n", "<2-ScrollWheelUp>", "<nop>", {})
+  -- map("n", "<2-ScrollWheelDown>", "<nop>", {})
+  -- map("n", "<3-ScrollWheelUp>", "<nop>", {})
+  -- map("n", "<3-ScrollWheelDown>", "<nop>", {})
+  -- map("n", "<4-ScrollWheelUp>", "<nop>", {})
+  -- map("n", "<4-ScrollWheelDown>", "<nop>", {})
+  -- map("n", "<ScrollWheelUp>", "<C-a>", {})
+  -- map("n", "<ScrollWheelDown>", "<C-x>", {})
+  map("n", "<C-ScrollWheelUp>", "<C-a>", {})
+  map("n", "<C-ScrollWheelDown>", "<C-x>", {})
+  map("n", "<C-S-ScrollWheelUp>", cmd "FontUp", {})
+  map("n", "<C-S-ScrollWheelDown>", cmd "FontDown", {})
+  map("n", "<C-->", cmd "FontDown", {})
+  map("n", "<C-+>", cmd "FontUp", {})
 
   -- map("n", "<C-w><C-q>", function()
   --   for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -217,14 +223,14 @@ function M.setup()
 
   local resize_prefix = "<C-"
   if vim.fn.has "mac" == 1 then resize_prefix = "<M-" end
-  map("n", resize_prefix .. "Up>", cmd "resize -2", sile)
-  map("n", resize_prefix .. "Down>", cmd "resize +2", sile)
-  map("n", resize_prefix .. "Left>", cmd "vertical resize -2", sile)
-  map("n", resize_prefix .. "Right>", cmd "vertical resize +2", sile)
+  map("n", resize_prefix .. "Up>", cmd "resize -2", {})
+  map("n", resize_prefix .. "Down>", cmd "resize +2", {})
+  map("n", resize_prefix .. "Left>", cmd "vertical resize -2", {})
+  map("n", resize_prefix .. "Right>", cmd "vertical resize +2", {})
 
   -- Keep accidentally hitting J instead of j when first going visual mode
-  map("x", "J", "j", nore)
-  map("x", "<M-j>", "J", nore)
+  map("x", "J", "j", {})
+  map("x", "<M-j>", "J", {})
 
   function M.map_fast_indent()
     -- print "Setting up better indenting"
@@ -236,10 +242,10 @@ function M.setup()
   vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "BufReadPost", "BufNewFile" }, {
     callback = M.map_fast_indent,
   })
-  map("n", "g<", "<", nore)
-  map("n", "g>", ">", nore)
-  map("x", "<", "<gv", nore)
-  map("x", ">", ">gv", nore)
+  map("n", "g<", "<", {})
+  map("n", "g>", ">", {})
+  map("x", "<", "<gv", {})
+  map("x", ">", ">gv", {})
 
   -- make gf follow line number as well
   -- TODO: use window-picker
@@ -253,7 +259,7 @@ function M.setup()
   map({ "x", "n" }, O.goto_prefix .. "pF", function() end, { desc = "Peek File" })
   -- for _, v in pairs { "h", "j", "k", "l" } do
   --   for _, m in pairs { "x", "n" } do
-  --     map(m, v .. v, "<Nop>", sile)
+  --     map(m, v .. v, "<Nop>", {})
   --   end
   -- end
 
@@ -270,25 +276,25 @@ function M.setup()
 
   -- Preserve register on pasting in visual mode
   -- TODO: use the correct register
-  map("x", "<M-p>", "pgv", nore) -- Paste and keep selection
+  map("x", "<M-p>", "pgv", {}) -- Paste and keep selection
 
   -- Add meta version that doesn't affect the clipboard
   local function dont_clobber_if_meta(m, c)
     if string.upper(c) == c then
-      map(m, "<M-S-" .. string.lower(c) .. ">", '"_' .. c, nore)
+      map(m, "<M-S-" .. string.lower(c) .. ">", '"_' .. c, {})
     else
-      map(m, "<M-" .. c .. ">", '"_' .. c, nore)
+      map(m, "<M-" .. c .. ">", '"_' .. c, {})
     end
   end
 
   -- Make the default not touch the clipboard, and add a meta version that does
   local function dont_clobber_by_default(m, c)
     if string.upper(c) == c then
-      map(m, "<M-S-" .. string.lower(c) .. ">", c, nore)
+      map(m, "<M-S-" .. string.lower(c) .. ">", c, {})
     else
-      map(m, "<M-" .. c .. ">", c, nore)
+      map(m, "<M-" .. c .. ">", c, {})
     end
-    -- map(m, c, '"_' .. c, nore)
+    -- map(m, c, '"_' .. c, {})
     vim.keymap.amend(m, c, function(orig)
       feedkeys('"_', "ni") -- FIXME:
       vim.schedule(orig)
@@ -396,11 +402,11 @@ function M.setup()
 
   -- Diagnostics jumps
   -- local diag_nN = make_nN_pair { utils.lsp.diag_next, utils.lsp.diag_prev }
-  -- map("n", O.goto_next .. "d", diag_nN[1], nore)
-  -- map("n", O.goto_previous .. "d", diag_nN[2], nore)
+  -- map("n", O.goto_next .. "d", diag_nN[1], {})
+  -- map("n", O.goto_previous .. "d", diag_nN[2], {})
   -- local error_nN = make_nN_pair { utils.lsp.error_next, utils.lsp.error_prev }
-  -- map("n", O.goto_next .. "e", error_nN[1], nore)
-  -- map("n", O.goto_previous .. "e", error_nN[2], nore)
+  -- map("n", O.goto_next .. "e", error_nN[1], {})
+  -- map("n", O.goto_previous .. "e", error_nN[2], {})
   repeatable(
     { "d", "D", "e", "E" },
     "Diags",
@@ -455,7 +461,12 @@ function M.setup()
   local impl_n, impl_p = repeatable("i", "Implementation", quickfix_looping, { body = false })
   local impl_list_next, impl_list_prev = on_list_hydra(impl_n, impl_p, quickfix_looping)
   -- TODO: maybe indent is more useful
-  map("n", O.goto_next .. "i", function() vim.lsp.buf.implementation(impl_list_next) end, { desc = "Implementation" })
+  map(
+    "n",
+    O.goto_next .. "i",
+    function() vim.lsp.buf.implementation(impl_list_next) end,
+    { desc = "Implementation" }
+  )
   map(
     "n",
     O.goto_previous .. "i",
@@ -468,27 +479,12 @@ function M.setup()
   -- map("n", O.goto_previous .. "p", para_nN[2], { desc = "Para" })
   repeatable("p", "Paragraph", { "}", "{" }, {})
 
-  require "hydra" {
-    name = "undotree",
-    body = "g",
-    on_enter = function() vim.cmd.UndotreeShow() end,
-    on_exit = function() vim.cmd.UndotreeHide() end,
-    config = {
-      invoke_on_body = false,
-    },
-    heads = {
-      { "u", "u", { desc = false, private = true } },
-      { "<C-r>", "<C-r>", { desc = false, private = true } },
-      { "+", "g+", { desc = false } },
-      { "-", "g-", { desc = false } },
-    },
-  }
   -- Close window
   -- TODO: for certain buffer types we can delete the buffer too
   -- unlisted, noname, etc
-  map("n", "<c-c>", "<C-w>q", nore)
-  map("n", "<c-q>", "<C-w>q", nore)
-  map("n", "<c-s-q>", ":wqa", nore)
+  map("n", "<c-c>", "<C-w>q", {})
+  map("n", "<c-q>", "<C-w>q", {})
+  map("n", "<c-s-q>", ":wqa", {})
 
   -- Search textobject
   map("n", "<leader>*", operatorfunc_keys "*", { desc = "Search (op)", expr = true })
@@ -510,17 +506,16 @@ function M.setup()
     else
       return ""
     end
-  end, { expr = true, desc = "To Telescope" })
+  end, { expr = true, remap = true, desc = "to Telescope" })
   -- Jump between matches without leaving search mode
-  map("c", "<M-n>", [[<C-g>]], { silent = true })
-  map("c", "<M-S-n>", [[<C-t>]], { silent = true })
 
   -- Continue the search and keep selecting (equivalent ish to doing `gn` in normal)
-  map("x", "n", "<esc>ngn", nore)
-  map("x", "N", "<esc>NgN", nore)
+  -- TODO: select the current search match if not selected
+  map("x", "n", "<esc>ngn", { expr = true })
+  map("x", "N", "<esc>NgN", { expr = true })
   -- Select the current/next search match
-  map("x", "gn", "<esc>gn", nore)
-  map("x", "gN", "<esc>NNgN", nore) -- current/prev
+  map("x", "gn", "<esc>gn", {})
+  map("x", "gN", "<esc>NNgN", {}) -- current/prev
 
   -- Escape key clears search and spelling highlights
   -- FIXME: why do you delete yourself??
@@ -539,7 +534,7 @@ function M.setup()
     feedkeys(t "<esc>", "n")
     feedkeys(t "<Plug>(double-esc)", "n")
     -- vim.cmd.normal { bang = true, "==" } -- Reindent line
-  end, sile)
+  end, {})
   map("n", "<Plug>(double-esc)<esc>", function()
     -- TODO: close floating windows
     pcall(vim.cmd.write)
@@ -611,10 +606,10 @@ function M.setup()
       },
     }
   else
-    map("n", "gb", "<c-o>", nore)
+    map("n", "gb", "<c-o>", {})
   end
-  map("n", "<M-h>", "<c-o>", nore)
-  map("n", "<M-l>", "<c-i>", nore)
+  map("n", "<M-h>", "<c-o>", {})
+  map("n", "<M-l>", "<c-i>", {})
 
   Snacks.toggle.diagnostics():map "<leader>Td"
   Hilight_comments():map "<leader>TH"
@@ -631,14 +626,22 @@ function M.setup()
   Snacks.toggle.dim():map "<leader>Tz"
   Snacks.toggle.profiler():map "<leader>Tpp"
   Snacks.toggle.profiler_highlights():map "<leader>Tph"
-  map("n", "<leader>Tps", function() Snacks.profiler.scratch() end, { desc = "Profiler Scratch Buffer" })
+  map(
+    "n",
+    "<leader>Tps",
+    function() Snacks.profiler.scratch() end,
+    { desc = "Profiler Scratch Buffer" }
+  )
   Snacks.toggle.option("spell"):map "<leader>TS"
   Snacks.toggle.option("cursorcolumn"):map "<leader>Tcc"
   Snacks.toggle.option("signcolumn"):map "<leader>Tcs"
   Snacks.toggle.option("cursorline"):map "<leader>Tcl"
   Snacks.toggle.line_number():map "<leader>Tcn"
   Snacks.toggle
-    .option("conceallevel", { off = 0, on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2, name = "Conceal Level" })
+    .option(
+      "conceallevel",
+      { off = 0, on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2, name = "Conceal Level" }
+    )
     :map "<leader>Tn"
 
   -- Select last pasted
@@ -655,30 +658,30 @@ function M.setup()
   op_from "<leader><C-p>"
 
   -- Swap the mark jump keys
-  map("n", "<cr>`", "'", nore)
-  map("n", "<cr>m", "m", nore)
+  map("n", "<cr>`", "'", {})
+  map("n", "<cr>m", "m", {})
 
   -- Spell checking
-  -- map("i", "<C-l>", "<c-g>u<Esc>[s1z=`]a<c-g>u", nore)
+  -- map("i", "<C-l>", "<c-g>u<Esc>[s1z=`]a<c-g>u", {})
 
-  map("i", "<M-a>", cmd "normal! A", nore)
-  map("i", "<M-i>", cmd "normal! I", nore)
+  map("i", "<M-a>", cmd "normal! A", {})
+  map("i", "<M-i>", cmd "normal! I", {})
 
   -- Slightly easier commands
   map({ "n", "x" }, ";", ":", {})
-  -- map('c', ';', "<cr>", sile)
+  -- map('c', ';', "<cr>", {})
 
   -- Add semicolon TODO: make this smarter
-  -- map("i", ";;", "<esc>mzA;`z", nore)
-  -- map("i", "<M-;>", "<C-o>A;", nore)
-  map("i", "<M-;>", "<C-o>o", nore)
+  -- map("i", ";;", "<esc>mzA;`z", {})
+  -- map("i", "<M-;>", "<C-o>A;", {})
+  map("i", "<M-;>", "<C-o>o", {})
 
-  map("i", "<M-r>", "<C-r>", nore)
-  map("i", "<M-BS>", "<C-g>u<C-w>", nore)
-  map("i", "<C-BS>", "<C-g>u<C-w>", nore)
+  map("i", "<M-r>", "<C-r>", {})
+  map("i", "<M-BS>", "<C-g>u<C-w>", {})
+  map("i", "<C-BS>", "<C-g>u<C-w>", {})
 
   -- TODO: Use more standard regex syntax
-  -- map("n", "/", "/\v", nore)
+  -- map("n", "/", "/\v", {})
 
   -- Split line
   map("n", "<M-a>", "A<cr>")
@@ -688,15 +691,15 @@ function M.setup()
   map("n", "<M-S-o>", "O<esc>", { remap = true, desc = "Split Line" })
 
   -- Reselect visual linewise
-  map("n", "gV", "'<V'>", nore)
-  map("x", "gV", "<esc>gV", sile)
+  map("n", "gV", "'<V'>", {})
+  map("x", "gV", "<esc>gV", {})
   -- Reselect visual block wise
-  map("n", "g<C-v>", "'<C-v>'>", nore)
-  map("x", "g<C-v>", "<esc>g<C-v>", sile)
+  map("n", "g<C-v>", "'<C-v>'>", {})
+  map("x", "g<C-v>", "<esc>g<C-v>", {})
 
   -- stuff
-  map({ "n", "x", "o" }, "<c-e>", "ge", sile)
-  map({ "n", "x", "o" }, "<c-s-e>", "gE", sile)
+  map({ "n", "x", "o" }, "<c-e>", "ge", {})
+  map({ "n", "x", "o" }, "<c-s-e>", "gE", {})
 
   -- Use reselect as an operator
   op_from "gv"
@@ -704,8 +707,8 @@ function M.setup()
   op_from "g<C-v>"
 
   local function undo_brkpt(key)
-    -- map("i", key, key .. "<c-g>u", nore)
-    map("i", key, "<c-g>u" .. key, nore)
+    -- map("i", key, key .. "<c-g>u", {})
+    map("i", key, "<c-g>u" .. key, {})
   end
 
   local undo_brkpts = {
@@ -725,7 +728,7 @@ function M.setup()
   for _, v in ipairs(undo_brkpts) do
     undo_brkpt(v)
   end
-  map("n", "U", "<C-R>", nore)
+  map("n", "U", "<C-R>", {})
 
   -- Go to multi insert from Visual mode
   map("s", "<M-i>", "<ESC>I", {})
@@ -783,8 +786,8 @@ function M.setup()
   -- map("n", "m-/", "")
 
   -- Select whole file
-  -- map("o", "ie", "<cmd>normal! mzggVG<cr>`z", nore)
-  -- sel_map("ie", "gg0oG$", nore)
+  -- map("o", "ie", "<cmd>normal! mzggVG<cr>`z", {})
+  -- sel_map("ie", "gg0oG$", {})
 
   -- Operator for current line
   -- sel_map("il", "g_o^")
@@ -793,7 +796,18 @@ function M.setup()
   -- Make change line (cc) preserve indentation
   map("n", "cc", "^cg_", { desc = "Change line" })
 
-  map("x", ".", ":normal .<CR>", sile)
+  map("x", ".", ":normal .<CR>", {})
+
+  -- -- TODO: operator-ize visual mode
+  map(
+    "n",
+    "v",
+    -- utils.operatorfunc_scaffold(vim.schedule_wrap(function() vim.cmd.normal "`[v`]" end)),
+    operatorfunc_keys "",
+    { expr = true, desc = "v (op)" }
+  )
+  map("n", "V", operatorfunc_Vkeys "", { expr = true, desc = "V (op)" })
+  map("n", "<C-v>", operatorfunc_cvkeys "", { expr = true, desc = "<C-v> (op)" })
 
   map("n", "dd", function()
     if vim.api.nvim_get_current_line():match "^%s*$" then
@@ -807,8 +821,8 @@ function M.setup()
   M.countjk()
 
   -- Terminal pass through escape key
-  map("t", "<ESC>", "<ESC>", nore)
-  map("t", "<ESC><ESC>", [[<C-\><C-n>]], nore)
+  map("t", "<ESC>", "<ESC>", {})
+  map("t", "<ESC><ESC>", [[<C-\><C-n>]], {})
 
   -- Leader shortcut for ][ jumping and )( swapping
   map("n", "<leader>j", O.goto_next, { remap = true, desc = "Jump next (])" })
@@ -816,8 +830,6 @@ function M.setup()
   map("n", "<leader>J", O.goto_next_outer, { remap = true, desc = "Jump next outer (]])" })
   map("n", "<leader>K", O.goto_previous_outer, { remap = true, desc = "Jump prev outer ([[)" })
   -- map("n", "<leader>h", ")", { remap = true, desc = "Hop" })
-
-  map("n", "m", F 'require"which-key".show "m"')
 
   -- TODO: quickly run short commands
   local short_cmd = require "keymappings.short_cmd"
@@ -916,7 +928,12 @@ function M.setup()
   } do
     map(v.mode or "n", v[1], v[2], { desc = v.desc, remap = v.remap })
   end
-  map("n", "yC", function() vim.fn.setreg("+", vim.fn.getreg(vim.v.register)) end, { desc = "To System Clipboard" })
+  map(
+    "n",
+    "yC",
+    function() vim.fn.setreg("+", vim.fn.getreg(vim.v.register)) end,
+    { desc = "To System Clipboard" }
+  )
 
   -- -- Open new line with a count
   -- map("n", "o", function()
@@ -925,7 +942,7 @@ function M.setup()
   --   for _ = 1, count do
   --     feedkeys "<CR>"
   --   end
-  -- end, nore)
+  -- end, {})
 
   -- Define the new which-key mappings in the updated format
   local leaderMappings = {
@@ -951,15 +968,31 @@ function M.setup()
       silent = false,
     },
     { "<leader>F", telescope_fn.find_all_files, desc = "Find all Files" },
-    { "<leader>Q", function() return pcall(vim.cmd.tabclose) or pcall(vim.cmd.quitall) end, desc = "Quit Tab" },
+    {
+      "<leader>Q",
+      function() return pcall(vim.cmd.tabclose) or pcall(vim.cmd.quitall) end,
+      desc = "Quit Tab",
+    },
     { "<leader>T", group = "Toggle" },
     { "<leader>Tb", "<cmd>set buflisted<cr>", desc = "buflisted" },
     { "<leader>Tc", group = "Cursor/Column" },
     { "<leader>Tf", group = "Formatting" },
     { "<leader>Tfb", utils.lsp.format_on_save_toggle(vim.b), desc = "Toggle Format on Save" },
-    { "<leader>Tfg", utils.lsp.format_on_save_toggle(vim.g), desc = "Toggle Format on Save (Global)" },
-    { "<leader>Tfmb", function() vim.b.Format_on_save_mode = "mod" end, desc = "Format Mods on Save" },
-    { "<leader>Tfmg", function() vim.g.Format_on_save_mode = "mod" end, desc = "Format Mods on Save (Global)" },
+    {
+      "<leader>Tfg",
+      utils.lsp.format_on_save_toggle(vim.g),
+      desc = "Toggle Format on Save (Global)",
+    },
+    {
+      "<leader>Tfmb",
+      function() vim.b.Format_on_save_mode = "mod" end,
+      desc = "Format Mods on Save",
+    },
+    {
+      "<leader>Tfmg",
+      function() vim.g.Format_on_save_mode = "mod" end,
+      desc = "Format Mods on Save (Global)",
+    },
     { "<leader>Th", "<cmd>setlocal hlsearch<cr>", desc = "hlsearch" },
     { "<leader>Tp", group = "Profiling" },
     { "<leader>Tv", "<cmd>NvimContextVtToggle<cr>", desc = "Context VT" },
@@ -1047,7 +1080,6 @@ function M.setup()
     { "<leader>oq", utils.quickfix_toggle, desc = "Quick fixes" },
     { "<leader>os", group = "Sidebar" },
     { "<leader>ot", "<cmd>Trouble toggle<cr>", desc = "Trouble" },
-    { "<leader>ou", "<cmd>UndotreeToggle<cr>", desc = "Undo tree" },
     { "<leader>q", "<cmd>wq<cr>", desc = "Quit" },
     { "<leader>r", group = "Replace/Refactor" },
     { '<leader>r"', ':%s/<C-R>"//g<Left><Left>', desc = "Last cdy" },
@@ -1142,8 +1174,18 @@ end
 
 local mincount = 5
 function M.wrapjk()
-  map({ "n", "x" }, "j", [[v:count ? (v:count > ]] .. mincount .. [[ ? "m'" . v:count : '') . 'j' : 'gj']], norexpr)
-  map({ "n", "x" }, "k", [[v:count ? (v:count > ]] .. mincount .. [[ ? "m'" . v:count : '') . 'k' : 'gk']], norexpr)
+  map(
+    { "n", "x" },
+    "j",
+    [[v:count ? (v:count > ]] .. mincount .. [[ ? "m'" . v:count : '') . 'j' : 'gj']],
+    norexpr
+  )
+  map(
+    { "n", "x" },
+    "k",
+    [[v:count ? (v:count > ]] .. mincount .. [[ ? "m'" . v:count : '') . 'k' : 'gk']],
+    norexpr
+  )
 end
 
 function M.countjk()
@@ -1183,19 +1225,59 @@ utils.lsp.on_attach(function(client, bufnr)
   map("n", "gd", utils.lsp.view_location_pick "definition", { desc = "Goto Definition" })
   map("n", "gt", utils.lsp.view_location_pick "typeDefinition", { desc = "Goto TypeDefinition" })
   map("n", "gD", utils.lsp.view_location_pick "declaration", { desc = "Goto Declaration" })
-  map("n", O.goto_prefix .. "d", utils.lsp.view_location_pick "definition", { desc = "Goto Definition" })
-  map("n", O.goto_prefix .. "t", utils.lsp.view_location_pick "typeDefinition", { desc = "Goto TypeDefinition" })
-  map("n", O.goto_prefix .. "D", utils.lsp.view_location_pick "declaration", { desc = "Goto Declaration" })
+  map(
+    "n",
+    O.goto_prefix .. "d",
+    utils.lsp.view_location_pick "definition",
+    { desc = "Goto Definition" }
+  )
+  map(
+    "n",
+    O.goto_prefix .. "t",
+    utils.lsp.view_location_pick "typeDefinition",
+    { desc = "Goto TypeDefinition" }
+  )
+  map(
+    "n",
+    O.goto_prefix .. "D",
+    utils.lsp.view_location_pick "declaration",
+    { desc = "Goto Declaration" }
+  )
   map("n", O.goto_prefix .. "id", vim.lsp.buf.definition, { desc = "Definition" })
   map("n", O.goto_prefix .. "it", vim.lsp.buf.type_definition, { desc = "TypeDefinition" })
   map("n", O.goto_prefix .. "iD", vim.lsp.buf.declaration, { desc = "Declaration" })
   -- Preview variants -- TODO: preview and then open new window
-  map("n", O.goto_prefix .. "r", utils.lsp.view_location_pick "references", { desc = "Goto References" })
-  map("n", O.goto_prefix .. "pd", utils.lsp.preview_location_at "definition", { desc = "Peek Definition" }) -- TODO: replace with glance.nvim?
-  map("n", O.goto_prefix .. "pt", utils.lsp.preview_location_at "typeDefinition", { desc = "Peek TypeDefinition" })
-  map("n", O.goto_prefix .. "pD", utils.lsp.preview_location_at "declaration", { desc = "Peek Declaration" })
+  map(
+    "n",
+    O.goto_prefix .. "r",
+    utils.lsp.view_location_pick "references",
+    { desc = "Goto References" }
+  )
+  map(
+    "n",
+    O.goto_prefix .. "pd",
+    utils.lsp.preview_location_at "definition",
+    { desc = "Peek Definition" }
+  ) -- TODO: replace with glance.nvim?
+  map(
+    "n",
+    O.goto_prefix .. "pt",
+    utils.lsp.preview_location_at "typeDefinition",
+    { desc = "Peek TypeDefinition" }
+  )
+  map(
+    "n",
+    O.goto_prefix .. "pD",
+    utils.lsp.preview_location_at "declaration",
+    { desc = "Peek Declaration" }
+  )
   map("n", O.goto_prefix .. "pr", telescope_fn.lsp_references, { desc = "Peek References" })
-  map("n", O.goto_prefix .. "pi", telescope_fn.lsp_implementations, { desc = "Peek implementation" })
+  map(
+    "n",
+    O.goto_prefix .. "pi",
+    telescope_fn.lsp_implementations,
+    { desc = "Peek implementation" }
+  )
   map("n", O.goto_prefix .. "pe", utils.lsp.diag_line, { desc = "Diags" })
   map("n", "<M-r>", function()
     -- TODO: use treesitter to detect identifiers
@@ -1209,7 +1291,12 @@ utils.lsp.on_attach(function(client, bufnr)
   map("i", "<C-i>", lspbuf.signature_help, { desc = "LSP Signature Help" })
   map("i", "<tab>", "<m-l>", { remap = true }) -- FIXME: i don't like this hardcoding
   map("n", O.action_key, telescope_fn.code_actions_previewed, { desc = "Do Code Action" })
-  map("x", O.action_key_vis or O.action_key, telescope_fn.code_actions_previewed, { desc = "Do Code Action" })
+  map(
+    "x",
+    O.action_key_vis or O.action_key,
+    telescope_fn.code_actions_previewed,
+    { desc = "Do Code Action" }
+  )
   local function quick_code_action(i, name)
     map(
       "n",
@@ -1239,8 +1326,18 @@ utils.lsp.on_attach(function(client, bufnr)
     function() require("leap.remote").action { input = O.action_key } end,
     { desc = "Remote Code Action" }
   )
-  map("n", "<leader>q", function() require("leap.remote").action { input = "qu" } end, { desc = "Remote Quickfix" })
-  map("n", "<leader>H", function() require("leap.remote").action { input = "H" } end, { desc = "Remote Hover" })
+  map(
+    "n",
+    "<leader>q",
+    function() require("leap.remote").action { input = "qu" } end,
+    { desc = "Remote Quickfix" }
+  )
+  map(
+    "n",
+    "<leader>H",
+    function() require("leap.remote").action { input = "H" } end,
+    { desc = "Remote Hover" }
+  )
 end, "lsp_mappings")
 
 -- JUST FYI

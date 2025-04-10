@@ -45,9 +45,9 @@ local function on_attach()
 
   -- map("n", "KK", require("rust-tools").code_action_group.code_action_group, { desc = "Code Actions" })
   map = vim.keymap.localleader
-  map("n", "m", "<CMD>RustDebuggables<CR>", { desc = "Expand Macro" })
+  map("n", "m", "<CMD>RustLsp debuggables<CR>", { desc = "Expand Macro" })
   -- TODO: Integrate with Kitty.lua
-  map("n", "R", "<CMD>RustRunnables<CR>", { desc = "Runnables" })
+  map("n", "R", "<CMD>RustLsp runnables<CR>", { desc = "Runnables" })
   map("n", "i", code_action "refactor.inline", { desc = "Inline" })
   map("n", "r", code_action "refactor.rewrite", { desc = "Rewrite" })
   map("n", "D", "<Cmd>RustLsp debuggables<CR>", { desc = "Debuggables" })
@@ -181,6 +181,7 @@ return {
           -- rust-analyzer language server configuration
           ["rust-analyzer"] = {
             cargo = {
+              targetDir = "target/analyzer",
               allFeatures = true,
               loadOutDirsFromCheck = true,
               buildScripts = {

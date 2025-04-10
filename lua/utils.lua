@@ -1,8 +1,7 @@
 local M = {}
 
 local feedkeys = vim.api.nvim_feedkeys
-local termcodes = vim.api.nvim_replace_termcodes
-local function t(k) return termcodes(k, true, true, true) end
+local t = vim.keycode
 
 function M.else_meta(tbl, fallback)
   return setmetatable(tbl, {
@@ -121,12 +120,14 @@ M.set_opfunc = function(val)
 end
 
 -- TODO: improve this
-function M.operatorfunc_helper_select(lines)
+function M.operatorfunc_helper_select(vmode)
   local start_row, start_col = unpack(vim.api.nvim_buf_get_mark(0, "["))
   local end_row, end_col = unpack(vim.api.nvim_buf_get_mark(0, "]"))
 
   vim.fn.setpos(".", { 0, start_row, start_col + 1, 0 })
-  if lines then
+  if type(vmode) == "string" then
+    vim.cmd("normal! " .. vim.keycode(vmode))
+  elseif vmode then
     vim.cmd "normal! V"
   else
     vim.cmd "normal! v"
@@ -140,13 +141,7 @@ end
 
 -- wrapper for making operators easily
 function M.operatorfunc_scaffold(operatorfunc, op_pending)
-  local old_func = vim.go.operatorfunc
-
-  local wrapped = function()
-    operatorfunc()
-
-    vim.go.operatorfunc = old_func
-  end
+  local wrapped = operatorfunc
 
   if op_pending == nil then
     return function()
@@ -167,10 +162,18 @@ function M.operatorfunc_scaffold(operatorfunc, op_pending)
 end
 
 -- keys linewise
-function M.operatorfuncV_keys(verbkeys, op_pending)
+function M.operatorfunc_Vkeys(verbkeys, op_pending)
   return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(true)
-    feedkeys(t(verbkeys), "m", false)
+    if #verbkeys > 0 then feedkeys(t(verbkeys), "m", false) end
+  end, op_pending)
+end
+
+-- keys blockwise
+function M.operatorfunc_cvkeys(verbkeys, op_pending)
+  return M.operatorfunc_scaffold(function()
+    M.operatorfunc_helper_select "<C-v>"
+    if #verbkeys > 0 then feedkeys(t(verbkeys), "m", false) end
   end, op_pending)
 end
 
@@ -178,7 +181,7 @@ end
 function M.operatorfunc_keys(verbkeys, op_pending)
   return M.operatorfunc_scaffold(function()
     M.operatorfunc_helper_select(false)
-    feedkeys(t(verbkeys), "m", false)
+    if #verbkeys > 0 then feedkeys(t(verbkeys), "m", false) end
   end, op_pending)
 end
 
@@ -230,9 +233,19 @@ end
 
 if vim.g.neovide then
   vim.g.neovide_scale_factor = 1.0
-  local change_scale_factor = function(delta) vim.g.neovide_scale_factor = vim.g.neovide_scale_factor * delta end
-  vim.api.nvim_create_user_command("FontUp", function() change_scale_factor(1.25) end, { nargs = "?" })
-  vim.api.nvim_create_user_command("FontDown", function() change_scale_factor(1 / 1.25) end, { nargs = "?" })
+  local change_scale_factor = function(delta)
+    vim.g.neovide_scale_factor = vim.g.neovide_scale_factor * delta
+  end
+  vim.api.nvim_create_user_command(
+    "FontUp",
+    function() change_scale_factor(1.25) end,
+    { nargs = "?" }
+  )
+  vim.api.nvim_create_user_command(
+    "FontDown",
+    function() change_scale_factor(1 / 1.25) end,
+    { nargs = "?" }
+  )
 else
   vim.api.nvim_create_user_command("FontUp", function() M.mod_guifont(1) end, { nargs = "?" })
   vim.api.nvim_create_user_command("FontDown", function() M.mod_guifont(-1) end, { nargs = "?" })
@@ -278,7 +291,9 @@ M.fn = setmetatable({}, {
 })
 
 -- Meta af autocmd function
-local function make_aucmd(trigger, trigargs, action) vim.cmd("autocmd " .. trigger .. " " .. trigargs .. " " .. action) end
+local function make_aucmd(trigger, trigargs, action)
+  vim.cmd("autocmd " .. trigger .. " " .. trigargs .. " " .. action)
+end
 local function make_augrp(tbl, cmds)
   local grp = tbl[1]
   vim.cmd("augroup " .. grp)
@@ -458,7 +473,10 @@ local function augroup_helper(tbl, name, clear)
     elseif "string" == type(opts) then
       vim.api.nvim_create_autocmd(event, { group = name, pattern = pattern, command = opts })
     else
-      vim.api.nvim_create_autocmd(event, vim.tbl_extend("keep", { group = name, pattern = pattern }, opts))
+      vim.api.nvim_create_autocmd(
+        event,
+        vim.tbl_extend("keep", { group = name, pattern = pattern }, opts)
+      )
     end
   end
   -- return function(opts)
@@ -646,10 +664,13 @@ function M.write_on_idle(grpname, timeout)
       end, timeout)
     end,
   })
-  vim.api.nvim_create_autocmd({ "CursorMoved", "InsertEnter", "CmdlineEnter", "BufLeave", "BufWritePre" }, {
-    group = grp,
-    callback = timer_cancel,
-  })
+  vim.api.nvim_create_autocmd(
+    { "CursorMoved", "InsertEnter", "CmdlineEnter", "BufLeave", "BufWritePre" },
+    {
+      group = grp,
+      callback = timer_cancel,
+    }
+  )
 end
 -- Function to check if a floating dialog exists and if not
 -- then check for diagnostics under the cursor

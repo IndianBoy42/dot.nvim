@@ -1,10 +1,5 @@
 local M = {}
 
-local feedkeys = vim.api.nvim_feedkeys
-local termcodes = vim.api.nvim_replace_termcodes
-local function t(k) return termcodes(k, true, true, true) end
-local function f(k, mode) return feedkeys(t(k), mode or "m", false) end
-
 M.repeatable = function(ch, desc, fwdbwd, _opts)
   local fwd, bwd, fwdend, bwdend = unpack(fwdbwd)
 
