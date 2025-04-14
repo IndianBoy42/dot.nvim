@@ -86,11 +86,26 @@ function M.to_cmd(luafunction, args)
   vim.notify "to_cmd is deprecated"
 end
 
-function M.quickfix_toggle()
-  if vim.fn.empty(vim.fn.filter(vim.fn.getwininfo(), "v:val.quickfix")) then
-    vim.cmd "copen"
+function M.loclist_toggle()
+  if utils.have_plugin "quicker.nvim" then
+    require("quicker").toggle { loclist = true }
   else
-    vim.cmd "cclose"
+    if #vim.tbl_filter(function(win) return win.loclist == 1 end, vim.fn.getwininfo()) then
+      vim.cmd "lopen"
+    else
+      vim.cmd "lclose"
+    end
+  end
+end
+function M.quickfix_toggle()
+  if utils.have_plugin "quicker.nvim" then
+    require("quicker").toggle {}
+  else
+    if #vim.tbl_filter(function(win) return win.quickfix == 1 end, vim.fn.getwininfo()) then
+      vim.cmd "copen"
+    else
+      vim.cmd "cclose"
+    end
   end
 end
 
@@ -672,13 +687,28 @@ function M.write_on_idle(grpname, timeout)
     }
   )
 end
--- Function to check if a floating dialog exists and if not
--- then check for diagnostics under the cursor
-function M.if_no_float()
-  for _, winid in pairs(vim.api.nvim_tabpage_list_wins(0)) do
-    if vim.api.nvim_win_get_config(winid).zindex then return false end
+function M.close_all_floats(overlapping)
+  local winnr = vim.api.nvim_get_current_win()
+  if overlapping == 0 or overlapping == true then overlapping = winnr end
+  local windows = vim.api.nvim_list_wins()
+
+  -- Iterate through each window
+  for _, win in ipairs(windows) do
+    -- Check if it's a floating window
+    local config = vim.api.nvim_win_get_config(win)
+    if config and config.focusable and config.relative ~= "" then
+      if not overlapping then
+        -- Close the floating window
+        vim.api.nvim_win_close(win, true)
+      else
+        if
+          (config.relative == "win" and overlapping == config.win) or (config.relative == "cursor")
+        then
+          vim.api.nvim_win_close(win, true)
+        end
+      end
+    end
   end
-  return true
 end
 
 M.lsp = require "utils.lsp"

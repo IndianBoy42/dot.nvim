@@ -18,12 +18,12 @@ end
 -- <Plug>(KsbNormalYankLine)	  <Leader>yy	n
 
 -- TODO: <localleader> everything
-map("v", "<localleader>Y", "<Plug>(KsbVisualYankLine)", { desc = 'Maps to "+Y' })
-map("v", "<localleader>y", "<Plug>(KsbVisualYank)", { desc = 'Maps to "+y' })
+map("x", "<localleader>Y", "<Plug>(KsbVisualYankLine)", { desc = 'Maps to "+Y' })
+map("x", "<localleader>y", "<Plug>(KsbVisualYank)", { desc = 'Maps to "+y' })
 map("n", "<localleader>Y", "<Plug>(KsbNormalYankEnd)", { desc = 'Maps to "+y$' })
 map("n", "<localleader>y", "<Plug>(KsbNormalYank)", { desc = 'Maps to "+y' })
 map("n", "<localleader>yy", "<Plug>(KsbNormalYankLine)", { desc = 'Maps to "+yy' })
-map("v", "Y", "<Plug>(KsbVisualYankLine)", { desc = 'Maps to "+y' })
+map("x", "Y", "<Plug>(KsbVisualYankLine)", { desc = 'Maps to "+y' })
 map("n", "cY", "<Plug>(KsbNormalYankEnd)", { desc = 'Maps to "+y$' })
 map("n", "cy", "<Plug>(KsbNormalYank)", { desc = 'Maps to "+y' })
 map("n", "cyy", "<Plug>(KsbNormalYankLine)", { desc = 'Maps to "+yy' })
@@ -31,6 +31,11 @@ map("n", "<S-CR>", utils.operatorfunc_keys "<S-CR>", { expr = true, desc = "Copy
 map("n", "<S-CR><S-CR>", utils.operatorfunc_keys("<S-CR>", "il"), { desc = "Copy to Kitty" })
 map("n", "<C-CR>", utils.operatorfunc_keys "<C-CR>", { expr = true, desc = "Copy to Kitty" })
 map("n", "<C-CR><C-CR>", utils.operatorfunc_keys("<C-CR>", "il"), { desc = "Copy to Kitty" })
-map("n", "<localleader>c", utils.operatorfunc_keys "<S-CR>", { expr = true, desc = "Copy to Kitty" })
+map(
+  "n",
+  "<localleader>c",
+  utils.operatorfunc_keys "<S-CR>",
+  { expr = true, desc = "Copy to Kitty" }
+)
 map("n", "<localleader>cc", utils.operatorfunc_keys("<S-CR>", "il"), { desc = "Copy to Kitty" })
 map("n", "<localleader>C", utils.operatorfunc_keys("<S-CR>", "$"), { desc = "Copy to Kitty" })

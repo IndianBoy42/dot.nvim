@@ -41,8 +41,18 @@ return {
       max_join_length = 120,
     },
     keys = {
-      { "<C-s>", function() require("treesj").toggle() end, desc = "SplitJoin", mode = { "n", "i", "x" } },
-      { "<leader>es", function() require("treesj").toggle() end, desc = "SplitJoin", mode = { "n", "x" } },
+      {
+        "<C-s>",
+        function() require("treesj").toggle() end,
+        desc = "SplitJoin",
+        mode = { "n", "i", "x" },
+      },
+      {
+        "<leader>es",
+        function() require("treesj").toggle() end,
+        desc = "SplitJoin",
+        mode = { "n", "x" },
+      },
       {
         "<leader>ej",
         function() require("treesj").nested_toggle "flash" end,
@@ -64,8 +74,18 @@ return {
     "echasnovski/mini.move",
     main = "mini.move",
     keys = function()
-      local keys = { "<M-h>", "<M-j>", "<M-k>", "<M-l>", "<C-M-h>", "<C-M-j>", "<C-M-k>", "<C-M-l>" }
-      keys = { "<S-Left>", "<S-Down>", "<S-Up>", "<S-Right>", "<S-Left>", "<S-Down>", "<S-Up>", "<S-Right>" }
+      local keys =
+        { "<M-h>", "<M-j>", "<M-k>", "<M-l>", "<C-M-h>", "<C-M-j>", "<C-M-k>", "<C-M-l>" }
+      keys = {
+        "<S-Left>",
+        "<S-Down>",
+        "<S-Up>",
+        "<S-Right>",
+        "<S-Left>",
+        "<S-Down>",
+        "<S-Up>",
+        "<S-Right>",
+      }
       return {
         { keys[1], mode = "x" },
         { keys[2], mode = "x" },
@@ -220,7 +240,12 @@ return {
         utils.operatorfunc_Vkeys(O.commenting.copy.vi),
         { desc = "copy and comment op", expr = true }
       )
-      map("n", O.commenting.copy.line, "V" .. O.commenting.copy.vi, { remap = true, desc = "copy and comment line" })
+      map(
+        "n",
+        O.commenting.copy.line,
+        "V" .. O.commenting.copy.vi,
+        { remap = true, desc = "copy and comment line" }
+      )
     end,
   },
   {
@@ -305,22 +330,39 @@ return {
     keys = {
       { "y", "<Plug>(YankyYank)", mode = { "n", "x" } },
       { "Y", '"+<Plug>(YankyYank)', mode = { "x" } },
-      { "dy", F "require'yanky'.history.delete(1)", mode = "n", desc = "Drop last yank from history" },
+      {
+        "dy",
+        F "require'yanky'.history.delete(1)",
+        mode = "n",
+        desc = "Drop last yank from history",
+      },
       { "p", "<Plug>(YankyPutAfter)", mode = "n" },
       { "P", "<Plug>(YankyPutBefore)", mode = "n" },
       { "p", "<Plug>(YankyPutBefore)", mode = "x" },
-      { "P", "<Plug>(YankyPutAfter)", mode = "x" },
+      { "<leader>p", "<Plug>(YankyPutAfter)", mode = "x" },
+      { "P", '"+<Plug>(YankyPutBefore)', mode = "x" },
+      { "<leader>P", '"+<Plug>(YankyPutAfter)', mode = "x" },
       { "gp", "<Plug>(YankyGPutAfter)", mode = { "n", "x" } },
       { "gP", "<Plug>(YankyGPutBefore)", mode = { "n", "x" } },
       { "<C-p>", "<Plug>(YankyCycleForward)", mode = { "n", "x" }, desc = "Cycle paste backward" },
       -- TODO: Cycle hydra for no modifiers?
       { "<M-p>", "<Plug>(YankyCycleBackward)", mode = { "n", "x" }, desc = "Cycle paste forward" },
-      { "<leader>sp", "<cmd>Telescope yank_history<CR>", mode = { "n", "x" }, desc = "Search yank history" },
+      {
+        "<leader>sp",
+        "<cmd>Telescope yank_history<CR>",
+        mode = { "n", "x" },
+        desc = "Search yank history",
+      },
       { "<leader>p", "<Plug>(YankyPutIndentAfterLinewise)", mode = "n", desc = "Put after line" },
       { "<leader>P", "<Plug>(YankyPutIndentBeforeLinewise)", mode = "n", desc = "Put before line" },
       { "yp", "<Plug>(YankyPutIndentAfterCharwise)", mode = "n", desc = "Put after char" },
       { "yP", "<Plug>(YankyPutIndentBeforeCharwise)", mode = "n", desc = "Put before char" },
-      { "iy", function() require("yanky.textobj").last_put() end, mode = { "o", "x" }, desc = "Last Put" },
+      {
+        "iy",
+        function() require("yanky.textobj").last_put() end,
+        mode = { "o", "x" },
+        desc = "Last Put",
+      },
       { "ay", "Viy", remap = true, mode = { "o", "x" }, desc = "Last VPut" },
     },
   },
@@ -337,7 +379,10 @@ return {
     },
     config = function(_, opts)
       require("mini.operators").setup(opts)
-      require("mini.operators").make_mappings("multiply", { textobject = "yd", line = "ydd", selection = "D" })
+      require("mini.operators").make_mappings(
+        "multiply",
+        { textobject = "yd", line = "ydd", selection = "D" }
+      )
     end,
     keys = {
       { "gs", mode = { "n", "x" }, desc = "Sort" },
@@ -379,7 +424,12 @@ return {
         { "r", substitute "operator", mode = "n", desc = "Replace" },
         { "rr", substitute "line", mode = "n", desc = "Replace Line" },
         { "R", substitute "eol", mode = "n", desc = "Replace EOL" },
-        -- { "r", substitute("visual", { yank_substituted_text = true }), mode = "x", desc = "Replace" },
+
+        { "cx", exchange "operator", mode = "n", desc = "Exchange" },
+        { "cxx", exchange "line", mode = "n", desc = "Exchange Line" },
+        { "x", exchange "visual", mode = "x", desc = "Exchange" },
+        -- { "<leader>X", exchange "cancel", mode = "n", desc = "Cancel Exchange" },
+
         -- TODO: fuck these, just use vim-visual-multi?
         {
           "<leader>rI",
@@ -394,26 +444,6 @@ return {
           desc = "Replace all (motion) in file",
         },
         {
-          "ri",
-          substitute_range("visual", {}),
-          mode = "x",
-          desc = "Replace all (sel) in (motion)",
-        },
-        -- {
-        --   "cr",
-        --   substitute_range("visual_range", {
-        --     -- text1 = { last_search = true },
-        --   }),
-        --   mode = { "x", "n" },
-        --   desc = "Replace all (motion) in (sel)",
-        -- },
-        {
-          "ra",
-          substitute_range("visual", { range = "%" }),
-          mode = "x",
-          desc = "Replace all (sel) in file",
-        },
-        {
           "<leader>ro",
           substitute_range "word",
           mode = "n",
@@ -425,10 +455,18 @@ return {
           mode = "n",
           desc = "Replace all iw in file",
         },
-        { "cx", exchange "operator", mode = "n", desc = "Exchange" },
-        { "cxx", exchange "line", mode = "n", desc = "Exchange Line" },
-        { "x", exchange "visual", mode = "x", desc = "Exchange" },
-        -- { "<leader>X", exchange "cancel", mode = "n", desc = "Cancel Exchange" },
+        {
+          "<leader>ro",
+          substitute_range("visual", {}),
+          mode = "x",
+          desc = "Replace all (sel) in (motion)",
+        },
+        {
+          "<leader>rO",
+          substitute_range("visual", { range = "%" }),
+          mode = "x",
+          desc = "Replace all (sel) in file",
+        },
       }
     end,
     config = function()

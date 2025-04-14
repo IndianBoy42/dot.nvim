@@ -37,164 +37,6 @@ return {
     },
   },
   {
-    "windwp/nvim-spectre",
-    keys = {},
-    opts = {
-      find_engine = {
-        -- rg is map with finder_cmd
-        ["rg"] = {
-          cmd = "rg",
-          -- default args
-          args = {
-            "--color=never",
-            "--no-heading",
-            "--with-filename",
-            "--line-number",
-            "--column",
-            "--no-config",
-          },
-          options = {
-            ["ignore-case"] = {
-              value = "--ignore-case",
-              icon = "[I]",
-              desc = "ignore case",
-            },
-            ["hidden"] = {
-              value = "--hidden",
-              desc = "hidden file",
-              icon = "[H]",
-            },
-            ["multiline"] = {
-              value = "--multiline",
-              desc = "multiline search",
-              icon = "[M]",
-            },
-            -- you can put any option you want here it can toggle with
-            -- show_option function
-          },
-        },
-      },
-      mapping = {
-        ["toggle_line"] = {
-          map = "d",
-          cmd = "<cmd>lua require('spectre').toggle_line()<CR>",
-          desc = "toggle current item",
-        },
-        ["enter_file"] = {
-          map = "<cr>",
-          cmd = "<cmd>lua require('spectre.actions').select_entry()<CR>",
-          desc = "goto current file",
-        },
-        -- TODO: ["open_window_picker"] = {
-        --   map = "<M-CR>",
-        --   cmd = "<cmd>lua require('spectre.actions').select_entry()<CR>",
-        --   desc = "goto current file in",
-        -- },
-        ["send_to_qf"] = {
-          map = "<localleader>q",
-          cmd = "<cmd>lua require('spectre.actions').send_to_qf()<CR>",
-          desc = "send all item to quickfix",
-        },
-        ["replace_cmd"] = {
-          map = "<localleader>c",
-          cmd = "<cmd>lua require('spectre.actions').replace_cmd()<CR>",
-          desc = "input replace vim command",
-        },
-        ["show_option_menu"] = {
-          map = "<localleader>o",
-          cmd = "<cmd>lua require('spectre').show_options()<CR>",
-          desc = "show option",
-        },
-        ["run_replace"] = {
-          map = "<localleader><localleader>",
-          cmd = "<cmd>lua require('spectre.actions').run_replace()<CR>",
-          desc = "replace all",
-        },
-        ["run_current_replace"] = {
-          map = "<localleader>r",
-          cmd = "<cmd>lua require('spectre.actions').run_current_replace()<CR>",
-          desc = "replace current line",
-        },
-        ["change_view_mode"] = {
-          map = "<localleader>v",
-          cmd = "<cmd>lua require('spectre').change_view()<CR>",
-          desc = "change result view mode",
-        },
-        ["toggle_ignore_case"] = {
-          map = "<localleader>i",
-          cmd = "<cmd>lua require('spectre').change_options('ignore-case')<CR>",
-          desc = "toggle ignore case",
-        },
-        ["toggle_multiline"] = {
-          map = "<localleader>m",
-          cmd = "<cmd>lua require('spectre').change_options('multiline')<CR>",
-          desc = "toggle search hidden",
-        },
-        ["toggle_ignore_hidden"] = {
-          map = "<localleader>h",
-          cmd = "<cmd>lua require('spectre').change_options('hidden')<CR>",
-          desc = "toggle search hidden",
-        },
-        ["toggle_live_update"] = {
-          map = "<localleader>u",
-          cmd = "<cmd>lua require('spectre').toggle_live_update()<CR>",
-          desc = "update change when vim write file.",
-        },
-        -- you can put your mapping here it only use normal mode
-        ["refresh"] = {
-          map = "<localleader>R",
-          cmd = "mzggjjA<ESC>'z",
-          desc = "refresh the results",
-        },
-        ["resume_last_search"] = {
-          map = "<localleader>l",
-          cmd = "<cmd>lua require('spectre').resume_last_search()<CR>",
-          desc = "resume last search before close",
-        },
-      },
-      live_update = true,
-    },
-    config = function(_, opts)
-      require("spectre").setup(opts)
-
-      local actions = require "spectre.actions"
-      local state = require "spectre.state"
-      local Path = require "plenary.path"
-      local get_file_path = function(filename)
-        -- use default current working directory if state.cwd is nil or empty string
-        --
-        if state.cwd == nil or state.cwd == "" then state.cwd = vim.fn.getcwd() end
-
-        return vim.fn.expand(state.cwd) .. Path.path.sep .. filename
-      end
-      function actions.get_file_entry(filename)
-        local entries = {}
-        for _, item in pairs(state.total_item) do
-          if not item.disable and item.filename == filename then
-            local t = vim.deepcopy(item)
-            t.filename = get_file_path(item.filename)
-            table.insert(entries, t)
-          end
-        end
-        return entries
-      end
-      -- TODO: add support for run replace on file
-      actions.run_current_replace_todo = function()
-        local entry = actions.get_current_entry()
-        if entry then
-          M.run_replace { entry }
-        else
-          local entries = actions.get_file_entry(filename)
-          if #entries > 0 then
-            M.run_replace(entries)
-          else
-            vim.notify "Not found any entry to replace."
-          end
-        end
-      end
-    end,
-  },
-  {
     "cshuaimin/ssr.nvim",
     -- Calling setup is optional.
     opts = {
@@ -248,24 +90,32 @@ return {
     },
   },
   {
-    "gabrielpoca/replacer.nvim",
-    keys = {
-      { "<leader>rq", utils.lazy_require("replacer").run, desc = "Replace from quickfix" },
-      -- TODO: full suite of keymaps
+    "stevearc/quicker.nvim",
+    -- TODO: winleavepre
+    opts = {
+      keys = {
+        {
+          "<Right>",
+          function() require("quicker").expand { before = 2, after = 2, add_to_existing = true } end,
+          desc = "Expand quickfix context",
+        },
+        {
+          "<Left>",
+          function() require("quicker").collapse() end,
+          desc = "Collapse quickfix context",
+        },
+        {
+          "<localleader><localleader>",
+          function() require("quicker").refresh() end,
+          desc = "Refresh",
+        },
+      },
+      on_qf = function(bufnr)
+        vim.api.nvim_create_autocmd("WinLeavePre", {
+          buffer = 0,
+          callback = function() vim.cmd.write() end,
+        })
+      end,
     },
-    init = function()
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "qf",
-        callback = function() vim.keymap.setl("n", "i", utils.lazy_require("replacer").run, { desc = "Replacer" }) end,
-      })
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = "replacer",
-        callback = function()
-          vim.keymap.del("n", "i", { buffer = 0 })
-          vim.keymap.del("n", "a", { buffer = 0 })
-          vim.keymap.del("n", "A", { buffer = 0 })
-        end,
-      })
-    end,
   },
 }

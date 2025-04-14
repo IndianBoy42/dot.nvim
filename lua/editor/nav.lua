@@ -374,246 +374,18 @@ end
 
 return {
   {
-    "folke/flash.nvim",
-    event = "VeryLazy",
-    ---@type Flash.Config
-    opts = {
-      labels = O.hint_labels,
-      search = {
-        incremental = true,
-      },
-      highlight = { backdrop = false },
-      label = { current = true },
-      jump = {
-        autojump = false, -- Causes accidents
-        history = true,
-        register = true,
-        pos = "start", ---@type "start" | "end" | "range"
-      },
-      remote_op = {
-        restore = true,
-        motion = true,
-      },
-      modes = {
-        search = {
-          enabled = false,
-          label = { min_pattern_length = 3 },
-        },
-        char = {
-          enabled = false,
-          keys = { "f", "F", "t", "T" },
-        },
-        treesitter = {
-          labels = O.hint_labels,
-          remote_op = {
-            restore = false,
-            motion = false,
-          },
-          search = { multi_window = false, wrap = true, incremental = false, max_length = 0 },
-          config = function(opts)
-            if false and vim.fn.mode() == "v" then
-              opts.labels:gsub("[cdyrxCDYRX]", "") -- TODO: Remove all operations
-            end
-          end,
-          treesitter = {},
-          matcher = nav.custom_ts,
-          actions = nav.ts_actions,
-        },
-        remote_ts = {
-          -- TODO: use `;,<cr><tab><spc` to extend the selection to sibling nodes
-          -- TODO: integrate i/a textobjects somehow. Maybe 'i<label><char>' = jump<label> i<char>
-          mode = "treesitter",
-          search = {
-            -- mode = "fuzzy",
-            -- mode = navutils.remote_ts_search,
-            max_length = 2,
-            incremental = false,
-          },
-          jump = { pos = "range", register = false },
-          highlight = { matches = true },
-          treesitter = {},
-          remote_op = {
-            restore = true,
-            motion = true,
-          },
-          matcher = nav.remote_ts,
-          actions = nav.ts_actions,
-        },
-        remote_sel = {
-          mode = "treesitter",
-          search = {
-            -- mode = "fuzzy",
-            -- mode = navutils.remote_ts_search,
-            max_length = 4,
-            incremental = false,
-          },
-          label = { min_pattern_length = 2 },
-          jump = { pos = "range", register = false },
-          highlight = { matches = true },
-          treesitter = {},
-          remote_op = {
-            restore = true,
-            motion = true,
-          },
-          matcher = nav.remote_sel,
-          actions = nav.ts_actions,
-        },
-        fuzzy = {
-          search = { mode = "fuzzy", max_length = 9999 },
-          label = { min_pattern_length = 10 },
-          -- label = { before = true, after = false },
-        },
-        leap = { -- Is this even possible really?
-          search = {
-            max_length = 2,
-          },
-        },
-        textcase = {
-          search = { mode = nav.mode_textcase },
-        },
-        search_diagnostics = {
-          search = { mode = "fuzzy" },
-          action = nav.there_and_back(utils.lsp.diag_line),
-        },
-        hover = {
-          search = { mode = "fuzzy" },
-          action = function(match, state)
-            vim.api.nvim_win_call(match.win, function()
-              vim.api.nvim_win_set_cursor(match.win, match.pos)
-              utils.lsp.hover(function(err, result, ctx)
-                vim.lsp.handlers.hover(err, result, ctx, { focusable = true, focus = true })
-                -- vim.api.nvim_win_set_cursor(match.win, state.pos)
-              end)
-            end)
-          end,
-        },
-        select = {
-          search = { mode = "fuzzy" },
-          jump = { pos = "range" },
-          label = { before = true, after = true },
-        },
-        references = {},
-        diagnostics = {
-          search = { multi_window = true, wrap = true, incremental = true },
-          label = { current = true },
-          highlight = { backdrop = true },
-        },
-        remote = {
-          search = { mode = "fuzzy" },
-          jump = { autojump = true },
-        },
-      },
-    },
-    keys = {
-      -- TODO: jump continue with nN
-      {
-        "?",
-        mode = { "n", "x", "o" },
-        function() require("flash").jump { mode = "fuzzy" } end,
-        desc = "Fuzzy search",
-      },
-      { O.goto_prefix .. "/", "/<Plug>(flash-search-toggle)", desc = "Flash search(/)" },
-      { "<C-s>", mode = "c", "<Plug>(flash-search-toggle)", desc = "Flash search(/)" },
-      {
-        "<Plug>(flash-search-toggle)",
-        mode = { "n", "c" },
-        function() require("flash").toggle() end,
-        desc = "Flash search(/)",
-      },
-      -- {
-      --   "?",
-      --   mode = { "o" },
-      --   function() require("flash").remote { mode = "select" } end,
-      --   desc = "Fuzzy Sel",
-      -- },
-      -- {
-      --   "?",
-      --   mode = "x",
-      --   function() require("flash").jump { mode = "select" } end,
-      --   desc = "Fuzzy Sel",
-      -- },
-      {
-        "<Plug>(flash-treesitter)",
-        mode = { "n", "o", "x" },
-        desc = "Cursor Node",
-        function() require("flash").jump { mode = "treesitter" } end,
-      },
-      {
-        O.select_remote_dynamic,
-        mode = { "o", "x" },
-        desc = "Remote Node",
-        "<Plug>(flash-remote-ts)",
-      },
-      {
-        "<Plug>(flash-remote-ts)",
-        mode = { "o", "x" },
-        desc = "Remote Node",
-        function() require("flash").jump { mode = "remote_ts" } end,
-      },
-      -- {
-      --   O.goto_next .. O.select_remote_dynamic,
-      --   mode = { "o", "x" },
-      --   function() require("flash").jump { mode = "remote_ts", treesitter = { starting_from_pos = true } } end,
-      --   desc = "Select node",
-      -- },
-      -- {
-      --   O.goto_prev .. O.select_remote_dynamic,
-      --   mode = { "o", "x" },
-      --   function() require("flash").jump { mode = "remote_ts", treesitter = { ending_at_pos = true } } end,
-      --   desc = "Select node",
-      -- },
-      {
-        O.goto_next .. O.select_remote_dynamic,
-        mode = "n",
-        function()
-          require("flash").jump {
-            mode = "remote_ts",
-            treesitter = { end_of_node = true },
-            jump = { pos = "end" },
-          }
-        end,
-        desc = "Jump to end of node",
-      },
-      {
-        O.goto_prev .. O.select_remote_dynamic,
-        mode = "n",
-        function()
-          require("flash").jump {
-            mode = "remote_ts",
-            treesitter = { start_of_node = true },
-            jump = { pos = "start" },
-          }
-        end,
-        desc = "Jump to start of node",
-      },
-    },
-  },
-  {
     "ggandor/leap.nvim",
     keys = {
       { "}" }, -- Repeat mappings
       { "{" },
       { "s", "<Plug>(leap)", mode = "n", desc = "Leap" },
-      { "S", "<Plug>(leap)", mode = { "x", "o" }, desc = "Leap" },
-      { "q", "<Plug>(leap)", mode = "x", desc = "Leap" },
+      { "q", "<Plug>(leap)", mode = { "x", "o" }, desc = "Leap" },
       { "S", "<Plug>(leap-remote)", mode = "n", desc = "Leap Remote" },
       {
         O.goto_prefix .. O.goto_prefix,
         "<Plug>(leap-anywhere)",
         mode = { "n", "x", "o" },
         desc = "Leap anywhere",
-      },
-      {
-        "/",
-        function() require("leap").leap { inclusive_op = true } end,
-        mode = "o",
-        desc = "Leap fwd",
-      },
-      {
-        "?",
-        function() require("leap").leap { backward = true, offset = 1, inclusive_op = true } end,
-        mode = "o",
-        desc = "Leap bwd",
       },
       { ";", leap_bi_o(1), mode = "o", desc = "Leap SemiInc" },
       { ".", leap_bi_o(2), mode = "o", desc = "Leap Incl." },
@@ -656,6 +428,17 @@ return {
       {
         "<Plug>(leap-remote)",
         function() require("leap.remote").action() end,
+        desc = "Leap Remote",
+        mode = { "o", "x" },
+      },
+      {
+        O.select_remote_dynamic,
+        function()
+          -- FIXME:
+          require("leap.remote").action {
+            input = "<Plug>(leap-treesitter)",
+          }
+        end,
         desc = "Leap Remote",
         mode = { "o", "x" },
       },
@@ -840,8 +623,222 @@ return {
     },
   },
   {
+    "folke/flash.nvim",
+    event = "VeryLazy",
+    ---@type Flash.Config
+    opts = {
+      labels = O.hint_labels,
+      search = {
+        incremental = true,
+      },
+      highlight = { backdrop = false },
+      label = { current = true },
+      jump = {
+        autojump = false, -- Causes accidents
+        history = true,
+        register = true,
+        pos = "start", ---@type "start" | "end" | "range"
+      },
+      remote_op = {
+        restore = true,
+        motion = true,
+      },
+      modes = {
+        search = {
+          enabled = false,
+          label = { min_pattern_length = 3 },
+        },
+        char = {
+          enabled = false,
+          keys = { "f", "F", "t", "T" },
+        },
+        treesitter = {
+          labels = O.hint_labels,
+          remote_op = {
+            restore = false,
+            motion = false,
+          },
+          search = { multi_window = false, wrap = true, incremental = false, max_length = 0 },
+          config = function(opts)
+            if false and vim.fn.mode() == "v" then
+              opts.labels:gsub("[cdyrxCDYRX]", "") -- TODO: Remove all operations
+            end
+          end,
+          treesitter = {},
+          matcher = nav.custom_ts,
+          actions = nav.ts_actions,
+        },
+        remote_ts = {
+          -- TODO: use `;,<cr><tab><spc` to extend the selection to sibling nodes
+          -- TODO: integrate i/a textobjects somehow. Maybe 'i<label><char>' = jump<label> i<char>
+          mode = "treesitter",
+          search = {
+            -- mode = "fuzzy",
+            -- mode = navutils.remote_ts_search,
+            max_length = 2,
+            incremental = false,
+          },
+          jump = { pos = "range", register = false },
+          highlight = { matches = true },
+          treesitter = {},
+          remote_op = {
+            restore = true,
+            motion = true,
+          },
+          matcher = nav.remote_ts,
+          actions = nav.ts_actions,
+        },
+        remote_sel = {
+          mode = "treesitter",
+          search = {
+            -- mode = "fuzzy",
+            -- mode = navutils.remote_ts_search,
+            max_length = 4,
+            incremental = false,
+          },
+          label = { min_pattern_length = 2 },
+          jump = { pos = "range", register = false },
+          highlight = { matches = true },
+          treesitter = {},
+          remote_op = {
+            restore = true,
+            motion = true,
+          },
+          matcher = nav.remote_sel,
+          actions = nav.ts_actions,
+        },
+        fuzzy = {
+          search = { mode = "fuzzy", max_length = 9999 },
+          label = { min_pattern_length = 10 },
+          -- label = { before = true, after = false },
+        },
+        leap = { -- Is this even possible really?
+          search = {
+            max_length = 2,
+          },
+        },
+        textcase = {
+          search = { mode = nav.mode_textcase },
+        },
+        search_diagnostics = {
+          search = { mode = "fuzzy" },
+          action = nav.there_and_back(utils.lsp.diag_line),
+        },
+        hover = {
+          search = { mode = "fuzzy" },
+          action = function(match, state)
+            vim.api.nvim_win_call(match.win, function()
+              vim.api.nvim_win_set_cursor(match.win, match.pos)
+              utils.lsp.hover(function(err, result, ctx)
+                vim.lsp.handlers.hover(err, result, ctx, { focusable = true, focus = true })
+                -- vim.api.nvim_win_set_cursor(match.win, state.pos)
+              end)
+            end)
+          end,
+        },
+        select = {
+          search = { mode = "fuzzy" },
+          jump = { pos = "range" },
+          label = { before = true, after = true },
+        },
+        references = {},
+        diagnostics = {
+          search = { multi_window = true, wrap = true, incremental = true },
+          label = { current = true },
+          highlight = { backdrop = true },
+        },
+        remote = {
+          search = { mode = "fuzzy" },
+          jump = { autojump = true },
+        },
+      },
+    },
+    keys = {
+      -- TODO: jump continue with nN
+      {
+        "?",
+        mode = { "n", "x", "o" },
+        function() require("flash").jump { mode = "fuzzy" } end,
+        desc = "Fuzzy search",
+      },
+      { O.goto_prefix .. "/", "/<Plug>(flash-search-toggle)", desc = "Flash search(/)" },
+      { "<C-s>", mode = "c", "<Plug>(flash-search-toggle)", desc = "Flash search(/)" },
+      {
+        "<Plug>(flash-search-toggle)",
+        mode = { "n", "c" },
+        function() require("flash").toggle() end,
+        desc = "Flash search(/)",
+      },
+      -- {
+      --   "?",
+      --   mode = { "o" },
+      --   function() require("flash").remote { mode = "select" } end,
+      --   desc = "Fuzzy Sel",
+      -- },
+      -- {
+      --   "?",
+      --   mode = "x",
+      --   function() require("flash").jump { mode = "select" } end,
+      --   desc = "Fuzzy Sel",
+      -- },
+      {
+        "<Plug>(flash-treesitter)",
+        mode = { "n", "o", "x" },
+        desc = "Cursor Node",
+        function() require("flash").jump { mode = "treesitter" } end,
+      },
+      -- {
+      --   O.select_remote_dynamic,
+      --   mode = { "o", "x" },
+      --   desc = "Remote Node",
+      --   "<Plug>(flash-remote-ts)",
+      -- },
+      {
+        "<Plug>(flash-remote-ts)",
+        mode = { "o", "x" },
+        desc = "Remote Node",
+        function() require("flash").jump { mode = "remote_ts" } end,
+      },
+      -- {
+      --   O.goto_next .. O.select_remote_dynamic,
+      --   mode = { "o", "x" },
+      --   function() require("flash").jump { mode = "remote_ts", treesitter = { starting_from_pos = true } } end,
+      --   desc = "Select node",
+      -- },
+      -- {
+      --   O.goto_prev .. O.select_remote_dynamic,
+      --   mode = { "o", "x" },
+      --   function() require("flash").jump { mode = "remote_ts", treesitter = { ending_at_pos = true } } end,
+      --   desc = "Select node",
+      -- },
+      {
+        O.goto_next .. O.select_remote_dynamic,
+        mode = "n",
+        function()
+          require("flash").jump {
+            mode = "remote_ts",
+            treesitter = { end_of_node = true },
+            jump = { pos = "end" },
+          }
+        end,
+        desc = "Jump to end of node",
+      },
+      {
+        O.goto_prev .. O.select_remote_dynamic,
+        mode = "n",
+        function()
+          require("flash").jump {
+            mode = "remote_ts",
+            treesitter = { start_of_node = true },
+            jump = { pos = "start" },
+          }
+        end,
+        desc = "Jump to start of node",
+      },
+    },
+  },
+  {
     "cbochs/portal.nvim",
-    -- TODO: folke/flash jumplist
     dependencies = {
       -- "cbochs/grapple.nvim", -- Optional: provides the "grapple" query item
       -- "ThePrimeagen/harpoon", -- Optional: provides the "harpoon" query item

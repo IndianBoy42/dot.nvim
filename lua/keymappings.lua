@@ -690,6 +690,7 @@ function M.setup()
   map("n", "<M-o>", "o<esc>", { remap = true, desc = "Split Line" })
   map("n", "<M-S-o>", "O<esc>", { remap = true, desc = "Split Line" })
 
+  map("n", "gv", "'<v'>", {})
   -- Reselect visual linewise
   map("n", "gV", "'<V'>", {})
   map("x", "gV", "<esc>gV", {})
@@ -798,14 +799,8 @@ function M.setup()
 
   map("x", ".", ":normal .<CR>", {})
 
-  -- -- TODO: operator-ize visual mode
-  map(
-    "n",
-    "v",
-    -- utils.operatorfunc_scaffold(vim.schedule_wrap(function() vim.cmd.normal "`[v`]" end)),
-    operatorfunc_keys "",
-    { expr = true, desc = "v (op)" }
-  )
+  -- -- TODO: make v[hjkl] more like normal
+  map("n", "v", operatorfunc_keys "", { expr = true, desc = "v (op)" })
   map("n", "V", operatorfunc_Vkeys "", { expr = true, desc = "V (op)" })
   map("n", "<C-v>", operatorfunc_cvkeys "", { expr = true, desc = "<C-v> (op)" })
 
@@ -915,8 +910,6 @@ function M.setup()
   for _, v in ipairs {
     { "cp", '"+p', mode = "n", desc = "Clipboard p", remap = true },
     { "cP", '"+P', mode = "n", desc = "Clipboard P", remap = true },
-    { "<leader>p", '"+P', mode = "x", desc = "Clipboard p", remap = true },
-    { "<leader>P", '"+p', mode = "x", desc = "Clipboard P", remap = true },
     { "r+", '"+r', mode = "n", desc = "Clipboard r", remap = true },
     { "r+", '"+rr', mode = "n", desc = "Clipboard rr", remap = true },
     { "cy", '"+y', mode = "n", desc = "Clipboard y", remap = true },
@@ -973,9 +966,12 @@ function M.setup()
       function() return pcall(vim.cmd.tabclose) or pcall(vim.cmd.quitall) end,
       desc = "Quit Tab",
     },
+
     { "<leader>T", group = "Toggle" },
     { "<leader>Tb", "<cmd>set buflisted<cr>", desc = "buflisted" },
+
     { "<leader>Tc", group = "Cursor/Column" },
+
     { "<leader>Tf", group = "Formatting" },
     { "<leader>Tfb", utils.lsp.format_on_save_toggle(vim.b), desc = "Toggle Format on Save" },
     {
@@ -994,6 +990,7 @@ function M.setup()
       desc = "Format Mods on Save (Global)",
     },
     { "<leader>Th", "<cmd>setlocal hlsearch<cr>", desc = "hlsearch" },
+
     { "<leader>Tp", group = "Profiling" },
     { "<leader>Tv", "<cmd>NvimContextVtToggle<cr>", desc = "Context VT" },
     {
@@ -1014,6 +1011,7 @@ function M.setup()
       silent = false,
     },
     { "<leader>b", desc = "+Buffers" },
+
     { "<leader>d", group = "Diagnostics/Debug" },
     { "<leader>dL", utils.lsp.toggle_diag_vlines, desc = "Toggle VLines" },
     { "<leader>db", "<cmd>Trouble diagnostics toggle<cr>", desc = "Sidebar" },
@@ -1022,17 +1020,21 @@ function M.setup()
     { "<leader>dl", utils.lsp.diag_line, desc = "Line Diagnostics" },
     { "<leader>ds", telescope_fn.diagnostics, desc = "Document Diagnostics" },
     { "<leader>dw", telescope_fn.workspace_diagnostics, desc = "Workspace Diagnostics" },
+
     { "<leader>e", group = "Edit" },
     { "<leader>ec", desc = "TextCase" },
     { "<leader>f", telescope_fn.smart_open, desc = "Smart Open File" },
     { "<leader>g", desc = "Git" },
+
     { "<leader>i", group = "Info" },
     { "<leader>ii", "<cmd>Mason<cr>", desc = "LspInstall" },
     { "<leader>il", "<cmd>LspInfo<cr>", desc = "LSP" },
     { "<leader>in", "<cmd>NullLsInfo<cr>", desc = "Null-ls" },
     { "<leader>ip", "<cmd>Lazy<cr>", desc = "Lazy plugins" },
     { "<leader>it", "<cmd>TSConfigInfo<cr>", desc = "Treesitter" },
+
     { "<leader>l", group = "LSP" },
+
     { "<leader>lC", group = "Calls" },
     { "<leader>lCi", telescope_cursor "incoming_calls", desc = "Incoming" },
     { "<leader>lCl", telescope_cursor "subtypes", desc = "Subtypes" },
@@ -1047,6 +1049,7 @@ function M.setup()
     { "<leader>lh", lspbuf.hover, desc = "Hover (H)" },
     { "<leader>li", telescope_cursor "lsp_implementations", desc = "Implementation" },
     { "<leader>lk", vim.lsp.codelens.run, desc = "Run Code Lens (gK)" },
+
     { "<leader>lp", group = "Peek in Float" },
     { "<leader>lpD", utils.lsp.preview_location_at "declaration", desc = "Declaration" },
     { "<leader>lpd", utils.lsp.preview_location_at "definition", desc = "Definition" },
@@ -1056,14 +1059,18 @@ function M.setup()
     { "<leader>lpt", utils.lsp.preview_location_at "typeDefinition", desc = "Type Def" },
     { "<leader>lr", telescope_cursor "lsp_references", desc = "References" },
     { "<leader>lt", telescope_cursor "lsp_type_definitions", desc = "Type Def" },
+
     { "<leader>m", group = "Make" },
+
     { "<leader>n", group = "Generate" },
     { "<leader>nF", "<cmd>Neogen file<cr>", desc = "File Doc" },
+
     { "<leader>nb", group = "Comment Box" },
     { "<leader>nc", "<cmd>Neogen class<cr>", desc = "Class Doc" },
     { "<leader>nf", "<cmd>Neogen func<cr>", desc = "Func Doc" },
     { "<leader>nn", "<cmd>Neogen<cr>", desc = "Gen Doc" },
     { "<leader>nt", "<cmd>Neogen type<cr>", desc = "type Doc" },
+
     { "<leader>o", group = "Open window" },
     { "<leader>oE", "<cmd>!open '%:p:h'<cr>", desc = "Open File Explorer" },
     { "<leader>oH", "<cmd>DiffviewFileHistory<cr>", desc = "File History Git" },
@@ -1073,15 +1080,19 @@ function M.setup()
     { "<leader>oc", "<cmd>Codeium Chat<cr>", desc = "Codeium Chat" },
     { "<leader>od", "<cmd>DiffviewOpen<cr>", desc = "Diffview" },
     { "<leader>og", "<cmd>!smerge '%:p:h'<cr>", desc = "Sublime Merge" },
+
     { "<leader>oh", group = "Kitty Hints" },
     { "<leader>oi", function() require("ui.win_pick").gf() end, desc = "Open file in <window>" },
     { "<leader>on", "<cmd>Navbuddy<cr>", desc = "Navbuddy" },
     { "<leader>oo", "<cmd>SymbolsOutline<cr>", desc = "Outline" },
     { "<leader>oq", utils.quickfix_toggle, desc = "Quick fixes" },
+
     { "<leader>os", group = "Sidebar" },
     { "<leader>ot", "<cmd>Trouble toggle<cr>", desc = "Trouble" },
     { "<leader>q", "<cmd>wq<cr>", desc = "Quit" },
+
     { "<leader>r", group = "Replace/Refactor" },
+    -- TODO: fuck these, just use vim-visual-multi?
     { '<leader>r"', ':%s/<C-R>"//g<Left><Left>', desc = "Last cdy" },
     { "<leader>r+", ":%s/<C-R>+//g<Left><Left>", desc = "Last clipboard" },
     { "<leader>r.", ":%s/<C-R>.//g<Left><Left>", desc = "Last insert" },
@@ -1090,6 +1101,7 @@ function M.setup()
     { "<leader>rg", desc = "Global Replace" },
     { "<leader>ri", desc = "Inside" },
     { "<leader>rs", ":%s///g<Left><Left><Left>", desc = "Sub In File" },
+
     { "<leader>s", group = "Search" },
     { "<leader>s ", telescope_fn.resume, desc = "Redo last" },
     { '<leader>s"', '/<C-R>"<cr>', desc = "Last cdy" },
@@ -1118,9 +1130,13 @@ function M.setup()
     { "<leader>st", telescope_fn.live_grep, desc = "Text" },
     { "<leader>su", "<cmd>Telescope undo<cr>", desc = "Telescope Undo" },
     { "<leader>sw", telescope_fn.lsp_dynamic_workspace_symbols, desc = "Workspace Symbols" },
+
     { "<leader>u", group = "(un) Clear" },
     { "<leader>uh", "<cmd>nohlsearch<cr>", desc = "Search Highlight" },
+    { "<leader>uw", utils.close_all_floats, desc = "Close all Floats" },
+
     { "<leader>v", group = "Visualize" },
+
     { "<leader>x", group = "Run" },
   }
 
@@ -1128,12 +1144,17 @@ function M.setup()
     {
       mode = { "v" },
       { "<leader>*", telescope_fn.grep_string, desc = "Curr selection" },
+
       { "<leader>D", group = "Debug" },
+
       { "<leader>e", group = "Edit" },
+
       { "<leader>l", group = "LSP" },
       { "<leader>la", telescope_fn.code_actions_previewed, desc = "Code Actions" },
       { "<leader>ld", utils.lsp.range_diagnostics, desc = "Range Diagnostics" },
       { "<leader>lf", utils.lsp.format, desc = "Format" },
+      -- TODO: fuck these, just use vim-visual-multi?
+
       { "<leader>r", group = "Replace/Refactor" },
       { '<leader>r"', ':%s/<C-R>"//g<Left><Left>', desc = "Last cdy" },
       { "<leader>r+", ":%s/<C-R>+//g<Left><Left>", desc = "Last clipboard" },
@@ -1360,5 +1381,5 @@ return setmetatable(M, {
 -- p x o u . ; - =  ! > <
 -- v is useful but not
 -- op-op combinations
--- visual Y is free
 -- normal M is free
+-- normal S is free

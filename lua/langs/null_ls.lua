@@ -83,12 +83,10 @@ return {
         diagnostics.yamllint,
         diagnostics.gccdiag.with {
           args = {
-            "--default-args",
-            "-S -x $FILEEXT",
             "-i",
             "-fdiagnostics-color -O3 -O2",
             "-a",
-            "-O1 -S -fsyntax-only",
+            "-S",
             "--",
             "$FILENAME",
           },

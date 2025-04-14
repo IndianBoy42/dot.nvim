@@ -1,4 +1,4 @@
-local enable = true
+local enable_noice = true
 return {
 
   {
@@ -45,7 +45,7 @@ return {
   },
   {
     "folke/noice.nvim",
-    cond = enable, -- and not vim.g.neovide,
+    cond = enable_noice, -- and not vim.g.neovide,
     -- event = "VeryLazy",
     lazy = false,
     dependencies = { "MunifTanjim/nui.nvim" },

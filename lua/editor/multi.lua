@@ -34,45 +34,55 @@ local ops = {
 }
 local function multiop(select, find)
   return function()
+    feedkeys("<C-\\><C-n>", "nx")
+    feedkeys("<esc>", "n")
+
     local register = vim.v.register
     local operator = vim.v.operator
     local rhs = ops[operator] or operator
     local opfunc = vim.go.operatorfunc
     if operator == "g@" then rhs = ops[opfunc] end
 
+    local function callback()
+      if rhs ~= nil then
+        feedkeys('"' .. register .. rhs)
+        vim.schedule(function()
+          if vim.fn.mode(true) ~= "no" then
+            vim.api.nvim_create_autocmd("ModeChanged", {
+              group = vim.api.nvim_create_augroup("after_multi_op_exit", {}),
+              pattern = "*:n",
+              once = true,
+              callback = function() feedkeys "<Plug>(VM-Exit)" end,
+            })
+          else
+            feedkeys "<Plug>(VM-Exit)"
+          end
+        end)
+      else
+        -- operatorfunc doesnt work in general so youre out of luck
+        vim.go.operatorfunc = opfunc
+        vim.cmd [[call b:VM_Selection.Edit.run_visual("g@", 1)]]
+      end
+    end
+    if select == "?" then
+      vim.api.nvim_create_autocmd("User", {
+        group = vim.api.nvim_create_augroup("after_find_do_op", {}),
+        pattern = "visual_multi_after_regex",
+        once = true,
+        callback = callback,
+      })
+      feedkeys("<Plug>(VM-Start-Regex-Search)", "m")
+      return
+    end
+
     vim.api.nvim_create_autocmd("User", {
       group = vim.api.nvim_create_augroup("after_find_do_op", {}),
       pattern = "visual_multi_after_find",
       once = true,
-      callback = function()
-        if rhs ~= nil then
-          feedkeys('"' .. register .. rhs)
-          vim.schedule(function()
-            if vim.fn.mode(true) ~= "no" then
-              vim.api.nvim_create_autocmd("ModeChanged", {
-                group = vim.api.nvim_create_augroup("after_multi_op_exit", {}),
-                pattern = "*:n",
-                once = true,
-                callback = function() feedkeys "<Plug>(VM-Exit)" end,
-              })
-            else
-              feedkeys "<Plug>(VM-Exit)"
-            end
-          end)
-        else
-          -- operatorfunc doesnt work in general so youre out of luck
-          vim.go.operatorfunc = opfunc
-          vim.cmd [[call b:VM_Selection.Edit.run_visual("g@", 1)]]
-        end
-      end,
+      callback = callback,
     })
-    local finish = vim.schedule_wrap(
-      function() wrap_vm_call(nil, select and "Find-Subword-Under" or "Find-Under", find) end
-    )
-
-    feedkeys("<C-\\><C-n>", "nx")
-    feedkeys("<esc>", "n")
-    if select then
+    if select == true then
+      local finish = vim.schedule_wrap(function() wrap_vm_call(nil, "Find-Subword-Under", find) end)
       _G.__multiop_finish = function()
         feedkeys("`[v`]", "n")
         finish()
@@ -80,6 +90,9 @@ local function multiop(select, find)
       vim.go.operatorfunc = "v:lua.__multiop_finish"
       feedkeys("g@", "n")
     else
+      local finish = vim.schedule_wrap(
+        function() wrap_vm_call(nil, select == "/" and "Find-Regex" or "Find-Under", find) end
+      )
       finish()
     end
   end
@@ -251,8 +264,11 @@ return {
 
     map("o", "o", multiop(false, "<Plug>(VM-Find-Operator)"), { desc = "op all cword in" })
     map("o", "O", multiop(false, "<Plug>(VM-Select-All)"), { desc = "op all cword" })
+    map("o", "/", multiop("/", "<Plug>(VM-Find-Operator)"), { desc = "op all pattern in" })
+    map("o", "?", multiop("/", "<Plug>(VM-Select-All)"), { desc = "op all pattern" })
     map("o", "I", multiop(true, "<Plug>(VM-Find-Operator)"), { desc = "op all <> in" })
     map("o", "A", multiop(true, "<Plug>(VM-Select-All)"), { desc = "op all of <>" })
+    -- TODO: Start-Regex-Search version of operators
 
     -- TODO: this should be implemented in vm core
     local add_selection_operator =
@@ -277,10 +293,10 @@ return {
     map("n", ldr .. "f", find_in_operator, { desc = "Select last search in (op)", expr = true })
     map("x", "/", function()
       local cursor, other = vim.fn.getpos ".", vim.fn.getpos "v"
-      if cursor == other then
-        return "<Plug>(VM-Start-Regex-Search)"
-      else
+      if cursor ~= other or vim.api.nvim_get_mode().mode == "V" then
         return "<Plug>(VM-Visual-Regex)"
+      else
+        return "<Plug>(VM-Start-Regex-Search)"
       end
     end, { expr = true, desc = "From last search" })
 

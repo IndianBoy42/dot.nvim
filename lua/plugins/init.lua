@@ -30,7 +30,11 @@ return {
     },
     init = function()
       vim.api.nvim_create_user_command("Bdelete", function(args) Snacks.bufdelete() end, {})
-      vim.api.nvim_create_user_command("Bwipeout", function(args) Snacks.bufdelete { wipe = true } end, {})
+      vim.api.nvim_create_user_command(
+        "Bwipeout",
+        function(args) Snacks.bufdelete { wipe = true } end,
+        {}
+      )
       vim.cmd.cnoreabbrev "bd Bdelete"
     end,
   },
@@ -130,5 +134,9 @@ return {
   {
     "lewis6991/fileline.nvim",
     lazy = false,
+  },
+  {
+    "Apeiros-46B/qalc.nvim",
+    cmd = { "Quickmath" },
   },
 }

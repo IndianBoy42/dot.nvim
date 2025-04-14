@@ -85,14 +85,15 @@ local telescope = {
             ["<C-d>"] = actions.preview_scrolling_down,
             ["<C-up>"] = actions.cycle_history_next,
             ["<C-down>"] = actions.cycle_history_prev,
-            ["<C-S-q>"] = function(...)
+            ["<M-q>"] = function(...)
               actions.send_to_qflist(...)
-              actions.open_qflist(...)
-              require("replacer").run()
+              -- actions.open_qflist(...)
+              require("quicker").open()
             end,
             ["<C-q>"] = function(...)
               actions.send_to_qflist(...)
-              actions.open_qflist(...)
+              -- actions.open_qflist(...)
+              require("quicker").open()
             end,
             ["<C-l>"] = function(...) require("trouble.sources.telescope").open(...) end,
             ["<C-S-l>"] = function(...) require("trouble.sources.telescope").add(...) end,
@@ -157,10 +158,10 @@ local telescope = {
           override_file_sorter = false,
         },
         fzf = {
-          fuzzy = true,                   -- false will only do exact matching
+          fuzzy = true, -- false will only do exact matching
           override_generic_sorter = true, -- override the generic sorter
-          override_file_sorter = true,    -- override the file sorter
-          case_mode = "smart_case",       -- or "ignore_case" or "respect_case"
+          override_file_sorter = true, -- override the file sorter
+          case_mode = "smart_case", -- or "ignore_case" or "respect_case"
           -- the default case_mode is "smart_case"
         },
         "cmake",
@@ -213,9 +214,7 @@ local telescope = {
     } do
       telescope.load_extension(extension)
     end
-    if utils.have_plugin("noice") then
-      telescope.load_extension("noice")
-    end
+    if utils.have_plugin "noice" then telescope.load_extension "noice" end
   end,
 }
 local M = {
