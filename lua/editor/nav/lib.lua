@@ -192,14 +192,21 @@ M.do_op = do_op
 
 local swap_text = function(opts, ma, mb)
   local start, finish = vim.api.nvim_buf_get_mark(0, ma), vim.api.nvim_buf_get_mark(0, mb)
-  local this_text = vim.api.nvim_buf_get_text(0, start[1] - 1, start[2], finish[1] - 1, finish[2], {})
+  local this_text =
+    vim.api.nvim_buf_get_text(0, start[1] - 1, start[2], finish[1] - 1, finish[2], {})
   vim.schedule(function()
     require("flash").jump(vim.tbl_deep_extend("force", {
       action = function(match, state)
         local other_buf = vim.api.nvim_win_get_buf(match.win)
         local other_start, other_finish = match.pos, match.end_pos
-        local other_text =
-          vim.api.nvim_buf_get_text(0, other_start[1] - 1, other_start[2], other_finish[1] - 1, other_finish[2], {})
+        local other_text = vim.api.nvim_buf_get_text(
+          0,
+          other_start[1] - 1,
+          other_start[2],
+          other_finish[1] - 1,
+          other_finish[2],
+          {}
+        )
         vim.api.nvim_buf_set_text(
           other_buf,
           other_start[1] - 1,
@@ -240,7 +247,9 @@ local swap_with = function(opts, ma, mb, jumper)
     else
       action = action .. "p"
     end
-    if not (opts and opts.exchange and opts.exchange.not_here) then action = action .. a .. vis_mode .. b .. "p" end
+    if not (opts and opts.exchange and opts.exchange.not_here) then
+      action = action .. a .. vis_mode .. b .. "p"
+    end
     vim.cmd("normal! " .. action)
 
     vim.fn.setreg('"', reg)
@@ -266,7 +275,9 @@ end
 M.exch_with = function(opts, textobj, textobj2)
   local v = opts and opts.exchange and opts.exchange.visual_mode or "v"
   _G.__remote_op_opfunc = function()
-    require("substitute.exchange").operator { motion = vim.keycode("<cmd>normal! " .. v .. "`[o`]\r") }
+    require("substitute.exchange").operator {
+      motion = vim.keycode("<cmd>normal! " .. v .. "`[o`]\r"),
+    }
     vim.api.nvim_feedkeys("cx" .. (textobj2 or vim.keycode "<Plug>(leap-remote)"), "m", false)
   end
   vim.go.operatorfunc = "v:lua.__remote_op_opfunc"
@@ -276,7 +287,14 @@ M.two_part = function(opts, op, textobj, op2, textobj2)
   local v = opts and opts.exchange and opts.exchange.visual_mode or "v"
   _G.__remote_op_opfunc = function()
     vim.api.nvim_feedkeys(
-      vim.keycode(op .. "<cmd>normal! " .. v .. "`[o`]" .. op2 .. (textobj2 or vim.keycode "<Plug>(leap-remote)")),
+      vim.keycode(
+        op
+          .. "<cmd>normal! "
+          .. v
+          .. "`[o`]"
+          .. op2
+          .. (textobj2 or vim.keycode "<Plug>(leap-remote)")
+      ),
       "m",
       false
     )
@@ -302,7 +320,8 @@ M.leap_remote = function()
   end)
 end
 
-M.remote_paste = function(key, paste_key)
+M.remote_paste_manual = function(key, paste_key)
+  key = key or "<Plug>(leap-anywhere)"
   paste_key = paste_key or "p"
   return function()
     local view = vim.fn.winsaveview()
@@ -327,10 +346,39 @@ M.remote_paste = function(key, paste_key)
         vim.api.nvim_win_set_cursor(winnr, pos)
       end)
     end
-    -- FIXME: this doesnt work across windows
-    -- can use Leap directly but it is less flexible
     vim.go.operatorfunc = "v:lua.__remote_op_opfunc"
     vim.api.nvim_feedkeys("g@" .. key, "m", false)
+  end
+end
+
+M.remote_paste = function(key, paste_key, dir_key)
+  paste_key = paste_key or "p"
+  dir_key = dir_key or "l"
+  return function()
+    _G.__remote_op_opfunc = function() vim.api.nvim_feedkeys(vim.keycode(paste_key), "m", false) end
+    vim.go.operatorfunc = "v:lua.__remote_op_opfunc"
+    require("leap.remote").action {
+      input = "g@" .. dir_key,
+    }
+  end
+end
+
+-- TODO: operator that when repeated does a replace instead
+M.dual_operator = function(op1, op2)
+  op1 = op1 or "y"
+  op2 = op2 or "r"
+  local is_repeat = false
+  return function()
+    _G.__remote_op_opfunc = function()
+      if is_repeat then
+        vim.api.nvim_feedkeys("`[" .. op2 .. "`]", "m", false)
+      else
+        vim.api.nvim_feedkeys("`[" .. op1 .. "`]", "m", false)
+      end
+    end
+    vim.go.operatorfunc = "v:lua.__remote_op_opfunc"
+    is_repeat = true
+    return "g@"
   end
 end
 
@@ -401,7 +449,9 @@ local function node_proc(bwd, fwd, m, matches, n, opts, state)
   local tsopts = state.opts.treesitter or {}
   if tsopts.starting_from_pos then ok = ok and (m.pos == n.pos) end
   if tsopts.ending_at_pos then ok = ok and (m.end_pos == n.end_pos) end
-  if tsopts.containing_end_pos or tsopts.containing_end_pos == nil then ok = ok and (m.end_pos <= n.end_pos) end
+  if tsopts.containing_end_pos or tsopts.containing_end_pos == nil then
+    ok = ok and (m.end_pos <= n.end_pos)
+  end
   if fwd ~= 0 or bwd ~= 0 then
     local node = n.node
     local parent = n.node:parent()
@@ -579,6 +629,112 @@ end
 M.select_mapping = function()
   vim.go.operatorfunc = "v:lua.require'editor.nav.lib'.select_operatorfunc"
   return "g@"
+end
+
+local leap_select_state = { prev_input = nil }
+function M.leap_select(kwargs)
+  kwargs = kwargs or {}
+  if kwargs.inclusive_op == nil then kwargs.inclusive_op = true end
+
+  local function get_input(bwd)
+    vim.cmd 'echo ""'
+    local hl = require "leap.highlight"
+    if vim.v.count == 0 and not (kwargs.unlabeled and vim.fn.mode(1):match "o") then
+      -- TODO: figure this out
+      hl["apply-backdrop"](hl, bwd)
+    end
+    hl["highlight-cursor"](hl)
+    vim.cmd "redraw"
+    local ch = require("leap.util")["get-input-by-keymap"] { str = ">" }
+    hl["cleanup"](hl, { vim.fn.win_getid() })
+    if not ch then return end
+    -- Repeat with the previous input?
+    local repeat_key = require("leap.opts").special_keys.repeat_search
+    if ch == vim.keycode(repeat_key) then
+      if leap_select_state.prev_input then
+        ch = leap_select_state.prev_input
+      else
+        vim.cmd 'echo "no previous search"'
+        return
+      end
+    else
+      leap_select_state.prev_input = ch
+    end
+    return ch
+  end
+  local function get_pattern(input)
+    -- See `expand-to-equivalence-class` in `leap`.
+    -- Gotcha! 'leap'.opts redirects to 'leap.opts'.default - we want .current_call!
+    local chars = require("leap.opts").eq_class_of[input]
+    if chars then
+      chars = vim.tbl_map(function(ch)
+        if ch == "\n" then
+          return "\\n"
+        elseif ch == "\\" then
+          return "\\\\"
+        else
+          return ch
+        end
+      end, chars or {})
+      input = "\\(" .. table.concat(chars, "\\|") .. "\\)" -- "\(a\|b\|c\)"
+    end
+    return "\\V" .. (kwargs.multiline == false and "\\%.l" or "") .. input
+  end
+  local function get_targets(pattern, bwd)
+    local search = require "leap.search"
+    local bounds = search["get-horizontal-bounds"]()
+    local get_char_at = require("leap.util")["get-char-at"]
+    local match_positions = search["get-match-positions"](pattern, bounds, { ["backward?"] = bwd })
+    local targets = {}
+    for _, pos in ipairs(match_positions) do
+      table.insert(targets, { pos = pos, chars = { get_char_at(pos, {}) } })
+    end
+    return targets
+  end
+
+  local targets2
+  require("leap").leap {
+    targets = function()
+      local state = require("leap").state
+      local pattern, pattern2
+      if state.args.dot_repeat then
+        pattern = state.dot_repeat_pattern
+        pattern2 = state.dot_repeat_pattern2
+      else
+        local input = get_input(true)
+        if not input then return end
+        pattern = get_pattern(input)
+
+        local input2 = get_input(false)
+        if not input2 then return end
+        pattern2 = get_pattern(input2)
+        -- Do not save into `state.dot_repeat`, because that will be
+        -- replaced by `leap` completely when setting dot-repeat.
+        state.dot_repeat_pattern = pattern
+        state.dot_repeat_pattern2 = pattern2
+      end
+      targets2 = get_targets(pattern2, false)
+      return get_targets(pattern, true)
+    end,
+    inclusive_op = kwargs.inclusive_op,
+    action = function(target)
+      target.pos[2] = target.pos[2] - 1
+      vim.api.nvim_win_set_cursor(0, target.pos)
+      local feedkeys = vim.api.nvim_feedkeys
+      feedkeys("o", "n", false)
+      vim.schedule(function()
+        -- TODO: AOT label this!
+        require("leap").leap {
+          targets = targets2,
+          inclusive_op = kwargs.inclusive_op,
+          action = function(target)
+            target.pos[2] = target.pos[2] - 1
+            vim.api.nvim_win_set_cursor(0, target.pos)
+          end,
+        }
+      end)
+    end,
+  }
 end
 
 return M

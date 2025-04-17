@@ -13,3 +13,7 @@ Use a real git gui/tui (it just needs to open files with nvim)
 Use flatten.nvim (or some other lighter remote open plugin)
 
 **Use the shell**
+
+# TODO:
+
+obsidian

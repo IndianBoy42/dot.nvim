@@ -1,5 +1,5 @@
 local M = {
-  "akinsho/nvim-bufferline.lua",
+  "akinsho/bufferline.nvim",
   event = "VeryLazy",
   branch = "main",
 }
@@ -13,10 +13,10 @@ function M.config()
       },
       -- close_icon = '',
       close_icon = "",
-      show_tab_indicators = true,
       show_close_icon = false,
-      -- close_command = function(bufnum) require("bufdelete").bufdelete(bufnum, true) end,
-      -- right_mouse_command = function(bufnum) require("bufdelete").bufdelete(bufnum, true) end,
+      show_tab_indicators = true,
+      close_command = function(bufnum) Snacks.bufdelete(bufnum) end,
+      right_mouse_command = function(bufnum) Snacks.bufdelete(bufnum) end,
       hover = {
         enabled = true,
         delay = 200,

@@ -38,6 +38,7 @@ function M.N_repeat()
   end
 end
 
+-- TODO: this could use buffer local (or name spaced keymaps in the future)
 local function register_nN_repeat(nN)
   nN = nN or { nil, nil }
   custom_n_repeat = nN[1]
@@ -456,7 +457,8 @@ function M.setup()
   local ref_n, ref_p = repeatable("r", "Reference", quickfix_looping, { body = false })
   local ref_list_next, ref_list_prev = on_list_hydra(ref_n, ref_p, quickfix_looping)
   -- map("n", O.goto_next .. "r", function() vim.lsp.buf.references(nil, ref_list_next) end, { desc = "Reference" })
-  map("n", O.goto_next .. "r", Snacks.words.jump, { desc = "Reference" })
+  -- TODO: Snacks.jump any use?
+  -- map("n", O.goto_next .. "r", Snacks.words.jump, { desc = "Reference" })
   -- map("n", O.goto_previous .. "r", function() vim.lsp.buf.references(nil, ref_list_prev) end, { desc = "Reference" })
   local impl_n, impl_p = repeatable("i", "Implementation", quickfix_looping, { body = false })
   local impl_list_next, impl_list_prev = on_list_hydra(impl_n, impl_p, quickfix_looping)
@@ -800,9 +802,10 @@ function M.setup()
   map("x", ".", ":normal .<CR>", {})
 
   -- -- TODO: make v[hjkl] more like normal
-  map("n", "v", operatorfunc_keys "", { expr = true, desc = "v (op)" })
-  map("n", "V", operatorfunc_Vkeys "", { expr = true, desc = "V (op)" })
-  map("n", "<C-v>", operatorfunc_cvkeys "", { expr = true, desc = "<C-v> (op)" })
+  -- Also needs an exception for remote mode
+  -- map("n", "v", operatorfunc_keys "", { expr = true, desc = "v (op)" })
+  -- map("n", "V", operatorfunc_Vkeys "", { expr = true, desc = "V (op)" })
+  -- map("n", "<C-v>", operatorfunc_cvkeys "", { expr = true, desc = "<C-v> (op)" })
 
   map("n", "dd", function()
     if vim.api.nvim_get_current_line():match "^%s*$" then
@@ -944,7 +947,7 @@ function M.setup()
     { "<leader>;", telescope_fn.commands, desc = "Srch Commands" },
     { "<leader><C-q>", "<cmd>wqa<cr>", desc = "Quit All" },
     {
-      "<leader><Space>",
+      O.quicksave,
       function()
         if vim.api.nvim_buf_get_name(0) == "" then
           vim.notify("No filename yet, complete in cmdline", vim.log.levels.WARN)
@@ -1077,6 +1080,7 @@ function M.setup()
     { "<leader>oM", "<cmd>MinimapToggle<cr>", desc = "Minimap" },
     { "<leader>oN", "<cmd>NoiceHistory<cr>", desc = "Noice History" },
     { "<leader>oa", "<cmd>KittyNew aider --watch-files<cr>", desc = "AIder" },
+    { "<leader>oA", ":KittyNew aider --watch-files ", desc = "AIder (...)" },
     { "<leader>oc", "<cmd>Codeium Chat<cr>", desc = "Codeium Chat" },
     { "<leader>od", "<cmd>DiffviewOpen<cr>", desc = "Diffview" },
     { "<leader>og", "<cmd>!smerge '%:p:h'<cr>", desc = "Sublime Merge" },

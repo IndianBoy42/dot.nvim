@@ -266,13 +266,6 @@ else
   vim.api.nvim_create_user_command("FontDown", function() M.mod_guifont(-1) end, { nargs = "?" })
 end
 
--- TODO: Could use select mode for this like luasnip?
-
-function M.syn_group()
-  local s = vim.fn.synID(vim.fn.line ".", vim.fn.col ".", 1)
-  print(vim.fn.synIDattr(s, "name") .. " -> " .. vim.fn.synIDattr(vim.fn.synIDtrans(s), "name"))
-end
-
 local function luafn(prefix)
   return setmetatable({}, {
     __index = function(tbl, key) return "<cmd>lua " .. prefix .. "." .. key .. "()<cr>" end,

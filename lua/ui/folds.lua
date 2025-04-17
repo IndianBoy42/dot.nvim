@@ -37,7 +37,7 @@ return {
     event = "LazyFile",
     init = function()
       --vim.o.foldcolumn = "0" -- '0' is not bad
-      vim.api.nvim_create_autocmd("BufReadPost", {
+      vim.api.nvim_create_autocmd({ "BufReadPost", "BufEnter" }, {
         pattern = "*",
         callback = function()
           vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value

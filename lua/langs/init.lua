@@ -33,7 +33,8 @@ local diagnostic_config_all = {
       if iswarn then return diagnostic.message end
       if diagnostic.severity == vim.diagnostic.severity.HINT then return "HINT" end
       if diagnostic.severity == vim.diagnostic.severity.INFO then return "INFO" end
-      local curr_line = diagnostic.end_lnum and (lnum >= diagnostic.lnum and lnum <= diagnostic.end_lnum)
+      local curr_line = diagnostic.end_lnum
+          and (lnum >= diagnostic.lnum and lnum <= diagnostic.end_lnum)
         or (lnum == diagnostic.lnum)
       return ""
     end,
@@ -222,7 +223,8 @@ local plugins = {
 
       -- utils.lsp.on_attach(function(client, bufnr) utils.lsp.document_highlight(client, bufnr) end)
 
-      handlers["textDocument/codeLens"] = lspwith(vim.lsp.codelens.on_codelens, require("langs").codelens_config)
+      handlers["textDocument/codeLens"] =
+        lspwith(vim.lsp.codelens.on_codelens, require("langs").codelens_config)
       utils.lsp.on_attach(function(client, bufnr)
         if false and client:supports_method "textDocument/codeLens" then
           vim.api.nvim_create_autocmd(
@@ -274,6 +276,7 @@ local plugins = {
         elseif opts.setup["*"] then
           if opts.setup["*"](server, server_opts) then return end
         end
+        -- TODO: migrate to vim.lsp.config
         require("lspconfig")[server].setup(server_opts)
       end
 

@@ -59,8 +59,8 @@ return {
         go_out = "h",
         go_out_plus = "-",
         reset = "<localleader>R",
-        close = "<C-q>",
-        synchronize = "<space><space>",
+        close = "<c-c>",
+        synchronize = O.quicksave,
       },
     },
     config = function(_, opts)
@@ -178,7 +178,9 @@ return {
       if vim.fn.argc() == 1 then
         local arg = vim.fn.argv(0)
         local stat = vim.loop.fs_stat(arg)
-        if stat and stat.type == "directory" then require("lazy").load { plugins = { "oil.nvim" } } end
+        if stat and stat.type == "directory" then
+          require("lazy").load { plugins = { "oil.nvim" } }
+        end
       end
       if not require("lazy.core.config").plugins["oil.nvim"]._.loaded then
         vim.api.nvim_create_autocmd("BufNew", {

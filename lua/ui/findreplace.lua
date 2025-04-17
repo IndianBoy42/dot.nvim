@@ -2,36 +2,66 @@ return {
   {
     "MagicDuck/grug-far.nvim",
     opts = {
+      -- transient = true,
       keymaps = {
         close = "<C-c>",
+        replace = { n = O.quicksave },
+        -- qflist = { n = '<localleader>q' },
+        -- syncLocations = { n = '<localleader>s' },
+        -- syncLine = { n = '<localleader>l' },
+        -- historyOpen = { n = '<localleader>t' },
+        -- historyAdd = { n = '<localleader>a' },
+        -- refresh = { n = '<localleader>f' },
+        -- openLocation = { n = '<localleader>o' },
+        -- openNextLocation = { n = '<down>' },
+        -- openPrevLocation = { n = '<up>' },
+        -- gotoLocation = { n = '<enter>' },
+        -- pickHistoryEntry = { n = '<enter>' },
+        -- abort = { n = '<localleader>b' },
+        -- help = { n = 'g?' },
+        -- toggleShowCommand = { n = '<localleader>w' },
+        -- swapEngine = { n = '<localleader>e' },
+        -- previewLocation = { n = '<localleader>i' },
+        -- swapReplacementInterpreter = { n = '<localleader>x' },
+        -- applyNext = { n = '<localleader>j' },
+        -- applyPrev = { n = '<localleader>k' },
+        -- syncNext = { n = '<localleader>n' },
+        -- syncPrev = { n = '<localleader>p' },
+        -- syncFile = { n = '<localleader>v' },
+        -- nextInput = { n = '<tab>' },
+        -- prevInput = { n = '<s-tab>' },
       },
     },
     cmd = { "GrugFar" },
     keys = {
       { "<leader>rp", "<cmd>GrugFar<cr>", desc = "GrugFar Project" },
       {
+        "<leader>rf",
+        function() require("grug-far").open { prefills = { paths = vim.fn.expand "%" } } end,
+      },
+      {
         "<leader>rr*",
-        function() require("grug-far").grug_far { prefills = { search = vim.fn.expand "<cword>" } } end,
+        function() require("grug-far").open { prefills = { search = vim.fn.expand "<cword>" } } end,
         desc = "Last search",
       },
       {
         "<leader>rr/",
-        function() require("grug-far").grug_far { prefills = { search = vim.fn.getreg "/" } } end,
+        function() require("grug-far").open { prefills = { search = vim.fn.getreg "/" } } end,
         desc = "Last search",
       },
       {
         "<leader>rr+",
-        function() require("grug-far").grug_far { prefills = { search = vim.fn.getreg "+" } } end,
+        function() require("grug-far").open { prefills = { search = vim.fn.getreg "+" } } end,
         desc = "Last yank",
       },
       {
         "<leader>rr.",
-        function() require("grug-far").grug_far { prefills = { search = vim.fn.getreg "." } } end,
+        function() require("grug-far").open { prefills = { search = vim.fn.getreg "." } } end,
         desc = "Last insert",
       },
       {
         "<Plug>(GrugFarFile)",
-        function() require("grug-far").grug_far { prefills = { flags = vim.fn.expand "%" } } end,
+        function() require("grug-far").open { prefills = { flags = vim.fn.expand "%" } } end,
         desc = "GrugFar File",
       },
     },
@@ -111,10 +141,10 @@ return {
         },
       },
       on_qf = function(bufnr)
-        vim.api.nvim_create_autocmd("WinLeavePre", {
-          buffer = 0,
-          callback = function() vim.cmd.write() end,
-        })
+        -- vim.api.nvim_create_autocmd("WinLeave", {
+        --   buffer = 0,
+        --   callback = function() vim.cmd.write() end,
+        -- })
       end,
     },
   },

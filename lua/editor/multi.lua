@@ -17,7 +17,7 @@ local function wrap_vm(prefix, vm, suffix)
       if type(suffix) == "function" then suffix = suffix() end
       if type(suffix) == "string" and #suffix > 0 then feedkeys(suffix, "m") end
       -- HACK: tune this value
-    end, 200)
+    end, 0)
   end
 end
 local function wrap_vm_call(prefix, vm, affix)

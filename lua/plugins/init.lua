@@ -137,6 +137,6 @@ return {
   },
   {
     "Apeiros-46B/qalc.nvim",
-    cmd = { "Quickmath" },
+    cmd = { "Qalc" },
   },
 }

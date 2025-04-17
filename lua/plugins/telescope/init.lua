@@ -88,12 +88,12 @@ local telescope = {
             ["<M-q>"] = function(...)
               actions.send_to_qflist(...)
               -- actions.open_qflist(...)
-              require("quicker").open()
+              vim.schedule(function() require("quicker").open() end)
             end,
             ["<C-q>"] = function(...)
               actions.send_to_qflist(...)
               -- actions.open_qflist(...)
-              require("quicker").open()
+              vim.schedule(function() require("quicker").open() end)
             end,
             ["<C-l>"] = function(...) require("trouble.sources.telescope").open(...) end,
             ["<C-S-l>"] = function(...) require("trouble.sources.telescope").add(...) end,

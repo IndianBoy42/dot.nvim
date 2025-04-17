@@ -202,16 +202,6 @@ local custom_textobjects = function(ai)
     end,
   }
 end
-local hop_fn = setmetatable({}, {
-  __index = function(_, n)
-    return setmetatable({}, {
-      __call = function(t, ...) return partial(require("hop-extensions")[n], ...) end,
-      __index = function(t, k)
-        return function(...) return partial(require("hop-extensions")[n][k], ...) end
-      end,
-    })
-  end,
-})
 
 local function _leap_bi()
   local winnr = vim.api.nvim_get_current_win()
@@ -265,111 +255,6 @@ local function leap_bi_x(inc)
       if behind then vim.cmd "normal! l" end
     end
   end
-end
-local leap_select_state = { prev_input = nil }
-local function leap_select(kwargs)
-  kwargs = kwargs or {}
-  if kwargs.inclusive_op == nil then kwargs.inclusive_op = true end
-
-  local function get_input(bwd)
-    vim.cmd 'echo ""'
-    local hl = require "leap.highlight"
-    if vim.v.count == 0 and not (kwargs.unlabeled and vim.fn.mode(1):match "o") then
-      -- TODO: figure this out
-      hl["apply-backdrop"](hl, bwd)
-    end
-    hl["highlight-cursor"](hl)
-    vim.cmd "redraw"
-    local ch = require("leap.util")["get-input-by-keymap"] { str = ">" }
-    hl["cleanup"](hl, { vim.fn.win_getid() })
-    if not ch then return end
-    -- Repeat with the previous input?
-    local repeat_key = require("leap.opts").special_keys.repeat_search
-    if ch == vim.keycode(repeat_key) then
-      if leap_select_state.prev_input then
-        ch = leap_select_state.prev_input
-      else
-        vim.cmd 'echo "no previous search"'
-        return
-      end
-    else
-      leap_select_state.prev_input = ch
-    end
-    return ch
-  end
-  local function get_pattern(input)
-    -- See `expand-to-equivalence-class` in `leap`.
-    -- Gotcha! 'leap'.opts redirects to 'leap.opts'.default - we want .current_call!
-    local chars = require("leap.opts").eq_class_of[input]
-    if chars then
-      chars = vim.tbl_map(function(ch)
-        if ch == "\n" then
-          return "\\n"
-        elseif ch == "\\" then
-          return "\\\\"
-        else
-          return ch
-        end
-      end, chars or {})
-      input = "\\(" .. table.concat(chars, "\\|") .. "\\)" -- "\(a\|b\|c\)"
-    end
-    return "\\V" .. (kwargs.multiline == false and "\\%.l" or "") .. input
-  end
-  local function get_targets(pattern, bwd)
-    local search = require "leap.search"
-    local bounds = search["get-horizontal-bounds"]()
-    local get_char_at = require("leap.util")["get-char-at"]
-    local match_positions = search["get-match-positions"](pattern, bounds, { ["backward?"] = bwd })
-    local targets = {}
-    for _, pos in ipairs(match_positions) do
-      table.insert(targets, { pos = pos, chars = { get_char_at(pos, {}) } })
-    end
-    return targets
-  end
-
-  local targets2
-  require("leap").leap {
-    targets = function()
-      local state = require("leap").state
-      local pattern, pattern2
-      if state.args.dot_repeat then
-        pattern = state.dot_repeat_pattern
-        pattern2 = state.dot_repeat_pattern2
-      else
-        local input = get_input(true)
-        if not input then return end
-        pattern = get_pattern(input)
-
-        local input2 = get_input(false)
-        if not input2 then return end
-        pattern2 = get_pattern(input2)
-        -- Do not save into `state.dot_repeat`, because that will be
-        -- replaced by `leap` completely when setting dot-repeat.
-        state.dot_repeat_pattern = pattern
-        state.dot_repeat_pattern2 = pattern2
-      end
-      targets2 = get_targets(pattern2, false)
-      return get_targets(pattern, true)
-    end,
-    inclusive_op = kwargs.inclusive_op,
-    action = function(target)
-      target.pos[2] = target.pos[2] - 1
-      vim.api.nvim_win_set_cursor(0, target.pos)
-      local feedkeys = vim.api.nvim_feedkeys
-      feedkeys("o", "n", false)
-      vim.schedule(function()
-        -- TODO: AOT label this!
-        require("leap").leap {
-          targets = targets2,
-          inclusive_op = kwargs.inclusive_op,
-          action = function(target)
-            target.pos[2] = target.pos[2] - 1
-            vim.api.nvim_win_set_cursor(0, target.pos)
-          end,
-        }
-      end)
-    end,
-  }
 end
 
 return {
@@ -431,10 +316,9 @@ return {
         desc = "Leap Remote",
         mode = { "o", "x" },
       },
-      {
+      { -- FIXME: treesitter doesn't trigger (leap thinks we're done too soon)
         O.select_remote_dynamic,
         function()
-          -- FIXME:
           require("leap.remote").action {
             input = "<Plug>(leap-treesitter)",
           }
@@ -492,13 +376,14 @@ return {
         "rp",
         mode = "n",
         desc = "Remote Paste",
-        nav.remote_paste(vim.keycode "<leader>t"),
+        nav.remote_paste(),
+        -- function() require("leap.remote").action { input = "p" } end,
       },
       {
         "rP",
         mode = "n",
         desc = "Remote Paste line",
-        nav.remote_paste(vim.keycode "<leader>t", "<Plug>(YankyPutIndentAfterLinewise)"),
+        nav.remote_paste(nil, "<Plug>(YankyPutIndentAfterLinewise)"),
       },
       -- [cdy]<>rp<>
       -- [cdy]<>R<>
@@ -509,65 +394,75 @@ return {
         "rx",
         mode = { "n", "x" },
         desc = "Exchange <motion1> with <motion2>",
-        function() nav.exch_with {} end,
+        function()
+          require("leap.remote").action {
+            input = "cx",
+            and_then = ".",
+          }
+        end,
       },
       {
         "rX",
         mode = { "n", "x" },
         desc = "Exchange V<motion1> with V<motion2>",
-        function() nav.exch_with { exchange = { visual_mode = "V" } } end,
+        function()
+          require("leap.remote").action {
+            input = "cxV",
+            and_then = ".",
+          }
+        end,
       },
-      { -- FIXME: swap the order of this
+      {
         "ry",
+        mode = { "n" },
+        desc = "Remote yank and paste here",
+        function()
+          require("leap.remote").action {
+            input = "y",
+            and_then = "P",
+          }
+        end,
+      },
+      {
+        "rd",
+        mode = { "x", "n" },
+        desc = "Remote delete and paste here",
+        function()
+          require("leap.remote").action {
+            input = "d",
+            and_then = "P",
+          }
+        end,
+      },
+      {
+        "rc",
+        mode = { "x", "n" },
+        desc = "Remote change and paste here",
+        function()
+          require("leap.remote").action {
+            input = "c",
+            and_then = "P",
+          }
+        end,
+      },
+      -- TODO: implement these with leap.remote (without repeat motion?)
+      { -- FIXME: swap the order of this
+        "rY",
         mode = { "x", "n" },
         desc = "Replace with <remote-motion>",
         function() nav.swap_with { exchange = { not_there = true } } end,
       },
       { -- FIXME: swap the order of this
-        "rd",
+        "rD",
         mode = { "x", "n" },
         desc = "Replace with d<remote-motion>",
         function() nav.swap_with { exchange = { not_there = true } } end,
       },
       { -- FIXME: swap the order of this
-        "rc",
+        "rC",
         mode = { "x", "n" },
         desc = "Replace with c<remote-motion>",
         function() nav.swap_with { exchange = { not_there = true } } end,
-      },
-      {
-        O.goto_prefix .. "r",
-        mode = { "n" },
-        desc = "Remote Replace",
-        "r<Plug>(leap-remote)",
-        remap = true,
-      },
-      {
-        "rxv", -- TODO: better keymap?
-        -- FIXME: its broken??
-        mode = { "x", "n" },
-        desc = "Exchange <node> with <node>",
-        -- TODO: use substitute.exchange
-        function() nav.swap_with({ mode = "remote_ts" }, "v") end,
-      },
-      -- TODO: Copy there, Paste here
-      { -- FIXME: this
-        "rY",
-        mode = { "n" },
-        desc = "Replace with <node>",
-        function() nav.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
-      },
-      { -- FIXME: this
-        "rD",
-        mode = { "x", "n" },
-        desc = "Replace with d<node>",
-        function() nav.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
-      },
-      { -- FIXME: this
-        "rC",
-        mode = { "x", "n" },
-        desc = "Replace with c<node>",
-        function() nav.swap_with { mode = "remote_ts", exchange = { not_there = true } } end,
       },
       { "<leader>f", "<Plug>(leap-forward-to)", mode = "x", desc = "Leap f" },
       { "<leader>t", "<Plug>(leap-forward-till)", mode = "x", desc = "Leap t" },
@@ -601,6 +496,26 @@ return {
             }
       -- TODO: make this n/N for repeating motions
       require("leap.user").set_repeat_keys("}", "{", {})
+      local remote = require("leap.remote").action
+      require("leap.remote").action = function(args)
+        if args and args.and_then then
+          vim.api.nvim_create_autocmd("User", {
+            group = vim.api.nvim_create_augroup("UserLeapRemote", {}),
+            once = true,
+            pattern = "RemoteOperationDone",
+            callback = function()
+              if type(args.on_return) == "string" then
+                vim.feedkeys(args.and_then, "m")
+              else
+                args.and_then()
+              end
+            end,
+          })
+        else
+          vim.api.nvim_create_augroup("UserLeapRemote", { clear = true })
+        end
+        remote(args)
+      end
     end,
   },
   {
@@ -625,7 +540,6 @@ return {
   {
     "folke/flash.nvim",
     event = "VeryLazy",
-    ---@type Flash.Config
     opts = {
       labels = O.hint_labels,
       search = {
@@ -651,6 +565,18 @@ return {
         char = {
           enabled = false,
           keys = { "f", "F", "t", "T" },
+        },
+        fuzzy = {
+          search = { mode = "fuzzy", max_length = 9999 },
+          label = { min_pattern_length = 9999 },
+          jump = { autojump = false },
+          char_actions = function(motion)
+            return {
+              [vim.keycode "<C-g>"] = "next",
+              [vim.keycode "<C-t>"] = "prev",
+            }
+          end,
+          -- label = { before = true, after = false },
         },
         treesitter = {
           labels = O.hint_labels,
@@ -706,11 +632,6 @@ return {
           },
           matcher = nav.remote_sel,
           actions = nav.ts_actions,
-        },
-        fuzzy = {
-          search = { mode = "fuzzy", max_length = 9999 },
-          label = { min_pattern_length = 10 },
-          -- label = { before = true, after = false },
         },
         leap = { -- Is this even possible really?
           search = {
