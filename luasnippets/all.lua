@@ -17,6 +17,7 @@ local snippets = {
   s("time", p(vim.fn.strftime, "%H:%M:%S")),
   s("date", p(vim.fn.strftime, "%Y-%m-%d")),
   s("pwd", { p(shell, "pwd") }),
+  s(":shrug:", { t "¯\\_(ツ)_/¯ " }),
 }
 
 local autosnippets = {}

@@ -47,6 +47,7 @@ return {
           -- cmd_env = require("lsp.config").get_cmd_env "clangd",
           cmd = clangd_cmd,
           commands = {
+            -- TODO: use winpick
             ClangdSwitchSourceHeader = {
               function() switch_source_header_splitcmd(0, "edit") end,
               description = "Open source/header in current buffer",

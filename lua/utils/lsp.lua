@@ -144,7 +144,9 @@ function M.view_location_pick(name)
 end
 
 -- TODO: Use show/hide instead?
-function M.toggle_diagnostics(b) diags.enable(not diags.is_enabled { bufnr = b or 0 }, { bufnr = b or 0 }) end
+function M.toggle_diagnostics(b)
+  diags.enable(not diags.is_enabled { bufnr = b or 0 }, { bufnr = b or 0 })
+end
 function M.disable_diagnostic(b) diags.enable(false, { bufnr = b or 0 }) end
 function M.enable_diagnostic(b) diags.enable(true, { bufnr = b or 0 }) end
 
@@ -154,10 +156,14 @@ function M.toggle_diag_vlines(enable)
   if cfg.virtual_lines or enable == false then
     vim.diagnostic.config {
       virtual_lines = false,
+      current_line = all.current_line_all,
+      virtual_text = all.virtual_text,
     }
   else
     vim.diagnostic.config {
       virtual_lines = all.virtual_lines,
+      current_line = all.current_line,
+      virtual_text = all.virtual_text_w_lines,
     }
   end
 end
@@ -210,7 +216,9 @@ end
 -- TODO: repeatable to enter the floating window
 -- TODO: Show using virtual lines
 local diag_line_ns
-function M.diag_line(opts) diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "line" })) end
+function M.diag_line(opts)
+  diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "line" }))
+end
 function M.diag_vline(opts)
   diag_line_ns = diag_line_ns or vim.api.nvim_create_namespace "diag_line_temp"
   local ds = diags.get(0, {
@@ -219,12 +227,18 @@ function M.diag_vline(opts)
   -- TODO: also related diagnostics
   -- TODO: use treesitter block for context
   if #ds == 0 then diags.hide(diag_line_ns, 0) end
+  -- local opts = require("langs").diagnostic_config_all.current_line
+  local opts = vim.diagnostic.config().current_line
   for _, d in ipairs(ds) do
-    diags.show(diag_line_ns, d.bufnr, { d }, require("langs").diagnostic_config_all.current_line)
+    diags.show(diag_line_ns, d.bufnr, { d }, opts)
   end
 end
-function M.diag_cursor(opts) diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "cursor" })) end
-function M.diag_buffer(opts) diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "buffer" })) end
+function M.diag_cursor(opts)
+  diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "cursor" }))
+end
+function M.diag_buffer(opts)
+  diags.open_float(vim.tbl_deep_extend("keep", opts or {}, { scope = "buffer" }))
+end
 
 function M.hover(handler)
   if type(handler) == "table" then
@@ -292,7 +306,7 @@ function M.get_highest_diag(ns, bufnr)
     local sev = diag.severity
     if sev < highest then highest = sev end
   end
-  -- return highest
+  return highest
 end
 function M.diag_next(opts)
   -- TODO: use vim.diagnostic.jump
@@ -386,7 +400,8 @@ function M.format(opts)
     else
       client = vim.iter(vim.lsp.get_clients { bufnr = buf }):find(
         function(client)
-          return (have_nls == (client.name == "null-ls")) and client:supports_method "textDocument/rangeFormatting"
+          return (have_nls == (client.name == "null-ls"))
+            and client:supports_method "textDocument/rangeFormatting"
         end
       )
     end
@@ -397,7 +412,9 @@ function M.format(opts)
     end
   end
 end
-M.format_all = function(opts) M.format(vim.tbl_extend("force", { modifications = true }, opts or {})) end
+M.format_all = function(opts)
+  M.format(vim.tbl_extend("force", { modifications = true }, opts or {}))
+end
 
 M.format_on_save = function(m)
   vim.g.Format_on_save_mode = m
@@ -443,7 +460,11 @@ vim.lsp.buf.cancel_formatting = function(bufnr)
     bufnr = (bufnr == nil or bufnr == 0) and vim.api.nvim_get_current_buf() or bufnr
     for _, client in ipairs(vim.lsp.get_clients { bufnr = bufnr }) do
       for id, request in pairs(client.requests or {}) do
-        if request.type == "pending" and request.bufnr == bufnr and request.method == "textDocument/formatting" then
+        if
+          request.type == "pending"
+          and request.bufnr == bufnr
+          and request.method == "textDocument/formatting"
+        then
           client.cancel_request(id)
         end
       end

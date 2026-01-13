@@ -18,6 +18,17 @@ return {
       end,
     })
 
+    augrp("_fix_cmdheight", function(au)
+      au("OptionSet", {
+        pattern = "cmdheight",
+        callback = function()
+          if vim.opt.cmdheight:get() > 1 then
+            vim.defer_fn(function() vim.opt.cmdheight = 0 end, 50)
+          end
+        end,
+      })
+    end)
+
     augrp("_general_settings", function(au)
       au("TextYankPost", function() vim.highlight.on_yank { higroup = "Search", timeout = 200 } end)
       local formatoptions = function()
@@ -65,7 +76,10 @@ return {
             timer = nil
             local reg = vim.fn.reg_recording()
             if reg then
-              vim.notify(("You've been recording that macro %s for a loooong time"):format(reg), vim.log.levels.WARN)
+              vim.notify(
+                ("You've been recording that macro %s for a loooong time"):format(reg),
+                vim.log.levels.WARN
+              )
             end
           end, 5000)
         end,

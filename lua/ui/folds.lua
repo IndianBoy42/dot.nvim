@@ -37,14 +37,14 @@ return {
     event = "LazyFile",
     init = function()
       --vim.o.foldcolumn = "0" -- '0' is not bad
-      vim.api.nvim_create_autocmd({ "BufReadPost", "BufEnter" }, {
-        pattern = "*",
-        callback = function()
-          vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
-          vim.o.foldlevelstart = 99
-          vim.o.foldenable = true
-        end,
-      })
+      -- vim.api.nvim_create_autocmd({ "BufReadPost", "BufEnter" }, {
+      --   pattern = "*",
+      --   callback = function()
+      vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
+      vim.o.foldlevelstart = 99
+      vim.o.foldenable = true
+      --   end,
+      -- })
     end,
     config = function()
       local handler = function(virtText, lnum, endLnum, width, truncate)
@@ -76,10 +76,10 @@ return {
       end
 
       local ufo = require "ufo"
-      ufo.setup {
-        -- provider_selector = function() return { "treesitter", "indent" } end, -- If we only use Treesitter
-        -- fold_virt_text_handler = handler,
-      }
+      -- ufo.setup {
+      --   -- provider_selector = function() return { "treesitter", "indent" } end, -- If we only use Treesitter
+      --   -- fold_virt_text_handler = handler,
+      -- }
       vim.api.nvim_create_autocmd({ "WinNew", "VimEnter" }, {
         callback = function() vim.w.ufo_foldlevel = 1 end,
       })

@@ -156,7 +156,15 @@ return {
           augend.integer.alias.hex,
           augend.integer.alias.octal,
           augend.integer.alias.binary,
-          augend.constant.alias.bool, -- TODO: True, False
+          -- augend.constant.alias.bool, -- TODO: True, False
+          augend.constant.new {
+            elements = { "true", "false" },
+            preserve_case = true,
+          },
+          augend.constant.new {
+            elements = { "yes", "no" },
+            preserve_case = true,
+          },
           augend.constant.alias.alpha,
           augend.constant.alias.Alpha,
           augend.semver.alias.semver,
@@ -278,7 +286,7 @@ return {
             head("t", op, "to_title_case", "Title Case"),
             head("/", op, "to_path_case", "path/case"),
             head("s", op, "to_phrase_case", "Sentence case"),
-            head("m", op, "to_pascal_case", "MixedCase"),
+            head("m", op, "to_pascal_case", "PascalCase"),
 
             { "<Esc>", nil, { exit = true } },
           }
@@ -286,7 +294,15 @@ return {
 
         hydra {
           -- TODO: the hint doesn't show properly
-          config = { invoke_on_body = true },
+          config = {
+            invoke_on_body = true,
+            on_key = function()
+              vim.wait(200, function()
+                vim.cmd.redraw()
+                return true
+              end, 30, false)
+            end,
+          },
           name = "Change case",
           mode = "n",
           body = "cu",
@@ -472,7 +488,7 @@ return {
     config = function()
       local opts = {
         on_substitute = require("yanky.integration").substitute(),
-        yank_substituted_text = true, -- TODO: a separate keymap for false
+        yank_substituted_text = false, -- TODO: a separate keymap for true
       }
       require("substitute").setup(opts)
     end,

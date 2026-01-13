@@ -1,18 +1,43 @@
+local function virtual_text_format(diagnostic)
+  local lnum = vim.api.nvim_win_get_cursor(0)[1] - 1
+  local iswarn = diagnostic.severity == vim.diagnostic.severity.WARN
+  if iswarn then return diagnostic.message end
+  if diagnostic.severity == vim.diagnostic.severity.HINT then return "HINT" end
+  if diagnostic.severity == vim.diagnostic.severity.INFO then return "INFO" end
+  local curr_line = diagnostic.end_lnum
+      and (lnum >= diagnostic.lnum and lnum <= diagnostic.end_lnum)
+    or (lnum == diagnostic.lnum)
+  return ""
+end
 local diagnostic_config_all = {
   current_line = {
+    severity_sort = true,
     auto = true,
     -- FIXME: only additive
     -- virtual_lines = false,
     -- virtual_text = { format = function() return "" end },
     -- signs = false,
     -- underline = false,
+    virtual_text = false,
     virtual_lines = {
       severity = { max = vim.diagnostic.severity.WARN },
     },
   },
+  current_line_all = {
+    severity_sort = true,
+    auto = true,
+    -- FIXME: only additive
+    -- virtual_lines = false,
+    -- virtual_text = { format = function() return "" end },
+    -- signs = false,
+    -- underline = false,
+    virtual_text = false,
+    virtual_lines = {},
+  },
   virtual_text = {
     spacing = 4,
     prefix = "",
+    format = virtual_text_format,
   },
   _virtual_text = {
     -- TODO: this looks bad, has too much extra space
@@ -27,17 +52,7 @@ local diagnostic_config_all = {
     spacing = 4,
     prefix = "",
     _format = function() return "" end,
-    format = function(diagnostic)
-      local lnum = vim.api.nvim_win_get_cursor(0)[1] - 1
-      local iswarn = diagnostic.severity == vim.diagnostic.severity.WARN
-      if iswarn then return diagnostic.message end
-      if diagnostic.severity == vim.diagnostic.severity.HINT then return "HINT" end
-      if diagnostic.severity == vim.diagnostic.severity.INFO then return "INFO" end
-      local curr_line = diagnostic.end_lnum
-          and (lnum >= diagnostic.lnum and lnum <= diagnostic.end_lnum)
-        or (lnum == diagnostic.lnum)
-      return ""
-    end,
+    format = virtual_text_format,
     severity = { max = vim.diagnostic.severity.WARN },
   },
   virtual_lines = {
@@ -184,7 +199,7 @@ local plugins = {
       local lspwith = vim.lsp.with
 
       vim.diagnostic.config(diagnostic_config)
-      vim.api.nvim_create_autocmd("CursorMoved", {
+      vim.api.nvim_create_autocmd({ "CursorMoved", "DiagnosticChanged" }, {
         group = vim.api.nvim_create_augroup("diag_current_line", { clear = true }),
         callback = function()
           local currlineopts = vim.diagnostic.config().current_line

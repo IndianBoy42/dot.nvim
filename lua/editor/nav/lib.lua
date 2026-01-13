@@ -363,25 +363,6 @@ M.remote_paste = function(key, paste_key, dir_key)
   end
 end
 
--- TODO: operator that when repeated does a replace instead
-M.dual_operator = function(op1, op2)
-  op1 = op1 or "y"
-  op2 = op2 or "r"
-  local is_repeat = false
-  return function()
-    _G.__remote_op_opfunc = function()
-      if is_repeat then
-        vim.api.nvim_feedkeys("`[" .. op2 .. "`]", "m", false)
-      else
-        vim.api.nvim_feedkeys("`[" .. op1 .. "`]", "m", false)
-      end
-    end
-    vim.go.operatorfunc = "v:lua.__remote_op_opfunc"
-    is_repeat = true
-    return "g@"
-  end
-end
-
 local ai_objs = {
   "a(",
   "i(",

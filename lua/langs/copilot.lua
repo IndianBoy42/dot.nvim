@@ -30,6 +30,9 @@ return {
       },
     },
     opts = function(_, opts)
+      -- FIXME: annoying when it pops up right before taking
+      -- better prioritization?
+      -- or separate keybinding
       opts.sources = vim.list_extend({
         {
           name = source,

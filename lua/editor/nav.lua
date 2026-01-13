@@ -355,6 +355,7 @@ return {
       {
         "ar",
         function()
+          -- TODO: add which-key here?
           local ok, char = pcall(vim.fn.getcharstr)
           if not ok or char == vim.keycode "<esc>" then return end
           require("leap.remote").action { input = "a" .. char }
@@ -496,26 +497,22 @@ return {
             }
       -- TODO: make this n/N for repeating motions
       require("leap.user").set_repeat_keys("}", "{", {})
-      local remote = require("leap.remote").action
-      require("leap.remote").action = function(args)
-        if args and args.and_then then
-          vim.api.nvim_create_autocmd("User", {
-            group = vim.api.nvim_create_augroup("UserLeapRemote", {}),
-            once = true,
-            pattern = "RemoteOperationDone",
-            callback = function()
-              if type(args.on_return) == "string" then
-                vim.feedkeys(args.and_then, "m")
-              else
-                args.and_then()
-              end
-            end,
-          })
-        else
-          vim.api.nvim_create_augroup("UserLeapRemote", { clear = true })
-        end
-        remote(args)
-      end
+
+      local grp = vim.api.nvim_create_augroup("UserLeapRemote", { clear = true })
+      vim.api.nvim_create_autocmd("User", {
+        group = grp,
+        once = true,
+        pattern = "RemoteOperationDone",
+        callback = function(event)
+          local args = event.data.args
+          if not args.and_then then return end
+          if type(args.and_then) == "string" then
+            vim.feedkeys(args.and_then, "m")
+          else
+            args:and_then()
+          end
+        end,
+      })
     end,
   },
   {

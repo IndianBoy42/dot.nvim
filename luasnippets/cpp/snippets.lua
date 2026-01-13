@@ -115,6 +115,10 @@ local snippets = {
 
   -- Attributes
   parse("nd", "[[nodiscard]]"),
+  parse("__", "[[__attribute__(($0))]]"),
+  parse("Os", '[[__attribute__((optimize("Os")))]]'),
+  parse("O3", '[[__attribute__((optimize("O3")))]]'),
+  parse("Of", '[[__attribute__((optimize("O3 -ffast-math")))]]'),
 
   -- Special member declarations
   s("consd", {
@@ -166,7 +170,10 @@ local snippets = {
       local cname = get_surrounding_class(tonumber(snip.env.TM_LINE_NUMBER))
 
       if cname then
-        return sn(nil, { t(cname .. "("), i(1), t ")", n(2, " : "), i(2), t { " {", "\t" }, i(3), t { "", "}" } })
+        return sn(
+          nil,
+          { t(cname .. "("), i(1), t ")", n(2, " : "), i(2), t { " {", "\t" }, i(3), t { "", "}" } }
+        )
       else
         return sn(nil, {
           i(1, "Class"),
@@ -189,7 +196,10 @@ local snippets = {
       local cname = get_surrounding_class(tonumber(snip.env.TM_LINE_NUMBER))
 
       if cname then
-        return sn(nil, { t { cname .. "(" .. cname .. " const& other) {", "\t" }, i(1), t { "", "}" } })
+        return sn(
+          nil,
+          { t { cname .. "(" .. cname .. " const& other) {", "\t" }, i(1), t { "", "}" } }
+        )
       else
         return sn(nil, {
           i(1, "Class"),
@@ -209,7 +219,10 @@ local snippets = {
       local cname = get_surrounding_class(tonumber(snip.env.TM_LINE_NUMBER))
 
       if cname then
-        return sn(nil, { t { cname .. "(" .. cname .. "&& other) noexcept {", "\t" }, i(1), t { "", "}" } })
+        return sn(
+          nil,
+          { t { cname .. "(" .. cname .. "&& other) noexcept {", "\t" }, i(1), t { "", "}" } }
+        )
       else
         return sn(nil, {
           i(1, "Class"),
@@ -229,10 +242,11 @@ local snippets = {
       local cname = get_surrounding_class(tonumber(snip.env.TM_LINE_NUMBER))
 
       if cname then
-        return sn(
-          nil,
-          { t { cname .. "& operator=(" .. cname .. " const& other) {", "\t" }, i(1), t { "", "\treturn *this;", "}" } }
-        )
+        return sn(nil, {
+          t { cname .. "& operator=(" .. cname .. " const& other) {", "\t" },
+          i(1),
+          t { "", "\treturn *this;", "}" },
+        })
       else
         return sn(nil, {
           i(1, "Class"),
@@ -278,7 +292,14 @@ local snippets = {
       if cname then
         return sn(nil, { t { "~" .. cname .. "() {", "\t" }, i(1), t { "", "}" } })
       else
-        return sn(nil, { i(1, "Class"), t "::~", l(l._1:match "([^<]*)", 1), t { "() {", "\t" }, i(2), t { "", "}" } })
+        return sn(nil, {
+          i(1, "Class"),
+          t "::~",
+          l(l._1:match "([^<]*)", 1),
+          t { "() {", "\t" },
+          i(2),
+          t { "", "}" },
+        })
       end
     end),
   }),
@@ -310,6 +331,7 @@ local snippets = {
     }),
   }, { stored = { header = i(1, "header") } }),
   parse("cinit", "auto const $1 = [&] {\n\t$0\n}();"),
+  parse("iife", "[&] {\n\t$0\n}()"),
 }
 
 local autosnippets = {

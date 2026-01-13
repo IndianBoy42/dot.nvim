@@ -10,6 +10,7 @@ local function on_attach()
   map("n", O.hover_key, "<cmd>RustLsp hover actions<CR>", { desc = "Hover Actions" })
   map("n", "gj", "<cmd>RustLsp joinlines<CR>", { desc = "Join Lines" })
   map("n", "<leader>de", "<cmd>RustLsp explainError cycle<CR>", { desc = "Explain" })
+  map("n", "<leader>ob", "<cmd>bacon -j bacon-ls<CR>", { desc = "Bacon diagnostics" })
 
   local move_item = function(dir)
     return function() vim.cmd.RustLsp { "moveItem", dir } end
@@ -53,7 +54,12 @@ local function on_attach()
   map("n", "D", "<Cmd>RustLsp debuggables<CR>", { desc = "Debuggables" })
   map("n", "d", "<Cmd>RustLsp relatedDiagnostics<CR>", { desc = "Related" })
   map("n", "o", "<Cmd>RustLsp openDocs<CR>", { desc = "Open Docs.rs" })
-  map("n", "s", ":RustLsp ssr  ==>> <Left><Left><Left><Left><Left><Left>", { desc = "Structural S&R" })
+  map(
+    "n",
+    "s",
+    ":RustLsp ssr  ==>> <Left><Left><Left><Left><Left><Left>",
+    { desc = "Structural S&R" }
+  )
   map("x", "h", "<cmd>RustLsp hover range", { desc = "LSP Hover" })
   map("x", "ef", code_action("refactor.extract", "function"), { desc = "Extract function" })
   map("x", "ev", code_action("refactor.extract", "variable"), { desc = "Extract variable" })
@@ -96,6 +102,7 @@ local snippets = {
   ["RefCell"] = postfix_wrap_type("refcell_type", "RefCell", nil),
   ["Rc"] = postfix_wrap_type("rc_type", "Rc", nil),
   ["Box"] = postfix_wrap_type("box_type", "Box", nil),
+  ["Not"] = postfix_wrap_type("not", "!", nil),
   ["unsafe"] = {
     postfix = "unsafe",
     body = { "unsafe { ${receiver} }" },
@@ -115,8 +122,22 @@ local snippets = {
     body = { [[if ${receiver} {
               $0
               }]] },
-    scope = "expre",
+    scope = "expr",
     description = "Wrap in if _ {}",
+  },
+  ["let-else"] = {
+    postfix = "lete",
+    body = { [[let ${1:_}(${2:_}) = ${receiver} else {
+              ${0:return}
+              }]] },
+    scope = "expre",
+    description = "Wrap in let-else",
+  },
+  ["let?"] = {
+    postfix = "?",
+    body = { [[let ${0:_} = ${receiver}?;]] },
+    scope = "expre",
+    description = "Wrap in let-else",
   },
   ["thread::spawn"] = {
     prefix = "spawn",
@@ -162,7 +183,13 @@ return {
   },
   -- correctly setup mason lsp / dap extensions
 
-  require("langs").mason_ensure_installed { "codelldb", "rust-analyzer", "taplo", "bacon", "bacon-ls" },
+  require("langs").mason_ensure_installed {
+    "codelldb",
+    "rust-analyzer",
+    "taplo",
+    "bacon",
+    "bacon-ls",
+  },
 
   -- TODO: rustaceanvim
   -- https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/plugins/extras/lang/rust.lua
@@ -181,7 +208,7 @@ return {
           -- rust-analyzer language server configuration
           ["rust-analyzer"] = {
             cargo = {
-              targetDir = "target/analyzer",
+              targetDir = true,
               allFeatures = true,
               loadOutDirsFromCheck = true,
               buildScripts = {
@@ -194,7 +221,7 @@ return {
             diagnostics = {
               -- enable = use_diagnostics == "rust-analyzer",
               experimental = {
-                enable = true,
+                enable = false,
               },
             },
             completion = {

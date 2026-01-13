@@ -264,6 +264,8 @@ function M.setup()
   --   end
   -- end
 
+  map("n", "<leader>yf", function() vim.fn.setreg("+", vim.fn.expand "%") end)
+
   -- Tab switch buffer
   map("n", "<tab>", cmd "b#", { desc = "Last Buffer" })
   map("n", "<S-tab>", require("keymappings.buffer_mode").tab_new_or_next, { desc = "Next Tab" })
@@ -669,6 +671,9 @@ function M.setup()
   map("i", "<M-a>", cmd "normal! A", {})
   map("i", "<M-i>", cmd "normal! I", {})
 
+  -- New mapping for replace mode
+  map("i", "<Insert>", "R")
+
   -- Slightly easier commands
   map({ "n", "x" }, ";", ":", {})
   -- map('c', ';', "<cr>", {})
@@ -732,10 +737,6 @@ function M.setup()
     undo_brkpt(v)
   end
   map("n", "U", "<C-R>", {})
-
-  -- Go to multi insert from Visual mode
-  map("s", "<M-i>", "<ESC>I", {})
-  map("s", "<M-a>", "<ESC>A", {})
 
   -- Select all matchching regex search
   -- map("n", "<M-S-/>", "<M-/><M-a>", {remap=true})
@@ -1079,9 +1080,25 @@ function M.setup()
     { "<leader>oH", "<cmd>DiffviewFileHistory<cr>", desc = "File History Git" },
     { "<leader>oM", "<cmd>MinimapToggle<cr>", desc = "Minimap" },
     { "<leader>oN", "<cmd>NoiceHistory<cr>", desc = "Noice History" },
-    { "<leader>oa", "<cmd>KittyNew aider --watch-files<cr>", desc = "AIder" },
+    -- { "<leader>oa", "<cmd>KittyNew aider --watch-files<cr>", desc = "AIder" },
+    {
+      "<leader>oa",
+      function()
+        -- TODO: add to existing aider?
+        local fname = vim.fn.expand "%:p"
+        local rel = vim.fs.relpath(".", fname)
+        if rel then
+          vim.cmd("KittyNew aider --file " .. rel)
+        else
+          vim.cmd "KittyNew aider"
+        end
+      end,
+      desc = "AIder",
+    },
     { "<leader>oA", ":KittyNew aider --watch-files ", desc = "AIder (...)" },
-    { "<leader>oc", "<cmd>Codeium Chat<cr>", desc = "Codeium Chat" },
+    { "<leader>oB", "<cmd>KittyNew bacon<cr>", desc = "Bacon diagnostics" },
+    { "<leader>ob", ":KittyNew bacon -j ", desc = "Bacon diagnostics (...)" },
+    { "<leader>oc", "<cmd>KittyNew opencode<cr>", desc = "OpenCode" },
     { "<leader>od", "<cmd>DiffviewOpen<cr>", desc = "Diffview" },
     { "<leader>og", "<cmd>!smerge '%:p:h'<cr>", desc = "Sublime Merge" },
 

@@ -1,5 +1,14 @@
 return {
   {
+    "rafikdraoui/jj-diffconflicts",
+    cmd = "JJDiffConflicts",
+  },
+  {
+    "julienvincent/hunk.nvim",
+    cmd = { "DiffEditor" },
+    opts = {},
+  },
+  {
     "ruifm/gitlinker.nvim",
     cmd = "Gitlink",
     opts = {

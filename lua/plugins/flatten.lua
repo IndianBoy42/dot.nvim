@@ -29,10 +29,14 @@ return {
       local addr
 
       -- If running in a Kitty terminal, all tabs/windows/os-windows in the same instance of kitty will open in the first neovim instance
-      if vim.env.KITTY_PID then addr = ("%s/kitty.nvim-%s"):format(vim.fn.stdpath "run", vim.env.KITTY_PID) end
+      if vim.env.KITTY_PID then
+        addr = ("%s/kitty.nvim-%s"):format(vim.fn.stdpath "run", vim.env.KITTY_PID)
+      end
 
       -- TODO: better cwd-based nesting
-      if not addr then addr = ("%s/nvim-%s"):format(vim.fn.stdpath "run", FNV_hash(vim.loop.cwd())) end
+      if not addr then
+        addr = ("%s/nvim-%s"):format(vim.fn.stdpath "run", FNV_hash(vim.loop.cwd()))
+      end
 
       if addr then
         local ok = pcall(vim.fn.serverstart, addr)
@@ -42,6 +46,7 @@ return {
     -- <String, Bool> dictionary of filetypes that should be blocking
     block_for = {
       gitcommit = true,
+      gitrebase = true,
     },
     one_per = {
       kitty = true,
@@ -75,25 +80,27 @@ return {
         -- return vim.tbl_contains(argv, "-d")
         if vim.tbl_contains(argv, "-d") then return true end
         if vim.tbl_contains(argv, "--diff") then return true end
+        if vim.tbl_contains(argv, "DiffEditor") then return true end
+        if vim.tbl_contains(argv, "JJDiffConflicts") then return true end
+        if vim.tbl_contains(argv, "JJDiffConflicts!") then return true end
 
-        return false
+        return require("flatten").default_should_block(argv)
       end,
       should_nest = function(host)
         if vim.env.NVIM ~= nil then return false end
 
-        if vim.tbl_contains(vim.v.argv, "__focus") then return false end
+        if vim.tbl_contains(vim.v.argv, "--focus") then return false end
 
-        -- If in a wezterm or kitty split, only open files in the first neovim instance
-        -- if their working directories are the same.
-        -- This allows you to open a new instance in a different cwd, but open files from the active cwd in your current session.
-        local call = "return vim.fn.getcwd(-1)"
-        local ok, host_cwd = pcall(vim.rpcrequest, host, "nvim_exec_lua", call, {})
+        if vim.tbl_contains(vim.v.argv, "DiffEditor") then return true end
+        if vim.tbl_contains(vim.v.argv, "JJDiffConflicts") then return true end
+        if vim.tbl_contains(vim.v.argv, "JJDiffConflicts!") then return true end
 
-        -- Yield to default behavior if RPC call fails
-        if not ok then return false end
+        -- Files in `/tmp/` are probably temporary(duh) messages files (like git commit messages)
+        for i, v in ipairs(vim.v.argv) do
+          if vim.startswith(v, "/tmp/") then return true end
+        end
 
-        ---@diagnostic disable-next-line: param-type-mismatch
-        return not vim.startswith(vim.fn.getcwd(-1), host_cwd)
+        return require("flatten").default_should_nest(host)
       end,
 
       no_files = function()
@@ -123,7 +130,9 @@ return {
         -- (after bufdelete, bufunload, or quitpre for the blocking buffer)
         -- TODO: refocus the previous window
         vim.notify "hello"
-        if state and state.wid then require("kitty.term").new({ attach_to_win = state.wid }):focus() end
+        if state and state.wid then
+          require("kitty.term").new({ attach_to_win = state.wid }):focus()
+        end
       end,
     },
   },

@@ -16,7 +16,16 @@ return {
     "chrisgrieser/nvim-genghis",
     dependencies = "stevearc/dressing.nvim",
     init = function()
-      local function abbr(lhs, rhs) vim.keymap.set("ca", lhs, "Genghis " .. rhs) end
+      local function abbr(lhs, rhs)
+        vim.keymap.set("ca", lhs, function()
+          if vim.fn.getcmdtype() == ":" then
+            return "Genghis " .. rhs
+          else
+            return lhs
+          end
+        end, { expr = true })
+        -- TODO: create a forwarding command (or make it not work in search mode)
+      end
       abbr("New", "createNewFile")
       abbr("Move", "moveAndRenameFile")
       abbr("Rename", "renameFile")
@@ -38,7 +47,7 @@ return {
       {
         "<leader>of",
         function()
-          MiniFiles.open(vim.api.nvim_buf_get_name(0))
+          if vim.o.buftype == "" then MiniFiles.open(vim.api.nvim_buf_get_name(0)) end
           MiniFiles.reveal_cwd()
         end,
         desc = "File Browser",

@@ -136,6 +136,7 @@ return function()
       kbd = "kmonad",
       -- fish = "fish",
       just = "just",
+      tpp = "cpp",
     },
     filename = {
       Justfile = "just",

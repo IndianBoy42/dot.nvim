@@ -77,7 +77,7 @@ M.hydra = function(bufnr)
         function()
           local mode = vim.api.nvim_get_mode().mode:sub(1, 1)
           if mode == "V" then -- visual-line mode
-            local esc = vim.keycode("<Esc>")
+            local esc = vim.keycode "<Esc>"
             vim.api.nvim_feedkeys(esc, "x", false) -- exit visual mode
             vim.cmd "'<,'>Gitsigns stage_hunk"
           else
@@ -95,11 +95,20 @@ M.hydra = function(bufnr)
       { "/", gitsigns.show, { exit = true, desc = "show base file" } }, -- show the base of the file
       { "o", utils.telescope.git_status, { desc = "Open" } },
       { "g", function() vim.cmd "Neogit" end, { exit_before = true, desc = "Fugitive" } },
-      { "m", function() vim.cmd "!smerge '%:p:h'" end, { exit_before = true, desc = "Subl merge" } },
+      {
+        "m",
+        function() vim.cmd "!smerge '%:p:h'" end,
+        { exit_before = true, desc = "Subl merge" },
+      },
       {
         "i",
         function() require("kitty.terms").use_os_window({}, "gitui", "gitui") end,
         { exit_before = true, desc = "GitUI" },
+      },
+      {
+        "JK",
+        function() require("kitty.terms").use_os_window({}, "jjui", "jjui") end,
+        { exit_before = true, desc = "JujutsUI" },
       },
       {
         "c",

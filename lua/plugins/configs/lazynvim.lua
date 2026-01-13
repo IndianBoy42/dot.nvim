@@ -32,7 +32,7 @@ function M.lazy_file()
         if not (lang and pcall(vim.treesitter.start, event.buf, lang)) then vim.bo[event.buf].syntax = ft end
 
         -- Trigger early redraw
-        vim.cmd [[redraw]]
+        vim.cmd.redraw()
       end
     end,
   })

@@ -72,7 +72,11 @@ local M = {
               { "a", nn.add_cell_below, { desc = "Run & Move", nowait = true, private = true } },
               { "i", nn.add_cell_above, { desc = "Run & Move", nowait = true, private = true } },
               { "o", nn.split_cell, { desc = "Run & Move", nowait = true, private = true } },
-              { O.commenting.op, nn.comment_cell, { desc = "Run & Move", nowait = true, private = true } },
+              {
+                O.commenting.op,
+                nn.comment_cell,
+                { desc = "Run & Move", nowait = true, private = true },
+              },
             },
           })
           for _, v in ipairs {
@@ -144,7 +148,7 @@ local M = {
         --     },
         --   },
         -- },
-        pyright = {},
+        basedpyright = {},
         --   handlers = {
         --     ["textDocument/publishDiagnostics"] = function() end,
         --   },
