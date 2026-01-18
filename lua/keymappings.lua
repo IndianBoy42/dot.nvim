@@ -486,7 +486,10 @@ function M.setup()
   -- unlisted, noname, etc
   map("n", "<c-c>", "<C-w>q", nore)
   map("n", "<c-q>", "<C-w>q", nore)
+  map("n", "<m-c>", "<cmd>Bdelete<cr>", nore)
+  map("n", "<m-q>", "<cmd>Bdelete<cr>", nore)
   map("n", "<c-s-q>", ":wqa", nore)
+  map("n", "<m-s-c>", ":wqa", nore)
 
   -- Search textobject
   map("n", "<leader>*", operatorfunc_keys "*", { desc = "Search (op)", expr = true })

@@ -64,7 +64,12 @@ return {
     init = function() vim.cmd.cnoreabbrev "bd Bdelete" end,
   },
   { "jghauser/mkdir.nvim", event = "BufWritePre" },
-  { "lambdalisue/suda.vim", cmd = { "SudaWrite", "SudaRead" } },
+  {
+    "lambdalisue/suda.vim",
+    cmd = { "SudaWrite", "SudaRead" },
+    config = function(_, opts) vim.g.suda_smart_edit = 1 end,
+    -- TODO: autocmd on failed write?
+  },
 
   {
     "nacro90/numb.nvim",
