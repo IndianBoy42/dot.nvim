@@ -57,21 +57,21 @@ local M = {
 
       map("x", "<M-s>", "S<ESC>", { silent = true })
       map("n", "<M-s>", utils.operatorfunc_keys "<M-s>", { silent = true, expr = true })
-      for _, v in ipairs { "a", "b", "c" } do
-        map(
-          "v",
-          "<M-f>" .. v,
-          '"' .. v .. "<cmd>lua require('luasnip.extras.otf').on_the_fly('" .. v .. "')<cr>",
-          { silent = true, desc = "On the fly: " .. v }
-        )
-
-        map(
-          "i",
-          "<M-f>" .. v,
-          "<cmd>lua require('luasnip.extras.otf').on_the_fly('" .. v .. "')<cr>",
-          { silent = true, desc = "On the fly: " .. v }
-        )
-      end
+      -- for _, v in ipairs { "a", "b", "c" } do
+      --   map(
+      --     "v",
+      --     "<M-f>" .. v,
+      --     '"' .. v .. "<cmd>lua require('luasnip.extras.otf').on_the_fly('" .. v .. "')<cr>",
+      --     { silent = true, desc = "On the fly: " .. v }
+      --   )
+      --
+      --   map(
+      --     "i",
+      --     "<M-f>" .. v,
+      --     "<cmd>lua require('luasnip.extras.otf').on_the_fly('" .. v .. "')<cr>",
+      --     { silent = true, desc = "On the fly: " .. v }
+      --   )
+      -- end
 
       -- some shorthands...
       local ls = require "luasnip"
