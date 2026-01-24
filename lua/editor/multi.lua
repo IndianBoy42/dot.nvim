@@ -113,10 +113,12 @@ return {
     local ldr = O.multi_leader_key
     vim.g.VM_leader = ldr
     vim.g.VM_maps = {
-      ["Find Under"] = "<M-n>",
+      ["Find Under"] = ldr .. "*",
       ["Add Cursor At Word"] = "<C-n>",
       ["Find Next"] = "<M-n>",
       ["Find Prev"] = "<M-S-n>",
+      ["Goto Next"] = "<M-f>",
+      ["Goto Prev"] = "<M-b>",
       ["Find Subword Under"] = "<M-n>",
       ["Add Cursor Down"] = "<M-j>",
       ["Add Cursor Up"] = "<M-k>",
@@ -138,10 +140,11 @@ return {
       ["Toggle Mappings"] = ldr .. "<Esc>",
       ["Surround"] = "s",
       -- ["Select Operator"] = ldr .. "s",
-      ["Select Operator"] = "<M-v>",
       ["Add Cursor At Pos"] = "+",
       ["Select All"] = ldr .. "O",
       ["Visual All"] = ldr .. "O",
+      ["Switch Mode"] = "v", -- TODO: also make this Select Operator
+      ["Select Operator"] = "<M-v>",
     }
     if ldr == "<Del>" then vim.g.VM_maps["Del"] = "" end
     vim.g.VM_mouse_mappings = 1
@@ -161,6 +164,8 @@ return {
     vim.cmd.VMTheme(vim.g.VM_theme)
     local ldr = vim.g.VM_leader
     local map = vim.keymap.set
+    -- Autoselect the next occurence
+    map({ "x", "n" }, "<M-n>", "<Plug>(VM-Find-Under)<Plug>(VM-Find-Under)")
     map(
       { "x" },
       "<C-n>",
@@ -284,13 +289,13 @@ return {
     map("n", ldr .. "n", "<Plug>(VM-Find-Regex)", { desc = "Select last search" })
     map(
       "n",
-      ldr .. "F",
+      ldr .. "N",
       -- wrap_vm(nil, "Find-Regex", "<Plug>(VM-Select-All)"),
       wrap_vm(nil, "Find-Regex", "<Plug>(VM-Select-All)"),
       { remap = true, desc = "Select all of last search" }
     )
     local find_in_operator = utils.operatorfunc_keys "<Plug>(VM-Visual-Find)"
-    map("n", ldr .. "f", find_in_operator, { desc = "Select last search in (op)", expr = true })
+    map("n", ldr .. "no", find_in_operator, { desc = "Select last search in (op)", expr = true })
     map("x", "/", function()
       local cursor, other = vim.fn.getpos ".", vim.fn.getpos "v"
       if cursor ~= other or vim.api.nvim_get_mode().mode == "V" then
@@ -317,15 +322,24 @@ return {
     vim.api.nvim_create_autocmd("User", {
       pattern = "visual_multi_start",
       callback = function()
+        mapl("n", ldr .. "", "v")
+        mapl("n", "v", function()
+          local x = vim.g.Vm.extend_mode == 1
+          if x then
+            return "<Plug>(VM-Switch-Mode)"
+          else
+            return "<Plug>(VM-Select-Operator)"
+          end
+        end, { expr = true })
         mapl("n", "<C-n>", "<Plug>(VM-Find-Next)")
         mapl("n", "<C-S-n>", "<Plug>(VM-Find-Prev)")
         mapl("n", ";", function()
-          if vim.g.Vm.extend_mode then
+          if vim.g.Vm.extend_mode == 1 then
             return "<Plug>(VM-Run-Visual)"
           else
             return "<Plug>(VM-Run-Normal)"
           end
-        end)
+        end, { expr = true })
         mapl("n", "(", "<Plug>(VM-Transpose)")
         mapl("n", ")", "<Plug>(VM-Transpose)")
       end,
@@ -334,6 +348,7 @@ return {
     vim.api.nvim_create_autocmd("User", {
       pattern = "visual_multi_exit",
       callback = function()
+        unmap("n", "v")
         unmap("n", "<C-n>")
         unmap("n", "<C-S-n>")
         unmap("n", ";")
