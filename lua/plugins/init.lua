@@ -6,7 +6,9 @@ return {
       project_roots = { ".git", ".svn", ".venv" },
     },
     lazy = false,
-    cond = not vim.g.kitty_scrollback,
+    cond = not vim.g.kitty_scrollback
+      and not vim.tbl_contains(vim.v.argv, "DiffEditor")
+      and not vim.tbl_contains(vim.v.argv, "JJDiffConflicts!"),
     config = function(_, opts)
       require("remember_me").setup(opts)
       vim.api.nvim_create_user_command("ForgetQuit", function(args)
