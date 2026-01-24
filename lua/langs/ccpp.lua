@@ -47,19 +47,19 @@ return {
           -- cmd_env = require("lsp.config").get_cmd_env "clangd",
           cmd = clangd_cmd,
           commands = {
-            -- TODO: use winpick
-            ClangdSwitchSourceHeader = {
-              function() switch_source_header_splitcmd(0, "edit") end,
-              description = "Open source/header in current buffer",
-            },
-            ClangdSwitchSourceHeaderVSplit = {
-              function() switch_source_header_splitcmd(0, "vsplit") end,
-              description = "Open source/header in a new vsplit",
-            },
-            ClangdSwitchSourceHeaderSplit = {
-              function() switch_source_header_splitcmd(0, "split") end,
-              description = "Open source/header in a new split",
-            },
+            -- -- TODO: use winpick
+            -- ClangdSwitchSourceHeader = {
+            --     function() switch_source_header_splitcmd(0, "edit") end,
+            --     description = "Open source/header in current buffer",
+            -- },
+            -- ClangdSwitchSourceHeaderVSplit = {
+            --     function() switch_source_header_splitcmd(0, "vsplit") end,
+            --     description = "Open source/header in a new vsplit",
+            -- },
+            -- ClangdSwitchSourceHeaderSplit = {
+            --     function() switch_source_header_splitcmd(0, "split") end,
+            --     description = "Open source/header in a new split",
+            -- },
           },
 
           init_options = { clangdFileStatus = true },
@@ -73,6 +73,21 @@ return {
       },
       setup = {
         clangd = function(_, opts)
+          utils.lsp.on_attach(function()
+            local map = vim.keymap.setl
+            map(
+              "n",
+              "<localleader><localleader>",
+              "<cmd>ClangdSwitchSourceHeader<cr>",
+              { desc = "c/h" }
+            )
+            map(
+              "n",
+              "<localleader>s",
+              "<cmd>ClangdSwitchSourceHeaderVSplit<cr>",
+              { desc = "c/h split" }
+            )
+          end)
           require("clangd_extensions").setup {
             server = opts,
             extensions = {

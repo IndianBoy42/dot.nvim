@@ -91,6 +91,7 @@ local O = {
   -- action_key = "co",
   -- action_key_vis = "C",
   commenting = {
+    -- could be <space>c
     op = "yc",
     vi = "C",
     obj = "ic",

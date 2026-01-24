@@ -785,6 +785,7 @@ function M.setup()
   -- map("n", "H", [[col('.') == match(getline('.'),'\S')+1 ? '0' : '^']], norexpr)
   -- map("n", "L", "$", { remap = true })
 
+  -- TODO: hover key should also show this
   map("n", "L", utils.lsp.diag_line, { remap = true })
 
   -- map("n", "m-/", "")
@@ -1329,6 +1330,7 @@ utils.lsp.on_attach(function(client, bufnr)
   end, { desc = "Rename after" })
   map("i", "<M-r>", "<esc><M-r>", { remap = true, desc = "Rename after" })
   -- Hover
+  -- TODO: hover key should also show diagnostics
   map({ "x", "n" }, O.hover_key, utils.lsp.repeatable_hover, { desc = "LSP Hover" })
   map("i", "<C-i>", lspbuf.signature_help, { desc = "LSP Signature Help" })
   map("i", "<tab>", "<m-l>", { remap = true }) -- FIXME: i don't like this hardcoding
