@@ -238,6 +238,17 @@ local plugins = {
 
       -- utils.lsp.on_attach(function(client, bufnr) utils.lsp.document_highlight(client, bufnr) end)
 
+      -- Prefer LSP folding if client supports it
+      vim.api.nvim_create_autocmd("LspAttach", {
+        callback = function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if client:supports_method "textDocument/foldingRange" then
+            local win = vim.api.nvim_get_current_win()
+            vim.wo[win][0].foldexpr = "v:lua.vim.lsp.foldexpr()"
+          end
+        end,
+      })
+
       handlers["textDocument/codeLens"] =
         lspwith(vim.lsp.codelens.on_codelens, require("langs").codelens_config)
       utils.lsp.on_attach(function(client, bufnr)
