@@ -22,17 +22,6 @@ return {
       },
     },
   },
-  { -- "SmiteshP/nvim-navbuddy",
-    "SmiteshP/nvim-navbuddy",
-    dependencies = {
-      "SmiteshP/nvim-navic",
-    },
-    opts = {
-      lsp = { auto_attach = true },
-    },
-    lazy = false,
-    cmd = { "Navbuddy" },
-  },
   { -- "IndianBoy42/actions-preview.nvim",
     "aznhe21/actions-preview.nvim",
     config = function()
