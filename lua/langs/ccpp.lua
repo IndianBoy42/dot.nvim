@@ -75,12 +75,7 @@ return {
         clangd = function(_, opts)
           utils.lsp.on_attach(function()
             local map = vim.keymap.setl
-            map(
-              "n",
-              "<localleader><localleader>",
-              "<cmd>ClangdSwitchSourceHeader<cr>",
-              { desc = "c/h" }
-            )
+            map("n", "<localleader><tab>", "<cmd>ClangdSwitchSourceHeader<cr>", { desc = "c/h" })
             map(
               "n",
               "<localleader>s",

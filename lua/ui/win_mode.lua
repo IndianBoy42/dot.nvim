@@ -155,8 +155,8 @@ return {
   },
   {
     "anuvyklack/windows.nvim",
-    event = { "WinLeave" },
-    key = { "<leader>w" },
+    event = { "WinLeave",  "VeryLazy" },
+    key = { "<leader>w",  },
     opts = {
       autowidth = {
         enable = true,
@@ -178,7 +178,6 @@ return {
       local hydra = window_hydra_setup()
       vim.keymap.set("n", "<leader>w", function() hydra:activate() end, { desc = "Windowman" })
     end,
-    event = "VeryLazy",
   },
   { -- TODO: give up
     "IndianBoy42/ezlayout.nvim",

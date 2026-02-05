@@ -6,6 +6,7 @@ return {
     "hrsh7th/nvim-cmp",
     dependencies = {
       {
+        -- TODO: https://github.com/copilotlsp-nvim/copilot-lsp
         "zbirenbaum/copilot-cmp",
         cond = source == "copilot",
         opts = {},

@@ -29,7 +29,7 @@ local M = {
     },
     opts = {
       ensure_installed = "all",
-      ignore_install = {"comment"},
+      ignore_install = { "comment" },
       matchup = {
         enable = true,
         -- disable = { "c", "ruby" },  -- list of language that will be disabled
@@ -103,6 +103,17 @@ local M = {
 
       -- Custom parsers
       local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+
+      parser_config.moonbit = {
+        install_info = {
+          url = "https://github.com/moonbitlang/tree-sitter-moonbit", -- The URL you provided
+          files = { "src/parser.c", "src/scanner.c" }, -- Note: scanner.c is often required for modern grammars
+          branch = "main",
+          -- generate_requires_npm = false,
+          -- requires_generate_from_grammar = false,
+        },
+        filetype = "moonbit", -- The filetype extension used in Neovim (usually .mbt)
+      }
 
       require("nvim-treesitter.configs").setup(opts)
 

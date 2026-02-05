@@ -137,6 +137,9 @@ return function()
       -- fish = "fish",
       just = "just",
       tpp = "cpp",
+      lbm = "lisp",
+      mbt = "moonbit",
+      mbti = "moonbit",
     },
     filename = {
       Justfile = "just",

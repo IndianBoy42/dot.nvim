@@ -226,7 +226,7 @@ local plugins = {
       lsp_sel_rng.update_capabilities(capabilities)
 
       -- TODO: has limitations on linux apparently
-      if true then
+      if false then
         vim.tbl_extend("force", capabilities, {
           workspace = {
             didChangeWatchedFiles = {

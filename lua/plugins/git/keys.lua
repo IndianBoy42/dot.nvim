@@ -4,7 +4,7 @@ M.hydra = function(bufnr)
  _]_: next hunk   _s_: stage hunk        _d_: show deleted   _b_: blame line
  _[_: prev hunk   _u_: undo last stage   _p_: preview hunk   _B_: blame show full
  _o_: open file   _S_: stage buffer      ^ ^                 _/_: show base file
- ^ ^              _i_: GitUI             _m_: Sublime Merge
+ _j_: GitUI       _i_: GitUI             _m_: Sublime Merge
  _q_: exit        _g_: Neogit
 ]]
   local Hydra = require "hydra"
@@ -106,7 +106,7 @@ M.hydra = function(bufnr)
         { exit_before = true, desc = "GitUI" },
       },
       {
-        "JK",
+        "j",
         function() require("kitty.terms").use_os_window({}, "jjui", "jjui") end,
         { exit_before = true, desc = "JujutsUI" },
       },

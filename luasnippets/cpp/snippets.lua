@@ -104,6 +104,9 @@ local snippets = {
   parse("e", "else {\n\t$0\n}"),
   parse("ei", "else if ($1) {\n\t$0\n}"),
   parse("eic", "else if constexpr ($1) {\n\t$0\n}"),
+  s("#push_options", t { "#pragma GCC push_options", "#pragma GCC pop_options" }),
+  s("#ignored", t '#pragma GCC diagnostic ignored ""'),
+  s("#optimize", t '#pragma GCC optimize optimize("")'),
 
   -- Standard library types / containers
   parse("vec", "std::vector<${1:T}>"),

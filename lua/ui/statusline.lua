@@ -9,6 +9,7 @@ local M = {
         lsp = {
           auto_attach = true,
         },
+        lazy_update_context = true,
         icons = {
           File = " ",
           Module = " ",
@@ -69,7 +70,10 @@ M.config = function()
   }
 
   local navic = require "nvim-navic"
-  local navic_st = { function() return navic.get_location() end, cond = function() return navic.is_available() end }
+  local navic_st = {
+    function() return navic.get_location() end,
+    cond = function() return navic.is_available() end,
+  }
 
   local function get_lsp_clients()
     local msg = "LSP Inactive"

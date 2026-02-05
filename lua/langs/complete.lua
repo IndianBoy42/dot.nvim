@@ -40,13 +40,13 @@ M.default_sources = {
   -- { name = "cmp_yanky", group_index = 2 },
   -- { name = "cmp_tabnine" , group_index = 2},
   { name = "lua-latex-symbols", group_index = 2 },
-  {
-    name = "omni",
-    group_index = 2,
-    option = {
-      disable_omnifuncs = { "v:lua.vim.lsp.omnifunc" },
-    },
-  },
+  -- {
+  --   name = "omni",
+  --   group_index = 2,
+  --   option = {
+  --   -- disable_omnifuncs = { "v:lua.vim.lsp.omnifunc" },
+  --   },
+  -- },
 }
 M.config = function(_, opts)
   local cmp = require "cmp"
@@ -83,12 +83,14 @@ M.config = function(_, opts)
     -- mapping = cmp.mapping.preset.cmdline(),
     sources = cmp.config.sources(
       -- { name = "path" },
-      { {
-        name = "cmdline",
-        option = {
-          ignore_cmds = { "Man", "!" },
+      {
+        {
+          name = "cmdline",
+          option = {
+            ignore_cmds = { "Man", "!" },
+          },
         },
-      } },
+      },
       { {
         name = "cmdline_history",
       } }
@@ -231,7 +233,9 @@ M.opts = function()
     ["<M-h>"] = cmp.mapping {
       i = function()
         if cmp.visible() then cmp.close() end
-        if require("luasnip").choice_active() then require("plugins.snippets.luasnips_choices").popup_close() end
+        if require("luasnip").choice_active() then
+          require("plugins.snippets.luasnips_choices").popup_close()
+        end
       end,
       c = cmp.mapping.close(),
     },
@@ -269,6 +273,7 @@ M.opts = function()
   maps["<C-u>"] = maps["<M-u>"]
   maps["<C-h>"] = maps["<M-h>"]
   maps["<C-l>"] = maps["<M-l>"]
+  maps["<M-;>"] = maps["<M-l>"]
   maps["<tab>"] = maps["<M-l>"]
 
   return {
@@ -298,7 +303,9 @@ M.opts = function()
   }
 end
 
-function M.autocomplete(enable) require("cmp").setup.buffer { completion = { autocomplete = enable } } end
+function M.autocomplete(enable)
+  require("cmp").setup.buffer { completion = { autocomplete = enable } }
+end
 
 function M.sources(list)
   local cmp = require "cmp"

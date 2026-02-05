@@ -1081,31 +1081,15 @@ function M.setup()
     { "<leader>oH", "<cmd>DiffviewFileHistory<cr>", desc = "File History Git" },
     { "<leader>oM", "<cmd>MinimapToggle<cr>", desc = "Minimap" },
     { "<leader>oN", "<cmd>NoiceHistory<cr>", desc = "Noice History" },
-    -- { "<leader>oa", "<cmd>KittyNew aider --watch-files<cr>", desc = "AIder" },
-    {
-      "<leader>oa",
-      function()
-        -- TODO: add to existing aider?
-        local fname = vim.fn.expand "%:p"
-        local rel = vim.fs.relpath(".", fname)
-        if rel then
-          vim.cmd("KittyNew aider --file " .. rel)
-        else
-          vim.cmd "KittyNew aider"
-        end
-      end,
-      desc = "AIder",
-    },
-    { "<leader>oA", ":KittyNew aider --watch-files ", desc = "AIder (...)" },
-    { "<leader>oB", "<cmd>KittyNew bacon<cr>", desc = "Bacon diagnostics" },
-    { "<leader>ob", ":KittyNew bacon -j ", desc = "Bacon diagnostics (...)" },
+    { "<leader>ob", "<cmd>KittyNew bacon<cr>", desc = "Bacon diagnostics" },
+    { "<leader>oB", ":KittyNew bacon -j ", desc = "Bacon diagnostics (...)" },
     { "<leader>oc", "<cmd>KittyNew opencode<cr>", desc = "OpenCode" },
+    { "<leader>oj", "<cmd>KittyNew jjui<cr>", desc = "Jujutsu" },
     { "<leader>od", "<cmd>DiffviewOpen<cr>", desc = "Diffview" },
     { "<leader>og", "<cmd>!smerge '%:p:h'<cr>", desc = "Sublime Merge" },
 
     { "<leader>oh", group = "Kitty Hints" },
     { "<leader>oi", function() require("ui.win_pick").gf() end, desc = "Open file in <window>" },
-    { "<leader>on", "<cmd>Navbuddy<cr>", desc = "Navbuddy" },
     { "<leader>oo", "<cmd>SymbolsOutline<cr>", desc = "Outline" },
     { "<leader>oq", utils.quickfix_toggle, desc = "Quick fixes" },
 

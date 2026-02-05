@@ -114,11 +114,17 @@ local M = {
         -- return f(sel_helper, vim.tbl_extend("force", {}, opts or {}))
       end
       local function dsel(opts)
-        return f(function() return sn(nil, { i(1, sel_helper()) }) end, vim.tbl_extend("force", {}, opts or {}))
+        return f(
+          function() return sn(nil, { i(1, sel_helper()) }) end,
+          vim.tbl_extend("force", {}, opts or {})
+        )
       end
 
       local function reg(rn, opts)
-        return f(function() return vim.fn.getreg(rn or '"') end, vim.tbl_extend("force", {}, opts or {}))
+        return f(
+          function() return vim.fn.getreg(rn or '"') end,
+          vim.tbl_extend("force", {}, opts or {})
+        )
       end
 
       require("luasnip").setup {
