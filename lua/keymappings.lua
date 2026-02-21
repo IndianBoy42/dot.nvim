@@ -267,7 +267,7 @@ function M.setup()
   map("n", "<leader>yf", function() vim.fn.setreg("+", vim.fn.expand "%") end)
 
   -- Tab switch buffer
-  map("n", "<tab>", cmd "b#", { desc = "Last Buffer" })
+  map("n", "<tab>", cmd "e #", { desc = "Last Buffer" })
   map("n", "<S-tab>", require("keymappings.buffer_mode").tab_new_or_next, { desc = "Next Tab" })
   -- map("n", "<S-cr><S-tab>", require("keymappings.buffer_mode").tab_new_or_prev, { desc = "Prev Tab" })
 

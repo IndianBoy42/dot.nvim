@@ -55,8 +55,13 @@ local M = {
         map("s", "k", "<Plug>luasnip-prev-choice", { silent = true })
       end
 
-      map("x", "<M-s>", "S<ESC>", { silent = true })
-      map("n", "<M-s>", utils.operatorfunc_keys "<M-s>", { silent = true, expr = true })
+      map("x", "<M-s>", "S<ESC>", { silent = true, desc = "snippet selection" })
+      map(
+        "n",
+        "<M-s>",
+        utils.operatorfunc_keys "<M-s>",
+        { silent = true, expr = true, desc = "snippet selection" }
+      )
       -- for _, v in ipairs { "a", "b", "c" } do
       --   map(
       --     "v",

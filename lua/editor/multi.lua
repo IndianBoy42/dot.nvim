@@ -117,15 +117,15 @@ return {
       ["Add Cursor At Word"] = "<C-n>",
       ["Find Next"] = "<M-n>",
       ["Find Prev"] = "<M-S-n>",
-      ["Goto Next"] = "<M-f>",
-      ["Goto Prev"] = "<M-b>",
+      ["Skip Region"] = "<M-f>",
+      ["Remove Region"] = "<M-b>",
+      ["Goto Next"] = "n",
+      ["Goto Prev"] = "N",
       ["Find Subword Under"] = "<M-n>",
       ["Add Cursor Down"] = "<M-j>",
       ["Add Cursor Up"] = "<M-k>",
       ["Select Cursor Down"] = "<M-S-j>",
       ["Select Cursor Up"] = "<M-S-k>",
-      ["Skip Region"] = "n",
-      ["Remove Region"] = "N",
       ["Visual Cursors"] = ldr .. ldr,
       ["Visual Add"] = "<M-v>",
       ["Visual Regex"] = "?",
@@ -145,6 +145,8 @@ return {
       ["Visual All"] = ldr .. "O",
       ["Switch Mode"] = "v", -- TODO: also make this Select Operator
       ["Select Operator"] = "<M-v>",
+      -- ["I Next"] = "",
+      -- ["I Prev"] = "",
     }
     if ldr == "<Del>" then vim.g.VM_maps["Del"] = "" end
     vim.g.VM_mouse_mappings = 1

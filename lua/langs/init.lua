@@ -330,16 +330,8 @@ local plugins = {
   },
   -- TODO: https://github.com/lukas-reineke/lsp-format.nvim
   -- Languages
-  { "kmonad/kmonad-vim", ft = "kmonad" },
-  { "janet-lang/janet.vim", ft = "kmonad" },
   { "gennaro-tedesco/nvim-jqx", ft = "json" },
   { "Myzel394/jsonfly.nvim", ft = "json" },
-  {
-    "LhKipp/nvim-nu",
-    build = ":TSInstall nu",
-    main = "nu",
-    opts = {},
-  },
   -- TODO: https://github.com/codethread/qmk.nvim
 }
 

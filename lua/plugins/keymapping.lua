@@ -36,11 +36,8 @@ return {
     "max397574/better-escape.nvim",
     opts = function()
       local kj = {
-        j = {
-          -- These can all also be functions
-          k = "<Esc>",
-          j = "<Esc>",
-        },
+        -- These can all also be functions
+        j = { k = "<Esc>" },
         k = { j = "<Esc>" },
       }
       return {

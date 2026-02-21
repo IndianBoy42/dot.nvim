@@ -220,6 +220,7 @@ return {
             -- Enable diagnostics if using rust-analyzer
             diagnostics = {
               -- enable = use_diagnostics == "rust-analyzer",
+              enable = true,
               experimental = {
                 enable = false,
               },
@@ -337,6 +338,10 @@ return {
       servers = {
         bacon_ls = {
           enabled = use_diagnostics == "bacon-ls",
+          init_options = {
+            updateOnSave = true,
+            updateOnSaveWaitMillis = 400,
+          },
         },
       },
     },

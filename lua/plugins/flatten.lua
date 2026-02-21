@@ -20,6 +20,7 @@ return {
   "indianboy42/flatten.nvim",
   lazy = false,
   priority = 1001,
+  -- FIXME: not for kitty_scrollback
   cond = not vim.g.kitty_scrollback,
   opts = {
     _pipe_path = function()

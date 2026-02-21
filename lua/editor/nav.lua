@@ -806,7 +806,7 @@ return {
         name = "Subwords",
         mode = "n",
         hint = false,
-        body = "_",
+        body = "<Plug>(spider-web)",
         heads = {
           { "w", "<cmd>lua require('spider').motion('w')<cr>", desc = "Spider-w" },
           { "e", "<cmd>lua require('spider').motion('e')<cr>", desc = "Spider-e" },
@@ -815,7 +815,7 @@ return {
         },
       }
     end,
-    keys = { "_" },
+    keys = { "<Plug>(spider-web)" },
   },
   {
     "rapan931/lasterisk.nvim",

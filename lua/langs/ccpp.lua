@@ -25,7 +25,11 @@ local clangd_cmd =
     "clangd",
     "--background-index",
     "--query-driver=**/arm-none-eabi-*,**/x86_64-linux-*",
-    "--cross-file-rename",
+    "--clang-tidy",
+    "--header-insertion=iwyu",
+    "--completion-style=detailed",
+    "--function-arg-placeholders",
+    "--fallback-style=llvm",
   }
 -- table.insert(clangd_flags, "--cross-file-rename")
 -- table.insert(clangd_flags, "--header-insertion=never")
@@ -61,14 +65,30 @@ return {
             --     description = "Open source/header in a new split",
             -- },
           },
+          root_dir = function(fname)
+            return require("lspconfig.util").root_pattern(
+              "Makefile",
+              "configure.ac",
+              "configure.in",
+              "config.h.in",
+              "meson.build",
+              "meson_options.txt",
+              "build.ninja"
+            )(fname) or require("lspconfig.util").root_pattern(
+              "compile_commands.json",
+              "compile_flags.txt"
+            )(fname) or require("lspconfig.util").find_git_ancestor(fname)
+          end,
 
-          init_options = { clangdFileStatus = true },
+          init_options = {
+            usePlaceholders = true,
+            completeUnimported = true,
+            clangdFileStatus = true,
+          },
           -- handlers = lsp_status.extensions.clangd.setup(),
-          capabilities = (function()
-            local capabilities = vim.lsp.protocol.make_client_capabilities()
-            capabilities.offsetEncoding = { "utf-16" }
-            return capabilities
-          end)(),
+          capabilities = {
+            offsetEncoding = { "utf-16" },
+          },
         },
       },
       setup = {
